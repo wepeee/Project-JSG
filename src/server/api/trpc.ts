@@ -131,3 +131,21 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+export const superAdminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if ((ctx.session!.user as any).role !== "SUPERADMIN") {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+  return next();
+});
+
+export const ppicProcedure = protectedProcedure.use(({ ctx, next }) => {
+  const role = ctx.session.user.role;
+
+  // PPIC boleh, SUPERADMIN boleh (biar superadmin bisa bantu kalau perlu)
+  if (role !== "PPIC") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "PPIC only" });
+  }
+
+  return next();
+});
