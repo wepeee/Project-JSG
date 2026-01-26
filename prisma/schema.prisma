@@ -111,7 +111,6 @@ model Pro {
   proNumber   String    @unique @db.VarChar(9) // 6 digit prefix + 3 digit seq
   productName String
   qtyPoPcs    Int
-  up          Int?
   startDate   DateTime?
   status      ProStatus @default(OPEN)
 
@@ -129,6 +128,8 @@ model ProStep {
   orderNo   Int // 1,2,3...
   processId Int
   process   Process @relation(fields: [processId], references: [id])
+  
+  up          Int?
 
   machineId Int?
   machine   Machine? @relation(fields: [machineId], references: [id])

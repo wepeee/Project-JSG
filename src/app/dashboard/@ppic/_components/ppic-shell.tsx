@@ -13,6 +13,7 @@ import PPICSchedule from "./ppic-schedule";
 import MaterialManager from "./material-manager";
 import ProcessManager from "./process-manager";
 import ProPlanner from "./pro-planner";
+import ProList from "./pro-list";
 
 type Props = {
   user: {
@@ -25,6 +26,7 @@ type NavKey =
   | "overview"
   | "shortages"
   | "schedule"
+  | "prolist"
   | "materials"
   | "processes"
   | "planning"
@@ -41,13 +43,15 @@ export default function PPICShell({ user }: Props) {
         ? "Material Shortage"
         : active === "schedule"
           ? "Schedule"
-          : active === "materials"
-            ? "Materials"
-            : active === "processes"
-              ? "Proses"
-              : active === "planning"
-                ? "Perencanaan PRO"
-                : "Reports";
+          : active === "prolist"
+            ? "Prolist"
+            : active === "materials"
+              ? "Materials"
+              : active === "processes"
+                ? "Proses"
+                : active === "planning"
+                  ? "Perencanaan PRO"
+                  : "Reports";
 
   return (
     <div className="bg-background min-h-screen w-full">
@@ -101,6 +105,12 @@ export default function PPICShell({ user }: Props) {
               active={active === "schedule"}
               onClick={() => setActive("schedule")}
             />
+            <SidebarItem
+              label="Daftar PRO"
+              active={active === "prolist"}
+              onClick={() => setActive("prolist")}
+            />
+
             <SidebarItem
               label="Materials"
               active={active === "materials"}
@@ -189,6 +199,12 @@ export default function PPICShell({ user }: Props) {
                   }}
                 />
                 <SidebarItem
+                  label="Daftar PRO"
+                  active={active === "prolist"}
+                  onClick={() => setActive("prolist")}
+                />
+
+                <SidebarItem
                   label="Materials"
                   active={active === "materials"}
                   onClick={() => setActive("materials")}
@@ -255,6 +271,8 @@ export default function PPICShell({ user }: Props) {
             <MaterialShortage />
           ) : active === "schedule" ? (
             <PPICSchedule />
+          ) : active === "prolist" ? (
+            <ProList />
           ) : active === "materials" ? (
             <MaterialManager />
           ) : active === "processes" ? (

@@ -8,6 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Separator } from "~/components/ui/separator";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -19,9 +27,10 @@ import {
 type StepDraft = {
   key: string;
   processId: number | null;
+  up: string;
   machineId: number | null;
   materialId: number | null;
-  qtyReq: string; // simpan string biar empty bisa
+  qtyReq: string;
 };
 
 function uid() {
@@ -34,6 +43,7 @@ function newStep(): StepDraft {
   return {
     key: uid(),
     processId: null,
+    up: "",
     machineId: null,
     materialId: null,
     qtyReq: "",
@@ -47,27 +57,76 @@ export default function ProPlanner() {
 
   const createPro = api.pros.create.useMutation();
 
+  const loadingMaster =
+    processes.isLoading || machines.isLoading || materials.isLoading;
+
+  // Header PRO
   const [productName, setProductName] = React.useState("");
   const [qtyPoPcs, setQtyPoPcs] = React.useState<string>("");
-  const [up, setUp] = React.useState<string>("");
-  const [startDate, setStartDate] = React.useState<string>(""); // yyyy-mm-dd
+  const [startDate, setStartDate] = React.useState<string>("");
 
-  const [steps, setSteps] = React.useState<StepDraft[]>([newStep()]);
+  // Steps
+  const [steps, setSteps] = React.useState<StepDraft[]>([]);
+
+  // Dialog state
+  const [open, setOpen] = React.useState(false);
+  const [editKey, setEditKey] = React.useState<string | null>(null);
+  const [draft, setDraft] = React.useState<StepDraft>(newStep());
 
   const [err, setErr] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
 
-  const loadingMaster =
-    processes.isLoading || machines.isLoading || materials.isLoading;
+  const getProcess = (id: number | null) =>
+    id ? ((processes.data ?? []).find((p) => p.id === id) ?? null) : null;
 
-  const getMaterial = (id: number | null) => {
-    if (!id) return null;
-    return (materials.data ?? []).find((m) => m.id === id) ?? null;
+  const getMachine = (id: number | null) =>
+    id ? ((machines.data ?? []).find((m) => m.id === id) ?? null) : null;
+
+  const getMaterial = (id: number | null) =>
+    id ? ((materials.data ?? []).find((m) => m.id === id) ?? null) : null;
+
+  const openAdd = () => {
+    setErr(null);
+    setEditKey(null);
+    setDraft(newStep());
+    setOpen(true);
   };
 
-  const addStep = () => setSteps((s) => [...s, newStep()]);
-  const removeStep = (key: string) =>
-    setSteps((s) => (s.length === 1 ? s : s.filter((x) => x.key !== key)));
+  const openEdit = (s: StepDraft) => {
+    setErr(null);
+    setEditKey(s.key);
+    setDraft({ ...s });
+    setOpen(true);
+  };
+
+  const saveDraft = () => {
+    setErr(null);
+
+    if (!draft.processId) return setErr("Proses wajib dipilih");
+
+    const upNum = Number(draft.up);
+    if (!draft.up.trim() || !Number.isFinite(upNum) || upNum <= 0) {
+      return setErr("UP wajib > 0");
+    }
+
+    if (draft.materialId) {
+      const q = Number(draft.qtyReq);
+      if (!draft.qtyReq.trim() || !Number.isFinite(q) || q <= 0) {
+        return setErr("Qty Req wajib > 0 kalau material dipilih");
+      }
+    }
+
+    setSteps((prev) => {
+      if (!editKey) return [...prev, draft];
+      return prev.map((x) => (x.key === editKey ? draft : x));
+    });
+
+    setOpen(false);
+  };
+
+  const removeStep = (key: string) => {
+    setSteps((prev) => prev.filter((x) => x.key !== key));
+  };
 
   const moveStep = (key: string, dir: "up" | "down") => {
     setSteps((prev) => {
@@ -83,7 +142,7 @@ export default function ProPlanner() {
     });
   };
 
-  const submit = async () => {
+  const submitPro = async () => {
     setErr(null);
     setOk(null);
 
@@ -95,26 +154,15 @@ export default function ProPlanner() {
       return setErr("Jumlah PO (pcs) wajib > 0");
     }
 
-    for (let i = 0; i < steps.length; i++) {
-      const s = steps[i]!;
-      if (!s.processId) return setErr(`Baris ${i + 1}: proses belum dipilih`);
-
-      // material optional, tapi kalau dipilih qtyReq harus valid
-      if (s.materialId) {
-        const q = Number(s.qtyReq);
-        if (!s.qtyReq.trim() || !Number.isFinite(q) || q <= 0) {
-          return setErr(`Baris ${i + 1}: Qty material wajib > 0`);
-        }
-      }
-    }
+    if (steps.length === 0) return setErr("Minimal 1 proses harus ditambahkan");
 
     const payload = {
       productName: prod,
       qtyPoPcs: qty,
-      up: up.trim() ? Number(up) : undefined,
       startDate: startDate ? new Date(`${startDate}T00:00:00`) : undefined,
       steps: steps.map((s) => ({
         processId: s.processId!,
+        up: Number(s.up),
         machineId: s.machineId ?? null,
         materials: s.materialId
           ? [{ materialId: s.materialId, qtyReq: Number(s.qtyReq) }]
@@ -127,24 +175,26 @@ export default function ProPlanner() {
       setOk(`PRO dibuat: ${created.proNumber}`);
       setProductName("");
       setQtyPoPcs("");
-      setUp("");
       setStartDate("");
-      setSteps([newStep()]);
+      setSteps([]);
     } catch (e: any) {
       setErr(e?.message ?? "Gagal membuat PRO");
     }
   };
 
+  const control =
+    "border-input bg-background h-10 w-full rounded-md border px-3 text-sm";
+
   return (
     <div className="space-y-6">
-      <Card className="w-full">
+      <Card>
         <CardHeader>
           <CardTitle>Perencanaan PRO</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* Header input */}
-          <div className="grid gap-3 lg:grid-cols-4">
+          {/* Header PRO */}
+          <div className="grid gap-3 lg:grid-cols-3">
             <div className="space-y-2">
               <div className="text-sm font-medium">Produk</div>
               <Input
@@ -166,16 +216,6 @@ export default function ProPlanner() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-sm font-medium">UP (opsional)</div>
-              <Input
-                type="number"
-                value={up}
-                onChange={(e) => setUp(e.target.value)}
-                placeholder="contoh: 4"
-              />
-            </div>
-
-            <div className="space-y-2">
               <div className="text-sm font-medium">Tanggal Mulai</div>
               <Input
                 type="date"
@@ -187,188 +227,122 @@ export default function ProPlanner() {
 
           <Separator />
 
-          {/* Table */}
-          <div className="overflow-x-auto rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">No.</TableHead>
-                  <TableHead className="min-w-[220px]">Proses</TableHead>
-                  <TableHead className="min-w-[220px]">Machine</TableHead>
-                  <TableHead className="min-w-[260px]">Material</TableHead>
-                  <TableHead className="w-[160px]">Qty Req</TableHead>
-                  <TableHead className="w-[120px]">UoM</TableHead>
-                  <TableHead className="w-[220px] text-right">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {steps.map((s, idx) => {
-                  const mat = getMaterial(s.materialId);
-                  const uom = mat ? String(mat.uom) : "-";
-
-                  return (
-                    <TableRow key={s.key}>
-                      <TableCell className="align-top">{idx + 1}</TableCell>
-
-                      <TableCell className="align-top">
-                        <select
-                          value={s.processId ?? ""}
-                          onChange={(e) => {
-                            const v = e.target.value
-                              ? Number(e.target.value)
-                              : null;
-                            setSteps((prev) =>
-                              prev.map((x) =>
-                                x.key === s.key ? { ...x, processId: v } : x,
-                              ),
-                            );
-                          }}
-                          className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-                          disabled={loadingMaster}
-                        >
-                          <option value="">Pilih proses</option>
-                          {(processes.data ?? []).map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.code} - {p.name}
-                            </option>
-                          ))}
-                        </select>
-                        {idx === 0 ? (
-                          <div className="mt-1 text-xs opacity-70">
-                            * Baris 1 menentukan prefix No. PRO.
-                          </div>
-                        ) : null}
-                      </TableCell>
-
-                      <TableCell className="align-top">
-                        <select
-                          value={s.machineId ?? ""}
-                          onChange={(e) => {
-                            const v = e.target.value
-                              ? Number(e.target.value)
-                              : null;
-                            setSteps((prev) =>
-                              prev.map((x) =>
-                                x.key === s.key ? { ...x, machineId: v } : x,
-                              ),
-                            );
-                          }}
-                          className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-                          disabled={loadingMaster}
-                        >
-                          <option value="">(optional)</option>
-                          {(machines.data ?? []).map((m) => (
-                            <option key={m.id} value={m.id}>
-                              {m.name}
-                            </option>
-                          ))}
-                        </select>
-                      </TableCell>
-
-                      <TableCell className="align-top">
-                        <select
-                          value={s.materialId ?? ""}
-                          onChange={(e) => {
-                            const v = e.target.value
-                              ? Number(e.target.value)
-                              : null;
-                            setSteps((prev) =>
-                              prev.map((x) =>
-                                x.key === s.key
-                                  ? {
-                                      ...x,
-                                      materialId: v,
-                                      qtyReq: v ? x.qtyReq : "",
-                                    }
-                                  : x,
-                              ),
-                            );
-                          }}
-                          className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-                          disabled={loadingMaster}
-                        >
-                          <option value="">(optional) pilih material</option>
-                          {(materials.data ?? []).map((m) => (
-                            <option key={m.id} value={m.id}>
-                              {m.name} ({String(m.uom)})
-                            </option>
-                          ))}
-                        </select>
-                      </TableCell>
-
-                      <TableCell className="align-top">
-                        <Input
-                          type="number"
-                          value={s.qtyReq}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            setSteps((prev) =>
-                              prev.map((x) =>
-                                x.key === s.key ? { ...x, qtyReq: v } : x,
-                              ),
-                            );
-                          }}
-                          placeholder={s.materialId ? "Qty" : "-"}
-                          disabled={!s.materialId || loadingMaster}
-                        />
-                      </TableCell>
-
-                      <TableCell className="align-top">
-                        <div className="flex h-10 items-center text-sm">
-                          {uom}
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="align-top">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => moveStep(s.key, "up")}
-                            disabled={idx === 0}
-                          >
-                            ↑
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => moveStep(s.key, "down")}
-                            disabled={idx === steps.length - 1}
-                          >
-                            ↓
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => removeStep(s.key)}
-                            disabled={steps.length === 1}
-                          >
-                            Hapus
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-
           {/* Actions */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Button type="button" variant="outline" onClick={addStep}>
-              + Tambah Proses
-            </Button>
             <Button
               type="button"
-              onClick={submit}
+              variant="outline"
+              onClick={openAdd}
+              disabled={loadingMaster}
+            >
+              + Tambah Proses
+            </Button>
+
+            <Button
+              type="button"
+              onClick={submitPro}
               disabled={createPro.isPending || loadingMaster}
             >
               {createPro.isPending ? "Membuat..." : "Buat PRO"}
             </Button>
+
             <div className="text-xs opacity-70 sm:ml-auto">
               No. PRO: (kode proses pertama)(bulan)(tahun)(increment)
+            </div>
+          </div>
+
+          {/* List table (readable) */}
+          <div className="overflow-x-auto rounded-md border">
+            <div className="min-w-[860px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-16">No.</TableHead>
+                    <TableHead>Proses</TableHead>
+                    <TableHead className="w-24">UP</TableHead>
+                    <TableHead>Machine</TableHead>
+                    <TableHead>Material</TableHead>
+                    <TableHead className="w-24">Qty</TableHead>
+                    <TableHead className="w-24">UoM</TableHead>
+                    <TableHead className="w-[260px] text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+
+                <TableBody>
+                  {steps.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={8}
+                        className="py-8 text-center text-sm opacity-70"
+                      >
+                        Belum ada proses. Klik “+ Tambah Proses”.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    steps.map((s, idx) => {
+                      const p = getProcess(s.processId);
+                      const m = getMachine(s.machineId);
+                      const mat = getMaterial(s.materialId);
+                      return (
+                        <TableRow key={s.key}>
+                          <TableCell>{idx + 1}</TableCell>
+                          <TableCell className="font-medium">
+                            {p ? `${p.code} - ${p.name}` : "-"}
+                            {idx === 0 ? (
+                              <div className="mt-1 text-xs opacity-70">
+                                * proses pertama menentukan prefix
+                              </div>
+                            ) : null}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {s.up || "-"}
+                          </TableCell>
+                          <TableCell>{m?.name ?? "-"}</TableCell>
+                          <TableCell>{mat?.name ?? "-"}</TableCell>
+                          <TableCell className="text-right">
+                            {s.qtyReq?.trim() ? s.qtyReq : "-"}
+                          </TableCell>
+                          <TableCell>{mat ? String(mat.uom) : "-"}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="inline-flex gap-2">
+                              <Button
+                                variant="outline"
+                                className="h-9"
+                                onClick={() => moveStep(s.key, "up")}
+                                disabled={idx === 0}
+                              >
+                                ↑
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="h-9"
+                                onClick={() => moveStep(s.key, "down")}
+                                disabled={idx === steps.length - 1}
+                              >
+                                ↓
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="h-9"
+                                onClick={() => openEdit(s)}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="h-9"
+                                onClick={() => removeStep(s.key)}
+                              >
+                                Hapus
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
             </div>
           </div>
 
@@ -376,6 +350,139 @@ export default function ProPlanner() {
           {ok ? <p className="text-sm">{ok}</p> : null}
         </CardContent>
       </Card>
+
+      {/* Dialog form step */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editKey ? "Edit Proses" : "Tambah Proses"}
+            </DialogTitle>
+            <DialogDescription>
+              Isi proses, UP, machine, dan material (optional).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Proses</div>
+                <select
+                  value={draft.processId ?? ""}
+                  onChange={(e) =>
+                    setDraft((d) => ({
+                      ...d,
+                      processId: e.target.value ? Number(e.target.value) : null,
+                    }))
+                  }
+                  className={control}
+                  disabled={loadingMaster}
+                >
+                  <option value="">Pilih proses</option>
+                  {(processes.data ?? []).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.code} - {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium">UP</div>
+                <Input
+                  type="number"
+                  value={draft.up}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, up: e.target.value }))
+                  }
+                  placeholder="contoh: 4"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Machine (optional)</div>
+              <select
+                value={draft.machineId ?? ""}
+                onChange={(e) =>
+                  setDraft((d) => ({
+                    ...d,
+                    machineId: e.target.value ? Number(e.target.value) : null,
+                  }))
+                }
+                className={control}
+                disabled={loadingMaster}
+              >
+                <option value="">(optional)</option>
+                {(machines.data ?? []).map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <Separator />
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="space-y-2 sm:col-span-2">
+                <div className="text-sm font-medium">Material (optional)</div>
+                <select
+                  value={draft.materialId ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value ? Number(e.target.value) : null;
+                    setDraft((d) => ({
+                      ...d,
+                      materialId: v,
+                      qtyReq: v ? d.qtyReq : "",
+                    }));
+                  }}
+                  className={control}
+                  disabled={loadingMaster}
+                >
+                  <option value="">(optional) pilih material</option>
+                  {(materials.data ?? []).map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} ({String(m.uom)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Qty Req</div>
+                <Input
+                  type="number"
+                  value={draft.qtyReq}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, qtyReq: e.target.value }))
+                  }
+                  disabled={!draft.materialId}
+                  placeholder={draft.materialId ? "Qty" : ""}
+                />
+                <div className="text-xs opacity-70">
+                  UoM: {getMaterial(draft.materialId)?.uom ?? "-"}
+                </div>
+              </div>
+            </div>
+
+            {err ? <p className="text-destructive text-sm">{err}</p> : null}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button type="button" onClick={saveDraft}>
+              Simpan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

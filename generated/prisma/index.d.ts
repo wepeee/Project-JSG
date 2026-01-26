@@ -6413,13 +6413,11 @@ export namespace Prisma {
   export type ProAvgAggregateOutputType = {
     id: number | null
     qtyPoPcs: number | null
-    up: number | null
   }
 
   export type ProSumAggregateOutputType = {
     id: number | null
     qtyPoPcs: number | null
-    up: number | null
   }
 
   export type ProMinAggregateOutputType = {
@@ -6427,7 +6425,6 @@ export namespace Prisma {
     proNumber: string | null
     productName: string | null
     qtyPoPcs: number | null
-    up: number | null
     startDate: Date | null
     status: $Enums.ProStatus | null
     createdAt: Date | null
@@ -6439,7 +6436,6 @@ export namespace Prisma {
     proNumber: string | null
     productName: string | null
     qtyPoPcs: number | null
-    up: number | null
     startDate: Date | null
     status: $Enums.ProStatus | null
     createdAt: Date | null
@@ -6451,7 +6447,6 @@ export namespace Prisma {
     proNumber: number
     productName: number
     qtyPoPcs: number
-    up: number
     startDate: number
     status: number
     createdAt: number
@@ -6463,13 +6458,11 @@ export namespace Prisma {
   export type ProAvgAggregateInputType = {
     id?: true
     qtyPoPcs?: true
-    up?: true
   }
 
   export type ProSumAggregateInputType = {
     id?: true
     qtyPoPcs?: true
-    up?: true
   }
 
   export type ProMinAggregateInputType = {
@@ -6477,7 +6470,6 @@ export namespace Prisma {
     proNumber?: true
     productName?: true
     qtyPoPcs?: true
-    up?: true
     startDate?: true
     status?: true
     createdAt?: true
@@ -6489,7 +6481,6 @@ export namespace Prisma {
     proNumber?: true
     productName?: true
     qtyPoPcs?: true
-    up?: true
     startDate?: true
     status?: true
     createdAt?: true
@@ -6501,7 +6492,6 @@ export namespace Prisma {
     proNumber?: true
     productName?: true
     qtyPoPcs?: true
-    up?: true
     startDate?: true
     status?: true
     createdAt?: true
@@ -6600,7 +6590,6 @@ export namespace Prisma {
     proNumber: string
     productName: string
     qtyPoPcs: number
-    up: number | null
     startDate: Date | null
     status: $Enums.ProStatus
     createdAt: Date
@@ -6631,7 +6620,6 @@ export namespace Prisma {
     proNumber?: boolean
     productName?: boolean
     qtyPoPcs?: boolean
-    up?: boolean
     startDate?: boolean
     status?: boolean
     createdAt?: boolean
@@ -6647,14 +6635,13 @@ export namespace Prisma {
     proNumber?: boolean
     productName?: boolean
     qtyPoPcs?: boolean
-    up?: boolean
     startDate?: boolean
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "qtyPoPcs" | "up" | "startDate" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
+  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "qtyPoPcs" | "startDate" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
   export type ProInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     steps?: boolean | Pro$stepsArgs<ExtArgs>
     _count?: boolean | ProCountOutputTypeDefaultArgs<ExtArgs>
@@ -6670,7 +6657,6 @@ export namespace Prisma {
       proNumber: string
       productName: string
       qtyPoPcs: number
-      up: number | null
       startDate: Date | null
       status: $Enums.ProStatus
       createdAt: Date
@@ -7049,7 +7035,6 @@ export namespace Prisma {
     readonly proNumber: FieldRef<"Pro", 'String'>
     readonly productName: FieldRef<"Pro", 'String'>
     readonly qtyPoPcs: FieldRef<"Pro", 'Int'>
-    readonly up: FieldRef<"Pro", 'Int'>
     readonly startDate: FieldRef<"Pro", 'DateTime'>
     readonly status: FieldRef<"Pro", 'ProStatus'>
     readonly createdAt: FieldRef<"Pro", 'DateTime'>
@@ -7456,6 +7441,7 @@ export namespace Prisma {
     proId: number | null
     orderNo: number | null
     processId: number | null
+    up: number | null
     machineId: number | null
   }
 
@@ -7464,6 +7450,7 @@ export namespace Prisma {
     proId: number | null
     orderNo: number | null
     processId: number | null
+    up: number | null
     machineId: number | null
   }
 
@@ -7472,6 +7459,7 @@ export namespace Prisma {
     proId: number | null
     orderNo: number | null
     processId: number | null
+    up: number | null
     machineId: number | null
   }
 
@@ -7480,6 +7468,7 @@ export namespace Prisma {
     proId: number | null
     orderNo: number | null
     processId: number | null
+    up: number | null
     machineId: number | null
   }
 
@@ -7488,6 +7477,7 @@ export namespace Prisma {
     proId: number
     orderNo: number
     processId: number
+    up: number
     machineId: number
     _all: number
   }
@@ -7498,6 +7488,7 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     processId?: true
+    up?: true
     machineId?: true
   }
 
@@ -7506,6 +7497,7 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     processId?: true
+    up?: true
     machineId?: true
   }
 
@@ -7514,6 +7506,7 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     processId?: true
+    up?: true
     machineId?: true
   }
 
@@ -7522,6 +7515,7 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     processId?: true
+    up?: true
     machineId?: true
   }
 
@@ -7530,6 +7524,7 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     processId?: true
+    up?: true
     machineId?: true
     _all?: true
   }
@@ -7625,6 +7620,7 @@ export namespace Prisma {
     proId: number
     orderNo: number
     processId: number
+    up: number | null
     machineId: number | null
     _count: ProStepCountAggregateOutputType | null
     _avg: ProStepAvgAggregateOutputType | null
@@ -7652,6 +7648,7 @@ export namespace Prisma {
     proId?: boolean
     orderNo?: boolean
     processId?: boolean
+    up?: boolean
     machineId?: boolean
     pro?: boolean | ProDefaultArgs<ExtArgs>
     process?: boolean | ProcessDefaultArgs<ExtArgs>
@@ -7667,10 +7664,11 @@ export namespace Prisma {
     proId?: boolean
     orderNo?: boolean
     processId?: boolean
+    up?: boolean
     machineId?: boolean
   }
 
-  export type ProStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "processId" | "machineId", ExtArgs["result"]["proStep"]>
+  export type ProStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "processId" | "up" | "machineId", ExtArgs["result"]["proStep"]>
   export type ProStepInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pro?: boolean | ProDefaultArgs<ExtArgs>
     process?: boolean | ProcessDefaultArgs<ExtArgs>
@@ -7692,6 +7690,7 @@ export namespace Prisma {
       proId: number
       orderNo: number
       processId: number
+      up: number | null
       machineId: number | null
     }, ExtArgs["result"]["proStep"]>
     composites: {}
@@ -8070,6 +8069,7 @@ export namespace Prisma {
     readonly proId: FieldRef<"ProStep", 'Int'>
     readonly orderNo: FieldRef<"ProStep", 'Int'>
     readonly processId: FieldRef<"ProStep", 'Int'>
+    readonly up: FieldRef<"ProStep", 'Int'>
     readonly machineId: FieldRef<"ProStep", 'Int'>
   }
     
@@ -9516,7 +9516,6 @@ export namespace Prisma {
     proNumber: 'proNumber',
     productName: 'productName',
     qtyPoPcs: 'qtyPoPcs',
-    up: 'up',
     startDate: 'startDate',
     status: 'status',
     createdAt: 'createdAt',
@@ -9531,6 +9530,7 @@ export namespace Prisma {
     proId: 'proId',
     orderNo: 'orderNo',
     processId: 'processId',
+    up: 'up',
     machineId: 'machineId'
   };
 
@@ -9960,7 +9960,6 @@ export namespace Prisma {
     proNumber?: StringFilter<"Pro"> | string
     productName?: StringFilter<"Pro"> | string
     qtyPoPcs?: IntFilter<"Pro"> | number
-    up?: IntNullableFilter<"Pro"> | number | null
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
     createdAt?: DateTimeFilter<"Pro"> | Date | string
@@ -9973,7 +9972,6 @@ export namespace Prisma {
     proNumber?: SortOrder
     productName?: SortOrder
     qtyPoPcs?: SortOrder
-    up?: SortOrderInput | SortOrder
     startDate?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -9990,7 +9988,6 @@ export namespace Prisma {
     NOT?: ProWhereInput | ProWhereInput[]
     productName?: StringFilter<"Pro"> | string
     qtyPoPcs?: IntFilter<"Pro"> | number
-    up?: IntNullableFilter<"Pro"> | number | null
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
     createdAt?: DateTimeFilter<"Pro"> | Date | string
@@ -10003,7 +10000,6 @@ export namespace Prisma {
     proNumber?: SortOrder
     productName?: SortOrder
     qtyPoPcs?: SortOrder
-    up?: SortOrderInput | SortOrder
     startDate?: SortOrderInput | SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -10023,7 +10019,6 @@ export namespace Prisma {
     proNumber?: StringWithAggregatesFilter<"Pro"> | string
     productName?: StringWithAggregatesFilter<"Pro"> | string
     qtyPoPcs?: IntWithAggregatesFilter<"Pro"> | number
-    up?: IntNullableWithAggregatesFilter<"Pro"> | number | null
     startDate?: DateTimeNullableWithAggregatesFilter<"Pro"> | Date | string | null
     status?: EnumProStatusWithAggregatesFilter<"Pro"> | $Enums.ProStatus
     createdAt?: DateTimeWithAggregatesFilter<"Pro"> | Date | string
@@ -10038,6 +10033,7 @@ export namespace Prisma {
     proId?: IntFilter<"ProStep"> | number
     orderNo?: IntFilter<"ProStep"> | number
     processId?: IntFilter<"ProStep"> | number
+    up?: IntNullableFilter<"ProStep"> | number | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
     process?: XOR<ProcessScalarRelationFilter, ProcessWhereInput>
@@ -10050,6 +10046,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     processId?: SortOrder
+    up?: SortOrderInput | SortOrder
     machineId?: SortOrderInput | SortOrder
     pro?: ProOrderByWithRelationInput
     process?: ProcessOrderByWithRelationInput
@@ -10066,6 +10063,7 @@ export namespace Prisma {
     proId?: IntFilter<"ProStep"> | number
     orderNo?: IntFilter<"ProStep"> | number
     processId?: IntFilter<"ProStep"> | number
+    up?: IntNullableFilter<"ProStep"> | number | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
     process?: XOR<ProcessScalarRelationFilter, ProcessWhereInput>
@@ -10078,6 +10076,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     processId?: SortOrder
+    up?: SortOrderInput | SortOrder
     machineId?: SortOrderInput | SortOrder
     _count?: ProStepCountOrderByAggregateInput
     _avg?: ProStepAvgOrderByAggregateInput
@@ -10094,6 +10093,7 @@ export namespace Prisma {
     proId?: IntWithAggregatesFilter<"ProStep"> | number
     orderNo?: IntWithAggregatesFilter<"ProStep"> | number
     processId?: IntWithAggregatesFilter<"ProStep"> | number
+    up?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
     machineId?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
   }
 
@@ -10433,7 +10433,6 @@ export namespace Prisma {
     proNumber: string
     productName: string
     qtyPoPcs: number
-    up?: number | null
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     createdAt?: Date | string
@@ -10446,7 +10445,6 @@ export namespace Prisma {
     proNumber: string
     productName: string
     qtyPoPcs: number
-    up?: number | null
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     createdAt?: Date | string
@@ -10458,7 +10456,6 @@ export namespace Prisma {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
-    up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10471,7 +10468,6 @@ export namespace Prisma {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
-    up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10484,7 +10480,6 @@ export namespace Prisma {
     proNumber: string
     productName: string
     qtyPoPcs: number
-    up?: number | null
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     createdAt?: Date | string
@@ -10495,7 +10490,6 @@ export namespace Prisma {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
-    up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10507,7 +10501,6 @@ export namespace Prisma {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
-    up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10516,6 +10509,7 @@ export namespace Prisma {
 
   export type ProStepCreateInput = {
     orderNo: number
+    up?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
     process: ProcessCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
@@ -10527,12 +10521,14 @@ export namespace Prisma {
     proId: number
     orderNo: number
     processId: number
+    up?: number | null
     machineId?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
   }
 
   export type ProStepUpdateInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     process?: ProcessUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
@@ -10544,6 +10540,7 @@ export namespace Prisma {
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     processId?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
   }
@@ -10553,11 +10550,13 @@ export namespace Prisma {
     proId: number
     orderNo: number
     processId: number
+    up?: number | null
     machineId?: number | null
   }
 
   export type ProStepUpdateManyMutationInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ProStepUncheckedUpdateManyInput = {
@@ -10565,6 +10564,7 @@ export namespace Prisma {
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     processId?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
@@ -10972,17 +10972,6 @@ export namespace Prisma {
     last?: SortOrder
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | null
@@ -11012,7 +11001,6 @@ export namespace Prisma {
     proNumber?: SortOrder
     productName?: SortOrder
     qtyPoPcs?: SortOrder
-    up?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -11022,7 +11010,6 @@ export namespace Prisma {
   export type ProAvgOrderByAggregateInput = {
     id?: SortOrder
     qtyPoPcs?: SortOrder
-    up?: SortOrder
   }
 
   export type ProMaxOrderByAggregateInput = {
@@ -11030,7 +11017,6 @@ export namespace Prisma {
     proNumber?: SortOrder
     productName?: SortOrder
     qtyPoPcs?: SortOrder
-    up?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -11042,7 +11028,6 @@ export namespace Prisma {
     proNumber?: SortOrder
     productName?: SortOrder
     qtyPoPcs?: SortOrder
-    up?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
     createdAt?: SortOrder
@@ -11052,23 +11037,6 @@ export namespace Prisma {
   export type ProSumOrderByAggregateInput = {
     id?: SortOrder
     qtyPoPcs?: SortOrder
-    up?: SortOrder
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -11093,6 +11061,17 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProStatusFilter<$PrismaModel>
     _max?: NestedEnumProStatusFilter<$PrismaModel>
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type ProScalarRelationFilter = {
@@ -11120,6 +11099,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     processId?: SortOrder
+    up?: SortOrder
     machineId?: SortOrder
   }
 
@@ -11128,6 +11108,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     processId?: SortOrder
+    up?: SortOrder
     machineId?: SortOrder
   }
 
@@ -11136,6 +11117,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     processId?: SortOrder
+    up?: SortOrder
     machineId?: SortOrder
   }
 
@@ -11144,6 +11126,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     processId?: SortOrder
+    up?: SortOrder
     machineId?: SortOrder
   }
 
@@ -11152,7 +11135,24 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     processId?: SortOrder
+    up?: SortOrder
     machineId?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type DecimalFilter<$PrismaModel = never> = {
@@ -11400,14 +11400,6 @@ export namespace Prisma {
     connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
   }
 
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
   }
@@ -11474,6 +11466,14 @@ export namespace Prisma {
     connectOrCreate?: ProStepMaterialCreateOrConnectWithoutStepInput | ProStepMaterialCreateOrConnectWithoutStepInput[]
     createMany?: ProStepMaterialCreateManyStepInputEnvelope
     connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type ProUpdateOneRequiredWithoutStepsNestedInput = {
@@ -11758,6 +11758,30 @@ export namespace Prisma {
     not?: NestedEnumProStatusFilter<$PrismaModel> | $Enums.ProStatus
   }
 
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | null
+    notIn?: Date[] | string[] | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumProStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProStatus | EnumProStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProStatus[]
+    notIn?: $Enums.ProStatus[]
+    not?: NestedEnumProStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumProStatusFilter<$PrismaModel>
+    _max?: NestedEnumProStatusFilter<$PrismaModel>
+  }
+
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | null
@@ -11783,30 +11807,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | null
-    notIn?: Date[] | string[] | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
-  export type NestedEnumProStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ProStatus | EnumProStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ProStatus[]
-    notIn?: $Enums.ProStatus[]
-    not?: NestedEnumProStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumProStatusFilter<$PrismaModel>
-    _max?: NestedEnumProStatusFilter<$PrismaModel>
   }
 
   export type NestedDecimalFilter<$PrismaModel = never> = {
@@ -11838,6 +11838,7 @@ export namespace Prisma {
 
   export type ProStepCreateWithoutMachineInput = {
     orderNo: number
+    up?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
     process: ProcessCreateNestedOneWithoutStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
@@ -11848,6 +11849,7 @@ export namespace Prisma {
     proId: number
     orderNo: number
     processId: number
+    up?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
   }
 
@@ -11885,6 +11887,7 @@ export namespace Prisma {
     proId?: IntFilter<"ProStep"> | number
     orderNo?: IntFilter<"ProStep"> | number
     processId?: IntFilter<"ProStep"> | number
+    up?: IntNullableFilter<"ProStep"> | number | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
   }
 
@@ -11937,6 +11940,7 @@ export namespace Prisma {
 
   export type ProStepCreateWithoutProcessInput = {
     orderNo: number
+    up?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
@@ -11946,6 +11950,7 @@ export namespace Prisma {
     id?: number
     proId: number
     orderNo: number
+    up?: number | null
     machineId?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
   }
@@ -11978,6 +11983,7 @@ export namespace Prisma {
 
   export type ProStepCreateWithoutProInput = {
     orderNo: number
+    up?: number | null
     process: ProcessCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
@@ -11987,6 +11993,7 @@ export namespace Prisma {
     id?: number
     orderNo: number
     processId: number
+    up?: number | null
     machineId?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
   }
@@ -12021,7 +12028,6 @@ export namespace Prisma {
     proNumber: string
     productName: string
     qtyPoPcs: number
-    up?: number | null
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     createdAt?: Date | string
@@ -12033,7 +12039,6 @@ export namespace Prisma {
     proNumber: string
     productName: string
     qtyPoPcs: number
-    up?: number | null
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     createdAt?: Date | string
@@ -12123,7 +12128,6 @@ export namespace Prisma {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
-    up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12135,7 +12139,6 @@ export namespace Prisma {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
-    up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12214,6 +12217,7 @@ export namespace Prisma {
 
   export type ProStepCreateWithoutMaterialsInput = {
     orderNo: number
+    up?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
     process: ProcessCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
@@ -12224,6 +12228,7 @@ export namespace Prisma {
     proId: number
     orderNo: number
     processId: number
+    up?: number | null
     machineId?: number | null
   }
 
@@ -12265,6 +12270,7 @@ export namespace Prisma {
 
   export type ProStepUpdateWithoutMaterialsInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     process?: ProcessUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
@@ -12275,6 +12281,7 @@ export namespace Prisma {
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     processId?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
@@ -12309,10 +12316,12 @@ export namespace Prisma {
     proId: number
     orderNo: number
     processId: number
+    up?: number | null
   }
 
   export type ProStepUpdateWithoutMachineInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     process?: ProcessUpdateOneRequiredWithoutStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
@@ -12323,6 +12332,7 @@ export namespace Prisma {
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     processId?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
   }
 
@@ -12331,6 +12341,7 @@ export namespace Prisma {
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     processId?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ProStepMaterialCreateManyMaterialInput = {
@@ -12360,11 +12371,13 @@ export namespace Prisma {
     id?: number
     proId: number
     orderNo: number
+    up?: number | null
     machineId?: number | null
   }
 
   export type ProStepUpdateWithoutProcessInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
@@ -12374,6 +12387,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
   }
@@ -12382,6 +12396,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
@@ -12389,11 +12404,13 @@ export namespace Prisma {
     id?: number
     orderNo: number
     processId: number
+    up?: number | null
     machineId?: number | null
   }
 
   export type ProStepUpdateWithoutProInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     process?: ProcessUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
@@ -12403,6 +12420,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     processId?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
   }
@@ -12411,6 +12429,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     processId?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
