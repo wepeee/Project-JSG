@@ -56,6 +56,85 @@ type Props = {
   onClearJump?: () => void;
 };
 
+
+function shiftFromDate(d: Date) {
+  const h = d.getHours();
+  if (h >= 16) return 3;
+  if (h >= 11) return 2;
+  return 1;
+}
+
+function fmtSchedule(
+  d?: Date | string | null, 
+  durationShifts = 0,
+  customShifts?: Array<{ shiftIndex: number; scheduledDate: Date | string }>
+) {
+  // If we have custom per-shift scheduling, display those
+  if (customShifts && customShifts.length > 0) {
+    const sorted = customShifts.slice().sort((a, b) => a.shiftIndex - b.shiftIndex);
+    
+    return (
+      <div className="flex flex-col gap-0.5">
+        {sorted.map((shift, idx) => {
+          const dt = typeof shift.scheduledDate === "string" 
+            ? new Date(shift.scheduledDate) 
+            : shift.scheduledDate;
+          const dateStr = dt.toLocaleDateString("id-ID", { 
+            day: "2-digit", 
+            month: "short" 
+          });
+          const shiftNo = shiftFromDate(dt);
+          
+          return (
+            <div key={idx} className="text-[10px]">
+              <span className="font-medium">{dateStr}</span>
+              {" "}
+              <span className="text-blue-600 font-semibold">S{shiftNo}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  
+  // Fallback to original logic
+  if (!d) return "-";
+  const dt = typeof d === "string" ? new Date(d) : d;
+  const dateStr = dt.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+  const startShift = shiftFromDate(dt);
+  
+  let label = `Shift ${startShift}`;
+  
+  // Calculate end range if duration > 1
+  if (durationShifts > 1) {
+    const startAbs = (startShift - 1);
+    const endAbs = startAbs + (durationShifts - 1);
+    
+    const endShiftIndex = endAbs % 3;
+    const endShift = endShiftIndex + 1;
+    
+    const daysForward = Math.floor(endAbs / 3);
+    
+    if (daysForward > 0) {
+       const endDate = new Date(dt);
+       endDate.setDate(endDate.getDate() + daysForward);
+       const endDateStr = endDate.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
+       label = `Shift ${startShift} → ${endDateStr} Shift ${endShift}`;
+    } else {
+       if (endShift !== startShift) {
+         label = `Shift ${startShift} - ${endShift}`;
+       }
+    }
+  }
+
+  return (
+    <div className="flex flex-col">
+      <span className="font-medium">{dateStr}</span>
+      <span className="text-xs text-blue-600 font-semibold">{label}</span>
+    </div>
+  );
+}
+
 type StepDraft = {
   key: string;
   orderNo: number;
@@ -64,11 +143,14 @@ type StepDraft = {
   machineId: number | null;
   materialId: number | null;
   qtyReq: string;
+  startDate?: string | null;
 };
 
 export default function ProList({ initialSelectedId, onClearJump }: Props) {
   const utils = api.useUtils();
   const processes = api.processes.list.useQuery();
+  const machines = api.machines.list.useQuery();
+  const materials = api.materials.list.useQuery();
 
   // ===== VIEW STATE =====
   const [selectedId, setSelectedId] = React.useState<number | null>(
@@ -103,6 +185,8 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
   const [productName, setProductName] = React.useState("");
   const [qtyPoPcs, setQtyPoPcs] = React.useState("");
   const [startDate, setStartDate] = React.useState("");
+  const [statusDraft, setStatusDraft] = React.useState<Status>("OPEN");
+  const [processDraftId, setProcessDraftId] = React.useState<number | null>(null);
   const [stepDrafts, setStepDrafts] = React.useState<StepDraft[]>([]);
 
   const update = api.pros.update.useMutation({
@@ -163,6 +247,8 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
         machineId: s.machineId ?? null,
         materialId: mat0?.materialId ?? null,
         qtyReq: mat0?.qtyReq ? String(mat0.qtyReq) : "",
+        // @ts-ignore
+        startDate: s.startDate ? new Date(s.startDate).toISOString() : null,
       };
     });
   }, [detail.data]);
@@ -171,6 +257,10 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
     setErr(null);
     setEditing(true);
     setStepDrafts(toDraftSteps());
+    setStatusDraft((detail.data?.status as Status) ?? "OPEN");
+    // Init process draft from first step or just null
+    const firstStepProc = detail.data?.steps?.[0]?.processId ?? null;
+    setProcessDraftId(firstStepProc);
   };
 
   const cancelEdit = () => {
@@ -199,12 +289,12 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
       return setErr("Qty PO wajib > 0");
     }
 
+    if (!processDraftId) return setErr("Proses (Prefix) wajib dipilih di header");
+
     const drafts = stepDrafts.length ? stepDrafts : toDraftSteps();
     if (!drafts.length) return setErr("Minimal 1 proses harus ada");
 
     for (const s of drafts) {
-      if (!s.processId)
-        return setErr(`Step ${s.orderNo}: proses wajib dipilih`);
       const upNum = Number(s.up);
       if (!s.up.trim() || !Number.isFinite(upNum) || upNum < 0) {
         return setErr(`Step ${s.orderNo}: UP wajib >= 0`);
@@ -222,17 +312,18 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
       productName: prod,
       qtyPoPcs: qty,
       startDate: startDate ? new Date(`${startDate}T00:00:00`) : undefined,
-      status: detail.data.status,
+      status: statusDraft,
       steps: drafts
         .slice()
         .sort((a, b) => a.orderNo - b.orderNo)
         .map((s) => ({
           orderNo: s.orderNo,
-          processId: s.processId!,
+          processId: processDraftId, // Force use header process
           up: Number(s.up),
           machineId: s.machineId ?? null,
           materialId: s.materialId ?? null,
           qtyReq: s.materialId ? Number(s.qtyReq) : undefined,
+          startDate: s.startDate ? new Date(s.startDate) : undefined,
         })),
     });
   };
@@ -346,29 +437,46 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
           <CardContent className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Info label="No. PRO" value={p.proNumber} />
-              <Info label="Status" value={p.status} />
+              
+              {!editing ? (
+                <Info label="Status" value={p.status} />
+              ) : (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Status</div>
+                  <select
+                    value={statusDraft}
+                    onChange={(e) => setStatusDraft(e.target.value as Status)}
+                    className={control}
+                  >
+                    <option value="OPEN">OPEN</option>
+                    <option value="IN_PROGRESS">IN_PROGRESS</option>
+                    <option value="DONE">DONE</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                  </select>
+                </div>
+              )}
+
               {!editing ? (
                 <Info
                   label="Proses (Prefix)"
                   value={
-                    p.steps?.[0]
-                      ? `${p.steps[0].process.code} - ${p.steps[0].process.name}`
-                      : "-"
+                    // For editing, we show the current draft[0] process name
+                    stepDrafts[0]?.processId
+                      ? (processes.data?.find((x) => x.id === stepDrafts[0]!.processId)
+                          ?.name ?? "-")
+                      : (
+                        p.steps?.[0]?.process ? `${p.steps[0].process.code} - ${p.steps[0].process.name}` : "-"
+                      )
                   }
                 />
               ) : (
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Proses (Prefix)</div>
                   <select
-                    value={stepDrafts[0]?.processId ?? ""}
+                    value={processDraftId ?? ""}
                     onChange={(e) => {
                       const v = e.target.value ? Number(e.target.value) : null;
-                      setStepDrafts((prev) => {
-                        if (!prev.length) return prev;
-                        const copy = [...prev];
-                        copy[0] = { ...copy[0]!, processId: v };
-                        return copy;
-                      });
+                      setProcessDraftId(v);
                     }}
                     className={control}
                     disabled={
@@ -384,6 +492,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                   </select>
                 </div>
               )}
+
               <Info label="Dibuat" value={fmtDateTime(p.createdAt)} />
 
               <div className="space-y-2 lg:col-span-2">
@@ -420,106 +529,164 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
 
             <Separator />
 
-            {editing ? (
-              <div className="space-y-2">
-                <div className="text-sm font-medium">Proses per Step</div>
-                <div className="overflow-x-auto rounded-md border">
-                  <div className="min-w-[520px]">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-16">Step</TableHead>
-                          <TableHead>Proses</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {stepDrafts
-                          .slice()
-                          .sort((a, b) => a.orderNo - b.orderNo)
-                          .map((st) => (
-                            <TableRow key={st.key}>
-                              <TableCell>{st.orderNo}</TableCell>
-                              <TableCell>
-                                <select
-                                  value={st.processId ?? ""}
-                                  onChange={(e) => {
-                                    const v = e.target.value
-                                      ? Number(e.target.value)
-                                      : null;
-                                    setStepDrafts((prev) =>
-                                      prev.map((x) =>
-                                        x.key === st.key
-                                          ? { ...x, processId: v }
-                                          : x,
-                                      ),
-                                    );
-                                  }}
-                                  className={control}
-                                  disabled={
-                                    processes.isLoading ||
-                                    update.isPending ||
-                                    del.isPending
-                                  }
-                                >
-                                  <option value="">Pilih proses</option>
-                                  {(processes.data ?? []).map((proc) => (
-                                    <option key={proc.id} value={proc.id}>
-                                      {proc.code} - {proc.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-                <div className="text-xs opacity-70">
-                  Proses pertama menentukan prefix No. PRO (No. PRO tidak diubah
-                  otomatis).
-                </div>
-              </div>
-            ) : null}
+            {/* Proses per step edit table removed. Now integrated into main table below. */}
 
             <div className="overflow-x-auto rounded-md border">
-              <div className="min-w-[760px]">
+              <div className="min-w-[900px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Machine</TableHead>
-                      <TableHead className="w-20 text-right">UP</TableHead>
+                      <TableHead className="w-24 text-right">UP</TableHead>
                       <TableHead>Material</TableHead>
-                      <TableHead className="w-24 text-right">Qty</TableHead>
+                      <TableHead className="w-24 text-right">Qty Mat</TableHead>
                       <TableHead className="w-20">UoM</TableHead>
                       <TableHead className="w-32">Estimasi</TableHead>
+                      <TableHead className="w-40">Jadwal</TableHead>
                     </TableRow>
                   </TableHeader>
 
                   <TableBody>
-                    {p.steps.map((s) => {
-                      const mat0 = s.materials?.[0];
-                      return (
-                        <TableRow key={s.id}>
-                          <TableCell>{s.machine?.name ?? "-"}</TableCell>
-                          <TableCell className="text-right">
-                            {s.up ?? "-"}
-                          </TableCell>
-                          <TableCell>{mat0?.material?.name ?? "-"}</TableCell>
-                          <TableCell className="text-right">
-                            {mat0?.qtyReq ? String(mat0.qtyReq) : "-"}
-                          </TableCell>
-                          <TableCell>{mat0?.material?.uom ?? "-"}</TableCell>
-                          <TableCell className="text-xs font-medium text-blue-600">
-                            {fmtDuration(
-                              p.qtyPoPcs,
-                              s.up,
-                              s.machine?.stdOutputPerShift,
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                    {(editing ? stepDrafts : p.steps)
+                      .slice()
+                      .sort((a, b) => a.orderNo - b.orderNo)
+                      .map((item, idx) => {
+                        const isDraft = editing;
+                        // For draft, we find process/machine/material from React Query cache or props
+                        // For real step (item), we access relations directly
+                        
+                        // Normalized getters
+                        let machineName = "-";
+                        let matName = "-";
+                        let matUom = "-";
+                        let stdOutputPerShift: number | null | undefined = null;
+                        let startDateVal: Date | string | undefined | null = null;
+                        let customShifts: Array<{ shiftIndex: number; scheduledDate: Date | string }> | undefined = undefined;
+
+                        if (!isDraft) {
+                           const s = item as typeof p.steps[number];
+                           const mat0 = s.materials?.[0];
+                           machineName = s.machine?.name ?? "-";
+                           matName = mat0?.material?.name ?? "-";
+                           matUom = mat0?.material?.uom ?? "-";
+                           stdOutputPerShift = s.machine?.stdOutputPerShift;
+                           startDateVal = (s as any).startDate;
+                           // Extract custom shifts if available
+                           customShifts = (s as any).shifts;
+                        } else {
+                           const d = item as StepDraft;
+                           
+                           // We need machines and materials lists. 
+                           // I will assume machines and materials queries are available in scope (I will add them in next edit).
+                           const m = machines.data?.find(x => x.id === d.machineId);
+                           machineName = m?.name ?? "-";
+                           const mat = materials.data?.find(x => x.id === d.materialId);
+                           matName = mat?.name ?? "-";
+                           matUom = mat?.uom ?? "-";
+                           stdOutputPerShift = m?.stdOutputPerShift;
+                           startDateVal = d.startDate;
+                        }
+
+                        // Shared values
+                        const upVal = isDraft ? (item as StepDraft).up : (item as any).up;
+                        const qtyReqVal = isDraft ? (item as StepDraft).qtyReq : (item as any).materials?.[0]?.qtyReq;
+                        
+                        // Calculate duration shifts for display
+                        let durationShifts = 0;
+                        const qty = Number(qtyPoPcs) || 0;
+                        const upp = Number(upVal);
+                        if (upp > 0 && stdOutputPerShift && stdOutputPerShift > 0) {
+                           const actualQty = qty / upp;
+                           durationShifts = Math.ceil(actualQty / stdOutputPerShift);
+                        }
+
+                        return (
+                          <TableRow key={isDraft ? (item as StepDraft).key : (item as any).id}>
+                           
+                            <TableCell>
+                              {editing ? (
+                                <select
+                                  value={(item as StepDraft).machineId ?? ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value ? Number(e.target.value) : null;
+                                    setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, machineId: val } : x));
+                                  }}
+                                  className="border-input bg-background h-8 w-full rounded border px-2 text-xs"
+                                >
+                                  <option value="">(Optional)</option>
+                                  {(machines.data ?? []).map(m => (
+                                    <option key={m.id} value={m.id}>{m.name}</option>
+                                  ))}
+                                </select>
+                              ) : machineName}
+                            </TableCell>
+
+                            <TableCell className="text-right">
+                              {editing ? (
+                                <Input 
+                                  type="number" 
+                                  className="h-8 w-20 bg-background border-input text-right text-xs"
+                                  value={(item as StepDraft).up}
+                                  onChange={(e) => {
+                                    setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, up: e.target.value } : x));
+                                  }}
+                                />
+                              ) : (
+                                upVal ?? "-"
+                              )}
+                            </TableCell>
+                            
+                            <TableCell>
+                              {editing ? (
+                                <select
+                                  value={(item as StepDraft).materialId ?? ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value ? Number(e.target.value) : null;
+                                    setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, materialId: val } : x));
+                                  }}
+                                  className="border-input bg-background h-8 w-full rounded border px-2 text-xs"
+                                >
+                                  <option value="">(None)</option>
+                                  {(materials.data ?? []).map(m => (
+                                    <option key={m.id} value={m.id}>{m.name}</option>
+                                  ))}
+                                </select>
+                              ) : matName}
+                            </TableCell>
+
+                            <TableCell className="text-right">
+                              {editing ? (
+                                <Input 
+                                  type="number"
+                                  className="h-8 w-20 bg-background border-input text-right text-xs"
+                                  value={(item as StepDraft).qtyReq}
+                                  placeholder={!!(item as StepDraft).materialId ? "Req" : "-"}
+                                  disabled={!(item as StepDraft).materialId}
+                                  onChange={(e) => {
+                                    setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, qtyReq: e.target.value } : x));
+                                  }}
+                                />
+                              ) : (
+                                qtyReqVal ? String(qtyReqVal) : "-"
+                              )}
+                            </TableCell>
+
+                            <TableCell className="text-xs">{matUom}</TableCell>
+                            
+                            <TableCell className="text-xs font-medium text-blue-600">
+                              {fmtDuration(
+                                Number(qtyPoPcs) || 0,
+                                Number(upVal),
+                                stdOutputPerShift,
+                              )}
+                            </TableCell>
+
+                            <TableCell className="text-xs">
+                              {fmtSchedule(startDateVal, durationShifts, customShifts)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                   </TableBody>
                 </Table>
               </div>

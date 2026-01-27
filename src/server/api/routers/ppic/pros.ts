@@ -60,6 +60,7 @@ export const prosRouter = createTRPCRouter({
                   stdOutputPerShift: true,
                 },
               },
+              startDate: true, // add this
               materials: {
                 select: {
                   qtyReq: true,
@@ -100,6 +101,7 @@ export const prosRouter = createTRPCRouter({
                   }),
                 )
                 .default([]),
+              startDate: z.coerce.date().optional(), // add this
             }),
           )
           .min(1),
@@ -154,6 +156,7 @@ export const prosRouter = createTRPCRouter({
                 processId: s.processId,
                 up: s.up,
                 machineId: s.machineId ?? null,
+                startDate: s.startDate ?? (idx === 0 ? input.startDate : undefined), // simple default
                 materials: {
                   create: (s.materials ?? []).map((m) => ({
                     materialId: m.materialId,
@@ -165,6 +168,53 @@ export const prosRouter = createTRPCRouter({
           },
         });
 
+        // -------------------------------------------------------------
+        // AUTOMATIC SCHEDULING LOGIC (Simple Version)
+        // If the PRO has a startDate, we try to schedule the steps sequentially.
+        // Step 1 starts at PRO.startDate.
+        // Step 2 starts after Step 1 finishes (based on Qty / Output).
+        // For now, we just auto-fill 'startDate' if it wasn't provided in the input,
+        // staggering them by 1 day as a placeholder if we want.
+        // BUT the user said "otomatis yang ngebagi shift per mesin".
+        // Let's implement a quick update after creation to set startDate if not present.
+        
+        if (input.startDate) {
+           // We can't easily do it inside the 'create' data object because we need sequential calc.
+           // So we fetch the created steps, calculate dates, and update them.
+           const createdSteps = await tx.proStep.findMany({
+             where: { proId: created.id },
+             orderBy: { orderNo: "asc" },
+             include: { machine: true }
+           });
+           
+           let currentDate = new Date(input.startDate);
+           // round to shift 1 (08:00 or 06:00)? Let's keep time as is.
+           
+           for (const step of createdSteps) {
+             await tx.proStep.update({
+               where: { id: step.id },
+               data: { startDate: currentDate }
+             });
+             
+             // Calculate duration to advance cursor
+             // Shifts needed = ceil(qty / (up * std))
+             // std per shift?
+             const std = step.machine?.stdOutputPerShift || 1000; // fallback
+             const up = step.up || 1;
+             const qty = input.qtyPoPcs;
+             const shifts = Math.ceil(qty / (up * std));
+             
+             // 1 day = 3 shifts (approx).
+             // advance currentDate by shifts * 8 hours? or days?
+             // Simple logic: add (shifts / 3) days.
+             const daysToAdd = Math.max(0, shifts / 3);
+             
+             // Add milliseconds
+             currentDate = new Date(currentDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+           }
+        }
+        // -------------------------------------------------------------
+
         return created;
       });
     }),
@@ -172,7 +222,7 @@ export const prosRouter = createTRPCRouter({
   getById: ppicProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.pro.findUnique({
+      const pro = await ctx.db.pro.findUnique({
         where: { id: input.id },
         select: {
           id: true,
@@ -182,34 +232,52 @@ export const prosRouter = createTRPCRouter({
           startDate: true,
           status: true,
           createdAt: true,
+          updatedAt: true,
           steps: {
             orderBy: { orderNo: "asc" },
             select: {
               id: true,
               orderNo: true,
-              up: true,
               processId: true,
-              process: { select: { code: true, name: true } },
+              up: true,
               machineId: true,
+              startDate: true,
+              process: { select: { code: true, name: true } },
               machine: {
                 select: {
+                  id: true,
                   name: true,
-                  stdOutputPerHour: true,
                   stdOutputPerShift: true,
                 },
               },
               materials: {
                 select: {
-                  id: true,
-                  qtyReq: true,
                   materialId: true,
+                  qtyReq: true,
                   material: { select: { name: true, uom: true } },
+                },
+              },
+              shifts: {
+                orderBy: { shiftIndex: "asc" },
+                select: {
+                  id: true,
+                  shiftIndex: true,
+                  scheduledDate: true,
                 },
               },
             },
           },
         },
       });
+
+      if (!pro) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "PRO tidak ditemukan",
+        });
+      }
+
+      return pro;
     }),
   update: ppicProcedure
     .input(
@@ -228,6 +296,7 @@ export const prosRouter = createTRPCRouter({
               machineId: z.number().int().positive().nullable().optional(),
               materialId: z.number().int().positive().nullable().optional(),
               qtyReq: z.number().positive().optional(),
+              startDate: z.coerce.date().optional(), // add this
             }),
           )
           .min(1),
@@ -257,6 +326,7 @@ export const prosRouter = createTRPCRouter({
             processId: s.processId,
             up: s.up,
             machineId: s.machineId ?? null,
+            startDate: s.startDate,
           })),
         });
 
@@ -320,6 +390,44 @@ export const prosRouter = createTRPCRouter({
       });
     }),
 
+  rescheduleStep: ppicProcedure
+    .input(z.object({ stepId: z.number(), startDate: z.coerce.date() }))
+    .mutation(async ({ ctx, input }) => {
+      // Logic: Update startDate of specific step
+      return ctx.db.proStep.update({
+        where: { id: input.stepId },
+        data: { startDate: input.startDate },
+      });
+    }),
+
+  rescheduleShift: ppicProcedure
+    .input(
+      z.object({
+        stepId: z.number(),
+        shiftIndex: z.number().int().min(0),
+        scheduledDate: z.coerce.date(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Upsert: create if doesn't exist, update if exists
+      return ctx.db.proStepShift.upsert({
+        where: {
+          stepId_shiftIndex: {
+            stepId: input.stepId,
+            shiftIndex: input.shiftIndex,
+          },
+        },
+        create: {
+          stepId: input.stepId,
+          shiftIndex: input.shiftIndex,
+          scheduledDate: input.scheduledDate,
+        },
+        update: {
+          scheduledDate: input.scheduledDate,
+        },
+      });
+    }),
+
   getSchedule: ppicProcedure
     .input(
       z.object({
@@ -352,6 +460,15 @@ export const prosRouter = createTRPCRouter({
                 select: { id: true, name: true, stdOutputPerShift: true },
               },
               process: { select: { name: true, code: true } },
+              startDate: true, // add this
+              shifts: {
+                orderBy: { shiftIndex: "asc" },
+                select: {
+                  id: true,
+                  shiftIndex: true,
+                  scheduledDate: true,
+                },
+              },
             },
           },
         },

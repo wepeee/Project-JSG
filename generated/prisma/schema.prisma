@@ -131,13 +131,29 @@ model ProStep {
 
   up Int?
 
+  startDate       DateTime?
+  estimatedShifts Int?
+
   machineId Int?
   machine   Machine? @relation(fields: [machineId], references: [id])
 
   materials ProStepMaterial[]
+  shifts    ProStepShift[]
 
   @@unique([proId, orderNo])
   @@index([proId])
+}
+
+model ProStepShift {
+  id     Int     @id @default(autoincrement())
+  stepId Int
+  step   ProStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  shiftIndex    Int // 0-based: 0 = first shift, 1 = second shift, etc.
+  scheduledDate DateTime // The actual scheduled date/time for this shift instance
+
+  @@unique([stepId, shiftIndex])
+  @@index([stepId])
 }
 
 model ProStepMaterial {

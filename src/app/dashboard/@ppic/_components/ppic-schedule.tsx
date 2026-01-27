@@ -122,6 +122,8 @@ function shiftsNeededForStep(opts: {
 type SlotItem = {
   key: string; // composite draggable id
   proId: number;
+  stepId?: number; // Add this
+  shiftIndex?: number; // Add this for per-shift tracking
   proNumber: string;
   productName: string;
   status: string;
@@ -135,52 +137,81 @@ function buildShiftSlots(items: ScheduleItem[], range: { start: Date; end: Date 
   const map = new Map<string, SlotItem[]>();
 
   for (const pro of items) {
-    if (!pro.startDate) continue;
-
-    const start = new Date(pro.startDate);
-    let day = startOfDay(start);
-    let shift: ShiftNo = shiftFromDate(start);
-
-    // normalize to shift start time
-    // (we only need day+shift for mapping)
-
     const steps = (pro.steps ?? []).slice().sort((a, b) => a.orderNo - b.orderNo);
 
+    // Initial cursor based on PRO start
+    let cursorDate = pro.startDate ? new Date(pro.startDate) : null;
+    let cursorDay = cursorDate ? startOfDay(cursorDate) : null;
+    let cursorShift: ShiftNo = cursorDate ? shiftFromDate(cursorDate) : 1;
+
     for (const step of steps) {
-      const need = shiftsNeededForStep({
-        qtyPoPcs: pro.qtyPoPcs,
-        up: step.up ?? null,
-        stdOutputPerShift: step.machine?.stdOutputPerShift,
-      });
+       // Check if step has specific start
+       const stepStart = (step as any).startDate;
+       if (stepStart) {
+          const d = new Date(stepStart);
+          cursorDay = startOfDay(d);
+          cursorShift = shiftFromDate(d);
+       }
+       
+       if (!cursorDay) continue;
 
-      for (let i = 0; i < need; i++) {
-        const slotId = `${dateKey(day)}::${shift}`;
+       const need = shiftsNeededForStep({
+          qtyPoPcs: pro.qtyPoPcs,
+          up: step.up ?? null,
+          stdOutputPerShift: step.machine?.stdOutputPerShift,
+       });
 
-        if (day >= range.start && day <= range.end) {
-          const arr = map.get(slotId) ?? [];
-          arr.push({
-            key: `${pro.id}::${slotId}`,
-            proId: pro.id,
-            proNumber: pro.proNumber,
-            productName: pro.productName,
-            status: pro.status,
-            orderNo: step.orderNo,
-            processCode: step.process?.code ?? "??",
-            processName: step.process?.name ?? "(tanpa nama)",
-            machineName: step.machine?.name ?? null,
-          });
-          map.set(slotId, arr);
-        }
+       // Check if step has custom shift scheduling
+       const customShifts = (step as any).shifts ?? [];
+       const shiftMap = new Map<number, Date>(
+         customShifts.map((s: any) => [s.shiftIndex, new Date(s.scheduledDate)] as [number, Date])
+       );
 
-        // advance to next shift
-        if (shift < 3) {
-          shift = (shift + 1) as ShiftNo;
-        } else {
-          shift = 1;
-          day = new Date(day);
-          day.setDate(day.getDate() + 1);
-        }
-      }
+       for (let i = 0; i < need; i++) {
+          // Use custom shift date if available, otherwise use calculated cursor
+          let actualDay: Date;
+          let actualShift: ShiftNo;
+          
+          const customDate = shiftMap.get(i);
+          if (customDate) {
+             actualDay = startOfDay(customDate);
+             actualShift = shiftFromDate(customDate);
+          } else {
+             actualDay = cursorDay;
+             actualShift = cursorShift;
+          }
+
+          const slotId = `${dateKey(actualDay)}::${actualShift}`;
+
+          if (actualDay >= range.start && actualDay <= range.end) {
+             const arr = map.get(slotId) ?? [];
+             arr.push({
+                key: `${step.id}::${i}::${slotId}`, // stepId::shiftIndex::slotId
+                proId: pro.id,
+                stepId: step.id,
+                shiftIndex: i, // Add shift index
+                proNumber: pro.proNumber,
+                productName: pro.productName,
+                status: pro.status,
+                orderNo: step.orderNo,
+                processCode: step.process?.code ?? "??",
+                processName: step.process?.name ?? "(tanpa nama)",
+                machineName: step.machine?.name ?? null,
+             });
+             map.set(slotId, arr);
+          }
+
+          // Advance cursor for next iteration (if no custom date)
+          if (!shiftMap.has(i + 1)) {
+             if (cursorShift < 3) {
+                cursorShift = (cursorShift + 1) as ShiftNo;
+             } else {
+                cursorShift = 1;
+                cursorDay = new Date(cursorDay);
+                cursorDay.setDate(cursorDay.getDate() + 1);
+             }
+          }
+       }
     }
   }
 
@@ -189,6 +220,12 @@ function buildShiftSlots(items: ScheduleItem[], range: { start: Date; end: Date 
 
 export default function PPICSchedule({ onSelectPro }: Props) {
   const [tab, setTab] = React.useState<"shift" | "month">("shift");
+
+  // Machine data
+  const machines = api.machines.list.useQuery();
+
+  // View mode
+  const [viewMode, setViewMode] = React.useState<"shift" | "machine">("shift");
 
   // Month state
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
@@ -199,7 +236,20 @@ export default function PPICSchedule({ onSelectPro }: Props) {
   const utils = api.useUtils();
   const reschedule = api.pros.reschedule.useMutation({
     onSuccess: () => {
-      void utils.pros.getSchedule.invalidate();
+      // Invalidate all PRO queries for auto-refresh across all pages
+      void utils.pros.invalidate();
+    },
+  });
+
+  const rescheduleStep = api.pros.rescheduleStep.useMutation({
+    onSuccess: () => {
+      void utils.pros.invalidate();
+    },
+  });
+
+  const rescheduleShift = api.pros.rescheduleShift.useMutation({
+    onSuccess: () => {
+      void utils.pros.invalidate();
     },
   });
 
@@ -235,29 +285,99 @@ export default function PPICSchedule({ onSelectPro }: Props) {
     if (!over) return;
 
     const activeStr = String(active.id);
-    const proIdStr = activeStr.includes("::") ? activeStr.split("::")[0] : activeStr;
-    const proId = Number(proIdStr);
-    if (!Number.isFinite(proId)) return;
+    const partsActive = activeStr.split("::");
+    // ID format: 
+    // Shift view: "proId::dateKey::shift" (actually just proId originally, but I changed it?) 
+    // Wait, original shift logic used "proId::...". My recent update to buildMachineSlots uses "stepId::slotId::i".
+    
+    // Let's parse carefully.
+    // If viewMode === "machine", the ID is `stepId::slotId::i` -> `stepId::date::machineId::i`
+    // BUT `handleDragEnd` needs to know WHAT we are dragging.
+    
+    // In buildMachineSlots: key: `${step.id}::${slotId}::${i}` where slotId = `${dateKey(day)}::${step.machine.id}`
+    // So key = `stepId::date::machineId::i`
+    
+    if (viewMode === "machine") {
+       const [stepIdStr, dateStr, machineIdStr] = partsActive;
+       const stepId = Number(stepIdStr);
+       
+       const overStr = String(over.id); 
+       // over.id is slotId = `date::machineId`
+       const overParts = overStr.split("::");
+       const overDateStr = overParts[0];
+       // const overMachineId = overParts[1];
+       
+       const dOver = keyToDate(overDateStr ?? "");
+       if (!dOver || !Number.isFinite(stepId)) return;
+       
+       rescheduleStep.mutate({ stepId, startDate: dOver });
+       return;
+    }
 
-    const overStr = String(over.id);
-    const parts = overStr.split("::");
-    const dateStr = parts[0] ?? "";
-    const shiftStr = parts[1];
+    // SHIFT VIEW LOGIC - Per-Shift Granular Scheduling
+    if (viewMode === "shift") {
+       const activeStr = String(active.id);
+       
+       // New format from buildShiftSlots: stepId::shiftIndex::slotId
+       // slotId = dateKey::shift
+       // So total: stepId::shiftIndex::date::shift (4 parts)
+       
+       if (activeStr.includes("::")) {
+          const parts = activeStr.split("::");
+          
+          // Check if it's the new per-shift format (4+ parts)
+          if (parts.length >= 4) {
+             const stepId = Number(parts[0]);
+             const shiftIndex = Number(parts[1]);
+             
+             // Target slot: date::shift
+             const overStr = String(over.id);
+             const overParts = overStr.split("::");
+             const dateStr = overParts[0] ?? "";
+             const shiftStr = overParts[1];
+             
+             const d0 = keyToDate(dateStr);
+             if (d0 && Number.isFinite(stepId) && Number.isFinite(shiftIndex)) {
+                const shift: ShiftNo = (() => {
+                  const s = shiftStr ? Number(shiftStr) : 1;
+                  if (s === 2) return 2;
+                  if (s === 3) return 3;
+                  return 1;
+                })();
+                
+                const scheduledDate = applyShiftStart(d0, shift);
+                
+                // Use the new per-shift mutation
+                rescheduleShift.mutate({ stepId, shiftIndex, scheduledDate });
+                return;
+             }
+          }
+       }
 
-    const d0 = keyToDate(dateStr);
-    if (!d0) return;
+       // Fallback (shouldn't happen with new format, but kept for safety)
+       const proIdStr = activeStr.includes("::") ? activeStr.split("::")[0] : activeStr;
+       const proId = Number(proIdStr);
+       
+       const overStr = String(over.id);
+       const parts = overStr.split("::");
+       const dateStr = parts[0] ?? "";
+       const shiftStr = parts[1];
+       
+       const d0 = keyToDate(dateStr);
+       
+       if (d0 && Number.isFinite(proId)) {
+          const shift: ShiftNo = (() => {
+            const s = shiftStr ? Number(shiftStr) : 1;
+            if (s === 2) return 2;
+            if (s === 3) return 3;
+            return 1;
+          })();
 
-    const shift: ShiftNo = (() => {
-    const s = shiftStr ? Number(shiftStr) : 1;
-    if (s === 2) return 2;
-    if (s === 3) return 3;
-    return 1;
-  })();
-
-    const newStart = applyShiftStart(d0, shift);
-    reschedule.mutate({ id: proId, startDate: newStart });
+          const newStart = applyShiftStart(d0, shift);
+          reschedule.mutate({ id: proId, startDate: newStart });
+       }
+    }
   };
-
   const monthLabel = currentMonth.toLocaleDateString("id-ID", {
     month: "long",
     year: "numeric",
@@ -305,8 +425,72 @@ export default function PPICSchedule({ onSelectPro }: Props) {
   }, [monthSchedule.data]);
 
   // Shift grid data (week)
-  const slotMap = React.useMemo(() => {
+  const shiftSlotMap = React.useMemo(() => {
     return buildShiftSlots(weekSchedule.data ?? [], { start: weekStart, end: weekEnd });
+  }, [weekSchedule.data, weekStart, weekEnd]);
+
+  // Machine grid data (week)
+  const machineSlotMap = React.useMemo(() => {
+    const items = weekSchedule.data ?? [];
+    const range = { start: weekStart, end: weekEnd };
+    const map = new Map<string, SlotItem[]>();
+
+    for (const pro of items) {
+      // For machine view, we look at STEPS, not just the PRO start date.
+      const steps = (pro.steps ?? []).slice().sort((a, b) => a.orderNo - b.orderNo);
+      
+      for (const step of steps) {
+        // We need a machine to show in machine view
+        if (!step.machine?.id) continue;
+
+        // Determine start date for this STEP
+        // If step has startDate, use it. Else fallback to pro.startDate?
+        const stepStartVal = (step as any).startDate ?? pro.startDate; // Cast to any if types are stale
+        if (!stepStartVal) continue;
+
+        const start = new Date(stepStartVal);
+        let day = startOfDay(start);
+        let shift = shiftFromDate(start);
+
+        const need = shiftsNeededForStep({
+          qtyPoPcs: pro.qtyPoPcs,
+          up: step.up ?? null,
+          stdOutputPerShift: step.machine?.stdOutputPerShift,
+        });
+
+        for (let i = 0; i < need; i++) {
+          const slotId = `${dateKey(day)}::${step.machine.id}`;
+          
+          if (day >= range.start && day <= range.end) {
+             const arr = map.get(slotId) ?? [];
+             arr.push({
+                key: `${step.id}::${slotId}::${i}`, // Use STEP ID
+                proId: pro.id,
+                stepId: step.id, // Add stepId
+                proNumber: pro.proNumber,
+                productName: pro.productName,
+                status: pro.status,
+                orderNo: step.orderNo,
+                processCode: step.process?.code ?? "??",
+                processName: step.process?.name ?? "(tanpa nama)",
+                machineName: step.machine?.name ?? null,
+             });
+             map.set(slotId, arr);
+          }
+
+          // Advance logic
+          if (shift < 3) {
+             shift = (shift + 1) as ShiftNo;
+             // Date stays same
+          } else {
+             shift = 1;
+             day = new Date(day);
+             day.setDate(day.getDate() + 1);
+          }
+        }
+      }
+    }
+    return map;
   }, [weekSchedule.data, weekStart, weekEnd]);
 
   return (
@@ -314,15 +498,39 @@ export default function PPICSchedule({ onSelectPro }: Props) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold">PPIC Schedule</h2>
-          <p className="text-xs opacity-60">Shift: 06-11, 11-16, 16-21</p>
+          <p className="text-xs opacity-60">
+             {tab === "shift" 
+               ? (viewMode === "shift" ? "View per Shift (06-11, 11-16, 16-21)" : "View per Mesin (Schedule per PRO Step)") 
+               : "Kalender Bulanan"
+             }
+          </p>
         </div>
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as "shift" | "month")}>
-        <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="shift">Shift (Mingguan)</TabsTrigger>
-          <TabsTrigger value="month">Bulanan</TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between">
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger value="shift">Mingguan</TabsTrigger>
+            <TabsTrigger value="month">Bulanan</TabsTrigger>
+          </TabsList>
+          
+          {tab === "shift" && (
+            <div className="flex bg-muted rounded-md p-1">
+               <button 
+                 onClick={() => setViewMode("shift")}
+                 className={`px-3 py-1 text-xs rounded-sm ${viewMode === "shift" ? "bg-background shadow font-medium" : "opacity-70 hover:opacity-100"}`}
+               >
+                 Shift
+               </button>
+               <button 
+                 onClick={() => setViewMode("machine")}
+                 className={`px-3 py-1 text-xs rounded-sm ${viewMode === "machine" ? "bg-background shadow font-medium" : "opacity-70 hover:opacity-100"}`}
+               >
+                 Mesin
+               </button>
+            </div>
+          )}
+        </div>
 
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
           <TabsContent value="shift" className="space-y-3">
@@ -360,9 +568,11 @@ export default function PPICSchedule({ onSelectPro }: Props) {
             <div className="rounded-lg border bg-card overflow-x-auto">
               <div className="min-w-[1100px]">
                 <div className="grid grid-cols-[140px_repeat(7,minmax(0,1fr))]">
-                  <div className="border-b p-3 text-xs font-semibold opacity-60">SHIFT</div>
+                  <div className="border-b border-r p-3 text-xs font-semibold opacity-60">
+                    {viewMode === "shift" ? "SHIFT" : "MESIN"}
+                  </div>
                   {weekDays.map((d) => (
-                    <div key={dateKey(d)} className="border-b p-3 text-center">
+                    <div key={dateKey(d)} className="border-b border-r p-3 text-center">
                       <div className="text-xs font-semibold">
                         {d.toLocaleDateString("id-ID", { weekday: "short" })}
                       </div>
@@ -370,65 +580,108 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                     </div>
                   ))}
 
-                  {SHIFTS.map((s) => (
-                    <React.Fragment key={s.no}>
-                      <div className="border-b p-3">
-                        <div className="text-sm font-semibold">{s.label}</div>
-                        <div className="text-[11px] opacity-60">{s.time}</div>
-                      </div>
+                  {/* RENDER CONTENT BASED ON VIEW MODE */}
+                  {viewMode === "shift" ? (
+                    // SHIFT VIEW
+                    SHIFTS.map((s) => (
+                      <React.Fragment key={s.no}>
+                        <div className="border-b border-r p-3">
+                          <div className="text-sm font-semibold">{s.label}</div>
+                          <div className="text-[11px] opacity-60">{s.time}</div>
+                        </div>
 
-                      {weekDays.map((d) => {
-                        const slotId = `${dateKey(d)}::${s.no}`;
-                        const slotItems = slotMap.get(slotId) ?? [];
+                        {weekDays.map((d) => {
+                          const slotId = `${dateKey(d)}::${s.no}`;
+                          const slotItems = shiftSlotMap.get(slotId) ?? [];
 
-                        return (
-                          <DroppableCell
-                            key={slotId}
-                            id={slotId}
-                            className="border-b p-2 min-h-[140px]"
-                          >
-                            {weekSchedule.isLoading ? (
-                              <div className="text-[10px] opacity-40">Loading...</div>
-                            ) : slotItems.length === 0 ? (
-                              <div className="text-[10px] italic opacity-25">-</div>
-                            ) : (
-                              <div className="space-y-2">
-                                {slotItems.map((it) => (
-                                  <DraggableChip
-                                    key={it.key}
-                                    id={it.key}
-                                    onSelect={() => onSelectPro?.(it.proId)}
-                                  >
-                                    <div className="flex items-center justify-between gap-2">
-                                      <div className="truncate font-semibold text-blue-700">
-                                        {it.proNumber}
-                                      </div>
-                                      <Badge variant="secondary" className="h-5 text-[10px]">
-                                        {it.status}
-                                      </Badge>
-                                    </div>
-                                    <div className="truncate text-[11px] opacity-80">
-                                      {it.productName}
-                                    </div>
-                                    <div className="mt-1 flex flex-wrap gap-1">
-                                      <Badge variant="outline" className="h-4 text-[9px]">
-                                        {it.processCode} {it.processName}
-                                      </Badge>
-                                      {it.machineName ? (
-                                        <Badge variant="outline" className="h-4 text-[9px]">
-                                          M: {it.machineName}
-                                        </Badge>
-                                      ) : null}
-                                    </div>
-                                  </DraggableChip>
-                                ))}
-                              </div>
-                            )}
-                          </DroppableCell>
-                        );
-                      })}
-                    </React.Fragment>
-                  ))}
+                          return (
+                            <DroppableCell
+                              key={slotId}
+                              id={slotId}
+                              className="border-b border-r p-2 min-h-[140px]"
+                            >
+                               {/* Render items... reuse existing code */}
+                               {weekSchedule.isLoading ? (
+                                  <div className="text-[10px] opacity-40">Loading...</div>
+                               ) : slotItems.length === 0 ? (
+                                  <div className="text-[10px] italic opacity-25">-</div>
+                               ) : (
+                                  <div className="space-y-2">
+                                     {slotItems.map((it) => (
+                                       <DraggableChip key={it.key} id={it.key} onSelect={() => onSelectPro?.(it.proId)}>
+                                         <div className="flex items-center justify-between gap-2">
+                                            <div className="truncate font-semibold text-blue-700">{it.proNumber}</div>
+                                            <Badge variant="secondary" className="h-5 text-[10px]">{it.status}</Badge>
+                                         </div>
+                                         <div className="truncate text-[11px] opacity-80">{it.productName}</div>
+                                         <div className="mt-1 flex flex-wrap gap-1">
+                                            <Badge variant="outline" className="h-4 max-w-full text-[9px]">
+                                              <span className="truncate">{it.processCode} {it.processName}</span>
+                                            </Badge>
+                                            {it.machineName && (
+                                              <Badge variant="outline" className="h-4 max-w-full text-[9px]">
+                                                 <span className="truncate">M: {it.machineName}</span>
+                                              </Badge>
+                                            )}
+                                         </div>
+                                       </DraggableChip>
+                                     ))}
+                                  </div>
+                               )}
+                            </DroppableCell>
+                          );
+                        })}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    // MACHINE VIEW
+                    (machines.data ?? []).map((m) => {
+                       return (
+                         <React.Fragment key={m.id}>
+                            <div className="border-b border-r p-3">
+                               <div className="text-sm font-semibold truncate" title={m.name}>{m.name}</div>
+                            </div>
+                            
+                            {weekDays.map((d) => {
+                               const slotId = `${dateKey(d)}::${m.id}`;
+                               const slotItems = machineSlotMap.get(slotId) ?? [];
+                               
+                               return (
+                                 <DroppableCell
+                                   key={slotId}
+                                   id={slotId}
+                                   className="border-b border-r p-2 min-h-[100px]"
+                                 >
+                                    {weekSchedule.isLoading ? (
+                                       <div className="text-[10px] opacity-40">Loading...</div>
+                                    ) : slotItems.length === 0 ? (
+                                       <div className="text-[10px] italic opacity-25">-</div>
+                                    ) : (
+                                       <div className="space-y-2">
+                                          {slotItems.map((it) => (
+                                            <DraggableChip key={it.key} id={it.key} onSelect={() => onSelectPro?.(it.proId)}>
+                                               <div className="flex items-center justify-between gap-2">
+                                                  <div className="truncate font-semibold text-blue-700">{it.proNumber}</div>
+                                               </div>
+                                               <div className="truncate text-[11px] opacity-80" title={it.productName}>
+                                                  {it.productName}
+                                               </div>
+                                               <div className="mt-1">
+                                                   <Badge variant="outline" className="h-4 max-w-full text-[9px]">
+                                                      <span className="truncate">{it.processCode} {it.processName}</span>
+                                                   </Badge>
+                                               </div>
+                                            </DraggableChip>
+                                          ))}
+                                       </div>
+                                    )}
+                                 </DroppableCell>
+                               );
+                            })}
+                         </React.Fragment>
+                       );
+                    })
+                  )}
                 </div>
               </div>
             </div>
@@ -439,7 +692,8 @@ export default function PPICSchedule({ onSelectPro }: Props) {
           </TabsContent>
 
           <TabsContent value="month" className="space-y-3">
-            <div className="flex items-center gap-2">
+             {/* Month view content (unchanged) */}
+             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -522,8 +776,10 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                   <div className="truncate text-[11px] opacity-80">{item.productName}</div>
                                   <div className="mt-1 flex flex-wrap gap-1">
                                     {(item.steps ?? []).map((st) => (
-                                      <Badge key={st.id} variant="outline" className="h-4 text-[9px]">
-                                        {st.process?.code} {st.process?.name}
+                                      <Badge key={st.id} variant="outline" className="h-4 max-w-full text-[9px]">
+                                        <span className="truncate">
+                                          {st.process?.code} {st.process?.name}
+                                        </span>
                                       </Badge>
                                     ))}
                                   </div>
@@ -595,7 +851,7 @@ function DraggableChip({
         if (transform && (Math.abs(transform.x) > 4 || Math.abs(transform.y) > 4)) return;
         onSelect();
       }}
-      className="rounded border bg-background/50 p-2 text-[11px] cursor-grab active:cursor-grabbing hover:border-primary"
+      className="overflow-hidden rounded border bg-background/50 p-2 text-[11px] cursor-grab active:cursor-grabbing hover:border-primary"
     >
       {children}
     </div>
