@@ -65,30 +65,32 @@ function shiftFromDate(d: Date) {
 }
 
 function fmtSchedule(
-  d?: Date | string | null, 
+  d?: Date | string | null,
   durationShifts = 0,
-  customShifts?: Array<{ shiftIndex: number; scheduledDate: Date | string }>
+  customShifts?: Array<{ shiftIndex: number; scheduledDate: Date | string }>,
 ) {
-  // If we have custom per-shift scheduling, display those
+  // 1. Custom per-shift scheduling (display all specific shifts)
   if (customShifts && customShifts.length > 0) {
-    const sorted = customShifts.slice().sort((a, b) => a.shiftIndex - b.shiftIndex);
-    
+    const sorted = customShifts
+      .slice()
+      .sort((a, b) => a.shiftIndex - b.shiftIndex);
+
     return (
       <div className="flex flex-col gap-0.5">
         {sorted.map((shift, idx) => {
-          const dt = typeof shift.scheduledDate === "string" 
-            ? new Date(shift.scheduledDate) 
-            : shift.scheduledDate;
-          const dateStr = dt.toLocaleDateString("id-ID", { 
-            day: "2-digit", 
-            month: "short" 
+          const dt =
+            typeof shift.scheduledDate === "string"
+              ? new Date(shift.scheduledDate)
+              : shift.scheduledDate;
+          const dateStr = dt.toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "short",
           });
           const shiftNo = shiftFromDate(dt);
-          
+
           return (
             <div key={idx} className="text-[10px]">
-              <span className="font-medium">{dateStr}</span>
-              {" "}
+              <span className="font-medium">{dateStr}</span>{" "}
               <span className="text-blue-600 font-semibold">S{shiftNo}</span>
             </div>
           );
@@ -96,41 +98,51 @@ function fmtSchedule(
       </div>
     );
   }
-  
-  // Fallback to original logic
+
+  // 2. Fallback logic (auto-calculated duration)
   if (!d) return "-";
   const dt = typeof d === "string" ? new Date(d) : d;
-  const dateStr = dt.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+  
+  // Compact date: 28 Jan
+  const dateStr = dt.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+  });
+  
   const startShift = shiftFromDate(dt);
-  
-  let label = `Shift ${startShift}`;
-  
+  let label = `S${startShift}`; // Compact: S1
+
   // Calculate end range if duration > 1
   if (durationShifts > 1) {
-    const startAbs = (startShift - 1);
+    const startAbs = startShift - 1;
     const endAbs = startAbs + (durationShifts - 1);
-    
+
     const endShiftIndex = endAbs % 3;
     const endShift = endShiftIndex + 1;
-    
+
     const daysForward = Math.floor(endAbs / 3);
-    
+
     if (daysForward > 0) {
-       const endDate = new Date(dt);
-       endDate.setDate(endDate.getDate() + daysForward);
-       const endDateStr = endDate.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
-       label = `Shift ${startShift} → ${endDateStr} Shift ${endShift}`;
+      const endDate = new Date(dt);
+      endDate.setDate(endDate.getDate() + daysForward);
+      const endDateStr = endDate.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+      });
+      // Compact range crossing days: S1 → 30 Jan S3
+      label = `S${startShift}→${endDateStr} S${endShift}`;
     } else {
-       if (endShift !== startShift) {
-         label = `Shift ${startShift} - ${endShift}`;
-       }
+      if (endShift !== startShift) {
+        // Compact range mostly same day: S1-S3
+        label = `S${startShift}-S${endShift}`;
+      }
     }
   }
 
   return (
-    <div className="flex flex-col">
-      <span className="font-medium">{dateStr}</span>
-      <span className="text-xs text-blue-600 font-semibold">{label}</span>
+    <div className="text-[10px]">
+      <span className="font-medium">{dateStr}</span>{" "}
+      <span className="text-blue-600 font-semibold">{label}</span>
     </div>
   );
 }

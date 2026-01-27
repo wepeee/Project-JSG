@@ -295,7 +295,7 @@ export default function ProPlanner() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-16">No.</TableHead>
-                    <TableHead>Proses</TableHead>
+
                     <TableHead className="w-24">UP</TableHead>
                     <TableHead>Machine</TableHead>
                     <TableHead>Material</TableHead>
@@ -309,7 +309,7 @@ export default function ProPlanner() {
                   {steps.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={8}
+                        colSpan={7}
                         className="py-8 text-center text-sm opacity-70"
                       >
                         Belum ada step. Klik "+ Tambah Step".
@@ -322,16 +322,7 @@ export default function ProPlanner() {
                       return (
                         <TableRow key={s.key}>
                           <TableCell>{idx + 1}</TableCell>
-                          <TableCell className="font-medium">
-                            {headerProcess
-                              ? `${headerProcess.code} - ${headerProcess.name}`
-                              : "-"}
-                            {idx === 0 ? (
-                              <div className="mt-1 text-xs opacity-70">
-                                * proses header dipakai untuk semua step
-                              </div>
-                            ) : null}
-                          </TableCell>
+
                           <TableCell className="text-center">
                             {s.up || "-"}
                           </TableCell>
