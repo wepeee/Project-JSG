@@ -55,15 +55,38 @@ export default function ProPlanner() {
   const machines = api.machines.list.useQuery();
   const materials = api.materials.list.useQuery();
 
-  const createPro = api.pros.create.useMutation();
-
-  const loadingMaster =
-    processes.isLoading || machines.isLoading || materials.isLoading;
-
   // Header PRO
   const [productName, setProductName] = React.useState("");
   const [qtyPoPcs, setQtyPoPcs] = React.useState<string>("");
   const [startDate, setStartDate] = React.useState<string>("");
+
+  // Query untuk cek mesin yang sibuk di tanggal terpilih
+  const dateObj = React.useMemo(() => 
+    startDate ? new Date(`${startDate}T00:00:00`) : null
+  , [startDate]);
+
+  const busyMachinesQuery = api.pros.getSchedule.useQuery(
+    { start: dateObj!, end: dateObj! },
+    { enabled: !!dateObj }
+  );
+
+  const createPro = api.pros.create.useMutation();
+
+  const loadingMaster =
+    processes.isLoading ||
+    machines.isLoading ||
+    materials.isLoading ||
+    busyMachinesQuery.isFetching;
+
+  const busyMachineIds = React.useMemo(() => {
+    const ids = new Set<number>();
+    busyMachinesQuery.data?.forEach(pro => {
+      pro.steps?.forEach(step => {
+        if (step.machine?.id) ids.add(step.machine.id as any); // Type cast if needed
+      });
+    });
+    return ids;
+  }, [busyMachinesQuery.data]);
 
   // Steps
   const [steps, setSteps] = React.useState<StepDraft[]>([]);
@@ -392,9 +415,19 @@ export default function ProPlanner() {
                 <Input
                   type="number"
                   value={draft.up}
-                  onChange={(e) =>
-                    setDraft((d) => ({ ...d, up: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    const newUp = e.target.value;
+                    const upNum = Number(newUp);
+                    const poNum = Number(qtyPoPcs);
+                    
+                    // Auto hitung Qty Req jika UP dan PO ada
+                    let autoQty = draft.qtyReq;
+                    if (upNum > 0 && poNum > 0) {
+                      autoQty = String(Math.ceil(poNum / upNum));
+                    }
+                    
+                    setDraft((d) => ({ ...d, up: newUp, qtyReq: autoQty }));
+                  }}
                   placeholder="contoh: 4"
                 />
               </div>

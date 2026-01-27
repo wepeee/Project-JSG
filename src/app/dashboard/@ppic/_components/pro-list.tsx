@@ -29,11 +29,43 @@ function fmtDateTime(d?: Date | string | null) {
   return dt.toLocaleString("id-ID");
 }
 
-export default function ProList() {
+function fmtDuration(qty: number, up: number | null, stdPerShift?: number | null) {
+  if (!stdPerShift || stdPerShift <= 0) return "-";
+  
+  // Rumus: Total Qty / UP = Total Lembar pengerjaan mesin
+  const actualQty = up && up > 0 ? qty / up : qty;
+  
+  const totalShifts = Math.ceil(actualQty / stdPerShift);
+  const days = Math.floor(totalShifts / 3); // Asumsi 1 hari = 3 shift
+  const shifts = totalShifts % 3;
+
+  const parts = [];
+  if (days > 0) parts.push(`${days} Hari`);
+  if (shifts > 0) parts.push(`${shifts} Shift`);
+  
+  const formatted = parts.length > 0 ? parts.join(", ") : "0 Shift";
+  return days > 0 ? `${formatted} (Total ${totalShifts} S)` : formatted;
+}
+
+type Props = {
+  initialSelectedId?: number | null;
+  onClearJump?: () => void;
+};
+
+export default function ProList({ initialSelectedId, onClearJump }: Props) {
   const utils = api.useUtils();
 
   // ===== VIEW STATE =====
-  const [selectedId, setSelectedId] = React.useState<number | null>(null); // null => list view
+  const [selectedId, setSelectedId] = React.useState<number | null>(
+    initialSelectedId ?? null,
+  ); // null => list view
+
+  React.useEffect(() => {
+    if (initialSelectedId) {
+      setSelectedId(initialSelectedId);
+      onClearJump?.();
+    }
+  }, [initialSelectedId]);
 
   // ===== LIST STATE =====
   const [q, setQ] = React.useState("");
@@ -239,6 +271,7 @@ export default function ProList() {
                       <TableHead>Material</TableHead>
                       <TableHead className="w-24 text-right">Qty</TableHead>
                       <TableHead className="w-20">UoM</TableHead>
+                      <TableHead className="w-32">Estimasi</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -260,6 +293,9 @@ export default function ProList() {
                             {mat0?.qtyReq ? String(mat0.qtyReq) : "-"}
                           </TableCell>
                           <TableCell>{mat0?.material?.uom ?? "-"}</TableCell>
+                          <TableCell className="text-xs font-medium text-blue-600">
+                            {fmtDuration(p.qtyPoPcs, s.up, s.machine?.stdOutputPerShift)}
+                          </TableCell>
                         </TableRow>
                       );
                     })}
@@ -321,6 +357,7 @@ export default function ProList() {
                   <TableHead className="w-32 text-right">Qty PO</TableHead>
                   <TableHead className="w-28">Mulai</TableHead>
                   <TableHead className="w-28">Status</TableHead>
+                  <TableHead className="w-28 text-center">Estimasi Durasi</TableHead>
                   <TableHead className="w-24 text-right">Steps</TableHead>
                   <TableHead className="w-40 text-right">Aksi</TableHead>
                 </TableRow>
@@ -357,6 +394,18 @@ export default function ProList() {
                       </TableCell>
                       <TableCell>{fmtDate(p.startDate)}</TableCell>
                       <TableCell>{p.status}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="text-xs font-semibold text-blue-600">
+                          {p.steps?.[0]?.machine?.stdOutputPerShift
+                            ? fmtDuration(p.qtyPoPcs, p.steps[0].up, p.steps[0].machine.stdOutputPerShift)
+                            : "-"}
+                        </div>
+                        {p.steps.length > 1 && (
+                          <div className="text-[10px] opacity-50">
+                            (berdasarkan proses 1)
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         {p.steps?.length ?? 0}
                       </TableCell>

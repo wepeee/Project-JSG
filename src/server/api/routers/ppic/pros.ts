@@ -53,7 +53,7 @@ export const prosRouter = createTRPCRouter({
               orderNo: true,
               up: true,
               process: { select: { code: true, name: true } },
-              machine: { select: { name: true } },
+              machine: { select: { name: true, stdOutputPerHour: true, stdOutputPerShift: true } },
               materials: {
                 select: {
                   qtyReq: true,
@@ -185,7 +185,7 @@ export const prosRouter = createTRPCRouter({
               processId: true,
               process: { select: { code: true, name: true } },
               machineId: true,
-              machine: { select: { name: true } },
+              machine: { select: { name: true, stdOutputPerHour: true, stdOutputPerShift: true } },
               materials: {
                 select: {
                   id: true,
@@ -279,5 +279,49 @@ export const prosRouter = createTRPCRouter({
           select: { id: true, proNumber: true },
         });
       });
+    }),
+  reschedule: ppicProcedure
+    .input(z.object({ id: z.number(), startDate: z.coerce.date() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.pro.update({
+        where: { id: input.id },
+        data: { startDate: input.startDate },
+      });
+    }),
+
+  getSchedule: ppicProcedure
+    .input(
+      z.object({
+        start: z.coerce.date(),
+        end: z.coerce.date(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const items = await ctx.db.pro.findMany({
+        where: {
+          startDate: {
+            gte: input.start,
+            lte: input.end,
+          },
+        },
+        select: {
+          id: true,
+          proNumber: true,
+          productName: true,
+          qtyPoPcs: true,
+          startDate: true,
+          status: true,
+          steps: {
+            orderBy: { orderNo: "asc" },
+            select: {
+              id: true,
+              machine: { select: { id: true, name: true, stdOutputPerShift: true } },
+              process: { select: { name: true, code: true } },
+            },
+          },
+        },
+        orderBy: { startDate: "asc" },
+      });
+      return items;
     }),
 });

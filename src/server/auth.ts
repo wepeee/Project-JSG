@@ -8,7 +8,7 @@ import { Role } from "../../generated/prisma"; // sesuaikan kalau path kamu beda
 
 const loginSchema = z.object({
   username: z.string().min(1),
-  password: z.string().min(8),
+  password: z.string().min(1),
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -25,9 +25,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       async authorize(raw) {
         const parsed = loginSchema.safeParse(raw);
-        if (!parsed.success) return null;
+        if (!parsed.success) {
+          console.log("Auth Schema Error:", parsed.error);
+          return null;
+        }
 
         const { username, password } = parsed.data;
+        console.log("Attempting login for:", username);
 
         const user = await db.user.findUnique({
           where: { username },

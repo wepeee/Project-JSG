@@ -24,7 +24,7 @@ import { Input } from "~/components/ui/input";
 
 const formSchema = z.object({
   username: z.string().min(1, "Username wajib diisi"),
-  password: z.string().min(8, "Password minimal 8 karakter"),
+  password: z.string().min(1, "Password minimal 1 karakter"),
 });
 
 export default function LoginForm() {

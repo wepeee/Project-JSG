@@ -35,6 +35,9 @@ type NavKey =
 export default function PPICShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("overview");
   const [open, setOpen] = React.useState(false);
+  
+  // State untuk menyimpan ID PRO yang dipilih dari kalender
+  const [jumpToProId, setJumpToProId] = React.useState<number | null>(null);
 
   const title =
     active === "overview"
@@ -270,9 +273,17 @@ export default function PPICShell({ user }: Props) {
           ) : active === "shortages" ? (
             <MaterialShortage />
           ) : active === "schedule" ? (
-            <PPICSchedule />
+            <PPICSchedule 
+              onSelectPro={(id) => {
+                setJumpToProId(id);
+                setActive("prolist");
+              }} 
+            />
           ) : active === "prolist" ? (
-            <ProList />
+            <ProList 
+              initialSelectedId={jumpToProId} 
+              onClearJump={() => setJumpToProId(null)} 
+            />
           ) : active === "materials" ? (
             <MaterialManager />
           ) : active === "processes" ? (
