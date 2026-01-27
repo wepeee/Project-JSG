@@ -138,8 +138,8 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
       if (!s.processId)
         return setErr(`Order ${s.orderNo}: proses belum dipilih`);
       const upNum = Number(s.up);
-      if (!s.up.trim() || !Number.isFinite(upNum) || upNum <= 0) {
-        return setErr(`Order ${s.orderNo}: UP wajib > 0`);
+      if (!s.up.trim() || !Number.isFinite(upNum) || upNum < 0) {
+        return setErr(`Order ${s.orderNo}: UP wajib >= 0 (boleh 0)`);
       }
       if (s.materialId) {
         const qNum = Number(s.qtyReq);

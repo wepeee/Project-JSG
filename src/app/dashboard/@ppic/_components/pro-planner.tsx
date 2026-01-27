@@ -26,7 +26,6 @@ import {
 
 type StepDraft = {
   key: string;
-  processId: number | null;
   up: string;
   machineId: number | null;
   materialId: number | null;
@@ -42,7 +41,6 @@ function uid() {
 function newStep(): StepDraft {
   return {
     key: uid(),
-    processId: null,
     up: "",
     machineId: null,
     materialId: null,
@@ -57,17 +55,18 @@ export default function ProPlanner() {
 
   // Header PRO
   const [productName, setProductName] = React.useState("");
+  const [processId, setProcessId] = React.useState<number | null>(null); // pindah ke header
   const [qtyPoPcs, setQtyPoPcs] = React.useState<string>("");
   const [startDate, setStartDate] = React.useState<string>("");
 
-  // Query untuk cek mesin yang sibuk di tanggal terpilih
-  const dateObj = React.useMemo(() => 
-    startDate ? new Date(`${startDate}T00:00:00`) : null
-  , [startDate]);
+  const dateObj = React.useMemo(
+    () => (startDate ? new Date(`${startDate}T00:00:00`) : null),
+    [startDate],
+  );
 
   const busyMachinesQuery = api.pros.getSchedule.useQuery(
     { start: dateObj!, end: dateObj! },
-    { enabled: !!dateObj }
+    { enabled: !!dateObj },
   );
 
   const createPro = api.pros.create.useMutation();
@@ -77,16 +76,6 @@ export default function ProPlanner() {
     machines.isLoading ||
     materials.isLoading ||
     busyMachinesQuery.isFetching;
-
-  const busyMachineIds = React.useMemo(() => {
-    const ids = new Set<number>();
-    busyMachinesQuery.data?.forEach(pro => {
-      pro.steps?.forEach(step => {
-        if (step.machine?.id) ids.add(step.machine.id as any); // Type cast if needed
-      });
-    });
-    return ids;
-  }, [busyMachinesQuery.data]);
 
   // Steps
   const [steps, setSteps] = React.useState<StepDraft[]>([]);
@@ -110,6 +99,7 @@ export default function ProPlanner() {
 
   const openAdd = () => {
     setErr(null);
+    if (!processId) return setErr("Proses wajib dipilih di header");
     setEditKey(null);
     setDraft(newStep());
     setOpen(true);
@@ -124,12 +114,11 @@ export default function ProPlanner() {
 
   const saveDraft = () => {
     setErr(null);
-
-    if (!draft.processId) return setErr("Proses wajib dipilih");
+    if (!processId) return setErr("Proses wajib dipilih di header");
 
     const upNum = Number(draft.up);
-    if (!draft.up.trim() || !Number.isFinite(upNum) || upNum <= 0) {
-      return setErr("UP wajib > 0");
+    if (!draft.up.trim() || !Number.isFinite(upNum) || upNum < 0) {
+      return setErr("UP wajib >= 0 (boleh 0)");
     }
 
     if (draft.materialId) {
@@ -172,19 +161,21 @@ export default function ProPlanner() {
     const prod = productName.trim();
     if (!prod) return setErr("Produk wajib diisi");
 
+    if (!processId) return setErr("Proses wajib dipilih");
+
     const qty = Number(qtyPoPcs);
     if (!qtyPoPcs.trim() || !Number.isFinite(qty) || qty <= 0) {
       return setErr("Jumlah PO (pcs) wajib > 0");
     }
 
-    if (steps.length === 0) return setErr("Minimal 1 proses harus ditambahkan");
+    if (steps.length === 0) return setErr("Minimal 1 step harus ditambahkan");
 
     const payload = {
       productName: prod,
       qtyPoPcs: qty,
       startDate: startDate ? new Date(`${startDate}T00:00:00`) : undefined,
       steps: steps.map((s) => ({
-        processId: s.processId!,
+        processId: processId, // semua step pakai proses header
         up: Number(s.up),
         machineId: s.machineId ?? null,
         materials: s.materialId
@@ -197,6 +188,7 @@ export default function ProPlanner() {
       const created = await createPro.mutateAsync(payload);
       setOk(`PRO dibuat: ${created.proNumber}`);
       setProductName("");
+      setProcessId(null);
       setQtyPoPcs("");
       setStartDate("");
       setSteps([]);
@@ -208,6 +200,8 @@ export default function ProPlanner() {
   const control =
     "border-input bg-background h-10 w-full rounded-md border px-3 text-sm";
 
+  const headerProcess = getProcess(processId);
+
   return (
     <div className="space-y-6">
       <Card>
@@ -217,8 +211,8 @@ export default function ProPlanner() {
 
         <CardContent className="space-y-4">
           {/* Header PRO */}
-          <div className="grid gap-3 lg:grid-cols-3">
-            <div className="space-y-2">
+          <div className="grid gap-3 lg:grid-cols-4">
+            <div className="space-y-2 lg:col-span-2">
               <div className="text-sm font-medium">Produk</div>
               <Input
                 value={productName}
@@ -226,6 +220,25 @@ export default function ProPlanner() {
                 placeholder="Nama produk"
                 autoComplete="off"
               />
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Proses (Prefix PRO)</div>
+              <select
+                value={processId ?? ""}
+                onChange={(e) =>
+                  setProcessId(e.target.value ? Number(e.target.value) : null)
+                }
+                className={control}
+                disabled={loadingMaster}
+              >
+                <option value="">Pilih proses</option>
+                {(processes.data ?? []).map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.code} - {p.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
@@ -238,7 +251,7 @@ export default function ProPlanner() {
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 lg:col-span-2">
               <div className="text-sm font-medium">Tanggal Mulai</div>
               <Input
                 type="date"
@@ -258,7 +271,7 @@ export default function ProPlanner() {
               onClick={openAdd}
               disabled={loadingMaster}
             >
-              + Tambah Proses
+              + Tambah Step
             </Button>
 
             <Button
@@ -270,11 +283,12 @@ export default function ProPlanner() {
             </Button>
 
             <div className="text-xs opacity-70 sm:ml-auto">
-              No. PRO: (kode proses pertama)(bulan)(tahun)(increment)
+              No. PRO prefix:{" "}
+              {headerProcess ? `${headerProcess.code}(bulan)(tahun)` : "-"}
             </div>
           </div>
 
-          {/* List table (readable) */}
+          {/* Steps table */}
           <div className="overflow-x-auto rounded-md border">
             <div className="min-w-[860px]">
               <Table>
@@ -298,22 +312,23 @@ export default function ProPlanner() {
                         colSpan={8}
                         className="py-8 text-center text-sm opacity-70"
                       >
-                        Belum ada proses. Klik “+ Tambah Proses”.
+                        Belum ada step. Klik "+ Tambah Step".
                       </TableCell>
                     </TableRow>
                   ) : (
                     steps.map((s, idx) => {
-                      const p = getProcess(s.processId);
                       const m = getMachine(s.machineId);
                       const mat = getMaterial(s.materialId);
                       return (
                         <TableRow key={s.key}>
                           <TableCell>{idx + 1}</TableCell>
                           <TableCell className="font-medium">
-                            {p ? `${p.code} - ${p.name}` : "-"}
+                            {headerProcess
+                              ? `${headerProcess.code} - ${headerProcess.name}`
+                              : "-"}
                             {idx === 0 ? (
                               <div className="mt-1 text-xs opacity-70">
-                                * proses pertama menentukan prefix
+                                * proses header dipakai untuk semua step
                               </div>
                             ) : null}
                           </TableCell>
@@ -334,7 +349,7 @@ export default function ProPlanner() {
                                 onClick={() => moveStep(s.key, "up")}
                                 disabled={idx === 0}
                               >
-                                ↑
+                                Up
                               </Button>
                               <Button
                                 variant="outline"
@@ -342,7 +357,7 @@ export default function ProPlanner() {
                                 onClick={() => moveStep(s.key, "down")}
                                 disabled={idx === steps.length - 1}
                               >
-                                ↓
+                                Down
                               </Button>
                               <Button
                                 variant="outline"
@@ -374,42 +389,21 @@ export default function ProPlanner() {
         </CardContent>
       </Card>
 
-      {/* Dialog form step */}
+      {/* Dialog form step (tanpa pilih proses) */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>
-              {editKey ? "Edit Proses" : "Tambah Proses"}
-            </DialogTitle>
+            <DialogTitle>{editKey ? "Edit Step" : "Tambah Step"}</DialogTitle>
             <DialogDescription>
-              Isi proses, UP, machine, dan material (optional).
+              Proses diambil dari header:{" "}
+              {headerProcess
+                ? `${headerProcess.code} - ${headerProcess.name}`
+                : "-"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <div className="text-sm font-medium">Proses</div>
-                <select
-                  value={draft.processId ?? ""}
-                  onChange={(e) =>
-                    setDraft((d) => ({
-                      ...d,
-                      processId: e.target.value ? Number(e.target.value) : null,
-                    }))
-                  }
-                  className={control}
-                  disabled={loadingMaster}
-                >
-                  <option value="">Pilih proses</option>
-                  {(processes.data ?? []).map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.code} - {p.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="space-y-2">
                 <div className="text-sm font-medium">UP</div>
                 <Input
@@ -419,40 +413,39 @@ export default function ProPlanner() {
                     const newUp = e.target.value;
                     const upNum = Number(newUp);
                     const poNum = Number(qtyPoPcs);
-                    
-                    // Auto hitung Qty Req jika UP dan PO ada
+
                     let autoQty = draft.qtyReq;
                     if (upNum > 0 && poNum > 0) {
                       autoQty = String(Math.ceil(poNum / upNum));
                     }
-                    
+
                     setDraft((d) => ({ ...d, up: newUp, qtyReq: autoQty }));
                   }}
                   placeholder="contoh: 4"
                 />
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <div className="text-sm font-medium">Machine (optional)</div>
-              <select
-                value={draft.machineId ?? ""}
-                onChange={(e) =>
-                  setDraft((d) => ({
-                    ...d,
-                    machineId: e.target.value ? Number(e.target.value) : null,
-                  }))
-                }
-                className={control}
-                disabled={loadingMaster}
-              >
-                <option value="">(optional)</option>
-                {(machines.data ?? []).map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Machine (optional)</div>
+                <select
+                  value={draft.machineId ?? ""}
+                  onChange={(e) =>
+                    setDraft((d) => ({
+                      ...d,
+                      machineId: e.target.value ? Number(e.target.value) : null,
+                    }))
+                  }
+                  className={control}
+                  disabled={loadingMaster}
+                >
+                  <option value="">(optional)</option>
+                  {(machines.data ?? []).map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <Separator />

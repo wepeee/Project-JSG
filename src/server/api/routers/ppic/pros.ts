@@ -53,7 +53,13 @@ export const prosRouter = createTRPCRouter({
               orderNo: true,
               up: true,
               process: { select: { code: true, name: true } },
-              machine: { select: { name: true, stdOutputPerHour: true, stdOutputPerShift: true } },
+              machine: {
+                select: {
+                  name: true,
+                  stdOutputPerHour: true,
+                  stdOutputPerShift: true,
+                },
+              },
               materials: {
                 select: {
                   qtyReq: true,
@@ -84,7 +90,7 @@ export const prosRouter = createTRPCRouter({
           .array(
             z.object({
               processId: z.number().int().positive(),
-              up: z.number().int().positive().optional(), // ✅ pindah ke step
+              up: z.number().int().min(0).optional(), // ✅ pindah ke step
               machineId: z.number().int().positive().nullable().optional(),
               materials: z
                 .array(
@@ -185,7 +191,13 @@ export const prosRouter = createTRPCRouter({
               processId: true,
               process: { select: { code: true, name: true } },
               machineId: true,
-              machine: { select: { name: true, stdOutputPerHour: true, stdOutputPerShift: true } },
+              machine: {
+                select: {
+                  name: true,
+                  stdOutputPerHour: true,
+                  stdOutputPerShift: true,
+                },
+              },
               materials: {
                 select: {
                   id: true,
@@ -212,7 +224,7 @@ export const prosRouter = createTRPCRouter({
             z.object({
               orderNo: z.number().int().positive(),
               processId: z.number().int().positive(),
-              up: z.number().int().positive(),
+              up: z.number().int().min(0),
               machineId: z.number().int().positive().nullable().optional(),
               materialId: z.number().int().positive().nullable().optional(),
               qtyReq: z.number().positive().optional(),
@@ -280,6 +292,25 @@ export const prosRouter = createTRPCRouter({
         });
       });
     }),
+
+  delete: ppicProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      const exists = await ctx.db.pro.findUnique({
+        where: { id: input.id },
+        select: { id: true },
+      });
+      if (!exists) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "PRO tidak ditemukan",
+        });
+      }
+
+      await ctx.db.pro.delete({ where: { id: input.id } });
+      return { ok: true };
+    }),
+
   reschedule: ppicProcedure
     .input(z.object({ id: z.number(), startDate: z.coerce.date() }))
     .mutation(async ({ ctx, input }) => {
@@ -315,7 +346,11 @@ export const prosRouter = createTRPCRouter({
             orderBy: { orderNo: "asc" },
             select: {
               id: true,
-              machine: { select: { id: true, name: true, stdOutputPerShift: true } },
+              orderNo: true,
+              up: true,
+              machine: {
+                select: { id: true, name: true, stdOutputPerShift: true },
+              },
               process: { select: { name: true, code: true } },
             },
           },

@@ -11,7 +11,7 @@ async function main() {
   await db.user.upsert({
     where: { username },
     update: {
-      passwordHash, // <-- ini yang bikin login kamu sekarang bisa
+      passwordHash,
       role: "SUPERADMIN",
     },
     create: {
@@ -41,31 +41,181 @@ async function main() {
 
   // Machines Seed Data
   const machines = [
-    { name: "GOWEI PAPER CUTTER MACHINE", stdOutputPerHour: 2500, stdOutputPerShift: 17000, uom: "sheet", remark: "sisir dan bagi 2" },
-    { name: "GOWEI PAPER CUTTER MACHINE FINISHING", stdOutputPerHour: 2500, stdOutputPerShift: 17000, uom: "sheet", remark: "sisir dan bagi 2" },
-    { name: "SPEEDMASTER SX-74 FRONT", stdOutputPerHour: 6000, stdOutputPerShift: 40800, uom: "sheet", remark: null },
-    { name: "SPEEDMASTER SX-74 BACK", stdOutputPerHour: 6000, stdOutputPerShift: 40800, uom: "sheet", remark: null },
-    { name: "SPEEDMASTER SX-74 OPV FRONT", stdOutputPerHour: 6000, stdOutputPerShift: 40800, uom: "sheet", remark: null },
-    { name: "SPEEDMASTER SX-74 OPV BACK", stdOutputPerHour: 6000, stdOutputPerShift: 40800, uom: "sheet", remark: null },
-    { name: "SF 720 FRONT", stdOutputPerHour: 429, stdOutputPerShift: 2914, uom: "sheet", remark: null },
-    { name: "SF 720 BACK", stdOutputPerHour: 429, stdOutputPerShift: 2914, uom: "sheet", remark: null },
-    { name: "INNOVATIVE DTS 1600 - LAMINASI DINGIN", stdOutputPerHour: 457, stdOutputPerShift: 3109, uom: "sheet", remark: null },
-    { name: "JINBAO UV SPOT 1", stdOutputPerHour: 193, stdOutputPerShift: 1311, uom: "sheet", remark: null },
-    { name: "JINBAO UV SPOT 2", stdOutputPerHour: 193, stdOutputPerShift: 1311, uom: "sheet", remark: null },
-    { name: "TMYK 750 DIE CUT", stdOutputPerHour: 200, stdOutputPerShift: 1360, uom: "sheet", remark: null },
-    { name: "TMYK 750 HOTSTAMPING", stdOutputPerHour: 200, stdOutputPerShift: 1360, uom: "sheet", remark: null },
-    { name: "TMYK 750 EMBOSS", stdOutputPerHour: 200, stdOutputPerShift: 1360, uom: "sheet", remark: null },
-    { name: "MK-EASY MATRIX", stdOutputPerHour: 6000, stdOutputPerShift: 40800, uom: "sheet", remark: null },
-    { name: "MK-EASY MATRIX-EMBS", stdOutputPerHour: 6000, stdOutputPerShift: 40800, uom: "sheet", remark: null },
-    { name: "MANUAL BUBUT", stdOutputPerHour: 2000, stdOutputPerShift: 13600, uom: "sheet", remark: null },
-    { name: "MANUAL SORTIR PACKING", stdOutputPerHour: 900, stdOutputPerShift: 6120, uom: "pcs", remark: null },
-    { name: "MK-DIANA GO", stdOutputPerHour: 3600, stdOutputPerShift: 24480, uom: "meter", remark: "tergantung panjang produk dan gap per produk" },
-    { name: "MANUAL GLUEING ASSEMBLING", stdOutputPerHour: 143, stdOutputPerShift: 971, uom: "pcs", remark: "produk holder hardbox gold serum (proses paling lama)" },
-    { name: "SUPRASETTER", stdOutputPerHour: 4, stdOutputPerShift: 27, uom: "sheet", remark: null },
-    { name: "GRAPHTEC CE-6000 120", stdOutputPerHour: 40, stdOutputPerShift: 272, uom: "sheet", remark: "kisscut" },
-    { name: "VERSAFIRE", stdOutputPerHour: 200, stdOutputPerShift: 1360, uom: "sheet", remark: "ivory" },
-    { name: "JWEI", stdOutputPerHour: 6000, stdOutputPerShift: 40800, uom: "cm", remark: "diecut" },
-    { name: "MANUAL SORTIR ASSEMBLING", stdOutputPerHour: 114, stdOutputPerShift: 777, uom: "pcs", remark: "produk sunscreen spray (bottom lock)" },
+    {
+      name: "GOWEI PAPER CUTTER MACHINE",
+      stdOutputPerHour: 2500,
+      stdOutputPerShift: 17000,
+      uom: "sheet",
+      remark: "sisir dan bagi 2",
+    },
+    {
+      name: "GOWEI PAPER CUTTER MACHINE FINISHING",
+      stdOutputPerHour: 2500,
+      stdOutputPerShift: 17000,
+      uom: "sheet",
+      remark: "sisir dan bagi 2",
+    },
+    {
+      name: "SPEEDMASTER SX-74 FRONT",
+      stdOutputPerHour: 6000,
+      stdOutputPerShift: 40800,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "SPEEDMASTER SX-74 BACK",
+      stdOutputPerHour: 6000,
+      stdOutputPerShift: 40800,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "SPEEDMASTER SX-74 OPV FRONT",
+      stdOutputPerHour: 6000,
+      stdOutputPerShift: 40800,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "SPEEDMASTER SX-74 OPV BACK",
+      stdOutputPerHour: 6000,
+      stdOutputPerShift: 40800,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "SF 720 FRONT",
+      stdOutputPerHour: 429,
+      stdOutputPerShift: 2914,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "SF 720 BACK",
+      stdOutputPerHour: 429,
+      stdOutputPerShift: 2914,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "INNOVATIVE DTS 1600 - LAMINASI DINGIN",
+      stdOutputPerHour: 457,
+      stdOutputPerShift: 3109,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "JINBAO UV SPOT 1",
+      stdOutputPerHour: 193,
+      stdOutputPerShift: 1311,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "JINBAO UV SPOT 2",
+      stdOutputPerHour: 193,
+      stdOutputPerShift: 1311,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "TMYK 750 DIE CUT",
+      stdOutputPerHour: 200,
+      stdOutputPerShift: 1360,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "TMYK 750 HOTSTAMPING",
+      stdOutputPerHour: 200,
+      stdOutputPerShift: 1360,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "TMYK 750 EMBOSS",
+      stdOutputPerHour: 200,
+      stdOutputPerShift: 1360,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "MK-EASY MATRIX",
+      stdOutputPerHour: 6000,
+      stdOutputPerShift: 40800,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "MK-EASY MATRIX-EMBS",
+      stdOutputPerHour: 6000,
+      stdOutputPerShift: 40800,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "MANUAL BUBUT",
+      stdOutputPerHour: 2000,
+      stdOutputPerShift: 13600,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "MANUAL SORTIR PACKING",
+      stdOutputPerHour: 900,
+      stdOutputPerShift: 6120,
+      uom: "pcs",
+      remark: null,
+    },
+    {
+      name: "MK-DIANA GO",
+      stdOutputPerHour: 3600,
+      stdOutputPerShift: 24480,
+      uom: "meter",
+      remark: "tergantung panjang produk dan gap per produk",
+    },
+    {
+      name: "MANUAL GLUEING ASSEMBLING",
+      stdOutputPerHour: 143,
+      stdOutputPerShift: 971,
+      uom: "pcs",
+      remark: "produk holder hardbox gold serum (proses paling lama)",
+    },
+    {
+      name: "SUPRASETTER",
+      stdOutputPerHour: 4,
+      stdOutputPerShift: 27,
+      uom: "sheet",
+      remark: null,
+    },
+    {
+      name: "GRAPHTEC CE-6000 120",
+      stdOutputPerHour: 40,
+      stdOutputPerShift: 272,
+      uom: "sheet",
+      remark: "kisscut",
+    },
+    {
+      name: "VERSAFIRE",
+      stdOutputPerHour: 200,
+      stdOutputPerShift: 1360,
+      uom: "sheet",
+      remark: "ivory",
+    },
+    {
+      name: "JWEI",
+      stdOutputPerHour: 6000,
+      stdOutputPerShift: 40800,
+      uom: "cm",
+      remark: "diecut",
+    },
+    {
+      name: "MANUAL SORTIR ASSEMBLING",
+      stdOutputPerHour: 114,
+      stdOutputPerShift: 777,
+      uom: "pcs",
+      remark: "produk sunscreen spray (bottom lock)",
+    },
   ];
 
   for (const m of machines) {
@@ -99,7 +249,10 @@ async function main() {
     { name: "TINTA TC 0001 MEDIUM", uom: "kg" },
     { name: "TINTA TC 1705 DEEP RED", uom: "kg" },
     { name: "TINTA IB MS GLOW FLAP LIGHT GREEN KOSMETIKA", uom: "kg" },
-    { name: "TINTA OFFSET - IB MS GLOW DSR TULISAN TREATMENT LIGHT GREEN", uom: "kg" },
+    {
+      name: "TINTA OFFSET - IB MS GLOW DSR TULISAN TREATMENT LIGHT GREEN",
+      uom: "kg",
+    },
     { name: "TINTA TC 1705 DEEP RED ", uom: "kg" },
     { name: "TINTA OFFSET - IB TC 4202 C LIGHT GREEN", uom: "kg" },
     { name: "TINTA CEMATO - IB BEEGANIC PINK", uom: "kg" },
@@ -149,11 +302,20 @@ async function main() {
     { name: "KERTAS LINTEC PAPER A3+ ( UK. 325X485 )", uom: "sheet" },
     { name: "KERTAS BRITE PAPER A3+ 120GSM (UK. 32.5 X 48.5 )", uom: "sheet" },
     { name: "OPP THERMAL DOFF 18 MIC UK. 52X3000 (28.08 KG)", uom: "roll" },
-    { name: "OPP THERMAL GLOSSY 18 MIC - UK. 52 X 3000 (28,08 KG)", uom: "roll" },
-    { name: "OPP THERMAL GLOSSY 18 MIC - UK. 32 X 2000 (11,52 KG)", uom: "roll" },
+    {
+      name: "OPP THERMAL GLOSSY 18 MIC - UK. 52 X 3000 (28,08 KG)",
+      uom: "roll",
+    },
+    {
+      name: "OPP THERMAL GLOSSY 18 MIC - UK. 32 X 2000 (11,52 KG)",
+      uom: "roll",
+    },
     { name: "OPP THERMAL GLOSSY 18 MIC UK. 580X3000 (28.81 KG)", uom: "roll" },
     { name: "OPP THERMAL DOFF 18 MIC - UK. 32 X 3000 (17,28 KG)", uom: "roll" },
-    { name: "OPP THERMAL GLOSSY 18 MIC - UK. 32 X 3000 (17,28 KG)", uom: "roll" },
+    {
+      name: "OPP THERMAL GLOSSY 18 MIC - UK. 32 X 3000 (17,28 KG)",
+      uom: "roll",
+    },
     { name: "FOIL EMAS FOR HOTPRINT", uom: "roll" },
     { name: "KERTAS IVORY 250GSM UK. 790 X 1090", uom: "sheet" },
     { name: "WASH UP CLOTH", uom: "pcs" },
@@ -240,7 +402,10 @@ async function main() {
     { name: "SAPHIRA SPRAY CP MEDIUM", uom: "kg" },
     { name: "SAPHIRA BLANKET CONDITIONER", uom: "kg" },
     { name: "SAPHIRA ROLLER PASTE 700ML", uom: "pcs" },
-    { name: "CENTRALON ORTECH 300 50X9X3810MM 75 SH POBC265 GREEN", uom: "pcs" },
+    {
+      name: "CENTRALON ORTECH 300 50X9X3810MM 75 SH POBC265 GREEN",
+      uom: "pcs",
+    },
     { name: "SAPHIRA DUMP CLEAN COMBI", uom: "kg" },
     { name: "SAPHIRA CHROME CONDITIONER", uom: "kg" },
     { name: "SAPHIRA PLATE CLEANER", uom: "kg" },
@@ -258,9 +423,12 @@ async function main() {
     { name: "CENTOPLEX GLP - 500", uom: "kg" },
     { name: "BOX COKELAT SINGLEWALL UKURAN 40CM x 26CM x 24CM", uom: "pcs" },
     { name: "FOIL HOTPRINT GREEN ACNE ZONE", uom: "roll" },
-    { name: "STRETCH FILM UK. 500 MM X 12 MIC X 300 M (WRAPPING)", uom: "roll" },
+    {
+      name: "STRETCH FILM UK. 500 MM X 12 MIC X 300 M (WRAPPING)",
+      uom: "roll",
+    },
     { name: "PLASTIK LDPE 30X45 ANGORA FOR POT CREAM", uom: "kg" },
-    { name: "STICKER BONTAX HVS CAMEL 70 X 108", uom: "sheet" }
+    { name: "STICKER BONTAX HVS CAMEL 70 X 108", uom: "sheet" },
   ];
 
   // Material Seed Data (existing code...)
@@ -289,8 +457,8 @@ async function main() {
 
   for (const proc of processes) {
     await db.process.upsert({
-      where: { name: proc.name },
-      update: { code: proc.code },
+      where: { code: proc.code },
+      update: { name: proc.name },
       create: { code: proc.code, name: proc.name },
     });
   }
@@ -300,7 +468,15 @@ async function main() {
     select: { username: true, role: true, passwordHash: true },
   });
 
-  console.log("Seed OK:", u?.username, u?.role, "Machines:", machines.length, "Materials:", materials.length);
+  console.log(
+    "Seed OK:",
+    u?.username,
+    u?.role,
+    "Machines:",
+    machines.length,
+    "Materials:",
+    materials.length,
+  );
 }
 
 main()
