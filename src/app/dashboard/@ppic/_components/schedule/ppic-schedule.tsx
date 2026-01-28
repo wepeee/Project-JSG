@@ -17,6 +17,12 @@ import { api, type RouterOutputs } from "~/trpc/react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 
 type Props = {
   onSelectPro?: (id: number) => void;
@@ -122,8 +128,8 @@ function shiftsNeededForStep(opts: {
 type SlotItem = {
   key: string; // composite draggable id
   proId: number;
-  stepId?: number; // Add this
-  shiftIndex?: number; // Add this for per-shift tracking
+  stepId?: number; 
+  shiftIndex?: number; 
   proNumber: string;
   productName: string;
   status: string;
@@ -131,7 +137,100 @@ type SlotItem = {
   processCode: string;
   processName: string;
   machineName: string | null;
+  up: number;
+  qtyPoPcs: number;
+  startDate: Date | null;
+  materials: any[];
 };
+
+function PROTooltipContent({ 
+  proNumber, 
+  productName, 
+  orderNo, 
+  processCode, 
+  processName, 
+  machineName, 
+  up, 
+  qtyPoPcs, 
+  status, 
+  startDate, 
+  materials 
+}: {
+  proNumber: string;
+  productName: string;
+  orderNo: number;
+  processCode: string;
+  processName: string;
+  machineName: string | null;
+  up: number;
+  qtyPoPcs: number;
+  status: string;
+  startDate: Date | null;
+  materials: any[];
+}) {
+  return (
+    <div className="space-y-2 text-xs">
+      <div>
+        <div className="font-semibold text-blue-600">{proNumber}</div>
+        <div className="text-[11px] opacity-80">{productName}</div>
+      </div>
+      <div className="space-y-1 border-t pt-2">
+        <div className="flex justify-between">
+          <span className="opacity-70">Step:</span>
+          <span className="font-medium">#{orderNo}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="opacity-70">Process:</span>
+          <span className="font-medium">{processCode} - {processName}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="opacity-70">Machine:</span>
+          <span className="font-medium">🔧 {machineName ?? "No Machine"}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="opacity-70">UP:</span>
+          <span className="font-medium">{up}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="opacity-70">Qty PO:</span>
+          <span className="font-medium">{qtyPoPcs.toLocaleString()} pcs</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="opacity-70">Status:</span>
+          <Badge variant="outline" className="h-5 text-[10px]">
+            {status}
+          </Badge>
+        </div>
+        {startDate && (
+          <div className="flex justify-between">
+            <span className="opacity-70">Start:</span>
+            <span className="font-medium">
+              {startDate.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          </div>
+        )}
+      </div>
+      {materials && materials.length > 0 && (
+        <div className="border-t pt-2">
+          <div className="font-medium mb-1">Materials:</div>
+          <div className="space-y-0.5">
+            {materials.map((m: any, idx: number) => (
+              <div key={idx} className="text-[10px] opacity-80">
+                • {m.material.name}: {m.qtyReq.toString()} {m.material.uom}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function buildShiftSlots(items: ScheduleItem[], range: { start: Date; end: Date }) {
   const map = new Map<string, SlotItem[]>();
@@ -197,6 +296,10 @@ function buildShiftSlots(items: ScheduleItem[], range: { start: Date; end: Date 
                 processCode: pro.process?.code ?? "??",
                 processName: pro.process?.name ?? "(tanpa nama)",
                 machineName: step.machine?.name ?? null,
+                up: step.up ?? 1,
+                qtyPoPcs: pro.qtyPoPcs,
+                startDate: applyShiftStart(actualDay, actualShift),
+                materials: (step as any).materials ?? [],
              });
              map.set(slotId, arr);
           }
@@ -735,6 +838,10 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                 processCode: pro.process?.code ?? "??",
                 processName: pro.process?.name ?? "(tanpa nama)",
                 machineName: step.machine?.name ?? null,
+                up: step.up ?? 1,
+                qtyPoPcs: pro.qtyPoPcs,
+                startDate: applyShiftStart(day, shift),
+                materials: (step as any).materials ?? [],
              });
              map.set(slotId, arr);
           }
@@ -793,7 +900,8 @@ export default function PPICSchedule({ onSelectPro }: Props) {
           )}
         </div>
 
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <TooltipProvider delayDuration={300}>
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
           <TabsContent value="shift" className="space-y-3">
             <div className="flex items-center gap-2">
               <Button
@@ -869,7 +977,12 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                ) : (
                                   <div className="space-y-2">
                                      {slotItems.map((it) => (
-                                       <DraggableChip key={it.key} id={it.key} onSelect={() => onSelectPro?.(it.proId)}>
+                                       <DraggableChip 
+                                         key={it.key} 
+                                         id={it.key} 
+                                         onSelect={() => onSelectPro?.(it.proId)}
+                                         tooltip={<PROTooltipContent {...it} />}
+                                       >
                                          <div className="flex items-center justify-between gap-2">
                                             <div className="truncate font-semibold text-blue-700">{it.proNumber}</div>
                                             <Badge variant="secondary" className="h-5 text-[10px]">{it.status}</Badge>
@@ -920,7 +1033,12 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                     ) : (
                                        <div className="space-y-2">
                                           {slotItems.map((it) => (
-                                            <DraggableChip key={it.key} id={it.key} onSelect={() => onSelectPro?.(it.proId)}>
+                                            <DraggableChip 
+                                          key={it.key} 
+                                          id={it.key} 
+                                          onSelect={() => onSelectPro?.(it.proId)}
+                                          tooltip={<PROTooltipContent {...it} />}
+                                        >
                                                <div className="flex items-center justify-between gap-2">
                                                   <div className="truncate font-semibold text-blue-700">{it.proNumber}</div>
                                                </div>
@@ -1012,39 +1130,95 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                             <div className={`text-xs font-semibold ${!isThisMonth ? "opacity-40" : ""}`}>
                               {day.getDate()}
                             </div>
-                            {items.length ? (
-                              <Badge variant="secondary" className="h-5 text-[10px]">
-                                {items.length} PRO
-                              </Badge>
-                            ) : null}
                           </div>
 
-                          <div className="mt-2 space-y-2">
+                          <div className="mt-2 space-y-1.5">
                             {monthSchedule.isLoading ? (
                               <div className="text-[10px] opacity-40">Loading...</div>
-                            ) : items.length === 0 ? (
-                              <div className="text-[10px] italic opacity-25">No Schedule</div>
-                            ) : (
-                              items.map((item) => (
-                                <DraggableChip
-                                  key={`${item.id}::${k}`}
-                                  id={`${item.id}::${k}`}
-                                  onSelect={() => onSelectPro?.(item.id)}
-                                >
-                                  <div className="truncate font-semibold text-blue-700">
-                                    {item.proNumber}
-                                  </div>
-                                  <div className="truncate text-[11px] opacity-80">{item.productName}</div>
-                                    <div className="mt-1 flex flex-wrap gap-1">
-                                      <Badge variant="outline" className="h-4 max-w-full text-[9px]">
-                                        <span className="truncate">
-                                          {item.process?.code} {item.process?.name}
-                                        </span>
+                            ) : (() => {
+                                // Get all steps for this day across all machines
+                                const daySteps: Array<{
+                                  stepId: number;
+                                  proId: number;
+                                  proNumber: string;
+                                  productName: string;
+                                  machineName: string;
+                                  processCode: string;
+                                  processName: string;
+                                  orderNo: number;
+                                  up: number;
+                                  qtyPoPcs: number;
+                                  status: string;
+                                  startDate: Date;
+                                  materials: Array<{
+                                    material: { name: string; uom: string };
+                                    materialId: number;
+                                    qtyReq: any;
+                                  }>;
+                                }> = [];
+
+                                // Collect all steps scheduled for this day
+                                for (const pro of monthSchedule.data ?? []) {
+                                  for (const step of pro.steps) {
+                                    const stepStartDate = step.startDate 
+                                      ? new Date(step.startDate) 
+                                      : (pro.startDate ? new Date(pro.startDate) : null);
+                                    
+                                    if (!stepStartDate) continue;
+                                    if (dateKey(stepStartDate) !== k) continue;
+                                    
+                                    daySteps.push({
+                                      stepId: step.id,
+                                      proId: pro.id,
+                                      proNumber: pro.proNumber,
+                                      productName: pro.productName,
+                                      machineName: step.machine?.name ?? "No Machine",
+                                      processCode: pro.process?.code ?? "",
+                                      processName: pro.process?.name ?? "",
+                                      orderNo: step.orderNo,
+                                      up: step.up ?? 1,
+                                      qtyPoPcs: pro.qtyPoPcs,
+                                      status: pro.status,
+                                      startDate: stepStartDate,
+                                      materials: (step as any).materials ?? [],
+                                    });
+                                  }
+                                }
+
+                                if (daySteps.length === 0) {
+                                  return <div className="text-[10px] italic opacity-25">No Schedule</div>;
+                                }
+
+                                return daySteps.map((stepInfo) => (
+                                  <DraggableChip
+                                    key={`${stepInfo.stepId}::${k}`}
+                                    id={`${stepInfo.stepId}::${k}`}
+                                    onSelect={() => onSelectPro?.(stepInfo.proId)}
+                                    tooltip={
+                                      <PROTooltipContent 
+                                        {...stepInfo}
+                                      />
+                                    }
+                                  >
+                                    <div className="flex items-start justify-between gap-1">
+                                      <div className="min-w-0 flex-1">
+                                        <div className="truncate font-semibold text-blue-700 text-[11px]">
+                                          {stepInfo.proNumber}
+                                        </div>
+                                        <div className="truncate text-[10px] opacity-70">
+                                          {stepInfo.productName}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="mt-1 flex items-center gap-1">
+                                      <Badge variant="secondary" className="h-4 text-[9px] font-medium">
+                                        🔧 {stepInfo.machineName}
                                       </Badge>
                                     </div>
-                                </DraggableChip>
-                              ))
-                            )}
+                                  </DraggableChip>
+                                ));
+                              })()
+                            }
                           </div>
                         </DroppableCell>
                       );
@@ -1057,7 +1231,8 @@ export default function PPICSchedule({ onSelectPro }: Props) {
             <div className="text-xs opacity-70">Drag PRO ke tanggal lain untuk mengubah startDate.</div>
           </TabsContent>
         </DndContext>
-      </Tabs>
+      </TooltipProvider>
+    </Tabs>
     </div>
   );
 }
@@ -1087,10 +1262,12 @@ function DraggableChip({
   id,
   onSelect,
   children,
+  tooltip,
 }: {
   id: string;
   onSelect: () => void;
   children: React.ReactNode;
+  tooltip?: React.ReactNode;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id });
@@ -1100,7 +1277,7 @@ function DraggableChip({
     opacity: isDragging ? 0.6 : undefined,
   };
 
-  return (
+  const chipContent = (
     <div
       ref={setNodeRef}
       style={style}
@@ -1114,5 +1291,18 @@ function DraggableChip({
     >
       {children}
     </div>
+  );
+
+  if (!tooltip) return chipContent;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {chipContent}
+      </TooltipTrigger>
+      <TooltipContent side="right" className="max-w-xs">
+        {tooltip}
+      </TooltipContent>
+    </Tooltip>
   );
 }
