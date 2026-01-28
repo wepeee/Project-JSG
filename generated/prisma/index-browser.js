@@ -167,6 +167,7 @@ exports.Prisma.ProScalarFieldEnum = {
   qtyPoPcs: 'qtyPoPcs',
   startDate: 'startDate',
   status: 'status',
+  processId: 'processId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -175,7 +176,6 @@ exports.Prisma.ProStepScalarFieldEnum = {
   id: 'id',
   proId: 'proId',
   orderNo: 'orderNo',
-  processId: 'processId',
   up: 'up',
   startDate: 'startDate',
   estimatedShifts: 'estimatedShifts',

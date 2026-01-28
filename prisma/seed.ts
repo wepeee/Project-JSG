@@ -442,17 +442,28 @@ async function main() {
 
   // Processes Seed Data
   const processes = [
-    { code: "17", name: "CETAK OFFSET" },
-    { code: "PT", name: "POTONG KERTAS" },
-    { code: "LA", name: "LAMINASI" },
-    { code: "UV", name: "UV SPOT" },
-    { code: "DC", name: "DIE CUT" },
-    { code: "AS", name: "ASSEMBLY" },
-    { code: "PK", name: "PACKING" },
-    { code: "ST", name: "SORTIR" },
-    { code: "FL", name: "HOTPRINT / FOIL" },
-    { code: "GL", name: "GLUEING / LEM" },
-    { code: "EM", name: "EMBOSS" },
+    { code: "11", name: "INJECTION MOLDING" },
+    { code: "12", name: "EXTRUCTION BLOW MOLDING" },
+    { code: "13", name: "ASSEMBLY" },
+    { code: "14", name: "SCREEN PRINTING" },
+    { code: "15", name: "VERSAFIRE C 7200X" },
+    { code: "16", name: "DIGITAL PRINTING" },
+    { code: "17", name: "OFFSET PRINTING PHASE #1" },
+    { code: "18", name: "PAD PRINTING" },
+    { code: "19", name: "DIE CUTTING" },
+    { code: "20", name: "FOLDED & GLUE" },
+    { code: "21", name: "REWORK" },
+    { code: "22", name: "OFFSET PRINTING PHASE #2" },
+    { code: "23", name: "KISSCUT" },
+    { code: "a3", name: "SK PRINTING/PRINTING MANUAL" },
+    { code: "24", name: "JASA PEMASANGAN STIKER" },
+    { code: "25", name: "CTP SUPRASETTER" },
+    { code: "26", name: "JWEI" },
+    { code: "27", name: "LAMINASI" },
+    { code: "28", name: "UV SPOT" },
+    { code: "29", name: "FG" },
+    { code: "30", name: "SCREEN TRAIN OS - CA" },
+
   ];
 
   for (const proc of processes) {

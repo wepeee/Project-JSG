@@ -46,13 +46,13 @@ export const prosRouter = createTRPCRouter({
           startDate: true,
           status: true,
           createdAt: true,
+          process: { select: { code: true, name: true } }, // Added to header
           steps: {
             orderBy: { orderNo: "asc" },
             select: {
               id: true,
               orderNo: true,
               up: true,
-              process: { select: { code: true, name: true } },
               machine: {
                 select: {
                   name: true,
@@ -85,13 +85,13 @@ export const prosRouter = createTRPCRouter({
     .input(
       z.object({
         productName: z.string().min(1),
+        processId: z.number().int().positive(), // New: header process
         qtyPoPcs: z.number().int().positive(),
         startDate: z.coerce.date().optional(),
         steps: z
           .array(
             z.object({
-              processId: z.number().int().positive(),
-              up: z.number().int().min(0).optional(), // ✅ pindah ke step
+              up: z.number().int().min(0).optional(),
               machineId: z.number().int().positive().nullable().optional(),
               materials: z
                 .array(
@@ -101,7 +101,7 @@ export const prosRouter = createTRPCRouter({
                   }),
                 )
                 .default([]),
-              startDate: z.coerce.date().optional(), // add this
+              startDate: z.coerce.date().optional(),
             }),
           )
           .min(1),
@@ -120,15 +120,14 @@ export const prosRouter = createTRPCRouter({
         });
       }
 
-      const first = steps[0]!;
       const proc = await ctx.db.process.findUnique({
-        where: { id: first.processId },
+        where: { id: input.processId },
         select: { code: true },
       });
       if (!proc)
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Proses pertama tidak valid",
+          message: "Proses tidak valid",
         });
 
       const prefix = `${proc.code}${mm(baseDate)}${yy(baseDate)}`; // 6 digit
@@ -146,6 +145,7 @@ export const prosRouter = createTRPCRouter({
         const created = await tx.pro.create({
           data: {
             proNumber,
+            processId: input.processId, // Save header process
             productName: input.productName,
             qtyPoPcs: input.qtyPoPcs,
             startDate: input.startDate,
@@ -153,10 +153,9 @@ export const prosRouter = createTRPCRouter({
             steps: {
               create: input.steps.map((s, idx) => ({
                 orderNo: idx + 1,
-                processId: s.processId,
                 up: s.up,
                 machineId: s.machineId ?? null,
-                startDate: s.startDate ?? (idx === 0 ? input.startDate : undefined), // simple default
+                startDate: s.startDate ?? (idx === 0 ? input.startDate : undefined),
                 materials: {
                   create: (s.materials ?? []).map((m) => ({
                     materialId: m.materialId,
@@ -233,16 +232,16 @@ export const prosRouter = createTRPCRouter({
           status: true,
           createdAt: true,
           updatedAt: true,
+          processId: true, // Added to header
+          process: { select: { code: true, name: true } }, // Added to header
           steps: {
             orderBy: { orderNo: "asc" },
             select: {
               id: true,
               orderNo: true,
-              processId: true,
               up: true,
               machineId: true,
               startDate: true,
-              process: { select: { code: true, name: true } },
               machine: {
                 select: {
                   id: true,
@@ -284,6 +283,7 @@ export const prosRouter = createTRPCRouter({
       z.object({
         id: z.number().int().positive(),
         productName: z.string().min(1),
+        processId: z.number().int().positive(), // Allow changing process
         qtyPoPcs: z.number().int().positive(),
         startDate: z.coerce.date().optional(),
         status: z.enum(["OPEN", "IN_PROGRESS", "DONE", "CANCELLED"]).optional(),
@@ -291,12 +291,11 @@ export const prosRouter = createTRPCRouter({
           .array(
             z.object({
               orderNo: z.number().int().positive(),
-              processId: z.number().int().positive(),
               up: z.number().int().min(0),
               machineId: z.number().int().positive().nullable().optional(),
               materialId: z.number().int().positive().nullable().optional(),
               qtyReq: z.number().positive().optional(),
-              startDate: z.coerce.date().optional(), // add this
+              startDate: z.coerce.date().optional(),
             }),
           )
           .min(1),
@@ -308,6 +307,7 @@ export const prosRouter = createTRPCRouter({
         await tx.pro.update({
           where: { id: input.id },
           data: {
+            processId: input.processId,
             productName: input.productName,
             qtyPoPcs: input.qtyPoPcs,
             startDate: input.startDate,
@@ -323,7 +323,6 @@ export const prosRouter = createTRPCRouter({
           data: input.steps.map((s) => ({
             proId: input.id,
             orderNo: s.orderNo,
-            processId: s.processId,
             up: s.up,
             machineId: s.machineId ?? null,
             startDate: s.startDate,
@@ -450,6 +449,7 @@ export const prosRouter = createTRPCRouter({
           qtyPoPcs: true,
           startDate: true,
           status: true,
+          process: { select: { name: true, code: true } }, // Added to header
           steps: {
             orderBy: { orderNo: "asc" },
             select: {
@@ -459,7 +459,6 @@ export const prosRouter = createTRPCRouter({
               machine: {
                 select: { id: true, name: true, stdOutputPerShift: true },
               },
-              process: { select: { name: true, code: true } },
               startDate: true, // add this
               shifts: {
                 orderBy: { shiftIndex: "asc" },

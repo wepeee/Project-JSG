@@ -1627,11 +1627,11 @@ export namespace Prisma {
    */
 
   export type ProcessCountOutputType = {
-    steps: number
+    pros: number
   }
 
   export type ProcessCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    steps?: boolean | ProcessCountOutputTypeCountStepsArgs
+    pros?: boolean | ProcessCountOutputTypeCountProsArgs
   }
 
   // Custom InputTypes
@@ -1648,8 +1648,8 @@ export namespace Prisma {
   /**
    * ProcessCountOutputType without action
    */
-  export type ProcessCountOutputTypeCountStepsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProStepWhereInput
+  export type ProcessCountOutputTypeCountProsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProWhereInput
   }
 
 
@@ -4822,7 +4822,7 @@ export namespace Prisma {
     id?: boolean
     code?: boolean
     name?: boolean
-    steps?: boolean | Process$stepsArgs<ExtArgs>
+    pros?: boolean | Process$prosArgs<ExtArgs>
     _count?: boolean | ProcessCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["process"]>
 
@@ -4836,14 +4836,14 @@ export namespace Prisma {
 
   export type ProcessOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name", ExtArgs["result"]["process"]>
   export type ProcessInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    steps?: boolean | Process$stepsArgs<ExtArgs>
+    pros?: boolean | Process$prosArgs<ExtArgs>
     _count?: boolean | ProcessCountOutputTypeDefaultArgs<ExtArgs>
   }
 
   export type $ProcessPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Process"
     objects: {
-      steps: Prisma.$ProStepPayload<ExtArgs>[]
+      pros: Prisma.$ProPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -5189,7 +5189,7 @@ export namespace Prisma {
    */
   export interface Prisma__ProcessClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    steps<T extends Process$stepsArgs<ExtArgs> = {}>(args?: Subset<T, Process$stepsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    pros<T extends Process$prosArgs<ExtArgs> = {}>(args?: Subset<T, Process$prosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5565,27 +5565,27 @@ export namespace Prisma {
   }
 
   /**
-   * Process.steps
+   * Process.pros
    */
-  export type Process$stepsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Process$prosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Pro
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Pro
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
-    where?: ProStepWhereInput
-    orderBy?: ProStepOrderByWithRelationInput | ProStepOrderByWithRelationInput[]
-    cursor?: ProStepWhereUniqueInput
+    include?: ProInclude<ExtArgs> | null
+    where?: ProWhereInput
+    orderBy?: ProOrderByWithRelationInput | ProOrderByWithRelationInput[]
+    cursor?: ProWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: ProStepScalarFieldEnum | ProStepScalarFieldEnum[]
+    distinct?: ProScalarFieldEnum | ProScalarFieldEnum[]
   }
 
   /**
@@ -6505,11 +6505,13 @@ export namespace Prisma {
   export type ProAvgAggregateOutputType = {
     id: number | null
     qtyPoPcs: number | null
+    processId: number | null
   }
 
   export type ProSumAggregateOutputType = {
     id: number | null
     qtyPoPcs: number | null
+    processId: number | null
   }
 
   export type ProMinAggregateOutputType = {
@@ -6519,6 +6521,7 @@ export namespace Prisma {
     qtyPoPcs: number | null
     startDate: Date | null
     status: $Enums.ProStatus | null
+    processId: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6530,6 +6533,7 @@ export namespace Prisma {
     qtyPoPcs: number | null
     startDate: Date | null
     status: $Enums.ProStatus | null
+    processId: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6541,6 +6545,7 @@ export namespace Prisma {
     qtyPoPcs: number
     startDate: number
     status: number
+    processId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -6550,11 +6555,13 @@ export namespace Prisma {
   export type ProAvgAggregateInputType = {
     id?: true
     qtyPoPcs?: true
+    processId?: true
   }
 
   export type ProSumAggregateInputType = {
     id?: true
     qtyPoPcs?: true
+    processId?: true
   }
 
   export type ProMinAggregateInputType = {
@@ -6564,6 +6571,7 @@ export namespace Prisma {
     qtyPoPcs?: true
     startDate?: true
     status?: true
+    processId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6575,6 +6583,7 @@ export namespace Prisma {
     qtyPoPcs?: true
     startDate?: true
     status?: true
+    processId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6586,6 +6595,7 @@ export namespace Prisma {
     qtyPoPcs?: true
     startDate?: true
     status?: true
+    processId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -6684,6 +6694,7 @@ export namespace Prisma {
     qtyPoPcs: number
     startDate: Date | null
     status: $Enums.ProStatus
+    processId: number | null
     createdAt: Date
     updatedAt: Date
     _count: ProCountAggregateOutputType | null
@@ -6714,8 +6725,10 @@ export namespace Prisma {
     qtyPoPcs?: boolean
     startDate?: boolean
     status?: boolean
+    processId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    process?: boolean | Pro$processArgs<ExtArgs>
     steps?: boolean | Pro$stepsArgs<ExtArgs>
     _count?: boolean | ProCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["pro"]>
@@ -6729,12 +6742,14 @@ export namespace Prisma {
     qtyPoPcs?: boolean
     startDate?: boolean
     status?: boolean
+    processId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "qtyPoPcs" | "startDate" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
+  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "qtyPoPcs" | "startDate" | "status" | "processId" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
   export type ProInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    process?: boolean | Pro$processArgs<ExtArgs>
     steps?: boolean | Pro$stepsArgs<ExtArgs>
     _count?: boolean | ProCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -6742,6 +6757,7 @@ export namespace Prisma {
   export type $ProPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Pro"
     objects: {
+      process: Prisma.$ProcessPayload<ExtArgs> | null
       steps: Prisma.$ProStepPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -6751,6 +6767,7 @@ export namespace Prisma {
       qtyPoPcs: number
       startDate: Date | null
       status: $Enums.ProStatus
+      processId: number | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["pro"]>
@@ -7093,6 +7110,7 @@ export namespace Prisma {
    */
   export interface Prisma__ProClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    process<T extends Pro$processArgs<ExtArgs> = {}>(args?: Subset<T, Pro$processArgs<ExtArgs>>): Prisma__ProcessClient<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     steps<T extends Pro$stepsArgs<ExtArgs> = {}>(args?: Subset<T, Pro$stepsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -7129,6 +7147,7 @@ export namespace Prisma {
     readonly qtyPoPcs: FieldRef<"Pro", 'Int'>
     readonly startDate: FieldRef<"Pro", 'DateTime'>
     readonly status: FieldRef<"Pro", 'ProStatus'>
+    readonly processId: FieldRef<"Pro", 'Int'>
     readonly createdAt: FieldRef<"Pro", 'DateTime'>
     readonly updatedAt: FieldRef<"Pro", 'DateTime'>
   }
@@ -7474,6 +7493,25 @@ export namespace Prisma {
   }
 
   /**
+   * Pro.process
+   */
+  export type Pro$processArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Process
+     */
+    select?: ProcessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Process
+     */
+    omit?: ProcessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProcessInclude<ExtArgs> | null
+    where?: ProcessWhereInput
+  }
+
+  /**
    * Pro.steps
    */
   export type Pro$stepsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7532,7 +7570,6 @@ export namespace Prisma {
     id: number | null
     proId: number | null
     orderNo: number | null
-    processId: number | null
     up: number | null
     estimatedShifts: number | null
     machineId: number | null
@@ -7542,7 +7579,6 @@ export namespace Prisma {
     id: number | null
     proId: number | null
     orderNo: number | null
-    processId: number | null
     up: number | null
     estimatedShifts: number | null
     machineId: number | null
@@ -7552,7 +7588,6 @@ export namespace Prisma {
     id: number | null
     proId: number | null
     orderNo: number | null
-    processId: number | null
     up: number | null
     startDate: Date | null
     estimatedShifts: number | null
@@ -7563,7 +7598,6 @@ export namespace Prisma {
     id: number | null
     proId: number | null
     orderNo: number | null
-    processId: number | null
     up: number | null
     startDate: Date | null
     estimatedShifts: number | null
@@ -7574,7 +7608,6 @@ export namespace Prisma {
     id: number
     proId: number
     orderNo: number
-    processId: number
     up: number
     startDate: number
     estimatedShifts: number
@@ -7587,7 +7620,6 @@ export namespace Prisma {
     id?: true
     proId?: true
     orderNo?: true
-    processId?: true
     up?: true
     estimatedShifts?: true
     machineId?: true
@@ -7597,7 +7629,6 @@ export namespace Prisma {
     id?: true
     proId?: true
     orderNo?: true
-    processId?: true
     up?: true
     estimatedShifts?: true
     machineId?: true
@@ -7607,7 +7638,6 @@ export namespace Prisma {
     id?: true
     proId?: true
     orderNo?: true
-    processId?: true
     up?: true
     startDate?: true
     estimatedShifts?: true
@@ -7618,7 +7648,6 @@ export namespace Prisma {
     id?: true
     proId?: true
     orderNo?: true
-    processId?: true
     up?: true
     startDate?: true
     estimatedShifts?: true
@@ -7629,7 +7658,6 @@ export namespace Prisma {
     id?: true
     proId?: true
     orderNo?: true
-    processId?: true
     up?: true
     startDate?: true
     estimatedShifts?: true
@@ -7727,7 +7755,6 @@ export namespace Prisma {
     id: number
     proId: number
     orderNo: number
-    processId: number
     up: number | null
     startDate: Date | null
     estimatedShifts: number | null
@@ -7757,13 +7784,11 @@ export namespace Prisma {
     id?: boolean
     proId?: boolean
     orderNo?: boolean
-    processId?: boolean
     up?: boolean
     startDate?: boolean
     estimatedShifts?: boolean
     machineId?: boolean
     pro?: boolean | ProDefaultArgs<ExtArgs>
-    process?: boolean | ProcessDefaultArgs<ExtArgs>
     machine?: boolean | ProStep$machineArgs<ExtArgs>
     materials?: boolean | ProStep$materialsArgs<ExtArgs>
     shifts?: boolean | ProStep$shiftsArgs<ExtArgs>
@@ -7776,17 +7801,15 @@ export namespace Prisma {
     id?: boolean
     proId?: boolean
     orderNo?: boolean
-    processId?: boolean
     up?: boolean
     startDate?: boolean
     estimatedShifts?: boolean
     machineId?: boolean
   }
 
-  export type ProStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "processId" | "up" | "startDate" | "estimatedShifts" | "machineId", ExtArgs["result"]["proStep"]>
+  export type ProStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "up" | "startDate" | "estimatedShifts" | "machineId", ExtArgs["result"]["proStep"]>
   export type ProStepInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pro?: boolean | ProDefaultArgs<ExtArgs>
-    process?: boolean | ProcessDefaultArgs<ExtArgs>
     machine?: boolean | ProStep$machineArgs<ExtArgs>
     materials?: boolean | ProStep$materialsArgs<ExtArgs>
     shifts?: boolean | ProStep$shiftsArgs<ExtArgs>
@@ -7797,7 +7820,6 @@ export namespace Prisma {
     name: "ProStep"
     objects: {
       pro: Prisma.$ProPayload<ExtArgs>
-      process: Prisma.$ProcessPayload<ExtArgs>
       machine: Prisma.$MachinePayload<ExtArgs> | null
       materials: Prisma.$ProStepMaterialPayload<ExtArgs>[]
       shifts: Prisma.$ProStepShiftPayload<ExtArgs>[]
@@ -7806,7 +7828,6 @@ export namespace Prisma {
       id: number
       proId: number
       orderNo: number
-      processId: number
       up: number | null
       startDate: Date | null
       estimatedShifts: number | null
@@ -8152,7 +8173,6 @@ export namespace Prisma {
   export interface Prisma__ProStepClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     pro<T extends ProDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProDefaultArgs<ExtArgs>>): Prisma__ProClient<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    process<T extends ProcessDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProcessDefaultArgs<ExtArgs>>): Prisma__ProcessClient<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     machine<T extends ProStep$machineArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$machineArgs<ExtArgs>>): Prisma__MachineClient<$Result.GetResult<Prisma.$MachinePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     materials<T extends ProStep$materialsArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$materialsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     shifts<T extends ProStep$shiftsArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$shiftsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepShiftPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -8188,7 +8208,6 @@ export namespace Prisma {
     readonly id: FieldRef<"ProStep", 'Int'>
     readonly proId: FieldRef<"ProStep", 'Int'>
     readonly orderNo: FieldRef<"ProStep", 'Int'>
-    readonly processId: FieldRef<"ProStep", 'Int'>
     readonly up: FieldRef<"ProStep", 'Int'>
     readonly startDate: FieldRef<"ProStep", 'DateTime'>
     readonly estimatedShifts: FieldRef<"ProStep", 'Int'>
@@ -10624,6 +10643,7 @@ export namespace Prisma {
     qtyPoPcs: 'qtyPoPcs',
     startDate: 'startDate',
     status: 'status',
+    processId: 'processId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -10635,7 +10655,6 @@ export namespace Prisma {
     id: 'id',
     proId: 'proId',
     orderNo: 'orderNo',
-    processId: 'processId',
     up: 'up',
     startDate: 'startDate',
     estimatedShifts: 'estimatedShifts',
@@ -10989,14 +11008,14 @@ export namespace Prisma {
     id?: IntFilter<"Process"> | number
     code?: StringFilter<"Process"> | string
     name?: StringFilter<"Process"> | string
-    steps?: ProStepListRelationFilter
+    pros?: ProListRelationFilter
   }
 
   export type ProcessOrderByWithRelationInput = {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
-    steps?: ProStepOrderByRelationAggregateInput
+    pros?: ProOrderByRelationAggregateInput
     _relevance?: ProcessOrderByRelevanceInput
   }
 
@@ -11007,7 +11026,7 @@ export namespace Prisma {
     AND?: ProcessWhereInput | ProcessWhereInput[]
     OR?: ProcessWhereInput[]
     NOT?: ProcessWhereInput | ProcessWhereInput[]
-    steps?: ProStepListRelationFilter
+    pros?: ProListRelationFilter
   }, "id" | "code" | "name">
 
   export type ProcessOrderByWithAggregationInput = {
@@ -11080,8 +11099,10 @@ export namespace Prisma {
     qtyPoPcs?: IntFilter<"Pro"> | number
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
+    processId?: IntNullableFilter<"Pro"> | number | null
     createdAt?: DateTimeFilter<"Pro"> | Date | string
     updatedAt?: DateTimeFilter<"Pro"> | Date | string
+    process?: XOR<ProcessNullableScalarRelationFilter, ProcessWhereInput> | null
     steps?: ProStepListRelationFilter
   }
 
@@ -11092,8 +11113,10 @@ export namespace Prisma {
     qtyPoPcs?: SortOrder
     startDate?: SortOrderInput | SortOrder
     status?: SortOrder
+    processId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    process?: ProcessOrderByWithRelationInput
     steps?: ProStepOrderByRelationAggregateInput
     _relevance?: ProOrderByRelevanceInput
   }
@@ -11108,8 +11131,10 @@ export namespace Prisma {
     qtyPoPcs?: IntFilter<"Pro"> | number
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
+    processId?: IntNullableFilter<"Pro"> | number | null
     createdAt?: DateTimeFilter<"Pro"> | Date | string
     updatedAt?: DateTimeFilter<"Pro"> | Date | string
+    process?: XOR<ProcessNullableScalarRelationFilter, ProcessWhereInput> | null
     steps?: ProStepListRelationFilter
   }, "id" | "proNumber">
 
@@ -11120,6 +11145,7 @@ export namespace Prisma {
     qtyPoPcs?: SortOrder
     startDate?: SortOrderInput | SortOrder
     status?: SortOrder
+    processId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ProCountOrderByAggregateInput
@@ -11139,6 +11165,7 @@ export namespace Prisma {
     qtyPoPcs?: IntWithAggregatesFilter<"Pro"> | number
     startDate?: DateTimeNullableWithAggregatesFilter<"Pro"> | Date | string | null
     status?: EnumProStatusWithAggregatesFilter<"Pro"> | $Enums.ProStatus
+    processId?: IntNullableWithAggregatesFilter<"Pro"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"Pro"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Pro"> | Date | string
   }
@@ -11150,13 +11177,11 @@ export namespace Prisma {
     id?: IntFilter<"ProStep"> | number
     proId?: IntFilter<"ProStep"> | number
     orderNo?: IntFilter<"ProStep"> | number
-    processId?: IntFilter<"ProStep"> | number
     up?: IntNullableFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
     estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
-    process?: XOR<ProcessScalarRelationFilter, ProcessWhereInput>
     machine?: XOR<MachineNullableScalarRelationFilter, MachineWhereInput> | null
     materials?: ProStepMaterialListRelationFilter
     shifts?: ProStepShiftListRelationFilter
@@ -11166,13 +11191,11 @@ export namespace Prisma {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
-    processId?: SortOrder
     up?: SortOrderInput | SortOrder
     startDate?: SortOrderInput | SortOrder
     estimatedShifts?: SortOrderInput | SortOrder
     machineId?: SortOrderInput | SortOrder
     pro?: ProOrderByWithRelationInput
-    process?: ProcessOrderByWithRelationInput
     machine?: MachineOrderByWithRelationInput
     materials?: ProStepMaterialOrderByRelationAggregateInput
     shifts?: ProStepShiftOrderByRelationAggregateInput
@@ -11186,13 +11209,11 @@ export namespace Prisma {
     NOT?: ProStepWhereInput | ProStepWhereInput[]
     proId?: IntFilter<"ProStep"> | number
     orderNo?: IntFilter<"ProStep"> | number
-    processId?: IntFilter<"ProStep"> | number
     up?: IntNullableFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
     estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
-    process?: XOR<ProcessScalarRelationFilter, ProcessWhereInput>
     machine?: XOR<MachineNullableScalarRelationFilter, MachineWhereInput> | null
     materials?: ProStepMaterialListRelationFilter
     shifts?: ProStepShiftListRelationFilter
@@ -11202,7 +11223,6 @@ export namespace Prisma {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
-    processId?: SortOrder
     up?: SortOrderInput | SortOrder
     startDate?: SortOrderInput | SortOrder
     estimatedShifts?: SortOrderInput | SortOrder
@@ -11221,7 +11241,6 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"ProStep"> | number
     proId?: IntWithAggregatesFilter<"ProStep"> | number
     orderNo?: IntWithAggregatesFilter<"ProStep"> | number
-    processId?: IntWithAggregatesFilter<"ProStep"> | number
     up?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableWithAggregatesFilter<"ProStep"> | Date | string | null
     estimatedShifts?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
@@ -11538,27 +11557,27 @@ export namespace Prisma {
   export type ProcessCreateInput = {
     code: string
     name: string
-    steps?: ProStepCreateNestedManyWithoutProcessInput
+    pros?: ProCreateNestedManyWithoutProcessInput
   }
 
   export type ProcessUncheckedCreateInput = {
     id?: number
     code: string
     name: string
-    steps?: ProStepUncheckedCreateNestedManyWithoutProcessInput
+    pros?: ProUncheckedCreateNestedManyWithoutProcessInput
   }
 
   export type ProcessUpdateInput = {
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    steps?: ProStepUpdateManyWithoutProcessNestedInput
+    pros?: ProUpdateManyWithoutProcessNestedInput
   }
 
   export type ProcessUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    steps?: ProStepUncheckedUpdateManyWithoutProcessNestedInput
+    pros?: ProUncheckedUpdateManyWithoutProcessNestedInput
   }
 
   export type ProcessCreateManyInput = {
@@ -11621,6 +11640,7 @@ export namespace Prisma {
     status?: $Enums.ProStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    process?: ProcessCreateNestedOneWithoutProsInput
     steps?: ProStepCreateNestedManyWithoutProInput
   }
 
@@ -11631,6 +11651,7 @@ export namespace Prisma {
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
+    processId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     steps?: ProStepUncheckedCreateNestedManyWithoutProInput
@@ -11644,6 +11665,7 @@ export namespace Prisma {
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    process?: ProcessUpdateOneWithoutProsNestedInput
     steps?: ProStepUpdateManyWithoutProNestedInput
   }
 
@@ -11654,6 +11676,7 @@ export namespace Prisma {
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    processId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     steps?: ProStepUncheckedUpdateManyWithoutProNestedInput
@@ -11666,6 +11689,7 @@ export namespace Prisma {
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
+    processId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -11687,6 +11711,7 @@ export namespace Prisma {
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    processId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11697,7 +11722,6 @@ export namespace Prisma {
     startDate?: Date | string | null
     estimatedShifts?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
-    process: ProcessCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
     shifts?: ProStepShiftCreateNestedManyWithoutStepInput
@@ -11707,7 +11731,6 @@ export namespace Prisma {
     id?: number
     proId: number
     orderNo: number
-    processId: number
     up?: number | null
     startDate?: Date | string | null
     estimatedShifts?: number | null
@@ -11722,7 +11745,6 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
-    process?: ProcessUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
     shifts?: ProStepShiftUpdateManyWithoutStepNestedInput
@@ -11732,7 +11754,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
-    processId?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -11745,7 +11766,6 @@ export namespace Prisma {
     id?: number
     proId: number
     orderNo: number
-    processId: number
     up?: number | null
     startDate?: Date | string | null
     estimatedShifts?: number | null
@@ -11763,7 +11783,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
-    processId?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -12158,6 +12177,16 @@ export namespace Prisma {
     id?: SortOrder
   }
 
+  export type ProListRelationFilter = {
+    every?: ProWhereInput
+    some?: ProWhereInput
+    none?: ProWhereInput
+  }
+
+  export type ProOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type ProcessOrderByRelevanceInput = {
     fields: ProcessOrderByRelevanceFieldEnum | ProcessOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -12237,6 +12266,22 @@ export namespace Prisma {
     not?: NestedEnumProStatusFilter<$PrismaModel> | $Enums.ProStatus
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type ProcessNullableScalarRelationFilter = {
+    is?: ProcessWhereInput | null
+    isNot?: ProcessWhereInput | null
+  }
+
   export type ProOrderByRelevanceInput = {
     fields: ProOrderByRelevanceFieldEnum | ProOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -12250,6 +12295,7 @@ export namespace Prisma {
     qtyPoPcs?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
+    processId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -12257,6 +12303,7 @@ export namespace Prisma {
   export type ProAvgOrderByAggregateInput = {
     id?: SortOrder
     qtyPoPcs?: SortOrder
+    processId?: SortOrder
   }
 
   export type ProMaxOrderByAggregateInput = {
@@ -12266,6 +12313,7 @@ export namespace Prisma {
     qtyPoPcs?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
+    processId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -12277,6 +12325,7 @@ export namespace Prisma {
     qtyPoPcs?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
+    processId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -12284,6 +12333,7 @@ export namespace Prisma {
   export type ProSumOrderByAggregateInput = {
     id?: SortOrder
     qtyPoPcs?: SortOrder
+    processId?: SortOrder
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -12310,7 +12360,7 @@ export namespace Prisma {
     _max?: NestedEnumProStatusFilter<$PrismaModel>
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | null
     notIn?: number[] | null
@@ -12318,17 +12368,17 @@ export namespace Prisma {
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type ProScalarRelationFilter = {
     is?: ProWhereInput
     isNot?: ProWhereInput
-  }
-
-  export type ProcessScalarRelationFilter = {
-    is?: ProcessWhereInput
-    isNot?: ProcessWhereInput
   }
 
   export type MachineNullableScalarRelationFilter = {
@@ -12355,7 +12405,6 @@ export namespace Prisma {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
-    processId?: SortOrder
     up?: SortOrder
     startDate?: SortOrder
     estimatedShifts?: SortOrder
@@ -12366,7 +12415,6 @@ export namespace Prisma {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
-    processId?: SortOrder
     up?: SortOrder
     estimatedShifts?: SortOrder
     machineId?: SortOrder
@@ -12376,7 +12424,6 @@ export namespace Prisma {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
-    processId?: SortOrder
     up?: SortOrder
     startDate?: SortOrder
     estimatedShifts?: SortOrder
@@ -12387,7 +12434,6 @@ export namespace Prisma {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
-    processId?: SortOrder
     up?: SortOrder
     startDate?: SortOrder
     estimatedShifts?: SortOrder
@@ -12398,26 +12444,9 @@ export namespace Prisma {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
-    processId?: SortOrder
     up?: SortOrder
     estimatedShifts?: SortOrder
     machineId?: SortOrder
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type ProStepScalarRelationFilter = {
@@ -12647,46 +12676,52 @@ export namespace Prisma {
     deleteMany?: ProStepMaterialScalarWhereInput | ProStepMaterialScalarWhereInput[]
   }
 
-  export type ProStepCreateNestedManyWithoutProcessInput = {
-    create?: XOR<ProStepCreateWithoutProcessInput, ProStepUncheckedCreateWithoutProcessInput> | ProStepCreateWithoutProcessInput[] | ProStepUncheckedCreateWithoutProcessInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutProcessInput | ProStepCreateOrConnectWithoutProcessInput[]
-    createMany?: ProStepCreateManyProcessInputEnvelope
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
+  export type ProCreateNestedManyWithoutProcessInput = {
+    create?: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput> | ProCreateWithoutProcessInput[] | ProUncheckedCreateWithoutProcessInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutProcessInput | ProCreateOrConnectWithoutProcessInput[]
+    createMany?: ProCreateManyProcessInputEnvelope
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
   }
 
-  export type ProStepUncheckedCreateNestedManyWithoutProcessInput = {
-    create?: XOR<ProStepCreateWithoutProcessInput, ProStepUncheckedCreateWithoutProcessInput> | ProStepCreateWithoutProcessInput[] | ProStepUncheckedCreateWithoutProcessInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutProcessInput | ProStepCreateOrConnectWithoutProcessInput[]
-    createMany?: ProStepCreateManyProcessInputEnvelope
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
+  export type ProUncheckedCreateNestedManyWithoutProcessInput = {
+    create?: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput> | ProCreateWithoutProcessInput[] | ProUncheckedCreateWithoutProcessInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutProcessInput | ProCreateOrConnectWithoutProcessInput[]
+    createMany?: ProCreateManyProcessInputEnvelope
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
   }
 
-  export type ProStepUpdateManyWithoutProcessNestedInput = {
-    create?: XOR<ProStepCreateWithoutProcessInput, ProStepUncheckedCreateWithoutProcessInput> | ProStepCreateWithoutProcessInput[] | ProStepUncheckedCreateWithoutProcessInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutProcessInput | ProStepCreateOrConnectWithoutProcessInput[]
-    upsert?: ProStepUpsertWithWhereUniqueWithoutProcessInput | ProStepUpsertWithWhereUniqueWithoutProcessInput[]
-    createMany?: ProStepCreateManyProcessInputEnvelope
-    set?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    disconnect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    delete?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    update?: ProStepUpdateWithWhereUniqueWithoutProcessInput | ProStepUpdateWithWhereUniqueWithoutProcessInput[]
-    updateMany?: ProStepUpdateManyWithWhereWithoutProcessInput | ProStepUpdateManyWithWhereWithoutProcessInput[]
-    deleteMany?: ProStepScalarWhereInput | ProStepScalarWhereInput[]
+  export type ProUpdateManyWithoutProcessNestedInput = {
+    create?: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput> | ProCreateWithoutProcessInput[] | ProUncheckedCreateWithoutProcessInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutProcessInput | ProCreateOrConnectWithoutProcessInput[]
+    upsert?: ProUpsertWithWhereUniqueWithoutProcessInput | ProUpsertWithWhereUniqueWithoutProcessInput[]
+    createMany?: ProCreateManyProcessInputEnvelope
+    set?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    disconnect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    delete?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    update?: ProUpdateWithWhereUniqueWithoutProcessInput | ProUpdateWithWhereUniqueWithoutProcessInput[]
+    updateMany?: ProUpdateManyWithWhereWithoutProcessInput | ProUpdateManyWithWhereWithoutProcessInput[]
+    deleteMany?: ProScalarWhereInput | ProScalarWhereInput[]
   }
 
-  export type ProStepUncheckedUpdateManyWithoutProcessNestedInput = {
-    create?: XOR<ProStepCreateWithoutProcessInput, ProStepUncheckedCreateWithoutProcessInput> | ProStepCreateWithoutProcessInput[] | ProStepUncheckedCreateWithoutProcessInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutProcessInput | ProStepCreateOrConnectWithoutProcessInput[]
-    upsert?: ProStepUpsertWithWhereUniqueWithoutProcessInput | ProStepUpsertWithWhereUniqueWithoutProcessInput[]
-    createMany?: ProStepCreateManyProcessInputEnvelope
-    set?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    disconnect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    delete?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    update?: ProStepUpdateWithWhereUniqueWithoutProcessInput | ProStepUpdateWithWhereUniqueWithoutProcessInput[]
-    updateMany?: ProStepUpdateManyWithWhereWithoutProcessInput | ProStepUpdateManyWithWhereWithoutProcessInput[]
-    deleteMany?: ProStepScalarWhereInput | ProStepScalarWhereInput[]
+  export type ProUncheckedUpdateManyWithoutProcessNestedInput = {
+    create?: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput> | ProCreateWithoutProcessInput[] | ProUncheckedCreateWithoutProcessInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutProcessInput | ProCreateOrConnectWithoutProcessInput[]
+    upsert?: ProUpsertWithWhereUniqueWithoutProcessInput | ProUpsertWithWhereUniqueWithoutProcessInput[]
+    createMany?: ProCreateManyProcessInputEnvelope
+    set?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    disconnect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    delete?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    update?: ProUpdateWithWhereUniqueWithoutProcessInput | ProUpdateWithWhereUniqueWithoutProcessInput[]
+    updateMany?: ProUpdateManyWithWhereWithoutProcessInput | ProUpdateManyWithWhereWithoutProcessInput[]
+    deleteMany?: ProScalarWhereInput | ProScalarWhereInput[]
+  }
+
+  export type ProcessCreateNestedOneWithoutProsInput = {
+    create?: XOR<ProcessCreateWithoutProsInput, ProcessUncheckedCreateWithoutProsInput>
+    connectOrCreate?: ProcessCreateOrConnectWithoutProsInput
+    connect?: ProcessWhereUniqueInput
   }
 
   export type ProStepCreateNestedManyWithoutProInput = {
@@ -12711,6 +12746,16 @@ export namespace Prisma {
     set?: $Enums.ProStatus
   }
 
+  export type ProcessUpdateOneWithoutProsNestedInput = {
+    create?: XOR<ProcessCreateWithoutProsInput, ProcessUncheckedCreateWithoutProsInput>
+    connectOrCreate?: ProcessCreateOrConnectWithoutProsInput
+    upsert?: ProcessUpsertWithoutProsInput
+    disconnect?: ProcessWhereInput | boolean
+    delete?: ProcessWhereInput | boolean
+    connect?: ProcessWhereUniqueInput
+    update?: XOR<XOR<ProcessUpdateToOneWithWhereWithoutProsInput, ProcessUpdateWithoutProsInput>, ProcessUncheckedUpdateWithoutProsInput>
+  }
+
   export type ProStepUpdateManyWithoutProNestedInput = {
     create?: XOR<ProStepCreateWithoutProInput, ProStepUncheckedCreateWithoutProInput> | ProStepCreateWithoutProInput[] | ProStepUncheckedCreateWithoutProInput[]
     connectOrCreate?: ProStepCreateOrConnectWithoutProInput | ProStepCreateOrConnectWithoutProInput[]
@@ -12723,6 +12768,14 @@ export namespace Prisma {
     update?: ProStepUpdateWithWhereUniqueWithoutProInput | ProStepUpdateWithWhereUniqueWithoutProInput[]
     updateMany?: ProStepUpdateManyWithWhereWithoutProInput | ProStepUpdateManyWithWhereWithoutProInput[]
     deleteMany?: ProStepScalarWhereInput | ProStepScalarWhereInput[]
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type ProStepUncheckedUpdateManyWithoutProNestedInput = {
@@ -12743,12 +12796,6 @@ export namespace Prisma {
     create?: XOR<ProCreateWithoutStepsInput, ProUncheckedCreateWithoutStepsInput>
     connectOrCreate?: ProCreateOrConnectWithoutStepsInput
     connect?: ProWhereUniqueInput
-  }
-
-  export type ProcessCreateNestedOneWithoutStepsInput = {
-    create?: XOR<ProcessCreateWithoutStepsInput, ProcessUncheckedCreateWithoutStepsInput>
-    connectOrCreate?: ProcessCreateOrConnectWithoutStepsInput
-    connect?: ProcessWhereUniqueInput
   }
 
   export type MachineCreateNestedOneWithoutProStepsInput = {
@@ -12785,28 +12832,12 @@ export namespace Prisma {
     connect?: ProStepShiftWhereUniqueInput | ProStepShiftWhereUniqueInput[]
   }
 
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type ProUpdateOneRequiredWithoutStepsNestedInput = {
     create?: XOR<ProCreateWithoutStepsInput, ProUncheckedCreateWithoutStepsInput>
     connectOrCreate?: ProCreateOrConnectWithoutStepsInput
     upsert?: ProUpsertWithoutStepsInput
     connect?: ProWhereUniqueInput
     update?: XOR<XOR<ProUpdateToOneWithWhereWithoutStepsInput, ProUpdateWithoutStepsInput>, ProUncheckedUpdateWithoutStepsInput>
-  }
-
-  export type ProcessUpdateOneRequiredWithoutStepsNestedInput = {
-    create?: XOR<ProcessCreateWithoutStepsInput, ProcessUncheckedCreateWithoutStepsInput>
-    connectOrCreate?: ProcessCreateOrConnectWithoutStepsInput
-    upsert?: ProcessUpsertWithoutStepsInput
-    connect?: ProcessWhereUniqueInput
-    update?: XOR<XOR<ProcessUpdateToOneWithWhereWithoutStepsInput, ProcessUpdateWithoutStepsInput>, ProcessUncheckedUpdateWithoutStepsInput>
   }
 
   export type MachineUpdateOneWithoutProStepsNestedInput = {
@@ -13201,7 +13232,6 @@ export namespace Prisma {
     startDate?: Date | string | null
     estimatedShifts?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
-    process: ProcessCreateNestedOneWithoutStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
     shifts?: ProStepShiftCreateNestedManyWithoutStepInput
   }
@@ -13210,7 +13240,6 @@ export namespace Prisma {
     id?: number
     proId: number
     orderNo: number
-    processId: number
     up?: number | null
     startDate?: Date | string | null
     estimatedShifts?: number | null
@@ -13251,7 +13280,6 @@ export namespace Prisma {
     id?: IntFilter<"ProStep"> | number
     proId?: IntFilter<"ProStep"> | number
     orderNo?: IntFilter<"ProStep"> | number
-    processId?: IntFilter<"ProStep"> | number
     up?: IntNullableFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
     estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
@@ -13305,53 +13333,84 @@ export namespace Prisma {
     qtyReq?: DecimalFilter<"ProStepMaterial"> | Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepCreateWithoutProcessInput = {
-    orderNo: number
-    up?: number | null
+  export type ProCreateWithoutProcessInput = {
+    proNumber: string
+    productName: string
+    qtyPoPcs: number
     startDate?: Date | string | null
-    estimatedShifts?: number | null
-    pro: ProCreateNestedOneWithoutStepsInput
-    machine?: MachineCreateNestedOneWithoutProStepsInput
-    materials?: ProStepMaterialCreateNestedManyWithoutStepInput
-    shifts?: ProStepShiftCreateNestedManyWithoutStepInput
+    status?: $Enums.ProStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    steps?: ProStepCreateNestedManyWithoutProInput
   }
 
-  export type ProStepUncheckedCreateWithoutProcessInput = {
+  export type ProUncheckedCreateWithoutProcessInput = {
     id?: number
-    proId: number
-    orderNo: number
-    up?: number | null
+    proNumber: string
+    productName: string
+    qtyPoPcs: number
     startDate?: Date | string | null
-    estimatedShifts?: number | null
-    machineId?: number | null
-    materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
-    shifts?: ProStepShiftUncheckedCreateNestedManyWithoutStepInput
+    status?: $Enums.ProStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    steps?: ProStepUncheckedCreateNestedManyWithoutProInput
   }
 
-  export type ProStepCreateOrConnectWithoutProcessInput = {
-    where: ProStepWhereUniqueInput
-    create: XOR<ProStepCreateWithoutProcessInput, ProStepUncheckedCreateWithoutProcessInput>
+  export type ProCreateOrConnectWithoutProcessInput = {
+    where: ProWhereUniqueInput
+    create: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput>
   }
 
-  export type ProStepCreateManyProcessInputEnvelope = {
-    data: ProStepCreateManyProcessInput | ProStepCreateManyProcessInput[]
+  export type ProCreateManyProcessInputEnvelope = {
+    data: ProCreateManyProcessInput | ProCreateManyProcessInput[]
     skipDuplicates?: boolean
   }
 
-  export type ProStepUpsertWithWhereUniqueWithoutProcessInput = {
-    where: ProStepWhereUniqueInput
-    update: XOR<ProStepUpdateWithoutProcessInput, ProStepUncheckedUpdateWithoutProcessInput>
-    create: XOR<ProStepCreateWithoutProcessInput, ProStepUncheckedCreateWithoutProcessInput>
+  export type ProUpsertWithWhereUniqueWithoutProcessInput = {
+    where: ProWhereUniqueInput
+    update: XOR<ProUpdateWithoutProcessInput, ProUncheckedUpdateWithoutProcessInput>
+    create: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput>
   }
 
-  export type ProStepUpdateWithWhereUniqueWithoutProcessInput = {
-    where: ProStepWhereUniqueInput
-    data: XOR<ProStepUpdateWithoutProcessInput, ProStepUncheckedUpdateWithoutProcessInput>
+  export type ProUpdateWithWhereUniqueWithoutProcessInput = {
+    where: ProWhereUniqueInput
+    data: XOR<ProUpdateWithoutProcessInput, ProUncheckedUpdateWithoutProcessInput>
   }
 
-  export type ProStepUpdateManyWithWhereWithoutProcessInput = {
-    where: ProStepScalarWhereInput
-    data: XOR<ProStepUpdateManyMutationInput, ProStepUncheckedUpdateManyWithoutProcessInput>
+  export type ProUpdateManyWithWhereWithoutProcessInput = {
+    where: ProScalarWhereInput
+    data: XOR<ProUpdateManyMutationInput, ProUncheckedUpdateManyWithoutProcessInput>
+  }
+
+  export type ProScalarWhereInput = {
+    AND?: ProScalarWhereInput | ProScalarWhereInput[]
+    OR?: ProScalarWhereInput[]
+    NOT?: ProScalarWhereInput | ProScalarWhereInput[]
+    id?: IntFilter<"Pro"> | number
+    proNumber?: StringFilter<"Pro"> | string
+    productName?: StringFilter<"Pro"> | string
+    qtyPoPcs?: IntFilter<"Pro"> | number
+    startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
+    status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
+    processId?: IntNullableFilter<"Pro"> | number | null
+    createdAt?: DateTimeFilter<"Pro"> | Date | string
+    updatedAt?: DateTimeFilter<"Pro"> | Date | string
+  }
+
+  export type ProcessCreateWithoutProsInput = {
+    code: string
+    name: string
+  }
+
+  export type ProcessUncheckedCreateWithoutProsInput = {
+    id?: number
+    code: string
+    name: string
+  }
+
+  export type ProcessCreateOrConnectWithoutProsInput = {
+    where: ProcessWhereUniqueInput
+    create: XOR<ProcessCreateWithoutProsInput, ProcessUncheckedCreateWithoutProsInput>
   }
 
   export type ProStepCreateWithoutProInput = {
@@ -13359,7 +13418,6 @@ export namespace Prisma {
     up?: number | null
     startDate?: Date | string | null
     estimatedShifts?: number | null
-    process: ProcessCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
     shifts?: ProStepShiftCreateNestedManyWithoutStepInput
@@ -13368,7 +13426,6 @@ export namespace Prisma {
   export type ProStepUncheckedCreateWithoutProInput = {
     id?: number
     orderNo: number
-    processId: number
     up?: number | null
     startDate?: Date | string | null
     estimatedShifts?: number | null
@@ -13385,6 +13442,28 @@ export namespace Prisma {
   export type ProStepCreateManyProInputEnvelope = {
     data: ProStepCreateManyProInput | ProStepCreateManyProInput[]
     skipDuplicates?: boolean
+  }
+
+  export type ProcessUpsertWithoutProsInput = {
+    update: XOR<ProcessUpdateWithoutProsInput, ProcessUncheckedUpdateWithoutProsInput>
+    create: XOR<ProcessCreateWithoutProsInput, ProcessUncheckedCreateWithoutProsInput>
+    where?: ProcessWhereInput
+  }
+
+  export type ProcessUpdateToOneWithWhereWithoutProsInput = {
+    where?: ProcessWhereInput
+    data: XOR<ProcessUpdateWithoutProsInput, ProcessUncheckedUpdateWithoutProsInput>
+  }
+
+  export type ProcessUpdateWithoutProsInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ProcessUncheckedUpdateWithoutProsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
   }
 
   export type ProStepUpsertWithWhereUniqueWithoutProInput = {
@@ -13411,6 +13490,7 @@ export namespace Prisma {
     status?: $Enums.ProStatus
     createdAt?: Date | string
     updatedAt?: Date | string
+    process?: ProcessCreateNestedOneWithoutProsInput
   }
 
   export type ProUncheckedCreateWithoutStepsInput = {
@@ -13420,6 +13500,7 @@ export namespace Prisma {
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
+    processId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -13427,22 +13508,6 @@ export namespace Prisma {
   export type ProCreateOrConnectWithoutStepsInput = {
     where: ProWhereUniqueInput
     create: XOR<ProCreateWithoutStepsInput, ProUncheckedCreateWithoutStepsInput>
-  }
-
-  export type ProcessCreateWithoutStepsInput = {
-    code: string
-    name: string
-  }
-
-  export type ProcessUncheckedCreateWithoutStepsInput = {
-    id?: number
-    code: string
-    name: string
-  }
-
-  export type ProcessCreateOrConnectWithoutStepsInput = {
-    where: ProcessWhereUniqueInput
-    create: XOR<ProcessCreateWithoutStepsInput, ProcessUncheckedCreateWithoutStepsInput>
   }
 
   export type MachineCreateWithoutProStepsInput = {
@@ -13532,6 +13597,7 @@ export namespace Prisma {
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    process?: ProcessUpdateOneWithoutProsNestedInput
   }
 
   export type ProUncheckedUpdateWithoutStepsInput = {
@@ -13541,30 +13607,9 @@ export namespace Prisma {
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    processId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ProcessUpsertWithoutStepsInput = {
-    update: XOR<ProcessUpdateWithoutStepsInput, ProcessUncheckedUpdateWithoutStepsInput>
-    create: XOR<ProcessCreateWithoutStepsInput, ProcessUncheckedCreateWithoutStepsInput>
-    where?: ProcessWhereInput
-  }
-
-  export type ProcessUpdateToOneWithWhereWithoutStepsInput = {
-    where?: ProcessWhereInput
-    data: XOR<ProcessUpdateWithoutStepsInput, ProcessUncheckedUpdateWithoutStepsInput>
-  }
-
-  export type ProcessUpdateWithoutStepsInput = {
-    code?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type ProcessUncheckedUpdateWithoutStepsInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    code?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
   }
 
   export type MachineUpsertWithoutProStepsInput = {
@@ -13647,7 +13692,6 @@ export namespace Prisma {
     startDate?: Date | string | null
     estimatedShifts?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
-    process: ProcessCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
   }
@@ -13656,7 +13700,6 @@ export namespace Prisma {
     id?: number
     proId: number
     orderNo: number
-    processId: number
     up?: number | null
     startDate?: Date | string | null
     estimatedShifts?: number | null
@@ -13686,7 +13729,6 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
-    process?: ProcessUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
   }
@@ -13695,7 +13737,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
-    processId?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -13709,7 +13750,6 @@ export namespace Prisma {
     startDate?: Date | string | null
     estimatedShifts?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
-    process: ProcessCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
     shifts?: ProStepShiftCreateNestedManyWithoutStepInput
   }
@@ -13718,7 +13758,6 @@ export namespace Prisma {
     id?: number
     proId: number
     orderNo: number
-    processId: number
     up?: number | null
     startDate?: Date | string | null
     estimatedShifts?: number | null
@@ -13768,7 +13807,6 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
-    process?: ProcessUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
     shifts?: ProStepShiftUpdateManyWithoutStepNestedInput
   }
@@ -13777,7 +13815,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
-    processId?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -13815,7 +13852,6 @@ export namespace Prisma {
     id?: number
     proId: number
     orderNo: number
-    processId: number
     up?: number | null
     startDate?: Date | string | null
     estimatedShifts?: number | null
@@ -13827,7 +13863,6 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
-    process?: ProcessUpdateOneRequiredWithoutStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
     shifts?: ProStepShiftUpdateManyWithoutStepNestedInput
   }
@@ -13836,7 +13871,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
-    processId?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -13848,7 +13882,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
-    processId?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -13877,53 +13910,54 @@ export namespace Prisma {
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepCreateManyProcessInput = {
+  export type ProCreateManyProcessInput = {
     id?: number
-    proId: number
-    orderNo: number
-    up?: number | null
+    proNumber: string
+    productName: string
+    qtyPoPcs: number
     startDate?: Date | string | null
-    estimatedShifts?: number | null
-    machineId?: number | null
+    status?: $Enums.ProStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
-  export type ProStepUpdateWithoutProcessInput = {
-    orderNo?: IntFieldUpdateOperationsInput | number
-    up?: NullableIntFieldUpdateOperationsInput | number | null
+  export type ProUpdateWithoutProcessInput = {
+    proNumber?: StringFieldUpdateOperationsInput | string
+    productName?: StringFieldUpdateOperationsInput | string
+    qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
-    pro?: ProUpdateOneRequiredWithoutStepsNestedInput
-    machine?: MachineUpdateOneWithoutProStepsNestedInput
-    materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
-    shifts?: ProStepShiftUpdateManyWithoutStepNestedInput
+    status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    steps?: ProStepUpdateManyWithoutProNestedInput
   }
 
-  export type ProStepUncheckedUpdateWithoutProcessInput = {
+  export type ProUncheckedUpdateWithoutProcessInput = {
     id?: IntFieldUpdateOperationsInput | number
-    proId?: IntFieldUpdateOperationsInput | number
-    orderNo?: IntFieldUpdateOperationsInput | number
-    up?: NullableIntFieldUpdateOperationsInput | number | null
+    proNumber?: StringFieldUpdateOperationsInput | string
+    productName?: StringFieldUpdateOperationsInput | string
+    qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
-    machineId?: NullableIntFieldUpdateOperationsInput | number | null
-    materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
-    shifts?: ProStepShiftUncheckedUpdateManyWithoutStepNestedInput
+    status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    steps?: ProStepUncheckedUpdateManyWithoutProNestedInput
   }
 
-  export type ProStepUncheckedUpdateManyWithoutProcessInput = {
+  export type ProUncheckedUpdateManyWithoutProcessInput = {
     id?: IntFieldUpdateOperationsInput | number
-    proId?: IntFieldUpdateOperationsInput | number
-    orderNo?: IntFieldUpdateOperationsInput | number
-    up?: NullableIntFieldUpdateOperationsInput | number | null
+    proNumber?: StringFieldUpdateOperationsInput | string
+    productName?: StringFieldUpdateOperationsInput | string
+    qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
-    machineId?: NullableIntFieldUpdateOperationsInput | number | null
+    status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ProStepCreateManyProInput = {
     id?: number
     orderNo: number
-    processId: number
     up?: number | null
     startDate?: Date | string | null
     estimatedShifts?: number | null
@@ -13935,7 +13969,6 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
-    process?: ProcessUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
     shifts?: ProStepShiftUpdateManyWithoutStepNestedInput
@@ -13944,7 +13977,6 @@ export namespace Prisma {
   export type ProStepUncheckedUpdateWithoutProInput = {
     id?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
-    processId?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -13956,7 +13988,6 @@ export namespace Prisma {
   export type ProStepUncheckedUpdateManyWithoutProInput = {
     id?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
-    processId?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null

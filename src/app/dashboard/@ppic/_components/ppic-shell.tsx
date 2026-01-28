@@ -7,13 +7,11 @@ import { Button } from "~/components/ui/button";
 import { ThemeToggle } from "~/components/theme-toggle";
 import { Separator } from "~/components/ui/separator";
 
-import PPICOverview from "./ppic-overview";
-import MaterialShortage from "./material-shortage";
-import PPICSchedule from "./ppic-schedule";
-import MaterialManager from "./material-manager";
-import ProcessManager from "./process-manager";
-import ProPlanner from "./pro-planner";
-import ProList from "./pro-list";
+import PPICSchedule from "./schedule/ppic-schedule";
+import MaterialManager from "./material/material-manager";
+import ProcessManager from "./process/process-manager";
+import ProPlanner from "./pro/pro-planner";
+import ProList from "./pro/pro-list";
 
 type Props = {
   user: {
@@ -23,38 +21,28 @@ type Props = {
 };
 
 type NavKey =
-  | "overview"
-  | "shortages"
   | "schedule"
   | "prolist"
   | "materials"
   | "processes"
-  | "planning"
-  | "reports";
+  | "planning";
 
 export default function PPICShell({ user }: Props) {
-  const [active, setActive] = React.useState<NavKey>("overview");
+  const [active, setActive] = React.useState<NavKey>("prolist");
   const [open, setOpen] = React.useState(false);
   
-  // State untuk menyimpan ID PRO yang dipilih dari kalender
   const [jumpToProId, setJumpToProId] = React.useState<number | null>(null);
 
   const title =
-    active === "overview"
-      ? "Overview"
-      : active === "shortages"
-        ? "Material Shortage"
+    active === "prolist"
+      ? "Daftar PRO"
+      : active === "planning"
+        ? "Perencanaan PRO"
         : active === "schedule"
           ? "Schedule"
-          : active === "prolist"
-            ? "Prolist"
-            : active === "materials"
-              ? "Materials"
-              : active === "processes"
-                ? "Proses"
-                : active === "planning"
-                  ? "Perencanaan PRO"
-                  : "Reports";
+          : active === "processes"
+            ? "Proses"
+            : "Materials";
 
   return (
     <div className="bg-background min-h-screen w-full">
@@ -94,14 +82,14 @@ export default function PPICShell({ user }: Props) {
 
           <nav className="flex flex-1 flex-col gap-1 px-2">
             <SidebarItem
-              label="Overview"
-              active={active === "overview"}
-              onClick={() => setActive("overview")}
+              label="Daftar PRO"
+              active={active === "prolist"}
+              onClick={() => setActive("prolist")}
             />
             <SidebarItem
-              label="Material Shortage"
-              active={active === "shortages"}
-              onClick={() => setActive("shortages")}
+              label="Perencanaan PRO"
+              active={active === "planning"}
+              onClick={() => setActive("planning")}
             />
             <SidebarItem
               label="Schedule"
@@ -109,31 +97,14 @@ export default function PPICShell({ user }: Props) {
               onClick={() => setActive("schedule")}
             />
             <SidebarItem
-              label="Daftar PRO"
-              active={active === "prolist"}
-              onClick={() => setActive("prolist")}
-            />
-
-            <SidebarItem
-              label="Materials"
-              active={active === "materials"}
-              onClick={() => setActive("materials")}
-            />
-            <SidebarItem
               label="Proses"
               active={active === "processes"}
               onClick={() => setActive("processes")}
             />
             <SidebarItem
-              label="Perencanaan PRO"
-              active={active === "planning"}
-              onClick={() => setActive("planning")}
-            />
-
-            <SidebarItem
-              label="Reports"
-              active={active === "reports"}
-              onClick={() => setActive("reports")}
+              label="Materials"
+              active={active === "materials"}
+              onClick={() => setActive("materials")}
             />
           </nav>
 
@@ -178,18 +149,18 @@ export default function PPICShell({ user }: Props) {
 
               <nav className="flex flex-col gap-1 px-2 py-3">
                 <SidebarItem
-                  label="Overview"
-                  active={active === "overview"}
+                  label="Daftar PRO"
+                  active={active === "prolist"}
                   onClick={() => {
-                    setActive("overview");
+                    setActive("prolist");
                     setOpen(false);
                   }}
                 />
                 <SidebarItem
-                  label="Material Shortage"
-                  active={active === "shortages"}
+                  label="Perencanaan PRO"
+                  active={active === "planning"}
                   onClick={() => {
-                    setActive("shortages");
+                    setActive("planning");
                     setOpen(false);
                   }}
                 />
@@ -202,17 +173,6 @@ export default function PPICShell({ user }: Props) {
                   }}
                 />
                 <SidebarItem
-                  label="Daftar PRO"
-                  active={active === "prolist"}
-                  onClick={() => setActive("prolist")}
-                />
-
-                <SidebarItem
-                  label="Materials"
-                  active={active === "materials"}
-                  onClick={() => setActive("materials")}
-                />
-                <SidebarItem
                   label="Proses"
                   active={active === "processes"}
                   onClick={() => {
@@ -221,19 +181,10 @@ export default function PPICShell({ user }: Props) {
                   }}
                 />
                 <SidebarItem
-                  label="Perencanaan PRO"
-                  active={active === "planning"}
+                  label="Materials"
+                  active={active === "materials"}
                   onClick={() => {
-                    setActive("planning");
-                    setOpen(false);
-                  }}
-                />
-
-                <SidebarItem
-                  label="Reports"
-                  active={active === "reports"}
-                  onClick={() => {
-                    setActive("reports");
+                    setActive("materials");
                     setOpen(false);
                   }}
                 />
@@ -268,32 +219,24 @@ export default function PPICShell({ user }: Props) {
 
           <Separator className="mb-6 hidden lg:block" />
 
-          {active === "overview" ? (
-            <PPICOverview />
-          ) : active === "shortages" ? (
-            <MaterialShortage />
+          {active === "prolist" ? (
+            <ProList 
+              initialSelectedId={jumpToProId} 
+              onClearJump={() => setJumpToProId(null)} 
+            />
+          ) : active === "planning" ? (
+            <ProPlanner />
           ) : active === "schedule" ? (
-            <PPICSchedule 
+             <PPICSchedule 
               onSelectPro={(id) => {
                 setJumpToProId(id);
                 setActive("prolist");
               }} 
             />
-          ) : active === "prolist" ? (
-            <ProList 
-              initialSelectedId={jumpToProId} 
-              onClearJump={() => setJumpToProId(null)} 
-            />
-          ) : active === "materials" ? (
-            <MaterialManager />
           ) : active === "processes" ? (
             <ProcessManager />
-          ) : active === "planning" ? (
-            <ProPlanner />
           ) : (
-            <div className="rounded-md border p-4 text-sm opacity-80">
-              Reports belum dibuat. Nanti kita tarik dari DB (read-only).
-            </div>
+             <MaterialManager />
           )}
         </main>
       </div>
