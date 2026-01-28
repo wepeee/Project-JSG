@@ -142,20 +142,23 @@ export const prosRouter = createTRPCRouter({
 
         const proNumber = `${prefix}${pad3(seq.last)}`; // 9 digit
 
+        // AUTO-SET PRO.startDate from first step's startDate
+        const firstStepDate = input.steps[0]?.startDate ?? undefined;
+
         const created = await tx.pro.create({
           data: {
             proNumber,
-            processId: input.processId, // Save header process
+            processId: input.processId,
             productName: input.productName,
             qtyPoPcs: input.qtyPoPcs,
-            startDate: input.startDate,
+            startDate: firstStepDate, // Auto from first step
             status: "OPEN",
             steps: {
               create: input.steps.map((s, idx) => ({
                 orderNo: idx + 1,
                 up: s.up,
                 machineId: s.machineId ?? null,
-                startDate: s.startDate ?? (idx === 0 ? input.startDate : undefined),
+                startDate: s.startDate ?? undefined,
                 materials: {
                   create: (s.materials ?? []).map((m) => ({
                     materialId: m.materialId,
@@ -168,47 +171,34 @@ export const prosRouter = createTRPCRouter({
         });
 
         // -------------------------------------------------------------
-        // AUTOMATIC SCHEDULING LOGIC (Simple Version)
-        // If the PRO has a startDate, we try to schedule the steps sequentially.
-        // Step 1 starts at PRO.startDate.
-        // Step 2 starts after Step 1 finishes (based on Qty / Output).
-        // For now, we just auto-fill 'startDate' if it wasn't provided in the input,
-        // staggering them by 1 day as a placeholder if we want.
-        // BUT the user said "otomatis yang ngebagi shift per mesin".
-        // Let's implement a quick update after creation to set startDate if not present.
+        // AUTOMATIC SCHEDULING LOGIC (Sequential Scheduling)
+        // If first step has startDate, auto-schedule remaining steps sequentially.
         
-        if (input.startDate) {
-           // We can't easily do it inside the 'create' data object because we need sequential calc.
-           // So we fetch the created steps, calculate dates, and update them.
+        if (firstStepDate) {
            const createdSteps = await tx.proStep.findMany({
              where: { proId: created.id },
              orderBy: { orderNo: "asc" },
              include: { machine: true }
            });
            
-           let currentDate = new Date(input.startDate);
-           // round to shift 1 (08:00 or 06:00)? Let's keep time as is.
+           let currentDate = new Date(firstStepDate);
            
            for (const step of createdSteps) {
-             await tx.proStep.update({
-               where: { id: step.id },
-               data: { startDate: currentDate }
-             });
+             // Only update steps that don't have startDate already
+             if (!step.startDate) {
+               await tx.proStep.update({
+                 where: { id: step.id },
+                 data: { startDate: currentDate }
+               });
+             }
              
-             // Calculate duration to advance cursor
-             // Shifts needed = ceil(qty / (up * std))
-             // std per shift?
-             const std = step.machine?.stdOutputPerShift || 1000; // fallback
+             // Calculate duration to advance cursor for next step
+             const std = step.machine?.stdOutputPerShift || 1000;
              const up = step.up || 1;
              const qty = input.qtyPoPcs;
              const shifts = Math.ceil(qty / (up * std));
-             
-             // 1 day = 3 shifts (approx).
-             // advance currentDate by shifts * 8 hours? or days?
-             // Simple logic: add (shifts / 3) days.
              const daysToAdd = Math.max(0, shifts / 3);
              
-             // Add milliseconds
              currentDate = new Date(currentDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
            }
         }
@@ -303,7 +293,74 @@ export const prosRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.$transaction(async (tx) => {
-        // update header
+        // 1. Fetch old PRO to detect startDate change
+        const oldPro = await tx.pro.findUnique({
+          where: { id: input.id },
+          select: {
+            startDate: true,
+            steps: {
+              select: {
+                id: true,
+                orderNo: true,
+                startDate: true,
+                shifts: {
+                  select: {
+                    shiftIndex: true,
+                    scheduledDate: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        if (!oldPro) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "PRO not found",
+          });
+        }
+
+        // 2. Calculate delta if startDate changed
+        let deltaDays = 0;
+        const oldStartDate = oldPro.startDate;
+        const newStartDate = input.startDate;
+
+        if (oldStartDate && newStartDate) {
+          const oldTime = new Date(oldStartDate).getTime();
+          const newTime = new Date(newStartDate).getTime();
+          deltaDays = Math.round((newTime - oldTime) / (1000 * 60 * 60 * 24));
+        }
+
+        // 3. Build adjusted step dates map (orderNo -> adjusted startDate)
+        const adjustedStepDates = new Map<number, Date | undefined>();
+        const adjustedShifts = new Map<number, Array<{ shiftIndex: number; scheduledDate: Date }>>();
+
+        if (deltaDays !== 0) {
+          for (const oldStep of oldPro.steps) {
+            // Adjust step startDate
+            if (oldStep.startDate) {
+              const adjusted = new Date(oldStep.startDate);
+              adjusted.setDate(adjusted.getDate() + deltaDays);
+              adjustedStepDates.set(oldStep.orderNo, adjusted);
+            }
+
+            // Adjust shift scheduledDates
+            if (oldStep.shifts.length > 0) {
+              const adjustedShiftList = oldStep.shifts.map((shift) => {
+                const adjustedDate = new Date(shift.scheduledDate);
+                adjustedDate.setDate(adjustedDate.getDate() + deltaDays);
+                return {
+                  shiftIndex: shift.shiftIndex,
+                  scheduledDate: adjustedDate,
+                };
+              });
+              adjustedShifts.set(oldStep.orderNo, adjustedShiftList);
+            }
+          }
+        }
+
+        // 4. Update header
         await tx.pro.update({
           where: { id: input.id },
           data: {
@@ -315,18 +372,26 @@ export const prosRouter = createTRPCRouter({
           },
         });
 
-        // hapus semua steps lama (cascade akan hapus proStepMaterial kalau relasinya onDelete Cascade)
+        // 5. Delete old steps (cascade will delete shifts)
         await tx.proStep.deleteMany({ where: { proId: input.id } });
 
-        // create ulang
+        // 6. Recreate steps with adjusted dates
         await tx.proStep.createMany({
-          data: input.steps.map((s) => ({
-            proId: input.id,
-            orderNo: s.orderNo,
-            up: s.up,
-            machineId: s.machineId ?? null,
-            startDate: s.startDate,
-          })),
+          data: input.steps.map((s) => {
+            // Use adjusted date if delta exists, else use input date
+            let finalStartDate = s.startDate;
+            if (deltaDays !== 0 && adjustedStepDates.has(s.orderNo)) {
+              finalStartDate = adjustedStepDates.get(s.orderNo);
+            }
+
+            return {
+              proId: input.id,
+              orderNo: s.orderNo,
+              up: s.up,
+              machineId: s.machineId ?? null,
+              startDate: finalStartDate,
+            };
+          }),
         });
 
         // Ambil step baru untuk mapping material (butuh id)
@@ -353,6 +418,32 @@ export const prosRouter = createTRPCRouter({
 
         if (mats.length) {
           await tx.proStepMaterial.createMany({ data: mats });
+        }
+
+        // 7. Recreate adjusted shifts if any
+        if (deltaDays !== 0 && adjustedShifts.size > 0) {
+          const shiftsToCreate: Array<{
+            stepId: number;
+            shiftIndex: number;
+            scheduledDate: Date;
+          }> = [];
+
+          for (const [orderNo, shiftList] of adjustedShifts.entries()) {
+            const stepId = stepIdByOrder.get(orderNo);
+            if (stepId) {
+              for (const shift of shiftList) {
+                shiftsToCreate.push({
+                  stepId,
+                  shiftIndex: shift.shiftIndex,
+                  scheduledDate: shift.scheduledDate,
+                });
+              }
+            }
+          }
+
+          if (shiftsToCreate.length > 0) {
+            await tx.proStepShift.createMany({ data: shiftsToCreate });
+          }
         }
 
         return tx.pro.findUnique({
@@ -437,10 +528,41 @@ export const prosRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const items = await ctx.db.pro.findMany({
         where: {
-          startDate: {
-            gte: input.start,
-            lte: input.end,
-          },
+          OR: [
+            // PRO startDate in range
+            {
+              startDate: {
+                gte: input.start,
+                lte: input.end,
+              },
+            },
+            // OR any step startDate in range
+            {
+              steps: {
+                some: {
+                  startDate: {
+                    gte: input.start,
+                    lte: input.end,
+                  },
+                },
+              },
+            },
+            // OR any shift scheduledDate in range
+            {
+              steps: {
+                some: {
+                  shifts: {
+                    some: {
+                      scheduledDate: {
+                        gte: input.start,
+                        lte: input.end,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ],
         },
         select: {
           id: true,

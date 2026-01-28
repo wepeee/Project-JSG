@@ -30,6 +30,7 @@ type StepDraft = {
   machineId: number | null;
   materialId: number | null;
   qtyReq: string;
+  startDate: string; // Per-step start date
 };
 
 function uid() {
@@ -45,6 +46,7 @@ function newStep(): StepDraft {
     machineId: null,
     materialId: null,
     qtyReq: "",
+    startDate: "", // Empty by default
   };
 }
 
@@ -55,27 +57,15 @@ export default function ProPlanner() {
 
   // Header PRO
   const [productName, setProductName] = React.useState("");
-  const [processId, setProcessId] = React.useState<number | null>(null); // pindah ke header
+  const [processId, setProcessId] = React.useState<number | null>(null);
   const [qtyPoPcs, setQtyPoPcs] = React.useState<string>("");
-  const [startDate, setStartDate] = React.useState<string>("");
-
-  const dateObj = React.useMemo(
-    () => (startDate ? new Date(`${startDate}T00:00:00`) : null),
-    [startDate],
-  );
-
-  const busyMachinesQuery = api.pros.getSchedule.useQuery(
-    { start: dateObj!, end: dateObj! },
-    { enabled: !!dateObj },
-  );
 
   const createPro = api.pros.create.useMutation();
 
   const loadingMaster =
     processes.isLoading ||
     machines.isLoading ||
-    materials.isLoading ||
-    busyMachinesQuery.isFetching;
+    materials.isLoading;
 
   // Steps
   const [steps, setSteps] = React.useState<StepDraft[]>([]);
@@ -173,11 +163,11 @@ export default function ProPlanner() {
     const payload = {
       productName: prod,
       qtyPoPcs: qty,
-      startDate: startDate ? new Date(`${startDate}T00:00:00`) : undefined,
-      processId: processId, // NEW: pass processId to header
+      processId: processId,
       steps: steps.map((s) => ({
         up: Number(s.up),
         machineId: s.machineId ?? null,
+        startDate: s.startDate ? new Date(`${s.startDate}T00:00:00`) : undefined,
         materials: s.materialId
           ? [{ materialId: s.materialId, qtyReq: Number(s.qtyReq) }]
           : [],
@@ -190,7 +180,6 @@ export default function ProPlanner() {
       setProductName("");
       setProcessId(null);
       setQtyPoPcs("");
-      setStartDate("");
       setSteps([]);
     } catch (e: any) {
       setErr(e?.message ?? "Gagal membuat PRO");
@@ -248,15 +237,6 @@ export default function ProPlanner() {
                 value={qtyPoPcs}
                 onChange={(e) => setQtyPoPcs(e.target.value)}
                 placeholder="contoh: 100000"
-              />
-            </div>
-
-            <div className="space-y-2 lg:col-span-2">
-              <div className="text-sm font-medium">Tanggal Mulai</div>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
               />
             </div>
           </div>
@@ -437,6 +417,18 @@ export default function ProPlanner() {
                   ))}
                 </select>
               </div>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Tanggal Mulai</div>
+                <Input
+                  type="date"
+                  value={draft.startDate}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, startDate: e.target.value }))
+                  }
+                  placeholder="dd/mm/yyyy"
+                />
+              </div>
             </div>
 
             <Separator />
@@ -448,10 +440,21 @@ export default function ProPlanner() {
                   value={draft.materialId ?? ""}
                   onChange={(e) => {
                     const v = e.target.value ? Number(e.target.value) : null;
+                    
+                    // Auto-calculate Qty Req when material is selected
+                    let autoQty = "";
+                    if (v) {
+                      const upNum = Number(draft.up);
+                      const poNum = Number(qtyPoPcs);
+                      if (upNum > 0 && poNum > 0) {
+                        autoQty = String(Math.ceil(poNum / upNum));
+                      }
+                    }
+                    
                     setDraft((d) => ({
                       ...d,
                       materialId: v,
-                      qtyReq: v ? d.qtyReq : "",
+                      qtyReq: v ? autoQty : "",
                     }));
                   }}
                   className={control}
@@ -475,7 +478,7 @@ export default function ProPlanner() {
                     setDraft((d) => ({ ...d, qtyReq: e.target.value }))
                   }
                   disabled={!draft.materialId}
-                  placeholder={draft.materialId ? "Qty" : ""}
+                  placeholder={draft.materialId ? "Auto-calculated" : ""}
                 />
                 <div className="text-xs opacity-70">
                   UoM: {getMaterial(draft.materialId)?.uom ?? "-"}

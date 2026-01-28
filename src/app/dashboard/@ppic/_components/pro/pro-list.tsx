@@ -8,6 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Separator } from "~/components/ui/separator";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -69,39 +77,90 @@ function fmtSchedule(
   durationShifts = 0,
   customShifts?: Array<{ shiftIndex: number; scheduledDate: Date | string }>,
 ) {
-  // 1. Custom per-shift scheduling (display all specific shifts)
+  if (!d) return "-";
+  const dt = typeof d === "string" ? new Date(d) : d;
+  const startShift = shiftFromDate(dt);
+
+  // If there are custom shifts, we need to reconstruct the FULL schedule map
   if (customShifts && customShifts.length > 0) {
-    const sorted = customShifts
-      .slice()
-      .sort((a, b) => a.shiftIndex - b.shiftIndex);
+    const shiftMap = new Map<number, Date>();
+    customShifts.forEach((s) => {
+      shiftMap.set(
+        s.shiftIndex,
+        typeof s.scheduledDate === "string"
+          ? new Date(s.scheduledDate)
+          : s.scheduledDate,
+      );
+    });
+
+    const results: Array<{ date: Date; shift: number }> = [];
+
+    // Helper to calculate default date for shift index i
+    let currentDay = new Date(dt);
+    let currentShift = startShift;
+
+    for (let i = 0; i < durationShifts; i++) {
+        // Default relative to start
+        const defaultDate = new Date(currentDay); // clone
+        const defaultShiftVal = currentShift;
+
+        // Check overwrite
+        const customDate = shiftMap.get(i);
+        
+        let finalDate: Date;
+        let finalShift: number;
+
+        if (customDate) {
+            finalDate = customDate;
+            finalShift = shiftFromDate(customDate);
+        } else {
+            finalDate = defaultDate;
+            finalShift = defaultShiftVal;
+        }
+
+        results.push({ date: finalDate, shift: finalShift });
+
+        // Advance default cursor for next loop
+        if (currentShift < 3) {
+            currentShift++;
+        } else {
+            currentShift = 1;
+            currentDay.setDate(currentDay.getDate() + 1);
+        }
+    }
+
+    // Sort by date then shift
+    results.sort((a, b) => {
+        const tA = a.date.getTime();
+        const tB = b.date.getTime();
+        if (tA !== tB) return tA - tB;
+        return a.shift - b.shift;
+    });
+
+    // Group by Date for cleaner display
+    // e.g. 28 Jan: S1, S2
+    //      30 Jan: S3
+    const grouped = new Map<string, number[]>();
+    results.forEach(r => {
+        const dStr = r.date.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
+        const arr = grouped.get(dStr) ?? [];
+        arr.push(r.shift);
+        grouped.set(dStr, arr);
+    });
 
     return (
       <div className="flex flex-col gap-0.5">
-        {sorted.map((shift, idx) => {
-          const dt =
-            typeof shift.scheduledDate === "string"
-              ? new Date(shift.scheduledDate)
-              : shift.scheduledDate;
-          const dateStr = dt.toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "short",
-          });
-          const shiftNo = shiftFromDate(dt);
-
-          return (
+        {Array.from(grouped.entries()).map(([dateStr, shifts], idx) => (
             <div key={idx} className="text-[10px]">
-              <span className="font-medium">{dateStr}</span>{" "}
-              <span className="text-blue-600 font-semibold">S{shiftNo}</span>
+                <span className="font-medium">{dateStr}</span>{" "}
+                <span className="text-blue-600 font-semibold">S{shifts.join(", S")}</span>
             </div>
-          );
-        })}
+        ))}
       </div>
     );
   }
 
-  // 2. Fallback logic (auto-calculated duration)
-  if (!d) return "-";
-  const dt = typeof d === "string" ? new Date(d) : d;
+  // 2. Fallback logic (original range logic if no custom shifts at all)
   
   // Compact date: 28 Jan
   const dateStr = dt.toLocaleDateString("id-ID", {
@@ -109,8 +168,7 @@ function fmtSchedule(
     month: "short",
   });
   
-  const startShift = shiftFromDate(dt);
-  let label = `S${startShift}`; // Compact: S1
+  let label = `S${startShift}`;
 
   // Calculate end range if duration > 1
   if (durationShifts > 1) {
@@ -195,10 +253,87 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
   const [editing, setEditing] = React.useState(false);
   const [productName, setProductName] = React.useState("");
   const [qtyPoPcs, setQtyPoPcs] = React.useState("");
-  const [startDate, setStartDate] = React.useState("");
   const [statusDraft, setStatusDraft] = React.useState<Status>("OPEN");
   const [processDraftId, setProcessDraftId] = React.useState<number | null>(null);
   const [stepDrafts, setStepDrafts] = React.useState<StepDraft[]>([]);
+
+  // ===== DIALOG ADD/EDIT STEP =====
+  const [stepDialogOpen, setStepDialogOpen] = React.useState(false);
+  const [editingStepKey, setEditingStepKey] = React.useState<string | null>(null);
+  const [stepDraft, setStepDraft] = React.useState<Omit<StepDraft, "key" | "orderNo">>({
+    up: "",
+    machineId: null,
+    materialId: null,
+    qtyReq: "",
+    startDate: null,
+  });
+
+  const openAddStep = () => {
+    setEditingStepKey(null);
+    setStepDraft({
+      up: "",
+      machineId: null,
+      materialId: null,
+      qtyReq: "",
+      startDate: null,
+    });
+    setStepDialogOpen(true);
+  };
+
+  const openEditStep = (step: StepDraft) => {
+    setEditingStepKey(step.key);
+    setStepDraft({
+      up: step.up,
+      machineId: step.machineId,
+      materialId: step.materialId,
+      qtyReq: step.qtyReq,
+      startDate: step.startDate,
+    });
+    setStepDialogOpen(true);
+  };
+
+  const saveStepDraft = () => {
+    if (!stepDraft.up.trim()) return alert("UP wajib diisi");
+    const upNum = Number(stepDraft.up);
+    if (!Number.isFinite(upNum) || upNum < 0) return alert("UP harus >= 0");
+
+    if (stepDraft.materialId) {
+      const qNum = Number(stepDraft.qtyReq);
+      if (!stepDraft.qtyReq.trim() || !Number.isFinite(qNum) || qNum <= 0) {
+        return alert("Qty Material wajib > 0");
+      }
+    }
+
+    if (editingStepKey) {
+      // Edit existing step
+      setStepDrafts((prev) =>
+        prev.map((s) =>
+          s.key === editingStepKey
+            ? { ...s, ...stepDraft }
+            : s
+        )
+      );
+    } else {
+      // Add new step
+      const newStep: StepDraft = {
+        key: Math.random().toString(36).slice(2),
+        orderNo: stepDrafts.length + 1,
+        ...stepDraft,
+      };
+      setStepDrafts((prev) => [...prev, newStep]);
+    }
+
+    setStepDialogOpen(false);
+  };
+
+  const removeStep = (key: string) => {
+    setStepDrafts((prev) => {
+      const filtered = prev.filter((s) => s.key !== key);
+      // Re-number orderNo
+      return filtered.map((s, idx) => ({ ...s, orderNo: idx + 1 }));
+    });
+  };
+
 
   const update = api.pros.update.useMutation({
     onMutate: async (variables) => {
@@ -325,11 +460,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
     if (!detail.data || editing) return;
     setProductName(detail.data.productName ?? "");
     setQtyPoPcs(String(detail.data.qtyPoPcs ?? ""));
-    setStartDate(
-      detail.data.startDate
-        ? new Date(detail.data.startDate).toISOString().slice(0, 10)
-        : "",
-    );
   }, [detail.data]);
 
   const [err, setErr] = React.useState<string | null>(null);
@@ -363,8 +493,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
         machineId: s.machineId ?? null,
         materialId: mat0?.materialId ?? null,
         qtyReq: mat0?.qtyReq ? String(mat0.qtyReq) : "",
-        // @ts-ignore
-        startDate: s.startDate ? new Date(s.startDate).toISOString() : null,
+        startDate: s.startDate ? new Date(s.startDate).toISOString().slice(0, 10) : null,
       };
     });
   }, [detail.data]);
@@ -385,11 +514,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
     if (!detail.data) return;
     setProductName(detail.data.productName ?? "");
     setQtyPoPcs(String(detail.data.qtyPoPcs ?? ""));
-    setStartDate(
-      detail.data.startDate
-        ? new Date(detail.data.startDate).toISOString().slice(0, 10)
-        : "",
-    );
   };
 
   const saveAll = async () => {
@@ -426,7 +550,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
       id: selectedId,
       productName: prod,
       qtyPoPcs: qty,
-      startDate: startDate ? new Date(`${startDate}T00:00:00`) : undefined,
       status: statusDraft,
       processId: processDraftId,
       steps: drafts
@@ -434,12 +557,11 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
         .sort((a, b) => a.orderNo - b.orderNo)
         .map((s) => ({
           orderNo: s.orderNo,
-          // processId removed from step
           up: Number(s.up),
           machineId: s.machineId ?? null,
           materialId: s.materialId ?? null,
           qtyReq: s.materialId ? Number(s.qtyReq) : undefined,
-          startDate: s.startDate ? new Date(s.startDate) : undefined,
+          startDate: s.startDate ? new Date(`${s.startDate}T00:00:00`) : undefined,
         })),
     });
   };
@@ -462,7 +584,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
       id: selectedId,
       productName: prod,
       qtyPoPcs: qty,
-      startDate: startDate ? new Date(`${startDate}T00:00:00`) : undefined,
       status: detail.data.status,
       processId: detail.data.processId ?? 0, // Should always be set
       steps: detail.data.steps.map((s) => {
@@ -629,16 +750,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                   disabled={!editing}
                 />
               </div>
-
-              <div className="space-y-2">
-                <div className="text-sm font-medium">Tanggal Mulai</div>
-                <Input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  disabled={!editing}
-                />
-              </div>
             </div>
 
             {err ? <p className="text-destructive text-sm">{err}</p> : null}
@@ -659,6 +770,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                       <TableHead className="w-20">UoM</TableHead>
                       <TableHead className="w-32">Estimasi</TableHead>
                       <TableHead className="w-40">Jadwal</TableHead>
+                      {editing && <TableHead className="w-32">Action</TableHead>}
                     </TableRow>
                   </TableHeader>
 
@@ -798,8 +910,42 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                             </TableCell>
 
                             <TableCell className="text-xs">
-                              {fmtSchedule(startDateVal, durationShifts, customShifts)}
+                              {editing ? (
+                                <Input
+                                  type="date"
+                                  className="h-8 w-32 bg-background border-input text-xs"
+                                  value={(item as StepDraft).startDate ?? ""}
+                                  onChange={(e) => {
+                                    setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, startDate: e.target.value || null } : x));
+                                  }}
+                                />
+                              ) : (
+                                fmtSchedule(startDateVal, durationShifts, customShifts)
+                              )}
                             </TableCell>
+
+                            {editing && (
+                              <TableCell>
+                                <div className="flex gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs"
+                                    onClick={() => openEditStep(item as StepDraft)}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                                    onClick={() => removeStep((item as StepDraft).key)}
+                                  >
+                                    Hapus
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            )}
                           </TableRow>
                         );
                       })}
@@ -813,8 +959,143 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
               (UP/Machine/Material/Qty), kita bikin tombol “Edit” per step
               (dialog kecil) tapi tetap stay di halaman detail.
             </div>
+            {editing && (
+              <div className="flex gap-2 mt-3">
+                <Button
+                  variant="outline"
+                  onClick={openAddStep}
+                  disabled={update.isPending || del.isPending}
+                >
+                  + Tambah Step
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* Dialog Add/Edit Step */}
+        <Dialog open={stepDialogOpen} onOpenChange={setStepDialogOpen}>
+          <DialogContent className="sm:max-w-xl">
+            <DialogHeader>
+              <DialogTitle>{editingStepKey ? "Edit Step" : "Tambah Step"}</DialogTitle>
+              <DialogDescription>
+                Isi detail step proses produksi
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">UP</div>
+                  <Input
+                    type="number"
+                    value={stepDraft.up}
+                    onChange={(e) => {
+                      const newUp = e.target.value;
+                      const upNum = Number(newUp);
+                      const poNum = Number(qtyPoPcs);
+
+                      let autoQty = stepDraft.qtyReq;
+                      if (upNum > 0 && poNum > 0) {
+                        autoQty = String(Math.ceil(poNum / upNum));
+                      }
+
+                      setStepDraft((d) => ({ ...d, up: newUp, qtyReq: autoQty }));
+                    }}
+                    placeholder="contoh: 4"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Machine (optional)</div>
+                  <select
+                    value={stepDraft.machineId ?? ""}
+                    onChange={(e) =>
+                      setStepDraft((d) => ({
+                        ...d,
+                        machineId: e.target.value ? Number(e.target.value) : null,
+                      }))
+                    }
+                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                    disabled={machines.isLoading}
+                  >
+                    <option value="">(optional)</option>
+                    {(machines.data ?? []).map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Tanggal Mulai</div>
+                  <Input
+                    type="date"
+                    value={stepDraft.startDate ?? ""}
+                    onChange={(e) =>
+                      setStepDraft((d) => ({ ...d, startDate: e.target.value || null }))
+                    }
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-2 sm:col-span-2">
+                  <div className="text-sm font-medium">Material (optional)</div>
+                  <select
+                    value={stepDraft.materialId ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value ? Number(e.target.value) : null;
+                      
+                      let autoQty = "";
+                      if (v) {
+                        const upNum = Number(stepDraft.up);
+                        const poNum = Number(qtyPoPcs);
+                        if (upNum > 0 && poNum > 0) {
+                          autoQty = String(Math.ceil(poNum / upNum));
+                        }
+                      }
+
+                      setStepDraft((d) => ({ ...d, materialId: v, qtyReq: autoQty }));
+                    }}
+                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                    disabled={materials.isLoading}
+                  >
+                    <option value="">(None)</option>
+                    {(materials.data ?? []).map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Qty Material</div>
+                  <Input
+                    type="number"
+                    value={stepDraft.qtyReq}
+                    onChange={(e) => setStepDraft((d) => ({ ...d, qtyReq: e.target.value }))}
+                    placeholder="Req"
+                    disabled={!stepDraft.materialId}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setStepDialogOpen(false)}>
+                Batal
+              </Button>
+              <Button onClick={saveStepDraft}>
+                {editingStepKey ? "Simpan" : "Tambah"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }

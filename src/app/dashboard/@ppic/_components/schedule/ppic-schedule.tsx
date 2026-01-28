@@ -238,82 +238,76 @@ function buildShiftSlots(items: ScheduleItem[], range: { start: Date; end: Date 
   for (const pro of items) {
     const steps = (pro.steps ?? []).slice().sort((a, b) => a.orderNo - b.orderNo);
 
-    // Initial cursor based on PRO start
-    let cursorDate = pro.startDate ? new Date(pro.startDate) : null;
-    let cursorDay = cursorDate ? startOfDay(cursorDate) : null;
-    let cursorShift: ShiftNo = cursorDate ? shiftFromDate(cursorDate) : 1;
-
     for (const step of steps) {
-       // Check if step has specific start
-       const stepStart = (step as any).startDate;
-       if (stepStart) {
-          const d = new Date(stepStart);
-          cursorDay = startOfDay(d);
-          cursorShift = shiftFromDate(d);
-       }
-       
-       if (!cursorDay) continue;
+       // Determine Step Start
+       // Priority: Step Start > Pro Start
+       const stepStartVal = (step as any).startDate ?? pro.startDate;
+       if (!stepStartVal) continue;
 
+       // 1. Calculate Need
        const need = shiftsNeededForStep({
           qtyPoPcs: pro.qtyPoPcs,
           up: step.up ?? null,
           stdOutputPerShift: step.machine?.stdOutputPerShift,
        });
 
-       // Check if step has custom shift scheduling
+       // 2. Prepare Custom Shifts Map
        const customShifts = (step as any).shifts ?? [];
-       const shiftMap = new Map<number, Date>(
-         customShifts.map((s: any) => [s.shiftIndex, new Date(s.scheduledDate)] as [number, Date])
-       );
+       const customMap = new Map<number, Date>();
+       customShifts.forEach((s: any) => {
+           customMap.set(s.shiftIndex, new Date(s.scheduledDate));
+       });
 
+       // 3. Default Cursor Setup
+       let cursorDate = new Date(stepStartVal);
+       let cursorDay = startOfDay(cursorDate);
+       let cursorShift = shiftFromDate(cursorDate);
+
+       // 4. Iterate all needed shifts
        for (let i = 0; i < need; i++) {
-          // Use custom shift date if available, otherwise use calculated cursor
-          let actualDay: Date;
-          let actualShift: ShiftNo;
-          
-          const customDate = shiftMap.get(i);
-          if (customDate) {
-             actualDay = startOfDay(customDate);
-             actualShift = shiftFromDate(customDate);
-          } else {
-             actualDay = cursorDay;
-             actualShift = cursorShift;
-          }
+           let actualDay: Date;
+           let actualShift: number; // 1, 2, 3
 
-          const slotId = `${dateKey(actualDay)}::${actualShift}`;
+           if (customMap.has(i)) {
+               const d = customMap.get(i)!;
+               actualDay = startOfDay(d);
+               actualShift = shiftFromDate(d);
+           } else {
+               actualDay = new Date(cursorDay);
+               actualShift = cursorShift;
+           }
 
-          if (actualDay >= range.start && actualDay <= range.end) {
-             const arr = map.get(slotId) ?? [];
-             arr.push({
-                key: `${step.id}::${i}::${slotId}`, // stepId::shiftIndex::slotId
-                proId: pro.id,
-                stepId: step.id,
-                shiftIndex: i, // Add shift index
-                proNumber: pro.proNumber,
-                productName: pro.productName,
-                status: pro.status,
-                orderNo: step.orderNo,
-                processCode: pro.process?.code ?? "??",
-                processName: pro.process?.name ?? "(tanpa nama)",
-                machineName: step.machine?.name ?? null,
-                up: step.up ?? 1,
-                qtyPoPcs: pro.qtyPoPcs,
-                startDate: applyShiftStart(actualDay, actualShift),
-                materials: (step as any).materials ?? [],
-             });
-             map.set(slotId, arr);
-          }
+           // Check if in range
+           if (actualDay >= range.start && actualDay <= range.end) {
+               const slotId = `${dateKey(actualDay)}::${actualShift}`;
+               const arr = map.get(slotId) ?? [];
+               arr.push({
+                   key: `${step.id}::${i}::${slotId}`, // stepId::shiftIndex::slotId
+                   proId: pro.id,
+                   stepId: step.id,
+                   shiftIndex: i,
+                   proNumber: pro.proNumber,
+                   productName: pro.productName,
+                   status: pro.status,
+                   orderNo: step.orderNo,
+                   processCode: pro.process?.code ?? "??",
+                   processName: pro.process?.name ?? "",
+                   machineName: step.machine?.name ?? null,
+                   up: step.up ?? 1,
+                   qtyPoPcs: pro.qtyPoPcs,
+                   startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
+                   materials: (step as any).materials ?? [],
+               });
+               map.set(slotId, arr);
+           }
 
-          // Advance cursor for next iteration (if no custom date)
-          if (!shiftMap.has(i + 1)) {
-             if (cursorShift < 3) {
-                cursorShift = (cursorShift + 1) as ShiftNo;
-             } else {
-                cursorShift = 1;
-                cursorDay = new Date(cursorDay);
-                cursorDay.setDate(cursorDay.getDate() + 1);
-             }
-          }
+           // Advance Default Cursor
+           if (cursorShift < 3) {
+               cursorShift++;
+           } else {
+               cursorShift = 1;
+               cursorDay.setDate(cursorDay.getDate() + 1);
+           }
        }
     }
   }
@@ -777,13 +771,107 @@ export default function PPICSchedule({ onSelectPro }: Props) {
   }, [monthDays]);
 
   const itemsByDay = React.useMemo(() => {
-    const map = new Map<string, ScheduleItem[]>();
-    for (const item of monthSchedule.data ?? []) {
-      if (!item.startDate) continue;
-      const key = dateKey(new Date(item.startDate));
-      const arr = map.get(key) ?? [];
-      arr.push(item);
-      map.set(key, arr);
+    // New Logic: Iterate granular shifts to populate days
+    const map = new Map<string, Array<{
+        stepId: number;
+        proId: number;
+        proNumber: string;
+        productName: string;
+        machineName: string;
+        processCode: string;
+        processName: string;
+        orderNo: number;
+        up: number;
+        qtyPoPcs: number;
+        status: string;
+        startDate: Date;
+        materials: Array<{
+          material: { name: string; uom: string };
+          materialId: number;
+          qtyReq: any;
+        }>;
+    }>>();
+
+    for (const pro of monthSchedule.data ?? []) {
+      const steps = (pro.steps ?? []).slice().sort((a, b) => a.orderNo - b.orderNo);
+      
+      for (const step of steps) {
+        // Fallback logic for basic step duration
+        const stepStartVal = (step as any).startDate ?? pro.startDate;
+        if (!stepStartVal) continue;
+        
+        // 1. Calculate how many shifts needed
+        const need = shiftsNeededForStep({
+            qtyPoPcs: pro.qtyPoPcs,
+            up: step.up ?? null,
+            stdOutputPerShift: step.machine?.stdOutputPerShift,
+        });
+
+        // 2. Prepare custom shifts map
+        const customShifts = (step as any).shifts ?? [];
+        const customMap = new Map<number, Date>();
+        customShifts.forEach((s: any) => {
+            customMap.set(s.shiftIndex, new Date(s.scheduledDate));
+        });
+
+        // 3. Iterate all needed shifts
+        let cursorDate = new Date(stepStartVal); // default cursor
+        let cursorStartShift = shiftFromDate(cursorDate);
+        // Normalize cursor to start of day for logic
+        let cursorDay = startOfDay(cursorDate);
+        let cursorShift = cursorStartShift; 
+
+        // Track which days this step touches
+        const touchedDays = new Set<string>();
+
+        for (let i = 0; i < need; i++) {
+             // Determine actual date/shift for this index
+             let actualDay: Date;
+             // let actualShift: number;
+
+             if (customMap.has(i)) {
+                 const d = customMap.get(i)!;
+                 actualDay = startOfDay(d);
+                 // actualShift = shiftFromDate(d);
+             } else {
+                 actualDay = new Date(cursorDay);
+                 // actualShift = cursorShift;
+             }
+
+             const dateStr = dateKey(actualDay);
+             
+             // Only add once per day per step (to avoid duplicate chips for same step on same day)
+             if (!touchedDays.has(dateStr)) {
+                 touchedDays.add(dateStr);
+                 
+                 const arr = map.get(dateStr) ?? [];
+                 arr.push({
+                    stepId: step.id,
+                    proId: pro.id,
+                    proNumber: pro.proNumber,
+                    productName: pro.productName,
+                    machineName: step.machine?.name ?? "No Machine",
+                    processCode: pro.process?.code ?? "",
+                    processName: pro.process?.name ?? "",
+                    orderNo: step.orderNo,
+                    up: step.up ?? 1,
+                    qtyPoPcs: pro.qtyPoPcs,
+                    status: pro.status,
+                    startDate: actualDay,
+                    materials: (step as any).materials ?? [],
+                 });
+                 map.set(dateStr, arr);
+             }
+
+             // Advance default cursor
+             if (cursorShift < 3) {
+                 cursorShift++;
+             } else {
+                 cursorShift = 1;
+                 cursorDay.setDate(cursorDay.getDate() + 1);
+             }
+        }
+      }
     }
     return map;
   }, [monthSchedule.data]);
@@ -812,49 +900,70 @@ export default function PPICSchedule({ onSelectPro }: Props) {
         const stepStartVal = (step as any).startDate ?? pro.startDate; // Cast to any if types are stale
         if (!stepStartVal) continue;
 
-        const start = new Date(stepStartVal);
-        let day = startOfDay(start);
-        let shift = shiftFromDate(start);
-
+        // 1. Calculate Need
         const need = shiftsNeededForStep({
           qtyPoPcs: pro.qtyPoPcs,
           up: step.up ?? null,
           stdOutputPerShift: step.machine?.stdOutputPerShift,
         });
 
-        for (let i = 0; i < need; i++) {
-          const slotId = `${dateKey(day)}::${step.machine.id}`;
-          
-          if (day >= range.start && day <= range.end) {
-             const arr = map.get(slotId) ?? [];
-             arr.push({
-                key: `${step.id}::${slotId}::${i}`, // Use STEP ID
-                proId: pro.id,
-                stepId: step.id, // Add stepId
-                proNumber: pro.proNumber,
-                productName: pro.productName,
-                status: pro.status,
-                orderNo: step.orderNo,
-                processCode: pro.process?.code ?? "??",
-                processName: pro.process?.name ?? "(tanpa nama)",
-                machineName: step.machine?.name ?? null,
-                up: step.up ?? 1,
-                qtyPoPcs: pro.qtyPoPcs,
-                startDate: applyShiftStart(day, shift),
-                materials: (step as any).materials ?? [],
-             });
-             map.set(slotId, arr);
-          }
+        // 2. Prepare Custom Shifts
+        const customShifts = (step as any).shifts ?? [];
+        const customMap = new Map<number, Date>();
+        customShifts.forEach((s: any) => {
+           customMap.set(s.shiftIndex, new Date(s.scheduledDate));
+        });
 
-          // Advance logic
-          if (shift < 3) {
-             shift = (shift + 1) as ShiftNo;
-             // Date stays same
-          } else {
-             shift = 1;
-             day = new Date(day);
-             day.setDate(day.getDate() + 1);
-          }
+        // 3. Setup Default Cursor
+        const start = new Date(stepStartVal);
+        let cursorDay = startOfDay(start);
+        let cursorShift = shiftFromDate(start);
+
+        // 4. Iterate Shifts
+        for (let i = 0; i < need; i++) {
+           let actualDay: Date;
+           let actualShift: number; // needed for logic, though machine view aggregates by day
+
+           if (customMap.has(i)) {
+               const d = customMap.get(i)!;
+               actualDay = startOfDay(d);
+               actualShift = shiftFromDate(d);
+           } else {
+               actualDay = new Date(cursorDay);
+               actualShift = cursorShift;
+           }
+
+           const slotId = `${dateKey(actualDay)}::${step.machine.id}`;
+          
+           if (actualDay >= range.start && actualDay <= range.end) {
+              const arr = map.get(slotId) ?? [];
+              arr.push({
+                 key: `${step.id}::${slotId}::${i}`, // Use STEP ID + Shift Index
+                 proId: pro.id,
+                 stepId: step.id, 
+                 shiftIndex: i,
+                 proNumber: pro.proNumber,
+                 productName: pro.productName,
+                 status: pro.status,
+                 orderNo: step.orderNo,
+                 processCode: pro.process?.code ?? "??",
+                 processName: pro.process?.name ?? "(tanpa nama)",
+                 machineName: step.machine?.name ?? null,
+                 up: step.up ?? 1,
+                 qtyPoPcs: pro.qtyPoPcs,
+                 startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
+                 materials: (step as any).materials ?? [],
+              });
+              map.set(slotId, arr);
+           }
+
+           // Advance Logic
+           if (cursorShift < 3) {
+              cursorShift++;
+           } else {
+              cursorShift = 1;
+              cursorDay.setDate(cursorDay.getDate() + 1);
+           }
         }
       }
     }
@@ -976,30 +1085,33 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                   <div className="text-[10px] italic opacity-25">-</div>
                                ) : (
                                   <div className="space-y-2">
-                                     {slotItems.map((it) => (
-                                       <DraggableChip 
-                                         key={it.key} 
-                                         id={it.key} 
-                                         onSelect={() => onSelectPro?.(it.proId)}
-                                         tooltip={<PROTooltipContent {...it} />}
-                                       >
-                                         <div className="flex items-center justify-between gap-2">
-                                            <div className="truncate font-semibold text-blue-700">{it.proNumber}</div>
-                                            <Badge variant="secondary" className="h-5 text-[10px]">{it.status}</Badge>
-                                         </div>
-                                         <div className="truncate text-[11px] opacity-80">{it.productName}</div>
-                                         <div className="mt-1 flex flex-wrap gap-1">
-                                            <Badge variant="outline" className="h-4 max-w-full text-[9px]">
-                                              <span className="truncate">{it.processCode} {it.processName}</span>
-                                            </Badge>
-                                            {it.machineName && (
+                                     {slotItems.map((it) => {
+                                       const { key, ...rest } = it;
+                                       return (
+                                         <DraggableChip 
+                                           key={it.key} 
+                                           id={it.key} 
+                                           onSelect={() => onSelectPro?.(it.proId)}
+                                           tooltip={<PROTooltipContent {...rest} />}
+                                         >
+                                           <div className="flex items-center justify-between gap-2">
+                                              <div className="truncate font-semibold text-blue-700">{it.proNumber}</div>
+                                              <Badge variant="secondary" className="h-5 text-[10px]">{it.status}</Badge>
+                                           </div>
+                                           <div className="truncate text-[11px] opacity-80">{it.productName}</div>
+                                           <div className="mt-1 flex flex-wrap gap-1">
                                               <Badge variant="outline" className="h-4 max-w-full text-[9px]">
-                                                 <span className="truncate">M: {it.machineName}</span>
+                                                <span className="truncate">{it.processCode} {it.processName}</span>
                                               </Badge>
-                                            )}
-                                         </div>
-                                       </DraggableChip>
-                                     ))}
+                                              {it.machineName && (
+                                                <Badge variant="outline" className="h-4 max-w-full text-[9px]">
+                                                   <span className="truncate">M: {it.machineName}</span>
+                                                </Badge>
+                                              )}
+                                           </div>
+                                         </DraggableChip>
+                                       );
+                                     })}
                                   </div>
                                )}
                             </DroppableCell>
@@ -1032,26 +1144,29 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                        <div className="text-[10px] italic opacity-25">-</div>
                                     ) : (
                                        <div className="space-y-2">
-                                          {slotItems.map((it) => (
-                                            <DraggableChip 
-                                          key={it.key} 
-                                          id={it.key} 
-                                          onSelect={() => onSelectPro?.(it.proId)}
-                                          tooltip={<PROTooltipContent {...it} />}
-                                        >
-                                               <div className="flex items-center justify-between gap-2">
-                                                  <div className="truncate font-semibold text-blue-700">{it.proNumber}</div>
-                                               </div>
-                                               <div className="truncate text-[11px] opacity-80" title={it.productName}>
-                                                  {it.productName}
-                                               </div>
-                                               <div className="mt-1">
-                                                   <Badge variant="outline" className="h-4 max-w-full text-[9px]">
-                                                      <span className="truncate">{it.processCode} {it.processName}</span>
-                                                   </Badge>
-                                               </div>
-                                            </DraggableChip>
-                                          ))}
+                                          {slotItems.map((it) => {
+                                            const { key, ...rest } = it;
+                                            return (
+                                              <DraggableChip 
+                                                key={it.key} 
+                                                id={it.key} 
+                                                onSelect={() => onSelectPro?.(it.proId)}
+                                                tooltip={<PROTooltipContent {...rest} />}
+                                              >
+                                                 <div className="flex items-center justify-between gap-2">
+                                                    <div className="truncate font-semibold text-blue-700">{it.proNumber}</div>
+                                                 </div>
+                                                 <div className="truncate text-[11px] opacity-80" title={it.productName}>
+                                                    {it.productName}
+                                                 </div>
+                                                 <div className="mt-1">
+                                                     <Badge variant="outline" className="h-4 max-w-full text-[9px]">
+                                                        <span className="truncate">{it.processCode} {it.processName}</span>
+                                                     </Badge>
+                                                 </div>
+                                              </DraggableChip>
+                                            );
+                                          })}
                                        </div>
                                     )}
                                  </DroppableCell>
@@ -1135,64 +1250,13 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                           <div className="mt-2 space-y-1.5">
                             {monthSchedule.isLoading ? (
                               <div className="text-[10px] opacity-40">Loading...</div>
-                            ) : (() => {
-                                // Get all steps for this day across all machines
-                                const daySteps: Array<{
-                                  stepId: number;
-                                  proId: number;
-                                  proNumber: string;
-                                  productName: string;
-                                  machineName: string;
-                                  processCode: string;
-                                  processName: string;
-                                  orderNo: number;
-                                  up: number;
-                                  qtyPoPcs: number;
-                                  status: string;
-                                  startDate: Date;
-                                  materials: Array<{
-                                    material: { name: string; uom: string };
-                                    materialId: number;
-                                    qtyReq: any;
-                                  }>;
-                                }> = [];
-
-                                // Collect all steps scheduled for this day
-                                for (const pro of monthSchedule.data ?? []) {
-                                  for (const step of pro.steps) {
-                                    const stepStartDate = step.startDate 
-                                      ? new Date(step.startDate) 
-                                      : (pro.startDate ? new Date(pro.startDate) : null);
-                                    
-                                    if (!stepStartDate) continue;
-                                    if (dateKey(stepStartDate) !== k) continue;
-                                    
-                                    daySteps.push({
-                                      stepId: step.id,
-                                      proId: pro.id,
-                                      proNumber: pro.proNumber,
-                                      productName: pro.productName,
-                                      machineName: step.machine?.name ?? "No Machine",
-                                      processCode: pro.process?.code ?? "",
-                                      processName: pro.process?.name ?? "",
-                                      orderNo: step.orderNo,
-                                      up: step.up ?? 1,
-                                      qtyPoPcs: pro.qtyPoPcs,
-                                      status: pro.status,
-                                      startDate: stepStartDate,
-                                      materials: (step as any).materials ?? [],
-                                    });
-                                  }
-                                }
-
-                                if (daySteps.length === 0) {
-                                  return <div className="text-[10px] italic opacity-25">No Schedule</div>;
-                                }
-
-                                return daySteps.map((stepInfo) => (
+                            ) : items.length === 0 ? (
+                                <div className="text-[10px] italic opacity-25">-</div>
+                            ) : (
+                                items.map((stepInfo, idx) => (
                                   <DraggableChip
-                                    key={`${stepInfo.stepId}::${k}`}
-                                    id={`${stepInfo.stepId}::${k}`}
+                                    key={`${stepInfo.stepId}::${k}::${idx}`}
+                                    id={`${stepInfo.stepId}::${k}::${idx}`} // Unique ID for drag
                                     onSelect={() => onSelectPro?.(stepInfo.proId)}
                                     tooltip={
                                       <PROTooltipContent 
@@ -1216,9 +1280,8 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                       </Badge>
                                     </div>
                                   </DraggableChip>
-                                ));
-                              })()
-                            }
+                                ))
+                            )}
                           </div>
                         </DroppableCell>
                       );

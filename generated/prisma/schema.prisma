@@ -97,7 +97,7 @@ model Process {
   code String @unique @db.VarChar(2) // WAJIB 2 digit: "11"
   name String @unique
 
-  steps ProStep[]
+  pros Pro[]
 }
 
 model ProSequence {
@@ -108,11 +108,14 @@ model ProSequence {
 
 model Pro {
   id          Int       @id @default(autoincrement())
-  proNumber   String    @unique @db.VarChar(9) // 6 digit prefix + 3 digit seq
+  proNumber   String    @unique @db.VarChar(9)
   productName String
   qtyPoPcs    Int
   startDate   DateTime?
   status      ProStatus @default(OPEN)
+
+  processId Int?
+  process   Process? @relation(fields: [processId], references: [id])
 
   steps ProStep[]
 
@@ -125,9 +128,7 @@ model ProStep {
   proId Int
   pro   Pro @relation(fields: [proId], references: [id], onDelete: Cascade)
 
-  orderNo   Int // 1,2,3...
-  processId Int
-  process   Process @relation(fields: [processId], references: [id])
+  orderNo Int // 1,2,3...
 
   up Int?
 
