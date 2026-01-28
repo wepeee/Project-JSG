@@ -239,75 +239,33 @@ function buildShiftSlots(items: ScheduleItem[], range: { start: Date; end: Date 
     const steps = (pro.steps ?? []).slice().sort((a, b) => a.orderNo - b.orderNo);
 
     for (const step of steps) {
-       // Determine Step Start
-       // Priority: Step Start > Pro Start
        const stepStartVal = (step as any).startDate ?? pro.startDate;
        if (!stepStartVal) continue;
 
-       // 1. Calculate Need
-       const need = shiftsNeededForStep({
-          qtyPoPcs: pro.qtyPoPcs,
-          up: step.up ?? null,
-          stdOutputPerShift: step.machine?.stdOutputPerShift,
-       });
+       const actualDay = startOfDay(new Date(stepStartVal));
+       const actualShift = shiftFromDate(new Date(stepStartVal));
 
-       // 2. Prepare Custom Shifts Map
-       const customShifts = (step as any).shifts ?? [];
-       const customMap = new Map<number, Date>();
-       customShifts.forEach((s: any) => {
-           customMap.set(s.shiftIndex, new Date(s.scheduledDate));
-       });
-
-       // 3. Default Cursor Setup
-       let cursorDate = new Date(stepStartVal);
-       let cursorDay = startOfDay(cursorDate);
-       let cursorShift = shiftFromDate(cursorDate);
-
-       // 4. Iterate all needed shifts
-       for (let i = 0; i < need; i++) {
-           let actualDay: Date;
-           let actualShift: number; // 1, 2, 3
-
-           if (customMap.has(i)) {
-               const d = customMap.get(i)!;
-               actualDay = startOfDay(d);
-               actualShift = shiftFromDate(d);
-           } else {
-               actualDay = new Date(cursorDay);
-               actualShift = cursorShift;
-           }
-
-           // Check if in range
-           if (actualDay >= range.start && actualDay <= range.end) {
-               const slotId = `${dateKey(actualDay)}::${actualShift}`;
-               const arr = map.get(slotId) ?? [];
-               arr.push({
-                   key: `${step.id}::${i}::${slotId}`, // stepId::shiftIndex::slotId
-                   proId: pro.id,
-                   stepId: step.id,
-                   shiftIndex: i,
-                   proNumber: pro.proNumber,
-                   productName: pro.productName,
-                   status: pro.status,
-                   orderNo: step.orderNo,
-                   processCode: pro.process?.code ?? "??",
-                   processName: pro.process?.name ?? "",
-                   machineName: step.machine?.name ?? null,
-                   up: step.up ?? 1,
-                   qtyPoPcs: pro.qtyPoPcs,
-                   startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
-                   materials: (step as any).materials ?? [],
-               });
-               map.set(slotId, arr);
-           }
-
-           // Advance Default Cursor
-           if (cursorShift < 3) {
-               cursorShift++;
-           } else {
-               cursorShift = 1;
-               cursorDay.setDate(cursorDay.getDate() + 1);
-           }
+       // Check if in range
+       if (actualDay >= range.start && actualDay <= range.end) {
+           const slotId = `${dateKey(actualDay)}::${actualShift}`;
+           const arr = map.get(slotId) ?? [];
+           arr.push({
+               key: `${step.id}::${slotId}`, 
+               proId: pro.id,
+               stepId: step.id,
+               proNumber: pro.proNumber,
+               productName: pro.productName,
+               status: pro.status,
+               orderNo: step.orderNo,
+               processCode: pro.process?.code ?? "??",
+               processName: pro.process?.name ?? "",
+               machineName: step.machine?.name ?? null,
+               up: step.up ?? 1,
+               qtyPoPcs: pro.qtyPoPcs,
+               startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
+               materials: (step as any).materials ?? [],
+           });
+           map.set(slotId, arr);
        }
     }
   }
@@ -659,82 +617,30 @@ export default function PPICSchedule({ onSelectPro }: Props) {
     const activeStr = String(active.id);
     const partsActive = activeStr.split("::");
     
-    if (viewMode === "machine") {
-       const [stepIdStr, dateStr] = partsActive;
-       const stepId = Number(stepIdStr);
-       
-       const overStr = String(over.id);
-       const overParts = overStr.split("::");
-       const overDateStr = overParts[0];
-       
-       const dOver = keyToDate(overDateStr ?? "");
-       if (!dOver || !Number.isFinite(stepId)) return;
-       
-       // Fire-and-forget: optimistic update happens in onMutate
-       rescheduleStep.mutate({ stepId, startDate: dOver });
-       return;
-    }
+    // Format: stepId::dateStr or proId::...
+    const id = Number(partsActive[0]);
+    if (!Number.isFinite(id)) return;
 
-    // SHIFT VIEW LOGIC
-    if (viewMode === "shift") {
-       const activeStr = String(active.id);
-       
-       if (activeStr.includes("::")) {
-          const parts = activeStr.split("::");
-          
-          // Per-shift format (4+ parts)
-          if (parts.length >= 4) {
-             const stepId = Number(parts[0]);
-             const shiftIndex = Number(parts[1]);
-             
-             const overStr = String(over.id);
-             const overParts = overStr.split("::");
-             const dateStr = overParts[0] ?? "";
-             const shiftStr = overParts[1];
-             
-             const d0 = keyToDate(dateStr);
-             if (d0 && Number.isFinite(stepId) && Number.isFinite(shiftIndex)) {
-                const shift: ShiftNo = (() => {
-                  const s = shiftStr ? Number(shiftStr) : 1;
-                  if (s === 2) return 2;
-                  if (s === 3) return 3;
-                  return 1;
-                })();
-                
-                const scheduledDate = applyShiftStart(d0, shift);
-                
-                // Fire-and-forget
-                rescheduleShift.mutate({ stepId, shiftIndex, scheduledDate });
-                return;
-             }
-          }
-       }
+    const overStr = String(over.id);
+    const overParts = overStr.split("::");
+    const dateStr = overParts[0] ?? "";
+    const shiftStr = overParts[1];
 
-       // Fallback for PRO-level reschedule
-       const proIdStr = activeStr.includes("::") ? activeStr.split("::")[0] : activeStr;
-       const proId = Number(proIdStr);
-       
-       const overStr = String(over.id);
-       const parts = overStr.split("::");
-       const dateStr = parts[0] ?? "";
-       const shiftStr = parts[1];
-       
-       const d0 = keyToDate(dateStr);
-       
-       if (d0 && Number.isFinite(proId)) {
-          const shift: ShiftNo = (() => {
-            const s = shiftStr ? Number(shiftStr) : 1;
-            if (s === 2) return 2;
-            if (s === 3) return 3;
-            return 1;
-          })();
+    const d0 = keyToDate(dateStr);
+    if (!d0) return;
 
-          const newStart = applyShiftStart(d0, shift);
-          
-          // Fire-and-forget
-          reschedule.mutate({ id: proId, startDate: newStart });
-       }
-    }
+    const shift: ShiftNo = (() => {
+      const s = shiftStr ? Number(shiftStr) : 1;
+      if (s === 2) return 2;
+      if (s === 3) return 3;
+      return 1;
+    })();
+
+    const newStart = applyShiftStart(d0, shift);
+
+    // If it's a step (has ::), we reschedule step. 
+    // This now covers everything because every shift is a step.
+    rescheduleStep.mutate({ stepId: id, startDate: newStart });
   };
   const monthLabel = currentMonth.toLocaleDateString("id-ID", {
     month: "long",
@@ -771,7 +677,6 @@ export default function PPICSchedule({ onSelectPro }: Props) {
   }, [monthDays]);
 
   const itemsByDay = React.useMemo(() => {
-    // New Logic: Iterate granular shifts to populate days
     const map = new Map<string, Array<{
         stepId: number;
         proId: number;
@@ -793,84 +698,30 @@ export default function PPICSchedule({ onSelectPro }: Props) {
     }>>();
 
     for (const pro of monthSchedule.data ?? []) {
-      const steps = (pro.steps ?? []).slice().sort((a, b) => a.orderNo - b.orderNo);
-      
-      for (const step of steps) {
-        // Fallback logic for basic step duration
+      for (const step of pro.steps ?? []) {
         const stepStartVal = (step as any).startDate ?? pro.startDate;
         if (!stepStartVal) continue;
         
-        // 1. Calculate how many shifts needed
-        const need = shiftsNeededForStep({
-            qtyPoPcs: pro.qtyPoPcs,
-            up: step.up ?? null,
-            stdOutputPerShift: step.machine?.stdOutputPerShift,
+        const actualDay = startOfDay(new Date(stepStartVal));
+        const dateStr = dateKey(actualDay);
+        
+        const arr = map.get(dateStr) ?? [];
+        arr.push({
+          stepId: step.id,
+          proId: pro.id,
+          proNumber: pro.proNumber,
+          productName: pro.productName,
+          machineName: step.machine?.name ?? "No Machine",
+          processCode: pro.process?.code ?? "",
+          processName: pro.process?.name ?? "",
+          orderNo: step.orderNo,
+          up: step.up ?? 1,
+          qtyPoPcs: pro.qtyPoPcs,
+          status: pro.status,
+          startDate: actualDay,
+          materials: (step as any).materials ?? [],
         });
-
-        // 2. Prepare custom shifts map
-        const customShifts = (step as any).shifts ?? [];
-        const customMap = new Map<number, Date>();
-        customShifts.forEach((s: any) => {
-            customMap.set(s.shiftIndex, new Date(s.scheduledDate));
-        });
-
-        // 3. Iterate all needed shifts
-        let cursorDate = new Date(stepStartVal); // default cursor
-        let cursorStartShift = shiftFromDate(cursorDate);
-        // Normalize cursor to start of day for logic
-        let cursorDay = startOfDay(cursorDate);
-        let cursorShift = cursorStartShift; 
-
-        // Track which days this step touches
-        const touchedDays = new Set<string>();
-
-        for (let i = 0; i < need; i++) {
-             // Determine actual date/shift for this index
-             let actualDay: Date;
-             // let actualShift: number;
-
-             if (customMap.has(i)) {
-                 const d = customMap.get(i)!;
-                 actualDay = startOfDay(d);
-                 // actualShift = shiftFromDate(d);
-             } else {
-                 actualDay = new Date(cursorDay);
-                 // actualShift = cursorShift;
-             }
-
-             const dateStr = dateKey(actualDay);
-             
-             // Only add once per day per step (to avoid duplicate chips for same step on same day)
-             if (!touchedDays.has(dateStr)) {
-                 touchedDays.add(dateStr);
-                 
-                 const arr = map.get(dateStr) ?? [];
-                 arr.push({
-                    stepId: step.id,
-                    proId: pro.id,
-                    proNumber: pro.proNumber,
-                    productName: pro.productName,
-                    machineName: step.machine?.name ?? "No Machine",
-                    processCode: pro.process?.code ?? "",
-                    processName: pro.process?.name ?? "",
-                    orderNo: step.orderNo,
-                    up: step.up ?? 1,
-                    qtyPoPcs: pro.qtyPoPcs,
-                    status: pro.status,
-                    startDate: actualDay,
-                    materials: (step as any).materials ?? [],
-                 });
-                 map.set(dateStr, arr);
-             }
-
-             // Advance default cursor
-             if (cursorShift < 3) {
-                 cursorShift++;
-             } else {
-                 cursorShift = 1;
-                 cursorDay.setDate(cursorDay.getDate() + 1);
-             }
-        }
+        map.set(dateStr, arr);
       }
     }
     return map;

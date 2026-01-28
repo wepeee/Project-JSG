@@ -9,6 +9,28 @@ const pad3 = (n: number) => String(n).padStart(3, "0"); // 001..999
 const mm = (d: Date) => String(d.getMonth() + 1).padStart(2, "0");
 const yy = (d: Date) => String(d.getFullYear()).slice(-2);
 
+const startOfDay = (d: Date) => {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+};
+
+const getShiftFromTime = (d: Date) => {
+  const h = d.getHours();
+  if (h >= 16) return 2; // Shift 3
+  if (h >= 11) return 1; // Shift 2
+  return 0; // Shift 1
+};
+
+const getShiftDate = (day: Date, shiftIndex: number) => {
+  const d = new Date(day);
+  if (shiftIndex === 0) d.setHours(6, 0, 0, 0);
+  else if (shiftIndex === 1) d.setHours(11, 0, 0, 0);
+  else d.setHours(16, 0, 0, 0);
+  d.setMinutes(0, 0, 0);
+  return d;
+};
+
 export const prosRouter = createTRPCRouter({
   list: ppicProcedure
     .input(
@@ -88,6 +110,7 @@ export const prosRouter = createTRPCRouter({
         processId: z.number().int().positive(), // New: header process
         qtyPoPcs: z.number().int().positive(),
         startDate: z.coerce.date().optional(),
+        expand: z.boolean().default(true).optional(),
         steps: z
           .array(
             z.object({
@@ -153,54 +176,60 @@ export const prosRouter = createTRPCRouter({
             qtyPoPcs: input.qtyPoPcs,
             startDate: firstStepDate, // Auto from first step
             status: "OPEN",
-            steps: {
-              create: input.steps.map((s, idx) => ({
-                orderNo: idx + 1,
-                up: s.up,
-                machineId: s.machineId ?? null,
-                startDate: s.startDate ?? undefined,
-                materials: {
-                  create: (s.materials ?? []).map((m) => ({
-                    materialId: m.materialId,
-                    qtyReq: new Prisma.Decimal(m.qtyReq),
-                  })),
-                },
-              })),
-            },
           },
         });
 
         // -------------------------------------------------------------
-        // AUTOMATIC SCHEDULING LOGIC (Sequential Scheduling)
-        // If first step has startDate, auto-schedule remaining steps sequentially.
+        // AUTOMATIC EXPANSION: 1 Shift = 1 ProStep row
         
-        if (firstStepDate) {
-           const createdSteps = await tx.proStep.findMany({
-             where: { proId: created.id },
-             orderBy: { orderNo: "asc" },
-             include: { machine: true }
-           });
-           
-           let currentDate = new Date(firstStepDate);
-           
-           for (const step of createdSteps) {
-             // Only update steps that don't have startDate already
-             if (!step.startDate) {
-               await tx.proStep.update({
-                 where: { id: step.id },
-                 data: { startDate: currentDate }
-               });
-             }
-             
-             // Calculate duration to advance cursor for next step
-             const std = step.machine?.stdOutputPerShift || 1000;
-             const up = step.up || 1;
-             const qty = input.qtyPoPcs;
-             const shifts = Math.ceil(qty / (up * std));
-             const daysToAdd = Math.max(0, shifts / 3);
-             
-             currentDate = new Date(currentDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
-           }
+        let proStartDate = input.startDate ?? new Date();
+        let currentDay = startOfDay(proStartDate);
+        let currentShift = getShiftFromTime(proStartDate);
+
+        let globalOrderNo = 1;
+
+        for (const inputStep of input.steps) {
+          const std = 1000; // Default if no machine
+          const up = inputStep.up || 1;
+          const qty = input.qtyPoPcs;
+          
+          let machineStd = std;
+          if (inputStep.machineId) {
+             const m = await tx.machine.findUnique({ where: { id: inputStep.machineId }, select: { stdOutputPerShift: true } });
+             if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
+          }
+
+          const need = input.expand !== false ? Math.max(1, Math.ceil(qty / (up * machineStd))) : 1;
+
+          // Use inputStep's startDate as anchor if provided
+          if (inputStep.startDate) {
+            currentDay = startOfDay(new Date(inputStep.startDate));
+            currentShift = getShiftFromTime(new Date(inputStep.startDate));
+          }
+
+          for (let i = 0; i < need; i++) {
+            await tx.proStep.create({
+              data: {
+                proId: created.id,
+                orderNo: globalOrderNo++,
+                up: inputStep.up,
+                machineId: inputStep.machineId ?? null,
+                startDate: getShiftDate(currentDay, currentShift),
+                materials: {
+                  create: (inputStep.materials ?? []).map((m) => ({
+                    materialId: m.materialId,
+                    qtyReq: new Prisma.Decimal(m.qtyReq),
+                  })),
+                },
+              },
+            });
+
+            // Advance cursor if we are expanding OR if no explicit start date on step
+            if (input.expand !== false) {
+               if (currentShift < 2) currentShift++;
+               else { currentShift = 0; currentDay.setDate(currentDay.getDate() + 1); }
+            }
+          }
         }
         // -------------------------------------------------------------
 
@@ -276,6 +305,7 @@ export const prosRouter = createTRPCRouter({
         processId: z.number().int().positive(), // Allow changing process
         qtyPoPcs: z.number().int().positive(),
         startDate: z.coerce.date().optional(),
+        expand: z.boolean().default(false).optional(),
         status: z.enum(["OPEN", "IN_PROGRESS", "DONE", "CANCELLED"]).optional(),
         steps: z
           .array(
@@ -297,11 +327,14 @@ export const prosRouter = createTRPCRouter({
         const oldPro = await tx.pro.findUnique({
           where: { id: input.id },
           select: {
+            qtyPoPcs: true,
             startDate: true,
             steps: {
               select: {
                 id: true,
                 orderNo: true,
+                up: true,
+                machineId: true,
                 startDate: true,
                 shifts: {
                   select: {
@@ -372,78 +405,60 @@ export const prosRouter = createTRPCRouter({
           },
         });
 
-        // 5. Delete old steps (cascade will delete shifts)
+        // 5. Delete old steps
         await tx.proStep.deleteMany({ where: { proId: input.id } });
 
-        // 6. Recreate steps with adjusted dates
-        await tx.proStep.createMany({
-          data: input.steps.map((s) => {
-            // Use adjusted date if delta exists, else use input date
-            let finalStartDate = s.startDate;
-            if (deltaDays !== 0 && adjustedStepDates.has(s.orderNo)) {
-              finalStartDate = adjustedStepDates.get(s.orderNo);
-            }
+        // 6. Recreate steps (EXPANDED)
+        const qtyChanged = oldPro.qtyPoPcs !== input.qtyPoPcs;
+        
+        let currentDay = startOfDay(input.startDate ?? oldPro.startDate ?? new Date());
+        let currentShift = getShiftFromTime(input.startDate ?? oldPro.startDate ?? new Date());
 
-            return {
-              proId: input.id,
-              orderNo: s.orderNo,
-              up: s.up,
-              machineId: s.machineId ?? null,
-              startDate: finalStartDate,
-            };
-          }),
-        });
+        let globalOrderNo = 1;
 
-        // Ambil step baru untuk mapping material (butuh id)
-        const newSteps = await tx.proStep.findMany({
-          where: { proId: input.id },
-          select: { id: true, orderNo: true },
-        });
+        for (const inputStep of input.steps) {
+           const std = 1000;
+           const up = inputStep.up || 1;
+           const qty = input.qtyPoPcs;
+           
+           let machineStd = std;
+           if (inputStep.machineId) {
+              const m = await tx.machine.findUnique({ where: { id: inputStep.machineId }, select: { stdOutputPerShift: true } });
+              if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
+           }
 
-        const stepIdByOrder = new Map(newSteps.map((s) => [s.orderNo, s.id]));
+           const need = input.expand ? Math.max(1, Math.ceil(qty / (up * machineStd))) : 1;
 
-        const mats = input.steps
-          .filter((s) => s.materialId)
-          .map((s) => {
-            const stepId = stepIdByOrder.get(s.orderNo);
-            if (!stepId)
-              throw new Error(`StepId not found for orderNo=${s.orderNo}`);
+           // Shift preservation logic logic removed here for simplicity in this specific rewrite 
+           // and moved to handle shift-as-step expansion directly.
+           
+           if (inputStep.startDate) {
+              currentDay = startOfDay(new Date(inputStep.startDate));
+              currentShift = getShiftFromTime(new Date(inputStep.startDate));
+           }
 
-            return {
-              stepId,
-              materialId: s.materialId!,
-              qtyReq: s.qtyReq ?? 0,
-            };
-          });
+           for (let i = 0; i < need; i++) {
+              await tx.proStep.create({
+                data: {
+                  proId: input.id,
+                  orderNo: globalOrderNo++,
+                  up: inputStep.up,
+                  machineId: inputStep.machineId ?? null,
+                  startDate: getShiftDate(currentDay, currentShift),
+                  materials: {
+                    create: inputStep.materialId ? [{
+                      materialId: inputStep.materialId,
+                      qtyReq: new Prisma.Decimal(inputStep.qtyReq ?? 0),
+                    }] : []
+                  }
+                }
+              });
 
-        if (mats.length) {
-          await tx.proStepMaterial.createMany({ data: mats });
-        }
-
-        // 7. Recreate adjusted shifts if any
-        if (deltaDays !== 0 && adjustedShifts.size > 0) {
-          const shiftsToCreate: Array<{
-            stepId: number;
-            shiftIndex: number;
-            scheduledDate: Date;
-          }> = [];
-
-          for (const [orderNo, shiftList] of adjustedShifts.entries()) {
-            const stepId = stepIdByOrder.get(orderNo);
-            if (stepId) {
-              for (const shift of shiftList) {
-                shiftsToCreate.push({
-                  stepId,
-                  shiftIndex: shift.shiftIndex,
-                  scheduledDate: shift.scheduledDate,
-                });
+              if (input.expand) {
+                 if (currentShift < 2) currentShift++;
+                 else { currentShift = 0; currentDay.setDate(currentDay.getDate() + 1); }
               }
-            }
-          }
-
-          if (shiftsToCreate.length > 0) {
-            await tx.proStepShift.createMany({ data: shiftsToCreate });
-          }
+           }
         }
 
         return tx.pro.findUnique({
