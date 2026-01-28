@@ -201,17 +201,123 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
   const [stepDrafts, setStepDrafts] = React.useState<StepDraft[]>([]);
 
   const update = api.pros.update.useMutation({
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches
+      await utils.pros.getById.cancel();
+      await utils.pros.list.cancel();
+      await utils.pros.getSchedule.cancel();
+      
+      // Snapshot previous values
+      const previousDetail = utils.pros.getById.getData({ id: variables.id });
+      const previousList = utils.pros.list.getData({});
+      const previousSchedule = utils.pros.getSchedule.getData();
+      
+      // Optimistically update detail cache
+      if (previousDetail) {
+        utils.pros.getById.setData(
+          { id: variables.id },
+          {
+            ...previousDetail,
+            productName: variables.productName,
+            qtyPoPcs: variables.qtyPoPcs,
+            startDate: variables.startDate ?? previousDetail.startDate,
+            status: variables.status ?? previousDetail.status,
+            processId: variables.processId,
+            steps: variables.steps
+              .map((stepInput, idx) => {
+                const existingStep = previousDetail.steps[idx];
+                if (!existingStep) return null;
+                return {
+                  ...existingStep,
+                  orderNo: stepInput.orderNo,
+                  up: stepInput.up,
+                  machineId: stepInput.machineId ?? null,
+                  startDate: stepInput.startDate ?? existingStep.startDate,
+                };
+              })
+              .filter((s): s is NonNullable<typeof s> => s !== null),
+          }
+        );
+      }
+      
+      // Optimistically update list cache
+      if (previousList) {
+        utils.pros.list.setData(
+          {},
+          {
+            ...previousList,
+            items: previousList.items.map((pro) =>
+              pro.id === variables.id
+                ? {
+                    ...pro,
+                    productName: variables.productName,
+                    qtyPoPcs: variables.qtyPoPcs,
+                    startDate: variables.startDate ?? pro.startDate,
+                    status: variables.status ?? pro.status,
+                  }
+                : pro
+            ),
+          }
+        );
+      }
+      
+      return { previousDetail, previousList };
+    },
+    onError: (_err, variables, context) => {
+      // Rollback on error
+      if (context?.previousDetail) {
+        utils.pros.getById.setData({ id: variables.id }, context.previousDetail);
+      }
+      if (context?.previousList) {
+        utils.pros.list.setData({}, context.previousList);
+      }
+    },
     onSuccess: async () => {
       if (selectedId) await utils.pros.getById.invalidate({ id: selectedId });
       await utils.pros.list.invalidate();
+      await utils.pros.getSchedule.invalidate();
       setEditing(false);
     },
   });
 
   const del = api.pros.delete.useMutation({
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches
+      await utils.pros.list.cancel();
+      await utils.pros.getById.cancel();
+      await utils.pros.getSchedule.cancel();
+      
+      // Snapshot previous values
+      const previousList = utils.pros.list.getData({});
+      const previousDetail = utils.pros.getById.getData({ id: variables.id });
+      const previousSchedule = utils.pros.getSchedule.getData();
+      
+      // Optimistically remove from list cache
+      if (previousList) {
+        utils.pros.list.setData(
+          {},
+          {
+            ...previousList,
+            items: previousList.items.filter((pro) => pro.id !== variables.id),
+          }
+        );
+      }
+      
+      return { previousList, previousDetail };
+    },
+    onError: (_err, variables, context) => {
+      // Rollback on error
+      if (context?.previousList) {
+        utils.pros.list.setData({}, context.previousList);
+      }
+      if (context?.previousDetail) {
+        utils.pros.getById.setData({ id: variables.id }, context.previousDetail);
+      }
+    },
     onSuccess: async (_data, vars) => {
       await utils.pros.list.invalidate();
       await utils.pros.getById.invalidate({ id: vars.id });
+      await utils.pros.getSchedule.invalidate();
     },
   });
 

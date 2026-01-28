@@ -234,22 +234,297 @@ export default function PPICSchedule({ onSelectPro }: Props) {
   const [weekCursor, setWeekCursor] = React.useState(new Date());
 
   const utils = api.useUtils();
+  
+  // Optimistic mutations with proper lifecycle hooks
   const reschedule = api.pros.reschedule.useMutation({
-    onSuccess: () => {
-      // Invalidate all PRO queries for auto-refresh across all pages
-      void utils.pros.invalidate();
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches for all affected queries
+      await utils.pros.getSchedule.cancel();
+      await utils.pros.getById.cancel();
+      await utils.pros.list.cancel();
+      
+      // Snapshot previous values
+      const previousSchedule = utils.pros.getSchedule.getData();
+      const previousDetail = utils.pros.getById.getData({ id: variables.id });
+      const previousList = utils.pros.list.getData({});
+      
+      // Optimistically update schedule cache
+      utils.pros.getSchedule.setData(
+        { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
+        (old) => {
+          if (!old) return old;
+          return old.map((pro) =>
+            pro.id === variables.id
+              ? { ...pro, startDate: variables.startDate }
+              : pro
+          );
+        }
+      );
+      
+      // Optimistically update detail cache
+      if (previousDetail) {
+        utils.pros.getById.setData(
+          { id: variables.id },
+          { ...previousDetail, startDate: variables.startDate }
+        );
+      }
+      
+      // Optimistically update list cache
+      if (previousList) {
+        utils.pros.list.setData(
+          {},
+          {
+            ...previousList,
+            items: previousList.items.map((pro) =>
+              pro.id === variables.id
+                ? { ...pro, startDate: variables.startDate }
+                : pro
+            ),
+          }
+        );
+      }
+      
+      return { previousSchedule, previousDetail, previousList };
+    },
+    onError: (_err, variables, context) => {
+      // Rollback on error
+      if (context?.previousSchedule) {
+        utils.pros.getSchedule.setData(
+          { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
+          context.previousSchedule
+        );
+      }
+      if (context?.previousDetail) {
+        utils.pros.getById.setData({ id: variables.id }, context.previousDetail);
+      }
+      if (context?.previousList) {
+        utils.pros.list.setData({}, context.previousList);
+      }
+    },
+    onSettled: () => {
+      // Refetch to ensure sync with server
+      void utils.pros.getSchedule.invalidate();
+      void utils.pros.getById.invalidate();
+      void utils.pros.list.invalidate();
     },
   });
 
   const rescheduleStep = api.pros.rescheduleStep.useMutation({
-    onSuccess: () => {
-      void utils.pros.invalidate();
+    onMutate: async (variables) => {
+      await utils.pros.getSchedule.cancel();
+      await utils.pros.getById.cancel();
+      await utils.pros.list.cancel();
+      
+      const previousSchedule = utils.pros.getSchedule.getData();
+      const previousList = utils.pros.list.getData({});
+      
+      // Find which PRO this step belongs to
+      let affectedProId: number | undefined;
+      if (previousSchedule) {
+        for (const pro of previousSchedule) {
+          if (pro.steps.some((s) => s.id === variables.stepId)) {
+            affectedProId = pro.id;
+            break;
+          }
+        }
+      }
+      
+      const previousDetail = affectedProId 
+        ? utils.pros.getById.getData({ id: affectedProId })
+        : undefined;
+      
+      // Update schedule cache
+      utils.pros.getSchedule.setData(
+        { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
+        (old) => {
+          if (!old) return old;
+          return old.map((pro) => ({
+            ...pro,
+            steps: pro.steps.map((step) =>
+              step.id === variables.stepId
+                ? { ...step, startDate: variables.startDate }
+                : step
+            ),
+          }));
+        }
+      );
+      
+      // Update detail cache
+      if (affectedProId && previousDetail) {
+        utils.pros.getById.setData(
+          { id: affectedProId },
+          {
+            ...previousDetail,
+            steps: previousDetail.steps.map((step) =>
+              step.id === variables.stepId
+                ? { ...step, startDate: variables.startDate }
+                : step
+            ),
+          }
+        );
+      }
+      
+      // Update list cache (steps are included in list response)
+      if (previousList) {
+        utils.pros.list.setData(
+          {},
+          {
+            ...previousList,
+            items: previousList.items.map((pro) => ({
+              ...pro,
+              steps: pro.steps.map((step) =>
+                step.id === variables.stepId
+                  ? { ...step, startDate: variables.startDate }
+                  : step
+              ),
+            })),
+          }
+        );
+      }
+      
+      return { previousSchedule, previousDetail, previousList, affectedProId };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousSchedule) {
+        utils.pros.getSchedule.setData(
+          { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
+          context.previousSchedule
+        );
+      }
+      if (context?.affectedProId && context?.previousDetail) {
+        utils.pros.getById.setData({ id: context.affectedProId }, context.previousDetail);
+      }
+      if (context?.previousList) {
+        utils.pros.list.setData({}, context.previousList);
+      }
+    },
+    onSettled: () => {
+      void utils.pros.getSchedule.invalidate();
+      void utils.pros.getById.invalidate();
+      void utils.pros.list.invalidate();
     },
   });
 
   const rescheduleShift = api.pros.rescheduleShift.useMutation({
-    onSuccess: () => {
-      void utils.pros.invalidate();
+    onMutate: async (variables) => {
+      await utils.pros.getSchedule.cancel();
+      await utils.pros.getById.cancel();
+      await utils.pros.list.cancel();
+      
+      const previousSchedule = utils.pros.getSchedule.getData();
+      const previousList = utils.pros.list.getData({});
+      
+      // Find which PRO this step belongs to
+      let affectedProId: number | undefined;
+      if (previousSchedule) {
+        for (const pro of previousSchedule) {
+          if (pro.steps.some((s) => s.id === variables.stepId)) {
+            affectedProId = pro.id;
+            break;
+          }
+        }
+      }
+      
+      const previousDetail = affectedProId
+        ? utils.pros.getById.getData({ id: affectedProId })
+        : undefined;
+      
+      // Update schedule cache
+      utils.pros.getSchedule.setData(
+        { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
+        (old) => {
+          if (!old) return old;
+          return old.map((pro) => ({
+            ...pro,
+            steps: pro.steps.map((step) => {
+              if (step.id !== variables.stepId) return step;
+              
+              const existingShifts = (step as any).shifts ?? [];
+              const updatedShifts = existingShifts.some((s: any) => s.shiftIndex === variables.shiftIndex)
+                ? existingShifts.map((s: any) =>
+                    s.shiftIndex === variables.shiftIndex
+                      ? { ...s, scheduledDate: variables.scheduledDate }
+                      : s
+                  )
+                : [...existingShifts, { shiftIndex: variables.shiftIndex, scheduledDate: variables.scheduledDate }];
+              
+              return { ...step, shifts: updatedShifts };
+            }),
+          }));
+        }
+      );
+      
+      // Update detail cache
+      if (affectedProId && previousDetail) {
+        utils.pros.getById.setData(
+          { id: affectedProId },
+          {
+            ...previousDetail,
+            steps: previousDetail.steps.map((step) => {
+              if (step.id !== variables.stepId) return step;
+              
+              const existingShifts = (step as any).shifts ?? [];
+              const updatedShifts = existingShifts.some((s: any) => s.shiftIndex === variables.shiftIndex)
+                ? existingShifts.map((s: any) =>
+                    s.shiftIndex === variables.shiftIndex
+                      ? { ...s, scheduledDate: variables.scheduledDate }
+                      : s
+                  )
+                : [...existingShifts, { shiftIndex: variables.shiftIndex, scheduledDate: variables.scheduledDate }];
+              
+              return { ...step, shifts: updatedShifts };
+            }),
+          }
+        );
+      }
+      
+      // Update list cache
+      if (previousList) {
+        utils.pros.list.setData(
+          {},
+          {
+            ...previousList,
+            items: previousList.items.map((pro) => ({
+              ...pro,
+              steps: pro.steps.map((step) => {
+                if (step.id !== variables.stepId) return step;
+                
+                const existingShifts = (step as any).shifts ?? [];
+                const updatedShifts = existingShifts.some((s: any) => s.shiftIndex === variables.shiftIndex)
+                  ? existingShifts.map((s: any) =>
+                      s.shiftIndex === variables.shiftIndex
+                        ? { ...s, scheduledDate: variables.scheduledDate }
+                        : s
+                    )
+                  : [...existingShifts, { shiftIndex: variables.shiftIndex, scheduledDate: variables.scheduledDate }];
+                
+                return { ...step, shifts: updatedShifts };
+              }),
+            })),
+          }
+        );
+      }
+      
+      return { previousSchedule, previousDetail, previousList, affectedProId };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousSchedule) {
+        utils.pros.getSchedule.setData(
+          { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
+          context.previousSchedule
+        );
+      }
+      if (context?.affectedProId && context?.previousDetail) {
+        utils.pros.getById.setData({ id: context.affectedProId }, context.previousDetail);
+      }
+      if (context?.previousList) {
+        utils.pros.list.setData({}, context.previousList);
+      }
+    },
+    onSettled: () => {
+      void utils.pros.getSchedule.invalidate();
+      void utils.pros.getById.invalidate();
+      void utils.pros.list.invalidate();
     },
   });
 
@@ -286,51 +561,35 @@ export default function PPICSchedule({ onSelectPro }: Props) {
 
     const activeStr = String(active.id);
     const partsActive = activeStr.split("::");
-    // ID format: 
-    // Shift view: "proId::dateKey::shift" (actually just proId originally, but I changed it?) 
-    // Wait, original shift logic used "proId::...". My recent update to buildMachineSlots uses "stepId::slotId::i".
-    
-    // Let's parse carefully.
-    // If viewMode === "machine", the ID is `stepId::slotId::i` -> `stepId::date::machineId::i`
-    // BUT `handleDragEnd` needs to know WHAT we are dragging.
-    
-    // In buildMachineSlots: key: `${step.id}::${slotId}::${i}` where slotId = `${dateKey(day)}::${step.machine.id}`
-    // So key = `stepId::date::machineId::i`
     
     if (viewMode === "machine") {
-       const [stepIdStr, dateStr, machineIdStr] = partsActive;
+       const [stepIdStr, dateStr] = partsActive;
        const stepId = Number(stepIdStr);
        
-       const overStr = String(over.id); 
-       // over.id is slotId = `date::machineId`
+       const overStr = String(over.id);
        const overParts = overStr.split("::");
        const overDateStr = overParts[0];
-       // const overMachineId = overParts[1];
        
        const dOver = keyToDate(overDateStr ?? "");
        if (!dOver || !Number.isFinite(stepId)) return;
        
+       // Fire-and-forget: optimistic update happens in onMutate
        rescheduleStep.mutate({ stepId, startDate: dOver });
        return;
     }
 
-    // SHIFT VIEW LOGIC - Per-Shift Granular Scheduling
+    // SHIFT VIEW LOGIC
     if (viewMode === "shift") {
        const activeStr = String(active.id);
-       
-       // New format from buildShiftSlots: stepId::shiftIndex::slotId
-       // slotId = dateKey::shift
-       // So total: stepId::shiftIndex::date::shift (4 parts)
        
        if (activeStr.includes("::")) {
           const parts = activeStr.split("::");
           
-          // Check if it's the new per-shift format (4+ parts)
+          // Per-shift format (4+ parts)
           if (parts.length >= 4) {
              const stepId = Number(parts[0]);
              const shiftIndex = Number(parts[1]);
              
-             // Target slot: date::shift
              const overStr = String(over.id);
              const overParts = overStr.split("::");
              const dateStr = overParts[0] ?? "";
@@ -347,14 +606,14 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                 
                 const scheduledDate = applyShiftStart(d0, shift);
                 
-                // Use the new per-shift mutation
+                // Fire-and-forget
                 rescheduleShift.mutate({ stepId, shiftIndex, scheduledDate });
                 return;
              }
           }
        }
 
-       // Fallback (shouldn't happen with new format, but kept for safety)
+       // Fallback for PRO-level reschedule
        const proIdStr = activeStr.includes("::") ? activeStr.split("::")[0] : activeStr;
        const proId = Number(proIdStr);
        
@@ -374,6 +633,8 @@ export default function PPICSchedule({ onSelectPro }: Props) {
           })();
 
           const newStart = applyShiftStart(d0, shift);
+          
+          // Fire-and-forget
           reschedule.mutate({ id: proId, startDate: newStart });
        }
     }
