@@ -313,8 +313,14 @@ export const prosRouter = createTRPCRouter({
               orderNo: z.number().int().positive(),
               up: z.number().int().min(0),
               machineId: z.number().int().positive().nullable().optional(),
-              materialId: z.number().int().positive().nullable().optional(),
-              qtyReq: z.number().positive().optional(),
+              materials: z
+                .array(
+                  z.object({
+                    materialId: z.number().int().positive(),
+                    qtyReq: z.number().positive(),
+                  })
+                )
+                .optional(),
               startDate: z.coerce.date().optional(),
             }),
           )
@@ -322,7 +328,8 @@ export const prosRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.$transaction(async (tx) => {
+      const { db } = ctx;
+      return db.$transaction(async (tx) => {
         // 1. Fetch old PRO to detect startDate change
         const oldPro = await tx.pro.findUnique({
           where: { id: input.id },
@@ -446,10 +453,10 @@ export const prosRouter = createTRPCRouter({
                   machineId: inputStep.machineId ?? null,
                   startDate: getShiftDate(currentDay, currentShift),
                   materials: {
-                    create: inputStep.materialId ? [{
-                      materialId: inputStep.materialId,
-                      qtyReq: new Prisma.Decimal(inputStep.qtyReq ?? 0),
-                    }] : []
+                    create: inputStep.materials?.map((m) => ({
+                      materialId: m.materialId,
+                      qtyReq: new Prisma.Decimal(m.qtyReq),
+                    })) ?? [],
                   }
                 }
               });

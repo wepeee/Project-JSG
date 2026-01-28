@@ -156,8 +156,6 @@ function fmtSchedule(
     });
 
     // Group by Date for cleaner display
-    // e.g. 28 Jan: S1, S2
-    //      30 Jan: S3
     const grouped = new Map<string, number[]>();
     results.forEach(r => {
         const dStr = r.date.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
@@ -178,9 +176,7 @@ function fmtSchedule(
     );
   }
 
-  // 2. Fallback logic (original range logic if no custom shifts at all)
-  
-  // Compact date: 28 Jan
+  // Fallback logic
   const dateStr = dt.toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "short",
@@ -188,7 +184,6 @@ function fmtSchedule(
   
   let label = `S${startShift}`;
 
-  // Calculate end range if duration > 1
   if (durationShifts > 1) {
     const startAbs = startShift - 1;
     const endAbs = startAbs + (durationShifts - 1);
@@ -205,11 +200,9 @@ function fmtSchedule(
         day: "2-digit",
         month: "short",
       });
-      // Compact range crossing days: S1 → 30 Jan S3
       label = `S${startShift}→${endDateStr} S${endShift}`;
     } else {
       if (endShift !== startShift) {
-        // Compact range mostly same day: S1-S3
         label = `S${startShift}-S${endShift}`;
       }
     }
@@ -228,10 +221,9 @@ type StepDraft = {
   orderNo: number;
   up: string;
   machineId: number | null;
-  materialId: number | null;
-  qtyReq: string;
+  materials: Array<{ key: string; materialId: number; qtyReq: string }>;
   startDate?: string | null;
-  shift: number; // 1, 2, 3
+  shift: number; // 1, 2, or 3
 };
 
 export default function ProList({ initialSelectedId, onClearJump }: Props) {
@@ -243,7 +235,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
   // ===== VIEW STATE =====
   const [selectedId, setSelectedId] = React.useState<number | null>(
     initialSelectedId ?? null,
-  ); // null => list view
+  );
 
   React.useEffect(() => {
     if (initialSelectedId) {
@@ -262,13 +254,13 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
     take: 50,
   });
 
-  // ===== DETAIL QUERY (only when selected) =====
+  // ===== DETAIL QUERY =====
   const detail = api.pros.getById.useQuery(
     { id: selectedId ?? 0 },
     { enabled: !!selectedId },
   );
 
-  // ===== EDIT MODE (header) =====
+  // ===== EDIT MODE =====
   const [editing, setEditing] = React.useState(false);
   const [productName, setProductName] = React.useState("");
   const [qtyPoPcs, setQtyPoPcs] = React.useState("");
@@ -283,8 +275,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
   const [stepDraft, setStepDraft] = React.useState<Omit<StepDraft, "key" | "orderNo">>({
     up: "",
     machineId: null,
-    materialId: null,
-    qtyReq: "",
+    materials: [],
     startDate: null,
     shift: 1,
   });
@@ -294,8 +285,9 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
     setStepDraft({
       up: "",
       machineId: null,
-      materialId: null,
-      qtyReq: "",
+      materials: [
+        { key: Math.random().toString(36).slice(2), materialId: 0, qtyReq: "" },
+      ],
       startDate: null,
       shift: 1,
     });
@@ -307,12 +299,67 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
     setStepDraft({
       up: step.up,
       machineId: step.machineId,
-      materialId: step.materialId,
-      qtyReq: step.qtyReq,
+      materials: step.materials,
       startDate: step.startDate,
       shift: step.shift,
     });
     setStepDialogOpen(true);
+  };
+
+  const addMaterial = () => {
+    setStepDraft((d) => {
+      const selectedMachine = machines.data?.find(m => m.id === d.machineId);
+      const isSheet = selectedMachine?.uom === 'sheet';
+      const upNum = Number(d.up);
+      const poNum = Number(qtyPoPcs);
+      
+      let autoQty = "";
+      if (isSheet && upNum > 0 && poNum > 0) {
+        autoQty = String(Math.ceil(poNum / upNum));
+      } else if (isSheet && poNum > 0) {
+        autoQty = String(poNum);
+      }
+      
+      return {
+        ...d,
+        materials: [
+          ...d.materials,
+          { key: Math.random().toString(36).slice(2), materialId: 0, qtyReq: autoQty },
+        ],
+      };
+    });
+  };
+
+  const removeMaterial = (key: string) => {
+    setStepDraft((d) => ({
+      ...d,
+      materials: d.materials.filter((m) => m.key !== key),
+    }));
+  };
+
+  const updateMaterial = (key: string, field: "materialId" | "qtyReq", value: number | string) => {
+    setStepDraft((d) => {
+      const selectedMachine = machines.data?.find(m => m.id === d.machineId);
+      const isSheet = selectedMachine?.uom === 'sheet';
+      const upNum = Number(d.up);
+      const poNum = Number(qtyPoPcs);
+
+      const newMaterials = d.materials.map((m) => {
+        if (m.key !== key) return m;
+        
+        let newQty = field === "qtyReq" ? String(value) : m.qtyReq;
+        
+        if (field === "materialId" && value && isSheet && upNum > 0 && poNum > 0) {
+          newQty = String(Math.ceil(poNum / upNum));
+        } else if (field === "materialId" && value && isSheet && poNum > 0) {
+          newQty = String(poNum);
+        }
+        
+        return { ...m, [field]: value, qtyReq: newQty };
+      });
+      
+      return { ...d, materials: newMaterials };
+    });
   };
 
   const saveStepDraft = () => {
@@ -320,15 +367,17 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
     const upNum = Number(stepDraft.up);
     if (!Number.isFinite(upNum) || upNum < 0) return alert("UP harus >= 0");
 
-    if (stepDraft.materialId) {
-      const qNum = Number(stepDraft.qtyReq);
-      if (!stepDraft.qtyReq.trim() || !Number.isFinite(qNum) || qNum <= 0) {
+    for (const mat of stepDraft.materials) {
+      if (!mat.materialId) {
+        return alert("Pilih material untuk semua entry");
+      }
+      const qNum = Number(mat.qtyReq);
+      if (!mat.qtyReq.trim() || !Number.isFinite(qNum) || qNum <= 0) {
         return alert("Qty Material wajib > 0");
       }
     }
 
     if (editingStepKey) {
-      // Edit existing step
       setStepDrafts((prev) =>
         prev.map((s) =>
           s.key === editingStepKey
@@ -337,7 +386,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
         )
       );
     } else {
-      // Add new step
       const newStep: StepDraft = {
         key: Math.random().toString(36).slice(2),
         orderNo: stepDrafts.length + 1,
@@ -352,25 +400,100 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
   const removeStep = (key: string) => {
     setStepDrafts((prev) => {
       const filtered = prev.filter((s) => s.key !== key);
-      // Re-number orderNo
       return filtered.map((s, idx) => ({ ...s, orderNo: idx + 1 }));
     });
+  };
+
+  const splitStep = (key: string) => {
+    setStepDrafts((prev) => {
+      const step = prev.find((s) => s.key === key);
+      if (!step) return prev;
+
+      // Calculate number of shifts
+      const matQ = Number(step.materials[0]?.qtyReq || "0");
+      const poQ = Number(qtyPoPcs);
+      const baseQty = matQ > 0 ? matQ : poQ;
+      const baseUp = matQ > 0 ? 1 : (Number(step.up) || 1);
+      const machine = machines.data?.find((m) => m.id === step.machineId);
+      const std = machine?.stdOutputPerShift || 1000;
+      const actualQty = baseUp > 0 ? baseQty / baseUp : baseQty;
+      const totalShifts = Math.max(1, Math.ceil(actualQty / std));
+
+      if (totalShifts <= 1) {
+        alert("Proses ini sudah hanya 1 shift (tidak bisa di-split lagi).");
+        return prev;
+      }
+
+      const newSteps: StepDraft[] = [];
+      const currentDateString = step.startDate;
+      const currentDate = currentDateString ? new Date(currentDateString) : new Date();
+      let currentShiftNo = step.shift;
+
+      const perShiftQty = Math.floor(baseQty / totalShifts);
+      const remainder = baseQty % totalShifts;
+
+      for (let i = 0; i < totalShifts; i++) {
+        const qty = i === 0 ? perShiftQty + remainder : perShiftQty;
+        const d = new Date(currentDate);
+
+        newSteps.push({
+          key: Math.random().toString(36).slice(2),
+          orderNo: step.orderNo, // Will be reordered
+          up: step.up,
+          machineId: step.machineId,
+          startDate: d.toISOString().slice(0, 10),
+          shift: currentShiftNo,
+          materials: step.materials.map((m) => ({
+            ...m,
+            key: Math.random().toString(36).slice(2),
+            qtyReq: String(qty),
+          })),
+        });
+
+        if (currentShiftNo < 3) currentShiftNo++;
+        else {
+          currentShiftNo = 1;
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      }
+
+      const filtered = prev.filter((s) => s.key !== key);
+      const combined = [...filtered, ...newSteps].sort((a, b) => {
+        if (a.orderNo !== b.orderNo) return a.orderNo - b.orderNo;
+        const tA = a.startDate ? new Date(a.startDate).getTime() : 0;
+        const tB = b.startDate ? new Date(b.startDate).getTime() : 0;
+        if (tA !== tB) return tA - tB;
+        return a.shift - b.shift;
+      });
+
+      return combined.map((s, idx) => ({ ...s, orderNo: idx + 1 }));
+    });
+  };
+
+  const updateDraftMaterialQty = (stepKey: string, matKey: string, val: string) => {
+    setStepDrafts((prev) =>
+      prev.map((s) => {
+        if (s.key !== stepKey) return s;
+        return {
+          ...s,
+          materials: s.materials.map((m) =>
+            m.key === matKey ? { ...m, qtyReq: val } : m
+          ),
+        };
+      })
+    );
   };
 
 
   const update = api.pros.update.useMutation({
     onMutate: async (variables) => {
-      // Cancel outgoing refetches
       await utils.pros.getById.cancel();
       await utils.pros.list.cancel();
       await utils.pros.getSchedule.cancel();
       
-      // Snapshot previous values
       const previousDetail = utils.pros.getById.getData({ id: variables.id });
       const previousList = utils.pros.list.getData({});
-      const previousSchedule = utils.pros.getSchedule.getData();
       
-      // Optimistically update detail cache
       if (previousDetail) {
         utils.pros.getById.setData(
           { id: variables.id },
@@ -398,7 +521,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
         );
       }
       
-      // Optimistically update list cache
       if (previousList) {
         utils.pros.list.setData(
           {},
@@ -422,7 +544,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
       return { previousDetail, previousList };
     },
     onError: (_err, variables, context) => {
-      // Rollback on error
       if (context?.previousDetail) {
         utils.pros.getById.setData({ id: variables.id }, context.previousDetail);
       }
@@ -440,17 +561,13 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
 
   const del = api.pros.delete.useMutation({
     onMutate: async (variables) => {
-      // Cancel outgoing refetches
       await utils.pros.list.cancel();
       await utils.pros.getById.cancel();
       await utils.pros.getSchedule.cancel();
       
-      // Snapshot previous values
       const previousList = utils.pros.list.getData({});
       const previousDetail = utils.pros.getById.getData({ id: variables.id });
-      const previousSchedule = utils.pros.getSchedule.getData();
       
-      // Optimistically remove from list cache
       if (previousList) {
         utils.pros.list.setData(
           {},
@@ -464,7 +581,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
       return { previousList, previousDetail };
     },
     onError: (_err, variables, context) => {
-      // Rollback on error
       if (context?.previousList) {
         utils.pros.list.setData({}, context.previousList);
       }
@@ -508,15 +624,17 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
   const toDraftSteps = React.useCallback((): StepDraft[] => {
     if (!detail.data) return [];
     return detail.data.steps.map((s) => {
-      const mat0 = s.materials?.[0];
       const dt = s.startDate ? new Date(s.startDate) : null;
       return {
         key: String(s.id),
         orderNo: s.orderNo,
         up: String(s.up ?? 1),
         machineId: s.machineId ?? null,
-        materialId: mat0?.materialId ?? null,
-        qtyReq: mat0?.qtyReq ? String(mat0.qtyReq) : "",
+        materials: (s.materials ?? []).map((m, idx) => ({
+          key: `${s.id}-${m.materialId}-${idx}`,
+          materialId: m.materialId,
+          qtyReq: m.qtyReq ? String(m.qtyReq) : "",
+        })),
         startDate: dt ? dt.toISOString().slice(0, 10) : null,
         shift: dt ? shiftFromDate(dt) : 1,
       };
@@ -529,7 +647,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
     setStepDrafts(toDraftSteps());
     setStatusDraft((detail.data?.status as Status) ?? "OPEN");
     setExpandDraft(false);
-    // Init process draft from header
     setProcessDraftId(detail.data?.processId ?? null);
   };
 
@@ -564,9 +681,12 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
       if (!s.up.trim() || !Number.isFinite(upNum) || upNum < 0) {
         return setErr(`Step ${s.orderNo}: UP wajib >= 0`);
       }
-      if (s.materialId) {
-        const qNum = Number(s.qtyReq);
-        if (!s.qtyReq.trim() || !Number.isFinite(qNum) || qNum <= 0) {
+      for (const mat of s.materials) {
+        if (!mat.materialId) {
+          return setErr(`Step ${s.orderNo}: Pilih material untuk semua entry`);
+        }
+        const qNum = Number(mat.qtyReq);
+        if (!mat.qtyReq.trim() || !Number.isFinite(qNum) || qNum <= 0) {
           return setErr(`Step ${s.orderNo}: Qty material wajib > 0`);
         }
       }
@@ -585,49 +705,18 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
           orderNo: s.orderNo,
           up: Number(s.up),
           machineId: s.machineId ?? null,
-          materialId: s.materialId ?? null,
-          qtyReq: s.materialId ? Number(s.qtyReq) : undefined,
+          materials: s.materials.map((m) => ({
+            materialId: m.materialId,
+            qtyReq: Number(m.qtyReq),
+          })),
           startDate: combineDateShift(s.startDate, s.shift),
         })),
       expand: expandDraft,
     });
   };
 
-  const saveHeaderOnly = async () => {
-    setErr(null);
-    if (!detail.data || !selectedId) return;
-
-    const prod = productName.trim();
-    if (!prod) return setErr("Produk wajib diisi");
-
-    const qty = Number(qtyPoPcs);
-    if (!qtyPoPcs.trim() || !Number.isFinite(qty) || qty <= 0) {
-      return setErr("Qty PO wajib > 0");
-    }
-
-    // IMPORTANT: update router kamu butuh steps juga.
-    // Jadi kita kirim steps existing apa adanya (read-only sementara).
-    await update.mutateAsync({
-      id: selectedId,
-      productName: prod,
-      qtyPoPcs: qty,
-      status: detail.data.status,
-      processId: detail.data.processId ?? 0, // Should always be set
-      steps: detail.data.steps.map((s) => {
-        const mat0 = s.materials?.[0];
-        return {
-          orderNo: s.orderNo,
-          up: s.up ?? 1,
-          machineId: s.machineId ?? null,
-          materialId: mat0?.materialId ?? null,
-          qtyReq: mat0?.qtyReq ? Number(mat0.qtyReq) : undefined,
-        };
-      }),
-    });
-  };
-
   // =========================
-  // DETAIL VIEW (FULL PAGE)
+  // DETAIL VIEW
   // =========================
   if (selectedId) {
     if (detail.isLoading) {
@@ -724,7 +813,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                 <Info
                   label="Proses (Prefix)"
                   value={
-                    // For editing, we show the current draft process
                     processDraftId
                       ? (processes.data?.find((x) => x.id === processDraftId)
                           ?.name ?? "-")
@@ -788,7 +876,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                       className="h-4 w-4"
                     />
                     <label htmlFor="regen" className="text-sm font-medium text-blue-600 cursor-pointer">
-                       Regenerate (Ulangi hitungan shift)
+                       Pecah per Shift (Expand)
                     </label>
                  </div>
               )}
@@ -797,8 +885,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
             {err ? <p className="text-destructive text-sm">{err}</p> : null}
 
             <Separator />
-
-            {/* Proses per step edit table removed. Now integrated into main table below. */}
 
             <div className="overflow-x-auto rounded-md border">
               <div className="min-w-[900px]">
@@ -825,184 +911,267 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                       return list.map((item, idx) => {
                         const isDraft = editing;
                         
-                        // Normalized getters
                         let machineName = "-";
-                        let matName = "-";
-                        let matUom = "-";
                         let stdOutputPerShift: number | null | undefined = null;
                         let startDateVal: Date | string | undefined | null = null;
 
                         if (!isDraft) {
                            const s = item as typeof p.steps[number];
-                           const mat0 = s.materials?.[0];
                            machineName = s.machine?.name ?? "-";
-                           matName = mat0?.material?.name ?? "-";
-                           matUom = mat0?.material?.uom ?? "-";
                            stdOutputPerShift = s.machine?.stdOutputPerShift;
                            startDateVal = (s as any).startDate;
                         } else {
                            const d = item as StepDraft;
                            const m = machines.data?.find(x => x.id === d.machineId);
                            machineName = m?.name ?? "-";
-                           const mat = materials.data?.find(x => x.id === d.materialId);
-                           matName = mat?.name ?? "-";
-                           matUom = mat?.uom ?? "-";
                            stdOutputPerShift = m?.stdOutputPerShift;
                            startDateVal = d.startDate;
                         }
 
-                        // Shared values
                         const upVal = isDraft ? (item as StepDraft).up : (item as any).up;
-                        const qtyReqVal = isDraft ? (item as StepDraft).qtyReq : (item as any).materials?.[0]?.qtyReq;
                         
+                        const materialsDisplay = isDraft 
+                          ? (item as StepDraft).materials.map(m => {
+                              const mat = materials.data?.find(x => x.id === m.materialId);
+                              return {
+                                name: mat?.name ?? "-",
+                                qtyReq: m.qtyReq,
+                                uom: mat?.uom ?? "-"
+                              };
+                            })
+                          : (item as any).materials.map((m: any) => ({
+                              name: m.material?.name ?? "-",
+                              qtyReq: String(m.qtyReq),
+                              uom: m.material?.uom ?? "-"
+                            }));
+                        
+                        const firstQtyReq = materialsDisplay[0]?.qtyReq ?? "0";
+                        const matQ = Number(firstQtyReq);
+                        const poQ = Number(qtyPoPcs);
+                        
+                        const baseQty = matQ > 0 ? matQ : poQ;
+                        const baseUp = matQ > 0 ? 1 : (Number(upVal) || 1);
+                        const std = stdOutputPerShift || 1000;
+                        
+                        const actualQty = baseUp > 0 ? baseQty / baseUp : baseQty;
+                        const totalShifts = Math.max(1, Math.ceil(actualQty / std));
+                        
+                        const scheduleList = [];
+                        const shouldExpand = !editing || expandDraft;
+                        
+                        if (startDateVal && shouldExpand) {
+                           let currentDate = new Date(startDateVal);
+                           let currentShift = shiftFromDate(currentDate);
+                           
+                           for (let i = 0; i < totalShifts; i++) {
+                               scheduleList.push({
+                                  date: new Date(currentDate),
+                                  shift: currentShift
+                               });
+                               
+                               if (currentShift < 3) {
+                                  currentShift++;
+                               } else {
+                                  currentShift = 1;
+                                  currentDate.setDate(currentDate.getDate() + 1);
+                               }
+                           }
+                        } else {
+                           scheduleList.push({
+                              date: startDateVal ? new Date(startDateVal) : null,
+                              shift: isDraft ? (item as StepDraft).shift : (startDateVal ? shiftFromDate(new Date(startDateVal)) : 1)
+                           });
+                        }
+
                         return (
-                          <TableRow key={isDraft ? (item as StepDraft).key : (item as any).id}>
-                            <TableCell>
-                              {editing ? (
-                                <select
-                                  value={(item as StepDraft).machineId ?? ""}
-                                  onChange={(e) => {
-                                    const val = e.target.value ? Number(e.target.value) : null;
-                                    setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, machineId: val } : x));
-                                  }}
-                                  className="border-input bg-background h-8 w-full rounded border px-2 text-xs"
-                                >
-                                  <option value="">(Optional)</option>
-                                  {(machines.data ?? []).map(m => (
-                                    <option key={m.id} value={m.id}>{m.name}</option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <div className="font-medium text-xs">
-                                  {machineName} {p.productName}
-                                </div>
-                              )}
-                            </TableCell>
+                          <React.Fragment key={isDraft ? (item as StepDraft).key : (item as any).id}>
+                            {scheduleList.map((sch, sIdx) => {
+                               const isMainRow = sIdx === 0;
+                               
+                               return (
+                                 <TableRow key={`${isDraft ? (item as StepDraft).key : (item as any).id}-${sIdx}`} className={!isMainRow ? "bg-muted/30 border-none" : ""}>
+                                   <TableCell>
+                                    {isMainRow && editing ? (
+                                       <select
+                                         value={(item as StepDraft).machineId ?? ""}
+                                         onChange={(e) => {
+                                           const val = e.target.value ? Number(e.target.value) : null;
+                                           const selectedMachine = machines.data?.find(m => m.id === val);
+                                           
+                                           setStepDrafts(prev => prev.map(x => {
+                                              if (x.key !== (item as StepDraft).key) return x;
+                                              
+                                              const upNum = Number(x.up);
+                                              const poNum = Number(qtyPoPcs);
+                                              
+                                              let autoQty = "";
+                                              if (selectedMachine?.uom === 'sheet' && upNum > 0 && poNum > 0) {
+                                                 autoQty = String(Math.ceil(poNum / upNum));
+                                              } else if (selectedMachine?.uom === 'sheet' && poNum > 0) {
+                                                 autoQty = String(poNum);
+                                              }
 
-                            <TableCell className="text-right">
-                              {editing ? (
-                                <Input 
-                                  type="number" 
-                                  className="h-8 w-20 bg-background border-input text-right text-xs"
-                                  value={(item as StepDraft).up}
-                                  onChange={(e) => {
-                                    setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, up: e.target.value } : x));
-                                  }}
-                                />
-                              ) : (
-                                upVal ?? "-"
-                              )}
-                            </TableCell>
-                            
-                            <TableCell>
-                              {editing ? (
-                                <select
-                                  value={(item as StepDraft).materialId ?? ""}
-                                  onChange={(e) => {
-                                    const val = e.target.value ? Number(e.target.value) : null;
-                                    setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, materialId: val } : x));
-                                  }}
-                                  className="border-input bg-background h-8 w-full rounded border px-2 text-xs"
-                                >
-                                  <option value="">(None)</option>
-                                  {(materials.data ?? []).map(m => (
-                                    <option key={m.id} value={m.id}>{m.name}</option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <div className="truncate max-w-[120px] text-xs" title={matName}>{matName}</div>
-                              )}
-                            </TableCell>
+                                              const updatedMaterials = x.materials.map(m => ({
+                                                 ...m,
+                                                 qtyReq: autoQty || m.qtyReq
+                                              }));
+                                              
+                                              return { 
+                                                 ...x, 
+                                                 machineId: val,
+                                                 up: selectedMachine?.stdOutputPerShift ? String(selectedMachine.stdOutputPerShift) : x.up,
+                                                 materials: updatedMaterials
+                                              };
+                                           }));
+                                         }}
+                                         className="border-input bg-background h-8 w-full rounded border px-2 text-xs"
+                                       >
+                                         <option value="">(Optional)</option>
+                                         {(machines.data ?? []).map((m: any) => (
+                                           <option key={m.id} value={m.id}>{m.name}</option>
+                                         ))}
+                                       </select>
+                                    ) : (
+                                       <div className="font-medium text-xs text-gray-700">
+                                         {machineName}
+                                       </div>
+                                    )}
+                                 </TableCell>
 
-                            <TableCell className="text-right">
-                              {editing ? (
-                                <Input 
-                                  type="number"
-                                  className="h-8 w-20 bg-background border-input text-right text-xs"
-                                  value={(item as StepDraft).qtyReq}
-                                  placeholder={!!(item as StepDraft).materialId ? "Req" : "-"}
-                                  disabled={!(item as StepDraft).materialId}
-                                  onChange={(e) => {
-                                    setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, qtyReq: e.target.value } : x));
-                                  }}
-                                />
-                              ) : (
-                                <span className="text-xs">{qtyReqVal ? String(qtyReqVal) : "-"}</span>
-                              )}
-                            </TableCell>
-
-                            <TableCell className="text-xs">{matUom}</TableCell>
-                            
-                            <TableCell className="text-xs font-medium">
-                               {editing ? (
-                                  <div className="flex flex-col gap-0.5">
-                                    <div className="text-blue-600">
-                                      {fmtDuration(Number(qtyPoPcs) || 0, Number(upVal) || 0, stdOutputPerShift)}
+                                 <TableCell className="text-right text-xs">
+                                    {isMainRow && editing ? (
+                                       <Input 
+                                         className="h-8 w-16 bg-background border-input text-right text-xs"
+                                         value={(item as StepDraft).up}
+                                         onChange={(e) => {
+                                           setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, up: e.target.value } : x));
+                                         }}
+                                       />
+                                    ) : (
+                                       upVal ? Number(upVal).toLocaleString('id-ID') : "-"
+                                    )}
+                                 </TableCell>
+                                 
+                                 <TableCell>
+                                    <div className="flex flex-col gap-1 min-w-[120px]">
+                                       {materialsDisplay.map((m: any, mIdx: number) => (
+                                          <div key={mIdx} className="truncate text-[10px] text-gray-700 border-b last:border-0 pb-0.5" title={m.name}>
+                                             {m.name}
+                                          </div>
+                                       ))}
+                                       {materialsDisplay.length === 0 && <span className="text-gray-400">-</span>}
                                     </div>
-                                    <div className="text-[10px] opacity-60">S-{(idx + 1)}</div>
-                                  </div>
-                               ) : (
-                                  <div className="flex flex-col gap-0.5">
-                                    <div>{getShiftNo(startDateVal)}</div>
-                                    <div className="text-[10px] opacity-40">Seq {(idx + 1)}</div>
-                                  </div>
-                               )}
-                            </TableCell>
+                                 </TableCell>
 
-                            <TableCell className="text-xs">
-                              {editing ? (
-                                <div className="flex flex-col gap-1">
-                                  <Input
-                                    type="date"
-                                    className="h-8 w-32 bg-background border-input text-xs"
-                                    value={(item as StepDraft).startDate ?? ""}
-                                    onChange={(e) => {
-                                      setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, startDate: e.target.value || null } : x));
-                                    }}
-                                  />
-                                  <select
-                                    value={(item as StepDraft).shift}
-                                    onChange={(e) => {
-                                      const v = Number(e.target.value);
-                                      setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, shift: v } : x));
-                                    }}
-                                    className="border-input bg-background h-7 w-32 rounded border px-1 text-[10px]"
-                                  >
-                                    <option value={1}>S1: 06:00-11:00</option>
-                                    <option value={2}>S2: 11:00-16:00</option>
-                                    <option value={3}>S3: 16:00-21:00</option>
-                                  </select>
-                                </div>
-                              ) : (
-                                startDateVal ? (
-                                  <div className="font-medium text-blue-700">
-                                    {new Date(startDateVal).toLocaleDateString("id-ID", {
-                                      weekday: "short",
-                                      day: "2-digit",
-                                      month: "short",
-                                      hour: "2-digit",
-                                      minute: "2-digit"
-                                    })}
-                                  </div>
-                                ) : "-"
-                              )}
-                            </TableCell>
+                                 <TableCell className="text-right">
+                                    <div className="flex flex-col gap-1">
+                                       {materialsDisplay.map((m: any, mIdx: number) => {
+                                          const val = m.qtyReq;
+                                          if (isMainRow && editing) {
+                                             return (
+                                                <div key={mIdx} className="text-[10px] font-bold border-b last:border-0 pb-0.5">
+                                                   {val ? Number(val).toLocaleString('id-ID') : "-"}
+                                                </div>
+                                             );
+                                          } else {
+                                             const perShift = totalShifts > 0 ? Math.round(Number(val || 0) / totalShifts) : 0;
+                                             return (
+                                                <div key={mIdx} className="text-[10px] border-b last:border-0 pb-0.5">
+                                                   {perShift > 0 ? perShift.toLocaleString('id-ID') : (val || "-")}
+                                                </div>
+                                             );
+                                          }
+                                       })}
+                                    </div>
+                                 </TableCell>
 
-                            {editing && (
-                              <TableCell>
-                                <div className="flex gap-1">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                                    onClick={() => removeStep((item as StepDraft).key)}
-                                  >
-                                    Hapus
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            )}
-                          </TableRow>
+                                 <TableCell>
+                                    <div className="flex flex-col gap-1">
+                                       {materialsDisplay.map((m: any, mIdx: number) => (
+                                          <div key={mIdx} className="text-[10px] text-gray-500 border-b last:border-0 pb-0.5">
+                                             {m.uom}
+                                          </div>
+                                       ))}
+                                    </div>
+                                 </TableCell>
+                                 
+                                   <TableCell className="text-xs font-medium py-4">
+                                      {isMainRow && editing ? (
+                                         <div className="flex flex-col gap-1.5">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-[10px] text-muted-foreground w-8">Mulai:</span>
+                                              <select
+                                                 value={(item as StepDraft).shift ?? 1}
+                                                 onChange={(e) => {
+                                                   const val = Number(e.target.value);
+                                                   setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, shift: val } : x));
+                                                 }}
+                                                 className="h-7 w-20 rounded-md border border-input bg-background px-2 text-xs"
+                                              >
+                                                 <option value={1}>Shift 1</option>
+                                                 <option value={2}>Shift 2</option>
+                                                 <option value={3}>Shift 3</option>
+                                              </select>
+                                            </div>
+                                            
+                                            {totalShifts > 1 && (
+                                              <div className="text-[10px] text-blue-600 font-bold ml-[42px]">
+                                                 (+{totalShifts - 1} next)
+                                              </div>
+                                            )}
+                                         </div>
+                                      ) : null}
+                                      
+                                      <div className={`text-xs text-gray-700 font-semibold ${isMainRow && editing ? 'mt-2 pl-[42px]' : 'mt-1'}`}>
+                                         Shift {sch.shift}
+                                      </div>
+                                   </TableCell>
+
+                                 <TableCell className="text-xs">
+                                      {isMainRow && editing ? (
+                                         <div className="flex flex-col gap-1">
+                                            <Input
+                                              type="date"
+                                              className="h-8 w-32 bg-background border-input text-xs"
+                                              value={(item as StepDraft).startDate ?? ""}
+                                              onChange={(e) => {
+                                                setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, startDate: e.target.value || null } : x));
+                                              }}
+                                            />
+                                         </div>
+                                      ) : (
+                                         <div className="font-medium text-gray-700">
+                                            {sch.date?.toLocaleDateString("id-ID", { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) ?? "-"}
+                                         </div>
+                                      )}
+                                   </TableCell>
+
+                                   <TableCell>
+                                      {isMainRow && editing && (
+                                         <div className="flex gap-1">
+                                           <Button
+                                             variant="ghost"
+                                             size="sm"
+                                             className="h-7 px-2 text-xs"
+                                             onClick={() => openEditStep(item as StepDraft)}
+                                           >
+                                             Edit
+                                           </Button>
+                                           <Button
+                                             variant="ghost"
+                                             size="sm"
+                                             className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                                             onClick={() => removeStep((item as StepDraft).key)}
+                                           >
+                                             Hapus
+                                           </Button>
+                                         </div>
+                                      )}
+                                   </TableCell>
+                                 </TableRow>
+                               );
+                            })}
+                          </React.Fragment>
                         );
                       });
                     })()}
@@ -1011,11 +1180,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
               </div>
             </div>
 
-            <div className="text-xs opacity-70">
-              Step masih read-only di halaman ini. Kalau kamu mau edit step juga
-              (UP/Machine/Material/Qty), kita bikin tombol “Edit” per step
-              (dialog kecil) tapi tetap stay di halaman detail.
-            </div>
             {editing && (
               <div className="flex gap-2 mt-3">
                 <Button
@@ -1048,18 +1212,27 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                     type="number"
                     value={stepDraft.up}
                     onChange={(e) => {
-                      const newUp = e.target.value;
-                      const upNum = Number(newUp);
-                      const poNum = Number(qtyPoPcs);
-
-                      let autoQty = stepDraft.qtyReq;
-                      if (upNum > 0 && poNum > 0) {
-                        autoQty = String(Math.ceil(poNum / upNum));
-                      }
-
-                      setStepDraft((d) => ({ ...d, up: newUp, qtyReq: autoQty }));
+                      const val = e.target.value;
+                      const upNum = Number(val);
+                      
+                      setStepDraft((prev) => {
+                        let newMaterials = prev.materials;
+                        
+                        if (prev.machineId) {
+                           const selectedMachine = machines.data?.find(m => m.id === prev.machineId);
+                           if (selectedMachine?.uom === 'sheet' && upNum > 0) {
+                              const po = Number(qtyPoPcs); 
+                              const req = Math.ceil(po / upNum);
+                              newMaterials = prev.materials.map(m => ({
+                                ...m,
+                                qtyReq: String(req)
+                              }));
+                           }
+                        }
+                        return { ...prev, up: val, materials: newMaterials };
+                      });
                     }}
-                    placeholder="contoh: 4"
+                    placeholder="ex: 4"
                   />
                 </div>
 
@@ -1067,12 +1240,38 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                   <div className="text-sm font-medium">Machine (optional)</div>
                   <select
                     value={stepDraft.machineId ?? ""}
-                    onChange={(e) =>
-                      setStepDraft((d) => ({
-                        ...d,
-                        machineId: e.target.value ? Number(e.target.value) : null,
-                      }))
-                    }
+                    onChange={(e) => {
+                       const val = e.target.value ? Number(e.target.value) : null;
+                       const selectedMachine = machines.data?.find(m => m.id === val);
+                       
+                       setStepDraft((d) => {
+                          let newMaterials = d.materials;
+                          const isSheet = selectedMachine?.uom === 'sheet';
+                          const currentUp = Number(d.up);
+                          const newUp = (isSheet && !currentUp && selectedMachine?.stdOutputPerShift)
+                            ? String(selectedMachine.stdOutputPerShift)
+                            : d.up;
+
+                          if (isSheet) {
+                             const upToUse = Number(newUp);
+                             if (upToUse > 0) {
+                               const po = Number(qtyPoPcs);
+                               const req = Math.ceil(po / upToUse);
+                               newMaterials = d.materials.map(mat => ({
+                                  ...mat,
+                                  qtyReq: String(req)
+                               }));
+                             }
+                          }
+                          
+                          return {
+                             ...d,
+                             machineId: val,
+                             up: newUp,
+                             materials: newMaterials
+                          };
+                       });
+                    }}
                     className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
                     disabled={machines.isLoading}
                   >
@@ -1086,27 +1285,26 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-sm font-medium">Tanggal & Shift Mulai</div>
+                  <div className="text-sm font-medium">Tanggal Mulai</div>
                   <div className="flex gap-2">
                     <Input
                       type="date"
-                      className="flex-1"
                       value={stepDraft.startDate ?? ""}
                       onChange={(e) =>
                         setStepDraft((d) => ({ ...d, startDate: e.target.value || null }))
                       }
+                      className="flex-1"
                     />
                     <select
-                      value={stepDraft.shift}
-                      onChange={(e) => {
-                        const v = Number(e.target.value);
-                        setStepDraft((d) => ({ ...d, shift: v }));
-                      }}
-                      className="border-input bg-background h-10 w-32 rounded-md border px-3 text-sm"
+                       className="border-input bg-background h-10 rounded-md border px-3 text-sm w-24"
+                       value={stepDraft.shift}
+                       onChange={(e) =>
+                         setStepDraft((d) => ({ ...d, shift: Number(e.target.value) }))
+                       }
                     >
-                      <option value={1}>Shift 1</option>
-                      <option value={2}>Shift 2</option>
-                      <option value={3}>Shift 3</option>
+                       <option value={1}>Shift 1</option>
+                       <option value={2}>Shift 2</option>
+                       <option value={3}>Shift 3</option>
                     </select>
                   </div>
                 </div>
@@ -1114,47 +1312,68 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
 
               <Separator />
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="space-y-2 sm:col-span-2">
-                  <div className="text-sm font-medium">Material (optional)</div>
-                  <select
-                    value={stepDraft.materialId ?? ""}
-                    onChange={(e) => {
-                      const v = e.target.value ? Number(e.target.value) : null;
-                      
-                      let autoQty = "";
-                      if (v) {
-                        const upNum = Number(stepDraft.up);
-                        const poNum = Number(qtyPoPcs);
-                        if (upNum > 0 && poNum > 0) {
-                          autoQty = String(Math.ceil(poNum / upNum));
-                        }
-                      }
-
-                      setStepDraft((d) => ({ ...d, materialId: v, qtyReq: autoQty }));
-                    }}
-                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-                    disabled={materials.isLoading}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">Materials</div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addMaterial}
                   >
-                    <option value="">(None)</option>
-                    {(materials.data ?? []).map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
+                    + Tambah Material
+                  </Button>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">Qty Material</div>
-                  <Input
-                    type="number"
-                    value={stepDraft.qtyReq}
-                    onChange={(e) => setStepDraft((d) => ({ ...d, qtyReq: e.target.value }))}
-                    placeholder="Req"
-                    disabled={!stepDraft.materialId}
-                  />
-                </div>
+                {stepDraft.materials.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Belum ada material. Klik "Tambah Material" untuk menambahkan.
+                  </p>
+                )}
+
+                {stepDraft.materials.map((mat) => (
+                  <div key={mat.key} className="grid gap-2 sm:grid-cols-[2fr_1fr_auto] items-end border rounded-md p-3">
+                    <div className="space-y-2">
+                      <div className="text-xs font-medium">Material</div>
+                      <select
+                        value={mat.materialId || ""}
+                        onChange={(e) =>
+                          updateMaterial(mat.key, "materialId", e.target.value ? Number(e.target.value) : 0)
+                        }
+                        className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
+                        disabled={materials.isLoading}
+                      >
+                        <option value="">Pilih Material</option>
+                        {(materials.data ?? []).map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="text-xs font-medium">Qty</div>
+                      <Input
+                        type="number"
+                        value={mat.qtyReq}
+                        onChange={(e) => updateMaterial(mat.key, "qtyReq", e.target.value)}
+                        placeholder="Manual"
+                        className="h-9"
+                      />
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => removeMaterial(mat.key)}
+                    >
+                      Hapus
+                    </Button>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -1184,13 +1403,13 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <Input
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQ(e.target.value)}
               placeholder="Cari No. PRO / Produk..."
               className="sm:w-72"
             />
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value as any)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatus(e.target.value as any)}
               className="border-input bg-background h-10 rounded-md border px-3 text-sm sm:w-48"
             >
               <option value="ALL">Semua Status</option>
@@ -1239,7 +1458,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                     </TableCell>
                   </TableRow>
                 ) : list.data?.items?.length ? (
-                  list.data.items.map((p) => (
+                  list.data.items.map((p: any) => (
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">
                         {p.proNumber}

@@ -24,13 +24,18 @@ import {
   TableRow,
 } from "~/components/ui/table";
 
+type StepDraftMaterial = {
+  key: string;
+  materialId: number | null;
+  qtyReq: string;
+};
+
 type StepDraft = {
   key: string;
   up: string;
   machineId: number | null;
-  materialId: number | null;
-  qtyReq: string;
-  startDate: string; // Per-step start date
+  materials: StepDraftMaterial[];
+  startDate: string; 
 };
 
 function uid() {
@@ -44,9 +49,8 @@ function newStep(): StepDraft {
     key: uid(),
     up: "",
     machineId: null,
-    materialId: null,
-    qtyReq: "",
-    startDate: "", // Empty by default
+    materials: [{ key: uid(), materialId: null, qtyReq: "" }],
+    startDate: "",
   };
 }
 
@@ -108,13 +112,17 @@ export default function ProPlanner() {
 
     const upNum = Number(draft.up);
     if (!draft.up.trim() || !Number.isFinite(upNum) || upNum < 0) {
-      return setErr("UP wajib >= 0 (boleh 0)");
+      return setErr("UP wajib >= 0 (oleh 0)");
     }
 
-    if (draft.materialId) {
-      const q = Number(draft.qtyReq);
-      if (!draft.qtyReq.trim() || !Number.isFinite(q) || q <= 0) {
-        return setErr("Qty Req wajib > 0 kalau material dipilih");
+    if (draft.materials.length > 0) {
+      for (const m of draft.materials) {
+        if (m.materialId) {
+           const q = Number(m.qtyReq);
+           if (!m.qtyReq.trim() || !Number.isFinite(q) || q <= 0) {
+             return setErr("Qty Req material wajib > 0");
+           }
+        }
       }
     }
 
@@ -168,9 +176,9 @@ export default function ProPlanner() {
         up: Number(s.up),
         machineId: s.machineId ?? null,
         startDate: s.startDate ? new Date(`${s.startDate}T00:00:00`) : undefined,
-        materials: s.materialId
-          ? [{ materialId: s.materialId, qtyReq: Number(s.qtyReq) }]
-          : [],
+        materials: s.materials
+          .filter(m => m.materialId) 
+          .map((m) => ({ materialId: m.materialId!, qtyReq: Number(m.qtyReq) })),
       })),
     };
 
@@ -205,7 +213,7 @@ export default function ProPlanner() {
               <div className="text-sm font-medium">Produk</div>
               <Input
                 value={productName}
-                onChange={(e) => setProductName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProductName(e.target.value)}
                 placeholder="Nama produk"
                 autoComplete="off"
               />
@@ -215,14 +223,14 @@ export default function ProPlanner() {
               <div className="text-sm font-medium">Proses (Prefix PRO)</div>
               <select
                 value={processId ?? ""}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                   setProcessId(e.target.value ? Number(e.target.value) : null)
                 }
                 className={control}
                 disabled={loadingMaster}
               >
                 <option value="">Pilih proses</option>
-                {(processes.data ?? []).map((p) => (
+                {(processes.data ?? []).map((p: any) => (
                   <option key={p.id} value={p.id}>
                     {p.code} - {p.name}
                   </option>
@@ -235,7 +243,7 @@ export default function ProPlanner() {
               <Input
                 type="number"
                 value={qtyPoPcs}
-                onChange={(e) => setQtyPoPcs(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQtyPoPcs(e.target.value)}
                 placeholder="contoh: 100000"
               />
             </div>
@@ -296,9 +304,8 @@ export default function ProPlanner() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    steps.map((s, idx) => {
+                    steps.map((s: StepDraft, idx: number) => {
                       const m = getMachine(s.machineId);
-                      const mat = getMaterial(s.materialId);
                       return (
                         <TableRow key={s.key}>
                           <TableCell>{idx + 1}</TableCell>
@@ -307,11 +314,37 @@ export default function ProPlanner() {
                             {s.up || "-"}
                           </TableCell>
                           <TableCell>{m?.name ?? "-"}</TableCell>
-                          <TableCell>{mat?.name ?? "-"}</TableCell>
-                          <TableCell className="text-right">
-                            {s.qtyReq?.trim() ? s.qtyReq : "-"}
+                          <TableCell>
+                             <div className="flex flex-col gap-1">
+                               {s.materials.map((m: StepDraftMaterial) => {
+                                  const matName = getMaterial(m.materialId)?.name ?? "-";
+                                  return (
+                                    <div key={m.key} className="text-xs border-b last:border-0 pb-0.5">
+                                      {matName}
+                                    </div>
+                                  )
+                                })}
+                               {s.materials.length === 0 && "-"}
+                             </div>
                           </TableCell>
-                          <TableCell>{mat ? String(mat.uom) : "-"}</TableCell>
+                          <TableCell className="text-right">
+                             <div className="flex flex-col gap-1">
+                               {s.materials.map((m: StepDraftMaterial) => (
+                                    <div key={m.key} className="text-xs border-b last:border-0 pb-0.5">
+                                      {m.qtyReq?.trim() ? Number(m.qtyReq).toLocaleString("id-ID") : "-"}
+                                    </div>
+                               ))}
+                             </div>
+                          </TableCell>
+                          <TableCell>
+                             <div className="flex flex-col gap-1">
+                               {s.materials.map((m: StepDraftMaterial) => (
+                                    <div key={m.key} className="text-xs border-b last:border-0 pb-0.5">
+                                      {getMaterial(m.materialId)?.uom ?? "-"}
+                                    </div>
+                               ))}
+                             </div>
+                          </TableCell>
                           <TableCell className="text-right">
                             <div className="inline-flex gap-2">
                               <Button
@@ -380,17 +413,26 @@ export default function ProPlanner() {
                 <Input
                   type="number"
                   value={draft.up}
-                  onChange={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     const newUp = e.target.value;
                     const upNum = Number(newUp);
                     const poNum = Number(qtyPoPcs);
-
-                    let autoQty = draft.qtyReq;
-                    if (upNum > 0 && poNum > 0) {
-                      autoQty = String(Math.ceil(poNum / upNum));
-                    }
-
-                    setDraft((d) => ({ ...d, up: newUp, qtyReq: autoQty }));
+                    
+                    setDraft((d: StepDraft) => {
+                       const selectedMachine = machines.data?.find((m: any) => m.id === d.machineId);
+                       
+                       // Recalc ALL materials if machine is sheet
+                       let newMaterials = d.materials;
+                       if (selectedMachine?.uom === 'sheet' && upNum > 0 && poNum > 0) {
+                         const autoQty = String(Math.ceil(poNum / upNum));
+                         newMaterials = d.materials.map((m: StepDraftMaterial) => ({
+                            ...m,
+                            qtyReq: m.materialId ? autoQty : m.qtyReq 
+                         }));
+                       }
+                       
+                       return { ...d, up: newUp, materials: newMaterials };
+                    });
                   }}
                   placeholder="contoh: 4"
                 />
@@ -400,17 +442,37 @@ export default function ProPlanner() {
                 <div className="text-sm font-medium">Machine (optional)</div>
                 <select
                   value={draft.machineId ?? ""}
-                  onChange={(e) =>
-                    setDraft((d) => ({
-                      ...d,
-                      machineId: e.target.value ? Number(e.target.value) : null,
-                    }))
-                  }
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                     const val = e.target.value ? Number(e.target.value) : null;
+                     const selectedMachine = machines.data?.find((m: any) => m.id === val);
+                     const isSheet = selectedMachine?.uom === 'sheet';
+                     
+                     setDraft((d: StepDraft) => {
+                        const poNum = Number(qtyPoPcs);
+                        const upNum = Number(d.up);
+                        
+                        let newMaterials = d.materials;
+
+                        if (isSheet && upNum > 0 && poNum > 0) {
+                           const autoQty = String(Math.ceil(poNum / upNum));
+                           newMaterials = d.materials.map((m: StepDraftMaterial) => ({ ...m, qtyReq: autoQty }));
+                        } else if (isSheet && poNum > 0 && !upNum) {
+                            const autoQty = String(poNum);
+                            newMaterials = d.materials.map((m: StepDraftMaterial) => ({ ...m, qtyReq: autoQty }));
+                        }
+                        
+                        return {
+                           ...d,
+                           machineId: val,
+                           materials: newMaterials
+                        };
+                     });
+                  }}
                   className={control}
                   disabled={loadingMaster}
                 >
                   <option value="">(optional)</option>
-                  {(machines.data ?? []).map((m) => (
+                  {(machines.data ?? []).map((m: any) => (
                     <option key={m.id} value={m.id}>
                       {m.name}
                     </option>
@@ -423,8 +485,8 @@ export default function ProPlanner() {
                 <Input
                   type="date"
                   value={draft.startDate}
-                  onChange={(e) =>
-                    setDraft((d) => ({ ...d, startDate: e.target.value }))
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setDraft((d: StepDraft) => ({ ...d, startDate: e.target.value }))
                   }
                   placeholder="dd/mm/yyyy"
                 />
@@ -433,57 +495,108 @@ export default function ProPlanner() {
 
             <Separator />
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="space-y-2 sm:col-span-2">
-                <div className="text-sm font-medium">Material (optional)</div>
-                <select
-                  value={draft.materialId ?? ""}
-                  onChange={(e) => {
-                    const v = e.target.value ? Number(e.target.value) : null;
-                    
-                    // Auto-calculate Qty Req when material is selected
-                    let autoQty = "";
-                    if (v) {
-                      const upNum = Number(draft.up);
-                      const poNum = Number(qtyPoPcs);
-                      if (upNum > 0 && poNum > 0) {
-                        autoQty = String(Math.ceil(poNum / upNum));
-                      }
-                    }
-                    
-                    setDraft((d) => ({
-                      ...d,
-                      materialId: v,
-                      qtyReq: v ? autoQty : "",
-                    }));
-                  }}
-                  className={control}
-                  disabled={loadingMaster}
-                >
-                  <option value="">(optional) pilih material</option>
-                  {(materials.data ?? []).map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} ({String(m.uom)})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <div className="text-sm font-medium">Qty Req</div>
-                <Input
-                  type="number"
-                  value={draft.qtyReq}
-                  onChange={(e) =>
-                    setDraft((d) => ({ ...d, qtyReq: e.target.value }))
-                  }
-                  disabled={!draft.materialId}
-                  placeholder={draft.materialId ? "Auto-calculated" : ""}
-                />
-                <div className="text-xs opacity-70">
-                  UoM: {getMaterial(draft.materialId)?.uom ?? "-"}
-                </div>
-              </div>
+             {/* Materials Section */}
+            <div className="space-y-3">
+               <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">Material (optional)</div>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 text-xs border"
+                    onClick={() => setDraft((d: StepDraft) => ({ ...d, materials: [...d.materials, { key: uid(), materialId: null, qtyReq: "" }] }))}
+                  >
+                    + Tambah Material
+                  </Button>
+               </div>
+               
+               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                 {draft.materials.map((mat: StepDraftMaterial, mIdx: number) => (
+                    <div key={mat.key} className="grid grid-cols-12 gap-2 items-end border-b pb-2 last:border-0 last:pb-0">
+                       {/* Material Select */}
+                       <div className="col-span-6">
+                          <label className="text-[10px] text-muted-foreground">Item</label>
+                          <select
+                            value={mat.materialId ?? ""}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                              const v = e.target.value ? Number(e.target.value) : null;
+                              
+                              setDraft((d: StepDraft) => {
+                                 const selectedMachine = machines.data?.find((m: any) => m.id === d.machineId);
+                                 const isSheet = selectedMachine?.uom === 'sheet';
+                                 const poNum = Number(qtyPoPcs);
+                                 const upNum = Number(d.up);
+                                 
+                                 let autoQty = mat.qtyReq;
+                                 if (v && isSheet && upNum > 0 && poNum > 0) {
+                                    autoQty = String(Math.ceil(poNum / upNum));
+                                 } else if (v && isSheet && poNum > 0) {
+                                     autoQty = String(poNum);
+                                 }
+                                 
+                                 const newMats = [...d.materials];
+                                 newMats[mIdx] = { ...mat, materialId: v, qtyReq: v ? autoQty : "" };
+                                 return { ...d, materials: newMats };
+                              });
+                            }}
+                            className={`${control} h-8 text-xs py-0`} 
+                            disabled={loadingMaster}
+                          >
+                            <option value="">(pilih)</option>
+                            {(materials.data ?? []).map((m: any) => (
+                              <option key={m.id} value={m.id}>
+                                {m.name}
+                              </option>
+                            ))}
+                          </select>
+                       </div>
+                       
+                       {/* Qty Input */}
+                       <div className="col-span-4">
+                          <label className="text-[10px] text-muted-foreground">
+                             Qty ({getMaterial(mat.materialId)?.uom ?? "-"})
+                          </label>
+                          <Input
+                            type="number"
+                            className="h-8 text-xs"
+                            value={mat.qtyReq}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                               const val = e.target.value;
+                               setDraft((d: StepDraft) => {
+                                  const newMats = [...d.materials];
+                                  newMats[mIdx] = { ...mat, qtyReq: val };
+                                  return { ...d, materials: newMats };
+                               })
+                            }}
+                            disabled={!mat.materialId}
+                            placeholder="Qty"
+                          />
+                       </div>
+                       
+                       {/* Delete Btn */}
+                       <div className="col-span-2">
+                          <Button
+                             type="button"
+                             variant="ghost" 
+                             size="icon"
+                             className="h-8 w-8 text-destructive hover:text-destructive"
+                             onClick={() => setDraft((d: StepDraft) => {
+                                const newMats = d.materials.filter((m: StepDraftMaterial) => m.key !== mat.key);
+                                return { ...d, materials: newMats };
+                             })}
+                          >
+                             x
+                          </Button>
+                       </div>
+                    </div>
+                 ))}
+                 
+                 {draft.materials.length === 0 && (
+                    <div className="text-center text-xs text-muted-foreground py-2 border border-dashed rounded">
+                       Tidak ada material.
+                    </div>
+                 )}
+               </div>
             </div>
 
             {err ? <p className="text-destructive text-sm">{err}</p> : null}
