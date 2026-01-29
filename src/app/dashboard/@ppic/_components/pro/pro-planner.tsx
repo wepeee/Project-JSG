@@ -55,6 +55,7 @@ function newStep(): StepDraft {
 }
 
 export default function ProPlanner() {
+  const utils = api.useUtils();
   const processes = api.processes.list.useQuery();
   const machines = api.machines.list.useQuery();
   const materials = api.materials.list.useQuery();
@@ -64,7 +65,12 @@ export default function ProPlanner() {
   const [processId, setProcessId] = React.useState<number | null>(null);
   const [qtyPoPcs, setQtyPoPcs] = React.useState<string>("");
 
-  const createPro = api.pros.create.useMutation();
+  const createPro = api.pros.create.useMutation({
+    onSuccess: async () => {
+      await utils.pros.list.invalidate();
+      await utils.pros.getSchedule.invalidate();
+    },
+  });
 
   const loadingMaster =
     processes.isLoading ||

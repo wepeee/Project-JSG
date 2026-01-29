@@ -80,6 +80,7 @@ export const prosRouter = createTRPCRouter({
                   name: true,
                   stdOutputPerHour: true,
                   stdOutputPerShift: true,
+                  uom: true,
                 },
               },
               startDate: true, // add this
@@ -190,16 +191,19 @@ export const prosRouter = createTRPCRouter({
 
         for (const inputStep of input.steps) {
           const std = 1000; // Default if no machine
-          const up = inputStep.up || 1;
-          const qty = input.qtyPoPcs;
-          
+          const firstMatQty = inputStep.materials[0]?.qtyReq;
+          const qty = firstMatQty !== undefined ? Number(firstMatQty) : input.qtyPoPcs;
+          const up = firstMatQty !== undefined ? 1 : (inputStep.up || 1);
+
           let machineStd = std;
+          let isSheet = false;
           if (inputStep.machineId) {
-             const m = await tx.machine.findUnique({ where: { id: inputStep.machineId }, select: { stdOutputPerShift: true } });
+             const m = await tx.machine.findUnique({ where: { id: inputStep.machineId }, select: { stdOutputPerShift: true, uom: true } });
              if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
+             if (m?.uom === 'sheet') isSheet = true;
           }
 
-          const need = input.expand !== false ? Math.max(1, Math.ceil(qty / (up * machineStd))) : 1;
+          const need = (input.expand !== false && isSheet) ? Math.max(1, Math.ceil(qty / (up * machineStd))) : 1;
 
           // Use inputStep's startDate as anchor if provided
           if (inputStep.startDate) {
@@ -207,7 +211,12 @@ export const prosRouter = createTRPCRouter({
             currentShift = getShiftFromTime(new Date(inputStep.startDate));
           }
 
+          const totalSheets = up > 0 ? qty / up : qty;
+
           for (let i = 0; i < need; i++) {
+            const sheetsInThisShift = Math.max(0, Math.min(totalSheets - i * machineStd, machineStd));
+            const portion = totalSheets > 0 ? sheetsInThisShift / totalSheets : 1;
+
             await tx.proStep.create({
               data: {
                 proId: created.id,
@@ -218,7 +227,7 @@ export const prosRouter = createTRPCRouter({
                 materials: {
                   create: (inputStep.materials ?? []).map((m) => ({
                     materialId: m.materialId,
-                    qtyReq: new Prisma.Decimal(m.qtyReq),
+                    qtyReq: new Prisma.Decimal(m.qtyReq * portion),
                   })),
                 },
               },
@@ -266,6 +275,7 @@ export const prosRouter = createTRPCRouter({
                   id: true,
                   name: true,
                   stdOutputPerShift: true,
+                  uom: true,
                 },
               },
               materials: {
@@ -273,14 +283,6 @@ export const prosRouter = createTRPCRouter({
                   materialId: true,
                   qtyReq: true,
                   material: { select: { name: true, uom: true } },
-                },
-              },
-              shifts: {
-                orderBy: { shiftIndex: "asc" },
-                select: {
-                  id: true,
-                  shiftIndex: true,
-                  scheduledDate: true,
                 },
               },
             },
@@ -330,27 +332,12 @@ export const prosRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
       return db.$transaction(async (tx) => {
-        // 1. Fetch old PRO to detect startDate change
+        // 1. Fetch old PRO 
         const oldPro = await tx.pro.findUnique({
           where: { id: input.id },
           select: {
             qtyPoPcs: true,
             startDate: true,
-            steps: {
-              select: {
-                id: true,
-                orderNo: true,
-                up: true,
-                machineId: true,
-                startDate: true,
-                shifts: {
-                  select: {
-                    shiftIndex: true,
-                    scheduledDate: true,
-                  },
-                },
-              },
-            },
           },
         });
 
@@ -361,46 +348,7 @@ export const prosRouter = createTRPCRouter({
           });
         }
 
-        // 2. Calculate delta if startDate changed
-        let deltaDays = 0;
-        const oldStartDate = oldPro.startDate;
-        const newStartDate = input.startDate;
-
-        if (oldStartDate && newStartDate) {
-          const oldTime = new Date(oldStartDate).getTime();
-          const newTime = new Date(newStartDate).getTime();
-          deltaDays = Math.round((newTime - oldTime) / (1000 * 60 * 60 * 24));
-        }
-
-        // 3. Build adjusted step dates map (orderNo -> adjusted startDate)
-        const adjustedStepDates = new Map<number, Date | undefined>();
-        const adjustedShifts = new Map<number, Array<{ shiftIndex: number; scheduledDate: Date }>>();
-
-        if (deltaDays !== 0) {
-          for (const oldStep of oldPro.steps) {
-            // Adjust step startDate
-            if (oldStep.startDate) {
-              const adjusted = new Date(oldStep.startDate);
-              adjusted.setDate(adjusted.getDate() + deltaDays);
-              adjustedStepDates.set(oldStep.orderNo, adjusted);
-            }
-
-            // Adjust shift scheduledDates
-            if (oldStep.shifts.length > 0) {
-              const adjustedShiftList = oldStep.shifts.map((shift) => {
-                const adjustedDate = new Date(shift.scheduledDate);
-                adjustedDate.setDate(adjustedDate.getDate() + deltaDays);
-                return {
-                  shiftIndex: shift.shiftIndex,
-                  scheduledDate: adjustedDate,
-                };
-              });
-              adjustedShifts.set(oldStep.orderNo, adjustedShiftList);
-            }
-          }
-        }
-
-        // 4. Update header
+        // 2. Update header
         await tx.pro.update({
           where: { id: input.id },
           data: {
@@ -412,12 +360,10 @@ export const prosRouter = createTRPCRouter({
           },
         });
 
-        // 5. Delete old steps
+        // 3. Delete old steps
         await tx.proStep.deleteMany({ where: { proId: input.id } });
 
-        // 6. Recreate steps (EXPANDED)
-        const qtyChanged = oldPro.qtyPoPcs !== input.qtyPoPcs;
-        
+        // 4. Recreate steps (EXPANDED)
         let currentDay = startOfDay(input.startDate ?? oldPro.startDate ?? new Date());
         let currentShift = getShiftFromTime(input.startDate ?? oldPro.startDate ?? new Date());
 
@@ -425,26 +371,31 @@ export const prosRouter = createTRPCRouter({
 
         for (const inputStep of input.steps) {
            const std = 1000;
-           const up = inputStep.up || 1;
-           const qty = input.qtyPoPcs;
-           
+           const firstMatQty = inputStep.materials?.[0]?.qtyReq;
+           const qty = firstMatQty !== undefined ? Number(firstMatQty) : input.qtyPoPcs;
+           const up = firstMatQty !== undefined ? 1 : (inputStep.up || 1);
+
            let machineStd = std;
+           let isSheet = false;
            if (inputStep.machineId) {
-              const m = await tx.machine.findUnique({ where: { id: inputStep.machineId }, select: { stdOutputPerShift: true } });
+              const m = await tx.machine.findUnique({ where: { id: inputStep.machineId }, select: { stdOutputPerShift: true, uom: true } });
               if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
+              if (m?.uom === 'sheet') isSheet = true;
            }
 
-           const need = input.expand ? Math.max(1, Math.ceil(qty / (up * machineStd))) : 1;
-
-           // Shift preservation logic logic removed here for simplicity in this specific rewrite 
-           // and moved to handle shift-as-step expansion directly.
+           const need = (input.expand && isSheet) ? Math.max(1, Math.ceil(qty / (up * machineStd))) : 1;
            
            if (inputStep.startDate) {
               currentDay = startOfDay(new Date(inputStep.startDate));
               currentShift = getShiftFromTime(new Date(inputStep.startDate));
            }
 
+           const totalSheets = up > 0 ? qty / up : qty;
+
            for (let i = 0; i < need; i++) {
+              const sheetsInThisShift = Math.max(0, Math.min(totalSheets - i * machineStd, machineStd));
+              const portion = totalSheets > 0 ? sheetsInThisShift / totalSheets : 1;
+
               await tx.proStep.create({
                 data: {
                   proId: input.id,
@@ -455,7 +406,7 @@ export const prosRouter = createTRPCRouter({
                   materials: {
                     create: inputStep.materials?.map((m) => ({
                       materialId: m.materialId,
-                      qtyReq: new Prisma.Decimal(m.qtyReq),
+                      qtyReq: new Prisma.Decimal(m.qtyReq * portion),
                     })) ?? [],
                   }
                 }
@@ -512,34 +463,6 @@ export const prosRouter = createTRPCRouter({
       });
     }),
 
-  rescheduleShift: ppicProcedure
-    .input(
-      z.object({
-        stepId: z.number(),
-        shiftIndex: z.number().int().min(0),
-        scheduledDate: z.coerce.date(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      // Upsert: create if doesn't exist, update if exists
-      return ctx.db.proStepShift.upsert({
-        where: {
-          stepId_shiftIndex: {
-            stepId: input.stepId,
-            shiftIndex: input.shiftIndex,
-          },
-        },
-        create: {
-          stepId: input.stepId,
-          shiftIndex: input.shiftIndex,
-          scheduledDate: input.scheduledDate,
-        },
-        update: {
-          scheduledDate: input.scheduledDate,
-        },
-      });
-    }),
-
   getSchedule: ppicProcedure
     .input(
       z.object({
@@ -569,21 +492,6 @@ export const prosRouter = createTRPCRouter({
                 },
               },
             },
-            // OR any shift scheduledDate in range
-            {
-              steps: {
-                some: {
-                  shifts: {
-                    some: {
-                      scheduledDate: {
-                        gte: input.start,
-                        lte: input.end,
-                      },
-                    },
-                  },
-                },
-              },
-            },
           ],
         },
         select: {
@@ -604,14 +512,6 @@ export const prosRouter = createTRPCRouter({
                 select: { id: true, name: true, stdOutputPerShift: true },
               },
               startDate: true, // add this
-              shifts: {
-                orderBy: { shiftIndex: "asc" },
-                select: {
-                  id: true,
-                  shiftIndex: true,
-                  scheduledDate: true,
-                },
-              },
             },
           },
         },

@@ -49,11 +49,6 @@ export type Pro = $Result.DefaultSelection<Prisma.$ProPayload>
  */
 export type ProStep = $Result.DefaultSelection<Prisma.$ProStepPayload>
 /**
- * Model ProStepShift
- * 
- */
-export type ProStepShift = $Result.DefaultSelection<Prisma.$ProStepShiftPayload>
-/**
  * Model ProStepMaterial
  * 
  */
@@ -294,16 +289,6 @@ export class PrismaClient<
     * ```
     */
   get proStep(): Prisma.ProStepDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.proStepShift`: Exposes CRUD operations for the **ProStepShift** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more ProStepShifts
-    * const proStepShifts = await prisma.proStepShift.findMany()
-    * ```
-    */
-  get proStepShift(): Prisma.ProStepShiftDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.proStepMaterial`: Exposes CRUD operations for the **ProStepMaterial** model.
@@ -762,7 +747,6 @@ export namespace Prisma {
     ProSequence: 'ProSequence',
     Pro: 'Pro',
     ProStep: 'ProStep',
-    ProStepShift: 'ProStepShift',
     ProStepMaterial: 'ProStepMaterial'
   };
 
@@ -782,7 +766,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "machine" | "material" | "process" | "proSequence" | "pro" | "proStep" | "proStepShift" | "proStepMaterial"
+      modelProps: "user" | "machine" | "material" | "process" | "proSequence" | "pro" | "proStep" | "proStepMaterial"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1248,72 +1232,6 @@ export namespace Prisma {
           }
         }
       }
-      ProStepShift: {
-        payload: Prisma.$ProStepShiftPayload<ExtArgs>
-        fields: Prisma.ProStepShiftFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.ProStepShiftFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepShiftPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.ProStepShiftFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepShiftPayload>
-          }
-          findFirst: {
-            args: Prisma.ProStepShiftFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepShiftPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.ProStepShiftFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepShiftPayload>
-          }
-          findMany: {
-            args: Prisma.ProStepShiftFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepShiftPayload>[]
-          }
-          create: {
-            args: Prisma.ProStepShiftCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepShiftPayload>
-          }
-          createMany: {
-            args: Prisma.ProStepShiftCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          delete: {
-            args: Prisma.ProStepShiftDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepShiftPayload>
-          }
-          update: {
-            args: Prisma.ProStepShiftUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepShiftPayload>
-          }
-          deleteMany: {
-            args: Prisma.ProStepShiftDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.ProStepShiftUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.ProStepShiftUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepShiftPayload>
-          }
-          aggregate: {
-            args: Prisma.ProStepShiftAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateProStepShift>
-          }
-          groupBy: {
-            args: Prisma.ProStepShiftGroupByArgs<ExtArgs>
-            result: $Utils.Optional<ProStepShiftGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.ProStepShiftCountArgs<ExtArgs>
-            result: $Utils.Optional<ProStepShiftCountAggregateOutputType> | number
-          }
-        }
-      }
       ProStepMaterial: {
         payload: Prisma.$ProStepMaterialPayload<ExtArgs>
         fields: Prisma.ProStepMaterialFieldRefs
@@ -1483,7 +1401,6 @@ export namespace Prisma {
     proSequence?: ProSequenceOmit
     pro?: ProOmit
     proStep?: ProStepOmit
-    proStepShift?: ProStepShiftOmit
     proStepMaterial?: ProStepMaterialOmit
   }
 
@@ -1690,12 +1607,10 @@ export namespace Prisma {
 
   export type ProStepCountOutputType = {
     materials: number
-    shifts: number
   }
 
   export type ProStepCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     materials?: boolean | ProStepCountOutputTypeCountMaterialsArgs
-    shifts?: boolean | ProStepCountOutputTypeCountShiftsArgs
   }
 
   // Custom InputTypes
@@ -1714,13 +1629,6 @@ export namespace Prisma {
    */
   export type ProStepCountOutputTypeCountMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProStepMaterialWhereInput
-  }
-
-  /**
-   * ProStepCountOutputType without action
-   */
-  export type ProStepCountOutputTypeCountShiftsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProStepShiftWhereInput
   }
 
 
@@ -7571,7 +7479,6 @@ export namespace Prisma {
     proId: number | null
     orderNo: number | null
     up: number | null
-    estimatedShifts: number | null
     machineId: number | null
   }
 
@@ -7580,7 +7487,6 @@ export namespace Prisma {
     proId: number | null
     orderNo: number | null
     up: number | null
-    estimatedShifts: number | null
     machineId: number | null
   }
 
@@ -7590,7 +7496,6 @@ export namespace Prisma {
     orderNo: number | null
     up: number | null
     startDate: Date | null
-    estimatedShifts: number | null
     machineId: number | null
   }
 
@@ -7600,7 +7505,6 @@ export namespace Prisma {
     orderNo: number | null
     up: number | null
     startDate: Date | null
-    estimatedShifts: number | null
     machineId: number | null
   }
 
@@ -7610,7 +7514,6 @@ export namespace Prisma {
     orderNo: number
     up: number
     startDate: number
-    estimatedShifts: number
     machineId: number
     _all: number
   }
@@ -7621,7 +7524,6 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     up?: true
-    estimatedShifts?: true
     machineId?: true
   }
 
@@ -7630,7 +7532,6 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     up?: true
-    estimatedShifts?: true
     machineId?: true
   }
 
@@ -7640,7 +7541,6 @@ export namespace Prisma {
     orderNo?: true
     up?: true
     startDate?: true
-    estimatedShifts?: true
     machineId?: true
   }
 
@@ -7650,7 +7550,6 @@ export namespace Prisma {
     orderNo?: true
     up?: true
     startDate?: true
-    estimatedShifts?: true
     machineId?: true
   }
 
@@ -7660,7 +7559,6 @@ export namespace Prisma {
     orderNo?: true
     up?: true
     startDate?: true
-    estimatedShifts?: true
     machineId?: true
     _all?: true
   }
@@ -7757,7 +7655,6 @@ export namespace Prisma {
     orderNo: number
     up: number | null
     startDate: Date | null
-    estimatedShifts: number | null
     machineId: number | null
     _count: ProStepCountAggregateOutputType | null
     _avg: ProStepAvgAggregateOutputType | null
@@ -7786,12 +7683,10 @@ export namespace Prisma {
     orderNo?: boolean
     up?: boolean
     startDate?: boolean
-    estimatedShifts?: boolean
     machineId?: boolean
     pro?: boolean | ProDefaultArgs<ExtArgs>
     machine?: boolean | ProStep$machineArgs<ExtArgs>
     materials?: boolean | ProStep$materialsArgs<ExtArgs>
-    shifts?: boolean | ProStep$shiftsArgs<ExtArgs>
     _count?: boolean | ProStepCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["proStep"]>
 
@@ -7803,16 +7698,14 @@ export namespace Prisma {
     orderNo?: boolean
     up?: boolean
     startDate?: boolean
-    estimatedShifts?: boolean
     machineId?: boolean
   }
 
-  export type ProStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "up" | "startDate" | "estimatedShifts" | "machineId", ExtArgs["result"]["proStep"]>
+  export type ProStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "up" | "startDate" | "machineId", ExtArgs["result"]["proStep"]>
   export type ProStepInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pro?: boolean | ProDefaultArgs<ExtArgs>
     machine?: boolean | ProStep$machineArgs<ExtArgs>
     materials?: boolean | ProStep$materialsArgs<ExtArgs>
-    shifts?: boolean | ProStep$shiftsArgs<ExtArgs>
     _count?: boolean | ProStepCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -7822,7 +7715,6 @@ export namespace Prisma {
       pro: Prisma.$ProPayload<ExtArgs>
       machine: Prisma.$MachinePayload<ExtArgs> | null
       materials: Prisma.$ProStepMaterialPayload<ExtArgs>[]
-      shifts: Prisma.$ProStepShiftPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -7830,7 +7722,6 @@ export namespace Prisma {
       orderNo: number
       up: number | null
       startDate: Date | null
-      estimatedShifts: number | null
       machineId: number | null
     }, ExtArgs["result"]["proStep"]>
     composites: {}
@@ -8175,7 +8066,6 @@ export namespace Prisma {
     pro<T extends ProDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProDefaultArgs<ExtArgs>>): Prisma__ProClient<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     machine<T extends ProStep$machineArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$machineArgs<ExtArgs>>): Prisma__MachineClient<$Result.GetResult<Prisma.$MachinePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     materials<T extends ProStep$materialsArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$materialsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    shifts<T extends ProStep$shiftsArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$shiftsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepShiftPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8210,7 +8100,6 @@ export namespace Prisma {
     readonly orderNo: FieldRef<"ProStep", 'Int'>
     readonly up: FieldRef<"ProStep", 'Int'>
     readonly startDate: FieldRef<"ProStep", 'DateTime'>
-    readonly estimatedShifts: FieldRef<"ProStep", 'Int'>
     readonly machineId: FieldRef<"ProStep", 'Int'>
   }
     
@@ -8598,30 +8487,6 @@ export namespace Prisma {
   }
 
   /**
-   * ProStep.shifts
-   */
-  export type ProStep$shiftsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProStepShift
-     */
-    select?: ProStepShiftSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProStepShift
-     */
-    omit?: ProStepShiftOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProStepShiftInclude<ExtArgs> | null
-    where?: ProStepShiftWhereInput
-    orderBy?: ProStepShiftOrderByWithRelationInput | ProStepShiftOrderByWithRelationInput[]
-    cursor?: ProStepShiftWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ProStepShiftScalarFieldEnum | ProStepShiftScalarFieldEnum[]
-  }
-
-  /**
    * ProStep without action
    */
   export type ProStepDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8637,966 +8502,6 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ProStepInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model ProStepShift
-   */
-
-  export type AggregateProStepShift = {
-    _count: ProStepShiftCountAggregateOutputType | null
-    _avg: ProStepShiftAvgAggregateOutputType | null
-    _sum: ProStepShiftSumAggregateOutputType | null
-    _min: ProStepShiftMinAggregateOutputType | null
-    _max: ProStepShiftMaxAggregateOutputType | null
-  }
-
-  export type ProStepShiftAvgAggregateOutputType = {
-    id: number | null
-    stepId: number | null
-    shiftIndex: number | null
-  }
-
-  export type ProStepShiftSumAggregateOutputType = {
-    id: number | null
-    stepId: number | null
-    shiftIndex: number | null
-  }
-
-  export type ProStepShiftMinAggregateOutputType = {
-    id: number | null
-    stepId: number | null
-    shiftIndex: number | null
-    scheduledDate: Date | null
-  }
-
-  export type ProStepShiftMaxAggregateOutputType = {
-    id: number | null
-    stepId: number | null
-    shiftIndex: number | null
-    scheduledDate: Date | null
-  }
-
-  export type ProStepShiftCountAggregateOutputType = {
-    id: number
-    stepId: number
-    shiftIndex: number
-    scheduledDate: number
-    _all: number
-  }
-
-
-  export type ProStepShiftAvgAggregateInputType = {
-    id?: true
-    stepId?: true
-    shiftIndex?: true
-  }
-
-  export type ProStepShiftSumAggregateInputType = {
-    id?: true
-    stepId?: true
-    shiftIndex?: true
-  }
-
-  export type ProStepShiftMinAggregateInputType = {
-    id?: true
-    stepId?: true
-    shiftIndex?: true
-    scheduledDate?: true
-  }
-
-  export type ProStepShiftMaxAggregateInputType = {
-    id?: true
-    stepId?: true
-    shiftIndex?: true
-    scheduledDate?: true
-  }
-
-  export type ProStepShiftCountAggregateInputType = {
-    id?: true
-    stepId?: true
-    shiftIndex?: true
-    scheduledDate?: true
-    _all?: true
-  }
-
-  export type ProStepShiftAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ProStepShift to aggregate.
-     */
-    where?: ProStepShiftWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ProStepShifts to fetch.
-     */
-    orderBy?: ProStepShiftOrderByWithRelationInput | ProStepShiftOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: ProStepShiftWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ProStepShifts from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ProStepShifts.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned ProStepShifts
-    **/
-    _count?: true | ProStepShiftCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: ProStepShiftAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: ProStepShiftSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: ProStepShiftMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: ProStepShiftMaxAggregateInputType
-  }
-
-  export type GetProStepShiftAggregateType<T extends ProStepShiftAggregateArgs> = {
-        [P in keyof T & keyof AggregateProStepShift]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateProStepShift[P]>
-      : GetScalarType<T[P], AggregateProStepShift[P]>
-  }
-
-
-
-
-  export type ProStepShiftGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProStepShiftWhereInput
-    orderBy?: ProStepShiftOrderByWithAggregationInput | ProStepShiftOrderByWithAggregationInput[]
-    by: ProStepShiftScalarFieldEnum[] | ProStepShiftScalarFieldEnum
-    having?: ProStepShiftScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: ProStepShiftCountAggregateInputType | true
-    _avg?: ProStepShiftAvgAggregateInputType
-    _sum?: ProStepShiftSumAggregateInputType
-    _min?: ProStepShiftMinAggregateInputType
-    _max?: ProStepShiftMaxAggregateInputType
-  }
-
-  export type ProStepShiftGroupByOutputType = {
-    id: number
-    stepId: number
-    shiftIndex: number
-    scheduledDate: Date
-    _count: ProStepShiftCountAggregateOutputType | null
-    _avg: ProStepShiftAvgAggregateOutputType | null
-    _sum: ProStepShiftSumAggregateOutputType | null
-    _min: ProStepShiftMinAggregateOutputType | null
-    _max: ProStepShiftMaxAggregateOutputType | null
-  }
-
-  type GetProStepShiftGroupByPayload<T extends ProStepShiftGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<ProStepShiftGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof ProStepShiftGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], ProStepShiftGroupByOutputType[P]>
-            : GetScalarType<T[P], ProStepShiftGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type ProStepShiftSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    stepId?: boolean
-    shiftIndex?: boolean
-    scheduledDate?: boolean
-    step?: boolean | ProStepDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["proStepShift"]>
-
-
-
-  export type ProStepShiftSelectScalar = {
-    id?: boolean
-    stepId?: boolean
-    shiftIndex?: boolean
-    scheduledDate?: boolean
-  }
-
-  export type ProStepShiftOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "stepId" | "shiftIndex" | "scheduledDate", ExtArgs["result"]["proStepShift"]>
-  export type ProStepShiftInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    step?: boolean | ProStepDefaultArgs<ExtArgs>
-  }
-
-  export type $ProStepShiftPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "ProStepShift"
-    objects: {
-      step: Prisma.$ProStepPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: number
-      stepId: number
-      shiftIndex: number
-      scheduledDate: Date
-    }, ExtArgs["result"]["proStepShift"]>
-    composites: {}
-  }
-
-  type ProStepShiftGetPayload<S extends boolean | null | undefined | ProStepShiftDefaultArgs> = $Result.GetResult<Prisma.$ProStepShiftPayload, S>
-
-  type ProStepShiftCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<ProStepShiftFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: ProStepShiftCountAggregateInputType | true
-    }
-
-  export interface ProStepShiftDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProStepShift'], meta: { name: 'ProStepShift' } }
-    /**
-     * Find zero or one ProStepShift that matches the filter.
-     * @param {ProStepShiftFindUniqueArgs} args - Arguments to find a ProStepShift
-     * @example
-     * // Get one ProStepShift
-     * const proStepShift = await prisma.proStepShift.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends ProStepShiftFindUniqueArgs>(args: SelectSubset<T, ProStepShiftFindUniqueArgs<ExtArgs>>): Prisma__ProStepShiftClient<$Result.GetResult<Prisma.$ProStepShiftPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one ProStepShift that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {ProStepShiftFindUniqueOrThrowArgs} args - Arguments to find a ProStepShift
-     * @example
-     * // Get one ProStepShift
-     * const proStepShift = await prisma.proStepShift.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends ProStepShiftFindUniqueOrThrowArgs>(args: SelectSubset<T, ProStepShiftFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProStepShiftClient<$Result.GetResult<Prisma.$ProStepShiftPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ProStepShift that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepShiftFindFirstArgs} args - Arguments to find a ProStepShift
-     * @example
-     * // Get one ProStepShift
-     * const proStepShift = await prisma.proStepShift.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends ProStepShiftFindFirstArgs>(args?: SelectSubset<T, ProStepShiftFindFirstArgs<ExtArgs>>): Prisma__ProStepShiftClient<$Result.GetResult<Prisma.$ProStepShiftPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ProStepShift that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepShiftFindFirstOrThrowArgs} args - Arguments to find a ProStepShift
-     * @example
-     * // Get one ProStepShift
-     * const proStepShift = await prisma.proStepShift.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends ProStepShiftFindFirstOrThrowArgs>(args?: SelectSubset<T, ProStepShiftFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProStepShiftClient<$Result.GetResult<Prisma.$ProStepShiftPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more ProStepShifts that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepShiftFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all ProStepShifts
-     * const proStepShifts = await prisma.proStepShift.findMany()
-     * 
-     * // Get first 10 ProStepShifts
-     * const proStepShifts = await prisma.proStepShift.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const proStepShiftWithIdOnly = await prisma.proStepShift.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends ProStepShiftFindManyArgs>(args?: SelectSubset<T, ProStepShiftFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepShiftPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a ProStepShift.
-     * @param {ProStepShiftCreateArgs} args - Arguments to create a ProStepShift.
-     * @example
-     * // Create one ProStepShift
-     * const ProStepShift = await prisma.proStepShift.create({
-     *   data: {
-     *     // ... data to create a ProStepShift
-     *   }
-     * })
-     * 
-     */
-    create<T extends ProStepShiftCreateArgs>(args: SelectSubset<T, ProStepShiftCreateArgs<ExtArgs>>): Prisma__ProStepShiftClient<$Result.GetResult<Prisma.$ProStepShiftPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many ProStepShifts.
-     * @param {ProStepShiftCreateManyArgs} args - Arguments to create many ProStepShifts.
-     * @example
-     * // Create many ProStepShifts
-     * const proStepShift = await prisma.proStepShift.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends ProStepShiftCreateManyArgs>(args?: SelectSubset<T, ProStepShiftCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a ProStepShift.
-     * @param {ProStepShiftDeleteArgs} args - Arguments to delete one ProStepShift.
-     * @example
-     * // Delete one ProStepShift
-     * const ProStepShift = await prisma.proStepShift.delete({
-     *   where: {
-     *     // ... filter to delete one ProStepShift
-     *   }
-     * })
-     * 
-     */
-    delete<T extends ProStepShiftDeleteArgs>(args: SelectSubset<T, ProStepShiftDeleteArgs<ExtArgs>>): Prisma__ProStepShiftClient<$Result.GetResult<Prisma.$ProStepShiftPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one ProStepShift.
-     * @param {ProStepShiftUpdateArgs} args - Arguments to update one ProStepShift.
-     * @example
-     * // Update one ProStepShift
-     * const proStepShift = await prisma.proStepShift.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends ProStepShiftUpdateArgs>(args: SelectSubset<T, ProStepShiftUpdateArgs<ExtArgs>>): Prisma__ProStepShiftClient<$Result.GetResult<Prisma.$ProStepShiftPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more ProStepShifts.
-     * @param {ProStepShiftDeleteManyArgs} args - Arguments to filter ProStepShifts to delete.
-     * @example
-     * // Delete a few ProStepShifts
-     * const { count } = await prisma.proStepShift.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends ProStepShiftDeleteManyArgs>(args?: SelectSubset<T, ProStepShiftDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more ProStepShifts.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepShiftUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many ProStepShifts
-     * const proStepShift = await prisma.proStepShift.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends ProStepShiftUpdateManyArgs>(args: SelectSubset<T, ProStepShiftUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one ProStepShift.
-     * @param {ProStepShiftUpsertArgs} args - Arguments to update or create a ProStepShift.
-     * @example
-     * // Update or create a ProStepShift
-     * const proStepShift = await prisma.proStepShift.upsert({
-     *   create: {
-     *     // ... data to create a ProStepShift
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the ProStepShift we want to update
-     *   }
-     * })
-     */
-    upsert<T extends ProStepShiftUpsertArgs>(args: SelectSubset<T, ProStepShiftUpsertArgs<ExtArgs>>): Prisma__ProStepShiftClient<$Result.GetResult<Prisma.$ProStepShiftPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of ProStepShifts.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepShiftCountArgs} args - Arguments to filter ProStepShifts to count.
-     * @example
-     * // Count the number of ProStepShifts
-     * const count = await prisma.proStepShift.count({
-     *   where: {
-     *     // ... the filter for the ProStepShifts we want to count
-     *   }
-     * })
-    **/
-    count<T extends ProStepShiftCountArgs>(
-      args?: Subset<T, ProStepShiftCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], ProStepShiftCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a ProStepShift.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepShiftAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends ProStepShiftAggregateArgs>(args: Subset<T, ProStepShiftAggregateArgs>): Prisma.PrismaPromise<GetProStepShiftAggregateType<T>>
-
-    /**
-     * Group by ProStepShift.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepShiftGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends ProStepShiftGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: ProStepShiftGroupByArgs['orderBy'] }
-        : { orderBy?: ProStepShiftGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, ProStepShiftGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProStepShiftGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the ProStepShift model
-   */
-  readonly fields: ProStepShiftFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for ProStepShift.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__ProStepShiftClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    step<T extends ProStepDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProStepDefaultArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the ProStepShift model
-   */
-  interface ProStepShiftFieldRefs {
-    readonly id: FieldRef<"ProStepShift", 'Int'>
-    readonly stepId: FieldRef<"ProStepShift", 'Int'>
-    readonly shiftIndex: FieldRef<"ProStepShift", 'Int'>
-    readonly scheduledDate: FieldRef<"ProStepShift", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * ProStepShift findUnique
-   */
-  export type ProStepShiftFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProStepShift
-     */
-    select?: ProStepShiftSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProStepShift
-     */
-    omit?: ProStepShiftOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProStepShiftInclude<ExtArgs> | null
-    /**
-     * Filter, which ProStepShift to fetch.
-     */
-    where: ProStepShiftWhereUniqueInput
-  }
-
-  /**
-   * ProStepShift findUniqueOrThrow
-   */
-  export type ProStepShiftFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProStepShift
-     */
-    select?: ProStepShiftSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProStepShift
-     */
-    omit?: ProStepShiftOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProStepShiftInclude<ExtArgs> | null
-    /**
-     * Filter, which ProStepShift to fetch.
-     */
-    where: ProStepShiftWhereUniqueInput
-  }
-
-  /**
-   * ProStepShift findFirst
-   */
-  export type ProStepShiftFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProStepShift
-     */
-    select?: ProStepShiftSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProStepShift
-     */
-    omit?: ProStepShiftOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProStepShiftInclude<ExtArgs> | null
-    /**
-     * Filter, which ProStepShift to fetch.
-     */
-    where?: ProStepShiftWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ProStepShifts to fetch.
-     */
-    orderBy?: ProStepShiftOrderByWithRelationInput | ProStepShiftOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ProStepShifts.
-     */
-    cursor?: ProStepShiftWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ProStepShifts from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ProStepShifts.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ProStepShifts.
-     */
-    distinct?: ProStepShiftScalarFieldEnum | ProStepShiftScalarFieldEnum[]
-  }
-
-  /**
-   * ProStepShift findFirstOrThrow
-   */
-  export type ProStepShiftFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProStepShift
-     */
-    select?: ProStepShiftSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProStepShift
-     */
-    omit?: ProStepShiftOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProStepShiftInclude<ExtArgs> | null
-    /**
-     * Filter, which ProStepShift to fetch.
-     */
-    where?: ProStepShiftWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ProStepShifts to fetch.
-     */
-    orderBy?: ProStepShiftOrderByWithRelationInput | ProStepShiftOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ProStepShifts.
-     */
-    cursor?: ProStepShiftWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ProStepShifts from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ProStepShifts.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ProStepShifts.
-     */
-    distinct?: ProStepShiftScalarFieldEnum | ProStepShiftScalarFieldEnum[]
-  }
-
-  /**
-   * ProStepShift findMany
-   */
-  export type ProStepShiftFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProStepShift
-     */
-    select?: ProStepShiftSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProStepShift
-     */
-    omit?: ProStepShiftOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProStepShiftInclude<ExtArgs> | null
-    /**
-     * Filter, which ProStepShifts to fetch.
-     */
-    where?: ProStepShiftWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ProStepShifts to fetch.
-     */
-    orderBy?: ProStepShiftOrderByWithRelationInput | ProStepShiftOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing ProStepShifts.
-     */
-    cursor?: ProStepShiftWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ProStepShifts from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ProStepShifts.
-     */
-    skip?: number
-    distinct?: ProStepShiftScalarFieldEnum | ProStepShiftScalarFieldEnum[]
-  }
-
-  /**
-   * ProStepShift create
-   */
-  export type ProStepShiftCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProStepShift
-     */
-    select?: ProStepShiftSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProStepShift
-     */
-    omit?: ProStepShiftOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProStepShiftInclude<ExtArgs> | null
-    /**
-     * The data needed to create a ProStepShift.
-     */
-    data: XOR<ProStepShiftCreateInput, ProStepShiftUncheckedCreateInput>
-  }
-
-  /**
-   * ProStepShift createMany
-   */
-  export type ProStepShiftCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many ProStepShifts.
-     */
-    data: ProStepShiftCreateManyInput | ProStepShiftCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * ProStepShift update
-   */
-  export type ProStepShiftUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProStepShift
-     */
-    select?: ProStepShiftSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProStepShift
-     */
-    omit?: ProStepShiftOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProStepShiftInclude<ExtArgs> | null
-    /**
-     * The data needed to update a ProStepShift.
-     */
-    data: XOR<ProStepShiftUpdateInput, ProStepShiftUncheckedUpdateInput>
-    /**
-     * Choose, which ProStepShift to update.
-     */
-    where: ProStepShiftWhereUniqueInput
-  }
-
-  /**
-   * ProStepShift updateMany
-   */
-  export type ProStepShiftUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update ProStepShifts.
-     */
-    data: XOR<ProStepShiftUpdateManyMutationInput, ProStepShiftUncheckedUpdateManyInput>
-    /**
-     * Filter which ProStepShifts to update
-     */
-    where?: ProStepShiftWhereInput
-    /**
-     * Limit how many ProStepShifts to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * ProStepShift upsert
-   */
-  export type ProStepShiftUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProStepShift
-     */
-    select?: ProStepShiftSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProStepShift
-     */
-    omit?: ProStepShiftOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProStepShiftInclude<ExtArgs> | null
-    /**
-     * The filter to search for the ProStepShift to update in case it exists.
-     */
-    where: ProStepShiftWhereUniqueInput
-    /**
-     * In case the ProStepShift found by the `where` argument doesn't exist, create a new ProStepShift with this data.
-     */
-    create: XOR<ProStepShiftCreateInput, ProStepShiftUncheckedCreateInput>
-    /**
-     * In case the ProStepShift was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<ProStepShiftUpdateInput, ProStepShiftUncheckedUpdateInput>
-  }
-
-  /**
-   * ProStepShift delete
-   */
-  export type ProStepShiftDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProStepShift
-     */
-    select?: ProStepShiftSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProStepShift
-     */
-    omit?: ProStepShiftOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProStepShiftInclude<ExtArgs> | null
-    /**
-     * Filter which ProStepShift to delete.
-     */
-    where: ProStepShiftWhereUniqueInput
-  }
-
-  /**
-   * ProStepShift deleteMany
-   */
-  export type ProStepShiftDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ProStepShifts to delete
-     */
-    where?: ProStepShiftWhereInput
-    /**
-     * Limit how many ProStepShifts to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * ProStepShift without action
-   */
-  export type ProStepShiftDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProStepShift
-     */
-    select?: ProStepShiftSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProStepShift
-     */
-    omit?: ProStepShiftOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProStepShiftInclude<ExtArgs> | null
   }
 
 
@@ -10657,21 +9562,10 @@ export namespace Prisma {
     orderNo: 'orderNo',
     up: 'up',
     startDate: 'startDate',
-    estimatedShifts: 'estimatedShifts',
     machineId: 'machineId'
   };
 
   export type ProStepScalarFieldEnum = (typeof ProStepScalarFieldEnum)[keyof typeof ProStepScalarFieldEnum]
-
-
-  export const ProStepShiftScalarFieldEnum: {
-    id: 'id',
-    stepId: 'stepId',
-    shiftIndex: 'shiftIndex',
-    scheduledDate: 'scheduledDate'
-  };
-
-  export type ProStepShiftScalarFieldEnum = (typeof ProStepShiftScalarFieldEnum)[keyof typeof ProStepShiftScalarFieldEnum]
 
 
   export const ProStepMaterialScalarFieldEnum: {
@@ -11179,12 +10073,10 @@ export namespace Prisma {
     orderNo?: IntFilter<"ProStep"> | number
     up?: IntNullableFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
-    estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
     machine?: XOR<MachineNullableScalarRelationFilter, MachineWhereInput> | null
     materials?: ProStepMaterialListRelationFilter
-    shifts?: ProStepShiftListRelationFilter
   }
 
   export type ProStepOrderByWithRelationInput = {
@@ -11193,12 +10085,10 @@ export namespace Prisma {
     orderNo?: SortOrder
     up?: SortOrderInput | SortOrder
     startDate?: SortOrderInput | SortOrder
-    estimatedShifts?: SortOrderInput | SortOrder
     machineId?: SortOrderInput | SortOrder
     pro?: ProOrderByWithRelationInput
     machine?: MachineOrderByWithRelationInput
     materials?: ProStepMaterialOrderByRelationAggregateInput
-    shifts?: ProStepShiftOrderByRelationAggregateInput
   }
 
   export type ProStepWhereUniqueInput = Prisma.AtLeast<{
@@ -11211,12 +10101,10 @@ export namespace Prisma {
     orderNo?: IntFilter<"ProStep"> | number
     up?: IntNullableFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
-    estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
     machine?: XOR<MachineNullableScalarRelationFilter, MachineWhereInput> | null
     materials?: ProStepMaterialListRelationFilter
-    shifts?: ProStepShiftListRelationFilter
   }, "id" | "proId_orderNo">
 
   export type ProStepOrderByWithAggregationInput = {
@@ -11225,7 +10113,6 @@ export namespace Prisma {
     orderNo?: SortOrder
     up?: SortOrderInput | SortOrder
     startDate?: SortOrderInput | SortOrder
-    estimatedShifts?: SortOrderInput | SortOrder
     machineId?: SortOrderInput | SortOrder
     _count?: ProStepCountOrderByAggregateInput
     _avg?: ProStepAvgOrderByAggregateInput
@@ -11243,61 +10130,7 @@ export namespace Prisma {
     orderNo?: IntWithAggregatesFilter<"ProStep"> | number
     up?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableWithAggregatesFilter<"ProStep"> | Date | string | null
-    estimatedShifts?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
     machineId?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
-  }
-
-  export type ProStepShiftWhereInput = {
-    AND?: ProStepShiftWhereInput | ProStepShiftWhereInput[]
-    OR?: ProStepShiftWhereInput[]
-    NOT?: ProStepShiftWhereInput | ProStepShiftWhereInput[]
-    id?: IntFilter<"ProStepShift"> | number
-    stepId?: IntFilter<"ProStepShift"> | number
-    shiftIndex?: IntFilter<"ProStepShift"> | number
-    scheduledDate?: DateTimeFilter<"ProStepShift"> | Date | string
-    step?: XOR<ProStepScalarRelationFilter, ProStepWhereInput>
-  }
-
-  export type ProStepShiftOrderByWithRelationInput = {
-    id?: SortOrder
-    stepId?: SortOrder
-    shiftIndex?: SortOrder
-    scheduledDate?: SortOrder
-    step?: ProStepOrderByWithRelationInput
-  }
-
-  export type ProStepShiftWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
-    stepId_shiftIndex?: ProStepShiftStepIdShiftIndexCompoundUniqueInput
-    AND?: ProStepShiftWhereInput | ProStepShiftWhereInput[]
-    OR?: ProStepShiftWhereInput[]
-    NOT?: ProStepShiftWhereInput | ProStepShiftWhereInput[]
-    stepId?: IntFilter<"ProStepShift"> | number
-    shiftIndex?: IntFilter<"ProStepShift"> | number
-    scheduledDate?: DateTimeFilter<"ProStepShift"> | Date | string
-    step?: XOR<ProStepScalarRelationFilter, ProStepWhereInput>
-  }, "id" | "stepId_shiftIndex">
-
-  export type ProStepShiftOrderByWithAggregationInput = {
-    id?: SortOrder
-    stepId?: SortOrder
-    shiftIndex?: SortOrder
-    scheduledDate?: SortOrder
-    _count?: ProStepShiftCountOrderByAggregateInput
-    _avg?: ProStepShiftAvgOrderByAggregateInput
-    _max?: ProStepShiftMaxOrderByAggregateInput
-    _min?: ProStepShiftMinOrderByAggregateInput
-    _sum?: ProStepShiftSumOrderByAggregateInput
-  }
-
-  export type ProStepShiftScalarWhereWithAggregatesInput = {
-    AND?: ProStepShiftScalarWhereWithAggregatesInput | ProStepShiftScalarWhereWithAggregatesInput[]
-    OR?: ProStepShiftScalarWhereWithAggregatesInput[]
-    NOT?: ProStepShiftScalarWhereWithAggregatesInput | ProStepShiftScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"ProStepShift"> | number
-    stepId?: IntWithAggregatesFilter<"ProStepShift"> | number
-    shiftIndex?: IntWithAggregatesFilter<"ProStepShift"> | number
-    scheduledDate?: DateTimeWithAggregatesFilter<"ProStepShift"> | Date | string
   }
 
   export type ProStepMaterialWhereInput = {
@@ -11720,11 +10553,9 @@ export namespace Prisma {
     orderNo: number
     up?: number | null
     startDate?: Date | string | null
-    estimatedShifts?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
-    shifts?: ProStepShiftCreateNestedManyWithoutStepInput
   }
 
   export type ProStepUncheckedCreateInput = {
@@ -11733,21 +10564,17 @@ export namespace Prisma {
     orderNo: number
     up?: number | null
     startDate?: Date | string | null
-    estimatedShifts?: number | null
     machineId?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
-    shifts?: ProStepShiftUncheckedCreateNestedManyWithoutStepInput
   }
 
   export type ProStepUpdateInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
-    shifts?: ProStepShiftUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateInput = {
@@ -11756,10 +10583,8 @@ export namespace Prisma {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
-    shifts?: ProStepShiftUncheckedUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepCreateManyInput = {
@@ -11768,7 +10593,6 @@ export namespace Prisma {
     orderNo: number
     up?: number | null
     startDate?: Date | string | null
-    estimatedShifts?: number | null
     machineId?: number | null
   }
 
@@ -11776,7 +10600,6 @@ export namespace Prisma {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ProStepUncheckedUpdateManyInput = {
@@ -11785,53 +10608,7 @@ export namespace Prisma {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
-  }
-
-  export type ProStepShiftCreateInput = {
-    shiftIndex: number
-    scheduledDate: Date | string
-    step: ProStepCreateNestedOneWithoutShiftsInput
-  }
-
-  export type ProStepShiftUncheckedCreateInput = {
-    id?: number
-    stepId: number
-    shiftIndex: number
-    scheduledDate: Date | string
-  }
-
-  export type ProStepShiftUpdateInput = {
-    shiftIndex?: IntFieldUpdateOperationsInput | number
-    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    step?: ProStepUpdateOneRequiredWithoutShiftsNestedInput
-  }
-
-  export type ProStepShiftUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    stepId?: IntFieldUpdateOperationsInput | number
-    shiftIndex?: IntFieldUpdateOperationsInput | number
-    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ProStepShiftCreateManyInput = {
-    id?: number
-    stepId: number
-    shiftIndex: number
-    scheduledDate: Date | string
-  }
-
-  export type ProStepShiftUpdateManyMutationInput = {
-    shiftIndex?: IntFieldUpdateOperationsInput | number
-    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ProStepShiftUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    stepId?: IntFieldUpdateOperationsInput | number
-    shiftIndex?: IntFieldUpdateOperationsInput | number
-    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ProStepMaterialCreateInput = {
@@ -12386,16 +11163,6 @@ export namespace Prisma {
     isNot?: MachineWhereInput | null
   }
 
-  export type ProStepShiftListRelationFilter = {
-    every?: ProStepShiftWhereInput
-    some?: ProStepShiftWhereInput
-    none?: ProStepShiftWhereInput
-  }
-
-  export type ProStepShiftOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type ProStepProIdOrderNoCompoundUniqueInput = {
     proId: number
     orderNo: number
@@ -12407,7 +11174,6 @@ export namespace Prisma {
     orderNo?: SortOrder
     up?: SortOrder
     startDate?: SortOrder
-    estimatedShifts?: SortOrder
     machineId?: SortOrder
   }
 
@@ -12416,7 +11182,6 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     up?: SortOrder
-    estimatedShifts?: SortOrder
     machineId?: SortOrder
   }
 
@@ -12426,7 +11191,6 @@ export namespace Prisma {
     orderNo?: SortOrder
     up?: SortOrder
     startDate?: SortOrder
-    estimatedShifts?: SortOrder
     machineId?: SortOrder
   }
 
@@ -12436,7 +11200,6 @@ export namespace Prisma {
     orderNo?: SortOrder
     up?: SortOrder
     startDate?: SortOrder
-    estimatedShifts?: SortOrder
     machineId?: SortOrder
   }
 
@@ -12445,51 +11208,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     up?: SortOrder
-    estimatedShifts?: SortOrder
     machineId?: SortOrder
-  }
-
-  export type ProStepScalarRelationFilter = {
-    is?: ProStepWhereInput
-    isNot?: ProStepWhereInput
-  }
-
-  export type ProStepShiftStepIdShiftIndexCompoundUniqueInput = {
-    stepId: number
-    shiftIndex: number
-  }
-
-  export type ProStepShiftCountOrderByAggregateInput = {
-    id?: SortOrder
-    stepId?: SortOrder
-    shiftIndex?: SortOrder
-    scheduledDate?: SortOrder
-  }
-
-  export type ProStepShiftAvgOrderByAggregateInput = {
-    id?: SortOrder
-    stepId?: SortOrder
-    shiftIndex?: SortOrder
-  }
-
-  export type ProStepShiftMaxOrderByAggregateInput = {
-    id?: SortOrder
-    stepId?: SortOrder
-    shiftIndex?: SortOrder
-    scheduledDate?: SortOrder
-  }
-
-  export type ProStepShiftMinOrderByAggregateInput = {
-    id?: SortOrder
-    stepId?: SortOrder
-    shiftIndex?: SortOrder
-    scheduledDate?: SortOrder
-  }
-
-  export type ProStepShiftSumOrderByAggregateInput = {
-    id?: SortOrder
-    stepId?: SortOrder
-    shiftIndex?: SortOrder
   }
 
   export type DecimalFilter<$PrismaModel = never> = {
@@ -12501,6 +11220,11 @@ export namespace Prisma {
     gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type ProStepScalarRelationFilter = {
+    is?: ProStepWhereInput
+    isNot?: ProStepWhereInput
   }
 
   export type MaterialScalarRelationFilter = {
@@ -12811,25 +11535,11 @@ export namespace Prisma {
     connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
   }
 
-  export type ProStepShiftCreateNestedManyWithoutStepInput = {
-    create?: XOR<ProStepShiftCreateWithoutStepInput, ProStepShiftUncheckedCreateWithoutStepInput> | ProStepShiftCreateWithoutStepInput[] | ProStepShiftUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProStepShiftCreateOrConnectWithoutStepInput | ProStepShiftCreateOrConnectWithoutStepInput[]
-    createMany?: ProStepShiftCreateManyStepInputEnvelope
-    connect?: ProStepShiftWhereUniqueInput | ProStepShiftWhereUniqueInput[]
-  }
-
   export type ProStepMaterialUncheckedCreateNestedManyWithoutStepInput = {
     create?: XOR<ProStepMaterialCreateWithoutStepInput, ProStepMaterialUncheckedCreateWithoutStepInput> | ProStepMaterialCreateWithoutStepInput[] | ProStepMaterialUncheckedCreateWithoutStepInput[]
     connectOrCreate?: ProStepMaterialCreateOrConnectWithoutStepInput | ProStepMaterialCreateOrConnectWithoutStepInput[]
     createMany?: ProStepMaterialCreateManyStepInputEnvelope
     connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-  }
-
-  export type ProStepShiftUncheckedCreateNestedManyWithoutStepInput = {
-    create?: XOR<ProStepShiftCreateWithoutStepInput, ProStepShiftUncheckedCreateWithoutStepInput> | ProStepShiftCreateWithoutStepInput[] | ProStepShiftUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProStepShiftCreateOrConnectWithoutStepInput | ProStepShiftCreateOrConnectWithoutStepInput[]
-    createMany?: ProStepShiftCreateManyStepInputEnvelope
-    connect?: ProStepShiftWhereUniqueInput | ProStepShiftWhereUniqueInput[]
   }
 
   export type ProUpdateOneRequiredWithoutStepsNestedInput = {
@@ -12864,20 +11574,6 @@ export namespace Prisma {
     deleteMany?: ProStepMaterialScalarWhereInput | ProStepMaterialScalarWhereInput[]
   }
 
-  export type ProStepShiftUpdateManyWithoutStepNestedInput = {
-    create?: XOR<ProStepShiftCreateWithoutStepInput, ProStepShiftUncheckedCreateWithoutStepInput> | ProStepShiftCreateWithoutStepInput[] | ProStepShiftUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProStepShiftCreateOrConnectWithoutStepInput | ProStepShiftCreateOrConnectWithoutStepInput[]
-    upsert?: ProStepShiftUpsertWithWhereUniqueWithoutStepInput | ProStepShiftUpsertWithWhereUniqueWithoutStepInput[]
-    createMany?: ProStepShiftCreateManyStepInputEnvelope
-    set?: ProStepShiftWhereUniqueInput | ProStepShiftWhereUniqueInput[]
-    disconnect?: ProStepShiftWhereUniqueInput | ProStepShiftWhereUniqueInput[]
-    delete?: ProStepShiftWhereUniqueInput | ProStepShiftWhereUniqueInput[]
-    connect?: ProStepShiftWhereUniqueInput | ProStepShiftWhereUniqueInput[]
-    update?: ProStepShiftUpdateWithWhereUniqueWithoutStepInput | ProStepShiftUpdateWithWhereUniqueWithoutStepInput[]
-    updateMany?: ProStepShiftUpdateManyWithWhereWithoutStepInput | ProStepShiftUpdateManyWithWhereWithoutStepInput[]
-    deleteMany?: ProStepShiftScalarWhereInput | ProStepShiftScalarWhereInput[]
-  }
-
   export type ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput = {
     create?: XOR<ProStepMaterialCreateWithoutStepInput, ProStepMaterialUncheckedCreateWithoutStepInput> | ProStepMaterialCreateWithoutStepInput[] | ProStepMaterialUncheckedCreateWithoutStepInput[]
     connectOrCreate?: ProStepMaterialCreateOrConnectWithoutStepInput | ProStepMaterialCreateOrConnectWithoutStepInput[]
@@ -12890,34 +11586,6 @@ export namespace Prisma {
     update?: ProStepMaterialUpdateWithWhereUniqueWithoutStepInput | ProStepMaterialUpdateWithWhereUniqueWithoutStepInput[]
     updateMany?: ProStepMaterialUpdateManyWithWhereWithoutStepInput | ProStepMaterialUpdateManyWithWhereWithoutStepInput[]
     deleteMany?: ProStepMaterialScalarWhereInput | ProStepMaterialScalarWhereInput[]
-  }
-
-  export type ProStepShiftUncheckedUpdateManyWithoutStepNestedInput = {
-    create?: XOR<ProStepShiftCreateWithoutStepInput, ProStepShiftUncheckedCreateWithoutStepInput> | ProStepShiftCreateWithoutStepInput[] | ProStepShiftUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProStepShiftCreateOrConnectWithoutStepInput | ProStepShiftCreateOrConnectWithoutStepInput[]
-    upsert?: ProStepShiftUpsertWithWhereUniqueWithoutStepInput | ProStepShiftUpsertWithWhereUniqueWithoutStepInput[]
-    createMany?: ProStepShiftCreateManyStepInputEnvelope
-    set?: ProStepShiftWhereUniqueInput | ProStepShiftWhereUniqueInput[]
-    disconnect?: ProStepShiftWhereUniqueInput | ProStepShiftWhereUniqueInput[]
-    delete?: ProStepShiftWhereUniqueInput | ProStepShiftWhereUniqueInput[]
-    connect?: ProStepShiftWhereUniqueInput | ProStepShiftWhereUniqueInput[]
-    update?: ProStepShiftUpdateWithWhereUniqueWithoutStepInput | ProStepShiftUpdateWithWhereUniqueWithoutStepInput[]
-    updateMany?: ProStepShiftUpdateManyWithWhereWithoutStepInput | ProStepShiftUpdateManyWithWhereWithoutStepInput[]
-    deleteMany?: ProStepShiftScalarWhereInput | ProStepShiftScalarWhereInput[]
-  }
-
-  export type ProStepCreateNestedOneWithoutShiftsInput = {
-    create?: XOR<ProStepCreateWithoutShiftsInput, ProStepUncheckedCreateWithoutShiftsInput>
-    connectOrCreate?: ProStepCreateOrConnectWithoutShiftsInput
-    connect?: ProStepWhereUniqueInput
-  }
-
-  export type ProStepUpdateOneRequiredWithoutShiftsNestedInput = {
-    create?: XOR<ProStepCreateWithoutShiftsInput, ProStepUncheckedCreateWithoutShiftsInput>
-    connectOrCreate?: ProStepCreateOrConnectWithoutShiftsInput
-    upsert?: ProStepUpsertWithoutShiftsInput
-    connect?: ProStepWhereUniqueInput
-    update?: XOR<XOR<ProStepUpdateToOneWithWhereWithoutShiftsInput, ProStepUpdateWithoutShiftsInput>, ProStepUncheckedUpdateWithoutShiftsInput>
   }
 
   export type ProStepCreateNestedOneWithoutMaterialsInput = {
@@ -13230,10 +11898,8 @@ export namespace Prisma {
     orderNo: number
     up?: number | null
     startDate?: Date | string | null
-    estimatedShifts?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
-    shifts?: ProStepShiftCreateNestedManyWithoutStepInput
   }
 
   export type ProStepUncheckedCreateWithoutMachineInput = {
@@ -13242,9 +11908,7 @@ export namespace Prisma {
     orderNo: number
     up?: number | null
     startDate?: Date | string | null
-    estimatedShifts?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
-    shifts?: ProStepShiftUncheckedCreateNestedManyWithoutStepInput
   }
 
   export type ProStepCreateOrConnectWithoutMachineInput = {
@@ -13282,7 +11946,6 @@ export namespace Prisma {
     orderNo?: IntFilter<"ProStep"> | number
     up?: IntNullableFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
-    estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
   }
 
@@ -13417,10 +12080,8 @@ export namespace Prisma {
     orderNo: number
     up?: number | null
     startDate?: Date | string | null
-    estimatedShifts?: number | null
     machine?: MachineCreateNestedOneWithoutProStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
-    shifts?: ProStepShiftCreateNestedManyWithoutStepInput
   }
 
   export type ProStepUncheckedCreateWithoutProInput = {
@@ -13428,10 +12089,8 @@ export namespace Prisma {
     orderNo: number
     up?: number | null
     startDate?: Date | string | null
-    estimatedShifts?: number | null
     machineId?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
-    shifts?: ProStepShiftUncheckedCreateNestedManyWithoutStepInput
   }
 
   export type ProStepCreateOrConnectWithoutProInput = {
@@ -13557,27 +12216,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type ProStepShiftCreateWithoutStepInput = {
-    shiftIndex: number
-    scheduledDate: Date | string
-  }
-
-  export type ProStepShiftUncheckedCreateWithoutStepInput = {
-    id?: number
-    shiftIndex: number
-    scheduledDate: Date | string
-  }
-
-  export type ProStepShiftCreateOrConnectWithoutStepInput = {
-    where: ProStepShiftWhereUniqueInput
-    create: XOR<ProStepShiftCreateWithoutStepInput, ProStepShiftUncheckedCreateWithoutStepInput>
-  }
-
-  export type ProStepShiftCreateManyStepInputEnvelope = {
-    data: ProStepShiftCreateManyStepInput | ProStepShiftCreateManyStepInput[]
-    skipDuplicates?: boolean
-  }
-
   export type ProUpsertWithoutStepsInput = {
     update: XOR<ProUpdateWithoutStepsInput, ProUncheckedUpdateWithoutStepsInput>
     create: XOR<ProCreateWithoutStepsInput, ProUncheckedCreateWithoutStepsInput>
@@ -13660,98 +12298,12 @@ export namespace Prisma {
     data: XOR<ProStepMaterialUpdateManyMutationInput, ProStepMaterialUncheckedUpdateManyWithoutStepInput>
   }
 
-  export type ProStepShiftUpsertWithWhereUniqueWithoutStepInput = {
-    where: ProStepShiftWhereUniqueInput
-    update: XOR<ProStepShiftUpdateWithoutStepInput, ProStepShiftUncheckedUpdateWithoutStepInput>
-    create: XOR<ProStepShiftCreateWithoutStepInput, ProStepShiftUncheckedCreateWithoutStepInput>
-  }
-
-  export type ProStepShiftUpdateWithWhereUniqueWithoutStepInput = {
-    where: ProStepShiftWhereUniqueInput
-    data: XOR<ProStepShiftUpdateWithoutStepInput, ProStepShiftUncheckedUpdateWithoutStepInput>
-  }
-
-  export type ProStepShiftUpdateManyWithWhereWithoutStepInput = {
-    where: ProStepShiftScalarWhereInput
-    data: XOR<ProStepShiftUpdateManyMutationInput, ProStepShiftUncheckedUpdateManyWithoutStepInput>
-  }
-
-  export type ProStepShiftScalarWhereInput = {
-    AND?: ProStepShiftScalarWhereInput | ProStepShiftScalarWhereInput[]
-    OR?: ProStepShiftScalarWhereInput[]
-    NOT?: ProStepShiftScalarWhereInput | ProStepShiftScalarWhereInput[]
-    id?: IntFilter<"ProStepShift"> | number
-    stepId?: IntFilter<"ProStepShift"> | number
-    shiftIndex?: IntFilter<"ProStepShift"> | number
-    scheduledDate?: DateTimeFilter<"ProStepShift"> | Date | string
-  }
-
-  export type ProStepCreateWithoutShiftsInput = {
-    orderNo: number
-    up?: number | null
-    startDate?: Date | string | null
-    estimatedShifts?: number | null
-    pro: ProCreateNestedOneWithoutStepsInput
-    machine?: MachineCreateNestedOneWithoutProStepsInput
-    materials?: ProStepMaterialCreateNestedManyWithoutStepInput
-  }
-
-  export type ProStepUncheckedCreateWithoutShiftsInput = {
-    id?: number
-    proId: number
-    orderNo: number
-    up?: number | null
-    startDate?: Date | string | null
-    estimatedShifts?: number | null
-    machineId?: number | null
-    materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
-  }
-
-  export type ProStepCreateOrConnectWithoutShiftsInput = {
-    where: ProStepWhereUniqueInput
-    create: XOR<ProStepCreateWithoutShiftsInput, ProStepUncheckedCreateWithoutShiftsInput>
-  }
-
-  export type ProStepUpsertWithoutShiftsInput = {
-    update: XOR<ProStepUpdateWithoutShiftsInput, ProStepUncheckedUpdateWithoutShiftsInput>
-    create: XOR<ProStepCreateWithoutShiftsInput, ProStepUncheckedCreateWithoutShiftsInput>
-    where?: ProStepWhereInput
-  }
-
-  export type ProStepUpdateToOneWithWhereWithoutShiftsInput = {
-    where?: ProStepWhereInput
-    data: XOR<ProStepUpdateWithoutShiftsInput, ProStepUncheckedUpdateWithoutShiftsInput>
-  }
-
-  export type ProStepUpdateWithoutShiftsInput = {
-    orderNo?: IntFieldUpdateOperationsInput | number
-    up?: NullableIntFieldUpdateOperationsInput | number | null
-    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
-    pro?: ProUpdateOneRequiredWithoutStepsNestedInput
-    machine?: MachineUpdateOneWithoutProStepsNestedInput
-    materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
-  }
-
-  export type ProStepUncheckedUpdateWithoutShiftsInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    proId?: IntFieldUpdateOperationsInput | number
-    orderNo?: IntFieldUpdateOperationsInput | number
-    up?: NullableIntFieldUpdateOperationsInput | number | null
-    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
-    machineId?: NullableIntFieldUpdateOperationsInput | number | null
-    materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
-  }
-
   export type ProStepCreateWithoutMaterialsInput = {
     orderNo: number
     up?: number | null
     startDate?: Date | string | null
-    estimatedShifts?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
-    shifts?: ProStepShiftCreateNestedManyWithoutStepInput
   }
 
   export type ProStepUncheckedCreateWithoutMaterialsInput = {
@@ -13760,9 +12312,7 @@ export namespace Prisma {
     orderNo: number
     up?: number | null
     startDate?: Date | string | null
-    estimatedShifts?: number | null
     machineId?: number | null
-    shifts?: ProStepShiftUncheckedCreateNestedManyWithoutStepInput
   }
 
   export type ProStepCreateOrConnectWithoutMaterialsInput = {
@@ -13805,10 +12355,8 @@ export namespace Prisma {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
-    shifts?: ProStepShiftUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateWithoutMaterialsInput = {
@@ -13817,9 +12365,7 @@ export namespace Prisma {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
-    shifts?: ProStepShiftUncheckedUpdateManyWithoutStepNestedInput
   }
 
   export type MaterialUpsertWithoutProStepMaterialsInput = {
@@ -13854,17 +12400,14 @@ export namespace Prisma {
     orderNo: number
     up?: number | null
     startDate?: Date | string | null
-    estimatedShifts?: number | null
   }
 
   export type ProStepUpdateWithoutMachineInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
-    shifts?: ProStepShiftUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateWithoutMachineInput = {
@@ -13873,9 +12416,7 @@ export namespace Prisma {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
-    shifts?: ProStepShiftUncheckedUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateManyWithoutMachineInput = {
@@ -13884,7 +12425,6 @@ export namespace Prisma {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ProStepMaterialCreateManyMaterialInput = {
@@ -13960,7 +12500,6 @@ export namespace Prisma {
     orderNo: number
     up?: number | null
     startDate?: Date | string | null
-    estimatedShifts?: number | null
     machineId?: number | null
   }
 
@@ -13968,10 +12507,8 @@ export namespace Prisma {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     machine?: MachineUpdateOneWithoutProStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
-    shifts?: ProStepShiftUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateWithoutProInput = {
@@ -13979,10 +12516,8 @@ export namespace Prisma {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
-    shifts?: ProStepShiftUncheckedUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateManyWithoutProInput = {
@@ -13990,7 +12525,6 @@ export namespace Prisma {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
@@ -13998,12 +12532,6 @@ export namespace Prisma {
     id?: number
     materialId: number
     qtyReq: Decimal | DecimalJsLike | number | string
-  }
-
-  export type ProStepShiftCreateManyStepInput = {
-    id?: number
-    shiftIndex: number
-    scheduledDate: Date | string
   }
 
   export type ProStepMaterialUpdateWithoutStepInput = {
@@ -14021,23 +12549,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     materialId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-  }
-
-  export type ProStepShiftUpdateWithoutStepInput = {
-    shiftIndex?: IntFieldUpdateOperationsInput | number
-    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ProStepShiftUncheckedUpdateWithoutStepInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    shiftIndex?: IntFieldUpdateOperationsInput | number
-    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ProStepShiftUncheckedUpdateManyWithoutStepInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    shiftIndex?: IntFieldUpdateOperationsInput | number
-    scheduledDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

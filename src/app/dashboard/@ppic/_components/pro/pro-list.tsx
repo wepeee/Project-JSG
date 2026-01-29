@@ -612,7 +612,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
 
     try {
       await del.mutateAsync({ id });
-      if (selectedId === id) setSelectedId(null);
+      setSelectedId(null);
       setEditing(false);
     } catch (e: any) {
       setErr(e?.message ?? "Gagal menghapus PRO");
@@ -876,7 +876,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                       className="h-4 w-4"
                     />
                     <label htmlFor="regen" className="text-sm font-medium text-blue-600 cursor-pointer">
-                       Pecah per Shift (Expand)
+                       Hitung sesuai kapasitas mesin
                     </label>
                  </div>
               )}
@@ -911,22 +911,25 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                       return list.map((item, idx) => {
                         const isDraft = editing;
                         
-                        let machineName = "-";
-                        let stdOutputPerShift: number | null | undefined = null;
-                        let startDateVal: Date | string | undefined | null = null;
-
-                        if (!isDraft) {
-                           const s = item as typeof p.steps[number];
-                           machineName = s.machine?.name ?? "-";
-                           stdOutputPerShift = s.machine?.stdOutputPerShift;
-                           startDateVal = (s as any).startDate;
-                        } else {
-                           const d = item as StepDraft;
-                           const m = machines.data?.find(x => x.id === d.machineId);
-                           machineName = m?.name ?? "-";
-                           stdOutputPerShift = m?.stdOutputPerShift;
-                           startDateVal = d.startDate;
-                        }
+                         let machineName = "-";
+                         let stdOutputPerShift: number | null | undefined = null;
+                         let machineUom: string | null | undefined = null;
+                         let startDateVal: Date | string | undefined | null = null;
+ 
+                         if (!isDraft) {
+                            const s = item as typeof p.steps[number];
+                            machineName = s.machine?.name ?? "-";
+                            stdOutputPerShift = s.machine?.stdOutputPerShift;
+                            machineUom = s.machine?.uom;
+                            startDateVal = (s as any).startDate;
+                         } else {
+                            const d = item as StepDraft;
+                            const m = machines.data?.find(x => x.id === d.machineId);
+                            machineName = m?.name ?? "-";
+                            stdOutputPerShift = m?.stdOutputPerShift;
+                            machineUom = m?.uom;
+                            startDateVal = d.startDate;
+                         }
 
                         const upVal = isDraft ? (item as StepDraft).up : (item as any).up;
                         
@@ -949,19 +952,19 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                         const matQ = Number(firstQtyReq);
                         const poQ = Number(qtyPoPcs);
                         
-                        const baseQty = matQ > 0 ? matQ : poQ;
-                        const baseUp = matQ > 0 ? 1 : (Number(upVal) || 1);
-                        const std = stdOutputPerShift || 1000;
-                        
-                        const actualQty = baseUp > 0 ? baseQty / baseUp : baseQty;
-                        const totalShifts = Math.max(1, Math.ceil(actualQty / std));
+                         const baseQty = matQ > 0 ? matQ : poQ;
+                         const baseUp = matQ > 0 ? 1 : (Number(upVal) || 1);
+                         const std = stdOutputPerShift || 1000;
+                         
+                         const actualQty = baseUp > 0 ? baseQty / baseUp : baseQty;
+                         const totalShifts = (machineUom === 'sheet') ? Math.max(1, Math.ceil(actualQty / std)) : 1;
                         
                         const scheduleList = [];
-                        const shouldExpand = !editing || expandDraft;
+                        const shouldExpand = editing && expandDraft;
                         
                         if (startDateVal && shouldExpand) {
                            let currentDate = new Date(startDateVal);
-                           let currentShift = shiftFromDate(currentDate);
+                           let currentShift = isDraft ? (item as StepDraft).shift : shiftFromDate(currentDate);
                            
                            for (let i = 0; i < totalShifts; i++) {
                                scheduleList.push({
@@ -1032,7 +1035,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                                          ))}
                                        </select>
                                     ) : (
-                                       <div className="font-medium text-xs text-gray-700">
+                                       <div className="font-medium text-xs text-foreground">
                                          {machineName}
                                        </div>
                                     )}
@@ -1055,11 +1058,11 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                                  <TableCell>
                                     <div className="flex flex-col gap-1 min-w-[120px]">
                                        {materialsDisplay.map((m: any, mIdx: number) => (
-                                          <div key={mIdx} className="truncate text-[10px] text-gray-700 border-b last:border-0 pb-0.5" title={m.name}>
+                                          <div key={mIdx} className="truncate text-[10px] text-foreground border-b last:border-0 pb-0.5" title={m.name}>
                                              {m.name}
                                           </div>
                                        ))}
-                                       {materialsDisplay.length === 0 && <span className="text-gray-400">-</span>}
+                                       {materialsDisplay.length === 0 && <span className="text-muted-foreground/50">-</span>}
                                     </div>
                                  </TableCell>
 
@@ -1074,7 +1077,13 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                                                 </div>
                                              );
                                           } else {
-                                             const perShift = totalShifts > 0 ? Math.round(Number(val || 0) / totalShifts) : 0;
+                                             // Hitung porsi qty material untuk shift ini berdasarkan kapasitas mesin
+                                             // actualQty = Total Lembar (sheets)
+                                             // std = Kapasitas Lembar per Shift
+                                             const remainingWorkInSheets = Math.max(0, Math.min(actualQty - sIdx * std, std));
+                                             const portion = actualQty > 0 ? remainingWorkInSheets / actualQty : 1;
+                                             const perShift = Math.round(Number(val || 0) * portion);
+                                             
                                              return (
                                                 <div key={mIdx} className="text-[10px] border-b last:border-0 pb-0.5">
                                                    {perShift > 0 ? perShift.toLocaleString('id-ID') : (val || "-")}
@@ -1088,7 +1097,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                                  <TableCell>
                                     <div className="flex flex-col gap-1">
                                        {materialsDisplay.map((m: any, mIdx: number) => (
-                                          <div key={mIdx} className="text-[10px] text-gray-500 border-b last:border-0 pb-0.5">
+                                          <div key={mIdx} className="text-[10px] text-muted-foreground border-b last:border-0 pb-0.5">
                                              {m.uom}
                                           </div>
                                        ))}
@@ -1122,9 +1131,11 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                                          </div>
                                       ) : null}
                                       
-                                      <div className={`text-xs text-gray-700 font-semibold ${isMainRow && editing ? 'mt-2 pl-[42px]' : 'mt-1'}`}>
-                                         Shift {sch.shift}
-                                      </div>
+                                       {!(isMainRow && editing) && (
+                                          <div className={`text-xs text-foreground font-semibold ${isMainRow && editing ? 'mt-2 pl-[42px]' : 'mt-1'}`}>
+                                             Shift {sch.shift}
+                                          </div>
+                                       )}
                                    </TableCell>
 
                                  <TableCell className="text-xs">
@@ -1140,7 +1151,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                                             />
                                          </div>
                                       ) : (
-                                         <div className="font-medium text-gray-700">
+                                         <div className="font-medium text-foreground">
                                             {sch.date?.toLocaleDateString("id-ID", { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) ?? "-"}
                                          </div>
                                       )}
