@@ -308,17 +308,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
 
   const addMaterial = () => {
     setStepDraft((d) => {
-      const selectedMachine = machines.data?.find(m => m.id === d.machineId);
-      const isSheet = selectedMachine?.uom === 'sheet';
-      const upNum = Number(d.up);
-      const poNum = Number(qtyPoPcs);
-      
-      let autoQty = "";
-      if (isSheet && upNum > 0 && poNum > 0) {
-        autoQty = String(Math.ceil(poNum / upNum));
-      } else if (isSheet && poNum > 0) {
-        autoQty = String(poNum);
-      }
+      const autoQty = ""; // Material belum dipilih, jadi tidak hitung otomatis dulu
       
       return {
         ...d,
@@ -339,8 +329,6 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
 
   const updateMaterial = (key: string, field: "materialId" | "qtyReq", value: number | string) => {
     setStepDraft((d) => {
-      const selectedMachine = machines.data?.find(m => m.id === d.machineId);
-      const isSheet = selectedMachine?.uom === 'sheet';
       const upNum = Number(d.up);
       const poNum = Number(qtyPoPcs);
 
@@ -349,10 +337,26 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
         
         let newQty = field === "qtyReq" ? String(value) : m.qtyReq;
         
-        if (field === "materialId" && value && isSheet && upNum > 0 && poNum > 0) {
-          newQty = String(Math.ceil(poNum / upNum));
-        } else if (field === "materialId" && value && isSheet && poNum > 0) {
-          newQty = String(poNum);
+        if (field === "materialId") {
+          // 1. Reset Qty setiap kali ganti pilihan material
+          newQty = ""; 
+
+          if (value) {
+            const matId = Number(value);
+            const matData = materials.data?.find(x => x.id === matId);
+            
+            // JIKA DATA MATERIAL TIDAK DITEMUKAN, BERHENTI DI SINI
+            if (!matData) return { ...m, materialId: Number(value), qtyReq: "" };
+
+            const selectedMachine = machines.data?.find(x => x.id === d.machineId);
+            const isMachineSheet = selectedMachine?.uom?.toLowerCase() === 'sheet';
+            const isMatSheet = matData?.uom?.toLowerCase() === "sheet";
+
+            // Auto-calculation removed as per user request
+            // if (isMachineSheet && isMatSheet && upNum > 0 && poNum > 0) {
+            //   newQty = String(Math.ceil(poNum / upNum));
+            // }
+          }
         }
         
         return { ...m, [field]: value, qtyReq: newQty };
@@ -486,7 +490,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
 
 
   const update = api.pros.update.useMutation({
-    onMutate: async (variables) => {
+    onMutate: async (variables: any) => {
       await utils.pros.getById.cancel();
       await utils.pros.list.cancel();
       await utils.pros.getSchedule.cancel();
@@ -505,7 +509,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
             status: variables.status ?? previousDetail.status,
             processId: variables.processId,
             steps: variables.steps
-              .map((stepInput, idx) => {
+              .map((stepInput: any, idx: number) => {
                 const existingStep = previousDetail.steps[idx];
                 if (!existingStep) return null;
                 return {
@@ -516,7 +520,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                   startDate: stepInput.startDate ?? existingStep.startDate,
                 };
               })
-              .filter((s): s is NonNullable<typeof s> => s !== null),
+              .filter((s: any): s is NonNullable<typeof s> => s !== null),
           }
         );
       }
@@ -526,7 +530,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
           {},
           {
             ...previousList,
-            items: previousList.items.map((pro) =>
+            items: previousList.items.map((pro: any) =>
               pro.id === variables.id
                 ? {
                     ...pro,
@@ -543,7 +547,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
       
       return { previousDetail, previousList };
     },
-    onError: (_err, variables, context) => {
+    onError: (_err: any, variables: any, context: any) => {
       if (context?.previousDetail) {
         utils.pros.getById.setData({ id: variables.id }, context.previousDetail);
       }
@@ -560,7 +564,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
   });
 
   const del = api.pros.delete.useMutation({
-    onMutate: async (variables) => {
+    onMutate: async (variables: any) => {
       await utils.pros.list.cancel();
       await utils.pros.getById.cancel();
       await utils.pros.getSchedule.cancel();
@@ -573,14 +577,14 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
           {},
           {
             ...previousList,
-            items: previousList.items.filter((pro) => pro.id !== variables.id),
+            items: previousList.items.filter((pro: any) => pro.id !== variables.id),
           }
         );
       }
       
       return { previousList, previousDetail };
     },
-    onError: (_err, variables, context) => {
+    onError: (_err: any, variables: any, context: any) => {
       if (context?.previousList) {
         utils.pros.list.setData({}, context.previousList);
       }
@@ -588,7 +592,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
         utils.pros.getById.setData({ id: variables.id }, context.previousDetail);
       }
     },
-    onSuccess: async (_data, vars) => {
+    onSuccess: async (_data: any, vars: any) => {
       await utils.pros.list.invalidate();
       await utils.pros.getById.invalidate({ id: vars.id });
       await utils.pros.getSchedule.invalidate();
@@ -813,9 +817,9 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                 <Info
                   label="Proses (Prefix)"
                   value={
-                    processDraftId
-                      ? (processes.data?.find((x) => x.id === processDraftId)
-                          ?.name ?? "-")
+                      processDraftId
+                        ? (processes.data?.find((x: any) => x.id === processDraftId)
+                            ?.name ?? "-")
                       : (
                          p.process ? `${p.process.code} - ${p.process.name}` : "-"
                       )
@@ -836,7 +840,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                     }
                   >
                     <option value="">Pilih proses</option>
-                    {(processes.data ?? []).map((proc) => (
+                    {(processes.data ?? []).map((proc: any) => (
                       <option key={proc.id} value={proc.id}>
                         {proc.code} - {proc.name}
                       </option>
@@ -908,7 +912,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                         .slice()
                         .sort((a, b) => a.orderNo - b.orderNo);
 
-                      return list.map((item, idx) => {
+                      return list.map((item: any, idx: number) => {
                         const isDraft = editing;
                         
                          let machineName = "-";
@@ -1001,31 +1005,16 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                                          value={(item as StepDraft).machineId ?? ""}
                                          onChange={(e) => {
                                            const val = e.target.value ? Number(e.target.value) : null;
-                                           const selectedMachine = machines.data?.find(m => m.id === val);
+                                           const selectedMachine = machines.data?.find((m: any) => m.id === val);
                                            
-                                           setStepDrafts(prev => prev.map(x => {
+                                           setStepDrafts(prev => prev.map((x: any) => {
                                               if (x.key !== (item as StepDraft).key) return x;
-                                              
-                                              const upNum = Number(x.up);
-                                              const poNum = Number(qtyPoPcs);
-                                              
-                                              let autoQty = "";
-                                              if (selectedMachine?.uom === 'sheet' && upNum > 0 && poNum > 0) {
-                                                 autoQty = String(Math.ceil(poNum / upNum));
-                                              } else if (selectedMachine?.uom === 'sheet' && poNum > 0) {
-                                                 autoQty = String(poNum);
-                                              }
-
-                                              const updatedMaterials = x.materials.map(m => ({
-                                                 ...m,
-                                                 qtyReq: autoQty || m.qtyReq
-                                              }));
                                               
                                               return { 
                                                  ...x, 
                                                  machineId: val,
                                                  up: selectedMachine?.stdOutputPerShift ? String(selectedMachine.stdOutputPerShift) : x.up,
-                                                 materials: updatedMaterials
+                                                 // Don't recalc materials here
                                               };
                                            }));
                                          }}
@@ -1229,20 +1218,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                       const upNum = Number(val);
                       
                       setStepDraft((prev) => {
-                        let newMaterials = prev.materials;
-                        
-                        if (prev.machineId) {
-                           const selectedMachine = machines.data?.find(m => m.id === prev.machineId);
-                           if (selectedMachine?.uom === 'sheet' && upNum > 0) {
-                              const po = Number(qtyPoPcs); 
-                              const req = Math.ceil(po / upNum);
-                              newMaterials = prev.materials.map(m => ({
-                                ...m,
-                                qtyReq: String(req)
-                              }));
-                           }
-                        }
-                        return { ...prev, up: val, materials: newMaterials };
+                        return { ...prev, up: val };
                       });
                     }}
                     placeholder="ex: 4"
@@ -1255,33 +1231,30 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                     value={stepDraft.machineId ?? ""}
                     onChange={(e) => {
                        const val = e.target.value ? Number(e.target.value) : null;
-                       const selectedMachine = machines.data?.find(m => m.id === val);
+                       const selectedMachine = machines.data?.find((m: any) => m.id === val);
                        
                        setStepDraft((d) => {
-                          let newMaterials = d.materials;
-                          const isSheet = selectedMachine?.uom === 'sheet';
+                          const isSheetMachine = selectedMachine?.uom?.toLowerCase() === 'sheet';
                           const currentUp = Number(d.up);
-                          const newUp = (isSheet && !currentUp && selectedMachine?.stdOutputPerShift)
+                          
+                          // Hapus semua logika auto-calc. Hanya simpan machineId.
+                          // User request: "coba aturan qty otomatis muncul ini hapus dong"
+                          
+                          // Jika user ingin UP otomatis, itu bisa ditambahkan nanti.
+                          // Saat ini fokus: JANGAN sentuh materials.
+                          
+                          // Opsional: Tetap update UP jika belum diisi? 
+                          // Untuk amannya, kita matikan dulu semua side effect.
+                          
+                          const newUp = (isSheetMachine && !currentUp && selectedMachine?.stdOutputPerShift)
                             ? String(selectedMachine.stdOutputPerShift)
                             : d.up;
 
-                          if (isSheet) {
-                             const upToUse = Number(newUp);
-                             if (upToUse > 0) {
-                               const po = Number(qtyPoPcs);
-                               const req = Math.ceil(po / upToUse);
-                               newMaterials = d.materials.map(mat => ({
-                                  ...mat,
-                                  qtyReq: String(req)
-                               }));
-                             }
-                          }
-                          
                           return {
                              ...d,
                              machineId: val,
-                             up: newUp,
-                             materials: newMaterials
+                             up: newUp, 
+                             // materials: d.materials // Explicitly do nothing to materials
                           };
                        });
                     }}
@@ -1312,7 +1285,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                        className="border-input bg-background h-10 rounded-md border px-3 text-sm w-24"
                        value={stepDraft.shift}
                        onChange={(e) =>
-                         setStepDraft((d) => ({ ...d, shift: Number(e.target.value) }))
+                         setStepDraft((d: any) => ({ ...d, shift: Number(e.target.value) }))
                        }
                     >
                        <option value={1}>Shift 1</option>
@@ -1357,7 +1330,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                         disabled={materials.isLoading}
                       >
                         <option value="">Pilih Material</option>
-                        {(materials.data ?? []).map((m) => (
+                        {(materials.data ?? []).map((m: any) => (
                           <option key={m.id} value={m.id}>
                             {m.name}
                           </option>

@@ -65,6 +65,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
   const [productName, setProductName] = React.useState("");
   const [qtyPoPcs, setQtyPoPcs] = React.useState<string>("");
   const [startDate, setStartDate] = React.useState<string>("");
+  const [processId, setProcessId] = React.useState<number | null>(null);
 
   const [steps, setSteps] = React.useState<StepDraft[]>([]);
   const [err, setErr] = React.useState<string | null>(null);
@@ -79,6 +80,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
         ? new Date(pro.data.startDate).toISOString().slice(0, 10)
         : "",
     );
+    setProcessId(pro.data.processId ?? null);
 
     setSteps(
       (pro.data.steps ?? []).map((s: any) => {
@@ -153,6 +155,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
       id: proId,
       productName: prod,
       qtyPoPcs: qty,
+      processId: processId!,
       startDate: startDate ? new Date(`${startDate}T00:00:00`) : undefined,
       steps: steps
         .slice()
