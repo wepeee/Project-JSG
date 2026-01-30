@@ -505,18 +505,23 @@ export default function PPICSchedule({ onSelectPro }: Props) {
     const overStr = String(over.id);
     const overParts = overStr.split("::");
     const dateStr = overParts[0] ?? "";
-    const shiftStr = overParts[1];
+    
+    // Check format: date::shift OR date::machine::shift
+    let shiftVal = 1;
+    
+    if (overParts.length === 3) {
+      // Machine View: date::machine::shift
+      shiftVal = Number(overParts[2]);
+    } else {
+      // Shift View: date::shift
+      shiftVal = Number(overParts[1]);
+    }
 
     const d0 = keyToDate(dateStr);
     if (!d0) return;
 
-    // determine shift from either shift suffix or machine id
-    const shift: ShiftNo = (() => {
-      const s = shiftStr ? Number(shiftStr) : 1;
-      if (s === 2) return 2;
-      if (s === 3) return 3;
-      return 1;
-    })();
+    // determine shift
+    const shift: ShiftNo = (shiftVal === 2 || shiftVal === 3) ? shiftVal as ShiftNo : 1;
 
     const newStart = applyShiftStart(d0, shift);
 
@@ -626,7 +631,7 @@ export default function PPICSchedule({ onSelectPro }: Props) {
   }, [weekSchedule.data, weekStart, weekEnd, searchQuery]);
 
   // Machine grid data (week)
-  const machineSlotMap = React.useMemo(() => {
+  const machineSlotData = React.useMemo(() => {
     const data = weekSchedule.data ?? [];
     const q = searchQuery.toLowerCase().trim();
     const filtered = q 
@@ -635,7 +640,8 @@ export default function PPICSchedule({ onSelectPro }: Props) {
       
     const items = filtered;
     const range = { start: weekStart, end: weekEnd };
-    const map = new Map<string, SlotItem[]>();
+    const itemsMap = new Map<string, SlotItem[]>();
+    const usageMap = new Map<string, number>();
 
     for (const pro of items) {
       for (const step of (pro.steps ?? [])) {
@@ -649,7 +655,10 @@ export default function PPICSchedule({ onSelectPro }: Props) {
         const slotId = `${dateKey(actualDay)}::${step.machine.id}`;
         
         if (actualDay >= range.start && actualDay <= range.end) {
-           const arr = map.get(slotId) ?? [];
+           // Key includes SHIFT now: date::machine::shift
+           const slotId = `${dateKey(actualDay)}::${step.machine.id}::${actualShift}`;
+           
+           const arr = itemsMap.get(slotId) ?? [];
            arr.push({
               key: `${step.id}::${slotId}`, 
               proId: pro.id,
@@ -666,11 +675,19 @@ export default function PPICSchedule({ onSelectPro }: Props) {
               startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
               materials: (step as any).materials ?? [],
            });
-           map.set(slotId, arr);
+           itemsMap.set(slotId, arr);
+
+           // Calculate Usage
+           const mats = (step as any).materials ?? [];
+           const sheetMat = mats.find((m: any) => m.material?.uom?.toLowerCase() === 'sheet');
+           if (sheetMat) {
+              const current = usageMap.get(slotId) ?? 0;
+              usageMap.set(slotId, current + Number(sheetMat.qtyReq));
+           }
         }
       }
     }
-    return map;
+    return { itemsMap, usageMap };
   }, [weekSchedule.data, weekStart, weekEnd, searchQuery]);
 
   return (
@@ -842,53 +859,63 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                <div className="text-sm font-semibold truncate" title={m.name}>{m.name}</div>
                             </div>
                             
-                            {weekDays.map((d) => {
-                               const slotId = `${dateKey(d)}::${m.id}`;
-                               const slotItems = machineSlotMap.get(slotId) ?? [];
-                               
-                               return (
-                                 <DroppableCell
-                                   key={slotId}
-                                   id={slotId}
-                                   className="border-b border-r p-2 min-h-[100px]"
-                                 >
-                                    {weekSchedule.isLoading ? (
-                                       <div className="text-[10px] opacity-40">Loading...</div>
-                                    ) : slotItems.length === 0 ? (
-                                       <div className="text-[10px] italic opacity-25">-</div>
-                                    ) : (
-                                       <div className="space-y-2">
-                                          {slotItems.map((it) => {
-                                            const { key, ...rest } = it;
-                                            return (
-                                              <DraggableChip 
-                                                key={it.key} 
-                                                id={it.key} 
-                                                onSelect={() => onSelectPro?.(it.proId)}
-                                                tooltip={<PROTooltipContent {...rest} />}
-                                              >
-                                                 <div className="flex items-center justify-between gap-2">
-                                                    <div className="truncate font-semibold text-blue-700">{it.proNumber}</div>
-                                                 </div>
-                                                 <div className="truncate text-[11px] opacity-80" title={it.productName}>
-                                                    {it.productName}
-                                                 </div>
-                                                 <div className="mt-1">
-                                                     <Badge variant="outline" className="h-4 max-w-full text-[9px]">
-                                                        <span className="truncate">{it.processCode} {it.processName}</span>
-                                                     </Badge>
-                                                 </div>
-                                              </DraggableChip>
-                                            );
-                                          })}
-                                       </div>
-                                    )}
-                                 </DroppableCell>
-                               );
-                            })}
-                         </React.Fragment>
-                       );
-                    })
+                            {weekDays.map((d) => (
+                               <div key={dateKey(d)} className="border-b border-r p-1">
+                                 {[1, 2, 3].map((shiftNo) => {
+                                      const slotId = `${dateKey(d)}::${m.id}::${shiftNo}`;
+                                      const slotItems = machineSlotData.itemsMap.get(slotId) ?? [];
+                                      const used = machineSlotData.usageMap.get(slotId) ?? 0;
+                                      const cap = m.stdOutputPerShift ?? 0;
+                                      const isOverload = cap > 0 && used > cap;
+                                      
+                                      return (
+                                        <DroppableCell
+                                          key={slotId}
+                                          id={slotId}
+                                          className={`mb-1 last:mb-0 rounded p-1.5 min-h-[60px] flex flex-col ${isOverload ? "bg-red-100/50" : "bg-muted/10 ring-1 ring-border/30"}`}
+                                        >
+                                           <div className={`text-[9px] mb-1 font-medium flex justify-between items-center ${isOverload ? "text-red-700" : "text-muted-foreground"}`}>
+                                              <span>S{shiftNo}</span>
+                                              {cap > 0 && (
+                                                <span className={isOverload ? "text-red-600 font-bold" : "opacity-70"}>
+                                                   {used > 0 ? `${used.toLocaleString()} / ` : ""}{cap.toLocaleString()}
+                                                   {isOverload && " ⚠️"}
+                                                </span>
+                                              )}
+                                           </div>
+                                           {weekSchedule.isLoading ? (
+                                              <div className="text-[9px] opacity-40">...</div>
+                                           ) : (
+                                              <div className="space-y-1">
+                                                 {slotItems.map((it) => {
+                                                   const { key, ...rest } = it;
+                                                   return (
+                                                     <DraggableChip 
+                                                       key={it.key} 
+                                                       id={it.key} 
+                                                       onSelect={() => onSelectPro?.(it.proId)}
+                                                       tooltip={<PROTooltipContent {...rest} />}
+                                                     >
+                                                        <div className="flex items-center justify-between gap-1">
+                                                           <div className="truncate font-semibold text-blue-700 text-[10px]">{it.proNumber}</div>
+                                                        </div>
+                                                        <div className="truncate text-[9px] opacity-80" title={it.productName}>
+                                                           {it.productName}
+                                                        </div>
+                                                     </DraggableChip>
+                                                   );
+                                                 })}
+                                              </div>
+                                           )}
+                                        </DroppableCell>
+                                      );
+                                 })}
+                               </div>
+                             ))}
+                           </React.Fragment>
+                        );
+                     })
+
                   )}
                 </div>
               </div>

@@ -216,6 +216,10 @@ export const prosRouter = createTRPCRouter({
             const sheetsInThisShift = Math.max(0, Math.min(totalSheets - i * machineStd, machineStd));
             const portion = totalSheets > 0 ? sheetsInThisShift / totalSheets : 1;
 
+            if (sheetsInThisShift > 0 && inputStep.machineId) {
+               await checkCapacity(tx, inputStep.machineId, getShiftDate(currentDay, currentShift), sheetsInThisShift);
+            }
+
             await tx.proStep.create({
               data: {
                 proId: created.id,
@@ -397,6 +401,10 @@ export const prosRouter = createTRPCRouter({
               const sheetsInThisShift = Math.max(0, Math.min(totalSheets - i * machineStd, machineStd));
               const portion = totalSheets > 0 ? sheetsInThisShift / totalSheets : 1;
 
+              if (sheetsInThisShift > 0 && inputStep.machineId) {
+                 await checkCapacity(tx, inputStep.machineId, getShiftDate(currentDay, currentShift), sheetsInThisShift);
+              }
+
               await tx.proStep.create({
                 data: {
                   proId: input.id,
@@ -427,6 +435,7 @@ export const prosRouter = createTRPCRouter({
         });
       });
     }),
+
 
   delete: ppicProcedure
     .input(z.object({ id: z.number().int().positive() }))
@@ -529,3 +538,55 @@ export const prosRouter = createTRPCRouter({
       return items;
     }),
 });
+
+// --- HELPER FUNCTION UNTUK CEK KAPASITAS ---
+async function checkCapacity(
+  tx: Prisma.TransactionClient,
+  machineId: number | null,
+  slotDate: Date,
+  newLoadSheets: number,
+) {
+  if (!machineId) return;
+
+  const machine = await tx.machine.findUnique({ where: { id: machineId } });
+  if (!machine || machine.uom !== "sheet" || !machine.stdOutputPerShift) return;
+
+  const max = machine.stdOutputPerShift;
+
+  // Cari load existing di tanggal & shift (slotDate) yang sama
+  const existingSteps = await tx.proStep.findMany({
+    where: {
+      machineId,
+      startDate: slotDate,
+      pro: { status: { notIn: ["DONE", "CANCELLED"] } },
+    },
+    include: {
+      materials: { include: { material: true } },
+    },
+  });
+
+  let currentLoad = 0;
+  for (const s of existingSteps) {
+    // Cari material sheet punya step ini
+    const sheetMat = s.materials.find((m) => m.material.uom === "sheet");
+    if (sheetMat) {
+      currentLoad += Number(sheetMat.qtyReq);
+    }
+  }
+
+  if (currentLoad + newLoadSheets > max) {
+    const shiftName =
+      getShiftFromTime(slotDate) === 0
+        ? "Shift 1"
+        : getShiftFromTime(slotDate) === 1
+          ? "Shift 2"
+          : "Shift 3";
+          
+    const dStr = slotDate.toLocaleDateString("id-ID");
+    
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: `Mesin ${machine.name} overload di ${dStr} ${shiftName}. Kapasitas: ${max}, Terisi: ${currentLoad}, Request: ${Math.ceil(newLoadSheets)}.`,
+    });
+  }
+}
