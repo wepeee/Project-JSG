@@ -424,18 +424,20 @@ export default function ProPlanner() {
                     const upNum = Number(newUp);
                     const poNum = Number(qtyPoPcs);
                     
-                    setDraft((d: StepDraft) => {
-                       const selectedMachine = machines.data?.find((m: any) => m.id === d.machineId);
+                  setDraft((d: StepDraft) => {
+                       const poNum = Number(qtyPoPcs);
                        
-                       // Recalc ALL materials if machine is sheet
-                       let newMaterials = d.materials;
-                       if (selectedMachine?.uom === 'sheet' && upNum > 0 && poNum > 0) {
-                         const autoQty = String(Math.ceil(poNum / upNum));
-                         newMaterials = d.materials.map((m: StepDraftMaterial) => ({
-                            ...m,
-                            qtyReq: m.materialId ? autoQty : m.qtyReq 
-                         }));
-                       }
+                       // Recalc materials if material is sheet
+                       const newMaterials = d.materials.map((m: StepDraftMaterial) => {
+                          const matInfo = materials.data?.find((x: any) => x.id === m.materialId);
+                          const isSheet = matInfo?.uom?.toLowerCase() === "sheet";
+                          
+                          if (isSheet && upNum > 0 && poNum > 0) {
+                             const autoQty = String(Math.ceil(poNum / upNum));
+                             return { ...m, qtyReq: autoQty };
+                          }
+                          return m;
+                       });
                        
                        return { ...d, up: newUp, materials: newMaterials };
                     });
@@ -454,23 +456,9 @@ export default function ProPlanner() {
                      const isSheet = selectedMachine?.uom === 'sheet';
                      
                      setDraft((d: StepDraft) => {
-                        const poNum = Number(qtyPoPcs);
-                        const upNum = Number(d.up);
-                        
-                        let newMaterials = d.materials;
-
-                        if (isSheet && upNum > 0 && poNum > 0) {
-                           const autoQty = String(Math.ceil(poNum / upNum));
-                           newMaterials = d.materials.map((m: StepDraftMaterial) => ({ ...m, qtyReq: autoQty }));
-                        } else if (isSheet && poNum > 0 && !upNum) {
-                            const autoQty = String(poNum);
-                            newMaterials = d.materials.map((m: StepDraftMaterial) => ({ ...m, qtyReq: autoQty }));
-                        }
-                        
                         return {
                            ...d,
                            machineId: val,
-                           materials: newMaterials
                         };
                      });
                   }}
@@ -528,16 +516,17 @@ export default function ProPlanner() {
                               const v = e.target.value ? Number(e.target.value) : null;
                               
                               setDraft((d: StepDraft) => {
-                                 const selectedMachine = machines.data?.find((m: any) => m.id === d.machineId);
-                                 const isSheet = selectedMachine?.uom === 'sheet';
+                                 const selectedMaterial = materials.data?.find((m: any) => m.id === v);
+                                 const isSheet = selectedMaterial?.uom?.toLowerCase() === 'sheet';
+                                 
                                  const poNum = Number(qtyPoPcs);
                                  const upNum = Number(d.up);
                                  
                                  let autoQty = mat.qtyReq;
+                                 
+                                 // Auto calc if sheet
                                  if (v && isSheet && upNum > 0 && poNum > 0) {
                                     autoQty = String(Math.ceil(poNum / upNum));
-                                 } else if (v && isSheet && poNum > 0) {
-                                     autoQty = String(poNum);
                                  }
                                  
                                  const newMats = [...d.materials];

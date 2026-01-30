@@ -1028,7 +1028,11 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                                     ) : (
                                        <div className="font-medium text-xs text-foreground">
                                          {machineName}
+                                         <div className="text-[10px] text-muted-foreground font-normal mt-0.5">
+                                            {p.productName}
+                                         </div>
                                        </div>
+
                                     )}
                                  </TableCell>
 
