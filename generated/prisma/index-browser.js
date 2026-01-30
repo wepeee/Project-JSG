@@ -177,6 +177,7 @@ exports.Prisma.ProStepScalarFieldEnum = {
   proId: 'proId',
   orderNo: 'orderNo',
   up: 'up',
+  estimatedShifts: 'estimatedShifts',
   startDate: 'startDate',
   machineId: 'machineId'
 };

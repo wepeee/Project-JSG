@@ -11,7 +11,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 import { api, type RouterOutputs } from "~/trpc/react";
 import { Badge } from "~/components/ui/badge";
@@ -23,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { Input } from "~/components/ui/input";
 
 type Props = {
   onSelectPro?: (id: number) => void;
@@ -282,6 +283,9 @@ export default function PPICSchedule({ onSelectPro }: Props) {
   // View mode
   const [viewMode, setViewMode] = React.useState<"shift" | "machine">("shift");
 
+  // Search state
+  const [searchQuery, setSearchQuery] = React.useState("");
+
   // Month state
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
 
@@ -460,129 +464,6 @@ export default function PPICSchedule({ onSelectPro }: Props) {
     },
   });
 
-  const rescheduleShift = api.pros.rescheduleShift.useMutation({
-    onMutate: async (variables) => {
-      await utils.pros.getSchedule.cancel();
-      await utils.pros.getById.cancel();
-      await utils.pros.list.cancel();
-      
-      const previousSchedule = utils.pros.getSchedule.getData();
-      const previousList = utils.pros.list.getData({});
-      
-      // Find which PRO this step belongs to
-      let affectedProId: number | undefined;
-      if (previousSchedule) {
-        for (const pro of previousSchedule) {
-          if (pro.steps.some((s) => s.id === variables.stepId)) {
-            affectedProId = pro.id;
-            break;
-          }
-        }
-      }
-      
-      const previousDetail = affectedProId
-        ? utils.pros.getById.getData({ id: affectedProId })
-        : undefined;
-      
-      // Update schedule cache
-      utils.pros.getSchedule.setData(
-        { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
-        (old) => {
-          if (!old) return old;
-          return old.map((pro) => ({
-            ...pro,
-            steps: pro.steps.map((step) => {
-              if (step.id !== variables.stepId) return step;
-              
-              const existingShifts = (step as any).shifts ?? [];
-              const updatedShifts = existingShifts.some((s: any) => s.shiftIndex === variables.shiftIndex)
-                ? existingShifts.map((s: any) =>
-                    s.shiftIndex === variables.shiftIndex
-                      ? { ...s, scheduledDate: variables.scheduledDate }
-                      : s
-                  )
-                : [...existingShifts, { shiftIndex: variables.shiftIndex, scheduledDate: variables.scheduledDate }];
-              
-              return { ...step, shifts: updatedShifts };
-            }),
-          }));
-        }
-      );
-      
-      // Update detail cache
-      if (affectedProId && previousDetail) {
-        utils.pros.getById.setData(
-          { id: affectedProId },
-          {
-            ...previousDetail,
-            steps: previousDetail.steps.map((step) => {
-              if (step.id !== variables.stepId) return step;
-              
-              const existingShifts = (step as any).shifts ?? [];
-              const updatedShifts = existingShifts.some((s: any) => s.shiftIndex === variables.shiftIndex)
-                ? existingShifts.map((s: any) =>
-                    s.shiftIndex === variables.shiftIndex
-                      ? { ...s, scheduledDate: variables.scheduledDate }
-                      : s
-                  )
-                : [...existingShifts, { shiftIndex: variables.shiftIndex, scheduledDate: variables.scheduledDate }];
-              
-              return { ...step, shifts: updatedShifts };
-            }),
-          }
-        );
-      }
-      
-      // Update list cache
-      if (previousList) {
-        utils.pros.list.setData(
-          {},
-          {
-            ...previousList,
-            items: previousList.items.map((pro) => ({
-              ...pro,
-              steps: pro.steps.map((step) => {
-                if (step.id !== variables.stepId) return step;
-                
-                const existingShifts = (step as any).shifts ?? [];
-                const updatedShifts = existingShifts.some((s: any) => s.shiftIndex === variables.shiftIndex)
-                  ? existingShifts.map((s: any) =>
-                      s.shiftIndex === variables.shiftIndex
-                        ? { ...s, scheduledDate: variables.scheduledDate }
-                        : s
-                    )
-                  : [...existingShifts, { shiftIndex: variables.shiftIndex, scheduledDate: variables.scheduledDate }];
-                
-                return { ...step, shifts: updatedShifts };
-              }),
-            })),
-          }
-        );
-      }
-      
-      return { previousSchedule, previousDetail, previousList, affectedProId };
-    },
-    onError: (_err, _variables, context) => {
-      if (context?.previousSchedule) {
-        utils.pros.getSchedule.setData(
-          { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
-          context.previousSchedule
-        );
-      }
-      if (context?.affectedProId && context?.previousDetail) {
-        utils.pros.getById.setData({ id: context.affectedProId }, context.previousDetail);
-      }
-      if (context?.previousList) {
-        utils.pros.list.setData({}, context.previousList);
-      }
-    },
-    onSettled: () => {
-      void utils.pros.getSchedule.invalidate();
-      void utils.pros.getById.invalidate();
-      void utils.pros.list.invalidate();
-    },
-  });
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 6 },
@@ -629,6 +510,7 @@ export default function PPICSchedule({ onSelectPro }: Props) {
     const d0 = keyToDate(dateStr);
     if (!d0) return;
 
+    // determine shift from either shift suffix or machine id
     const shift: ShiftNo = (() => {
       const s = shiftStr ? Number(shiftStr) : 1;
       if (s === 2) return 2;
@@ -638,10 +520,10 @@ export default function PPICSchedule({ onSelectPro }: Props) {
 
     const newStart = applyShiftStart(d0, shift);
 
-    // If it's a step (has ::), we reschedule step. 
-    // This now covers everything because every shift is a step.
+    // Everything is now a step (1 step = 1 shift)
     rescheduleStep.mutate({ stepId: id, startDate: newStart });
   };
+
   const monthLabel = currentMonth.toLocaleDateString("id-ID", {
     month: "long",
     year: "numeric",
@@ -697,7 +579,13 @@ export default function PPICSchedule({ onSelectPro }: Props) {
         }>;
     }>>();
 
-    for (const pro of monthSchedule.data ?? []) {
+    const data = monthSchedule.data ?? [];
+    const q = searchQuery.toLowerCase().trim();
+    const filtered = q 
+      ? data.filter(pro => pro.proNumber.toLowerCase().includes(q) || pro.productName.toLowerCase().includes(q))
+      : data;
+
+    for (const pro of filtered) {
       for (const step of pro.steps ?? []) {
         const stepStartVal = (step as any).startDate ?? pro.startDate;
         if (!stepStartVal) continue;
@@ -725,101 +613,65 @@ export default function PPICSchedule({ onSelectPro }: Props) {
       }
     }
     return map;
-  }, [monthSchedule.data]);
+  }, [monthSchedule.data, searchQuery]);
 
   // Shift grid data (week)
   const shiftSlotMap = React.useMemo(() => {
-    return buildShiftSlots(weekSchedule.data ?? [], { start: weekStart, end: weekEnd });
-  }, [weekSchedule.data, weekStart, weekEnd]);
+    const data = weekSchedule.data ?? [];
+    const q = searchQuery.toLowerCase().trim();
+    const filtered = q 
+      ? data.filter(pro => pro.proNumber.toLowerCase().includes(q) || pro.productName.toLowerCase().includes(q))
+      : data;
+    return buildShiftSlots(filtered, { start: weekStart, end: weekEnd });
+  }, [weekSchedule.data, weekStart, weekEnd, searchQuery]);
 
   // Machine grid data (week)
   const machineSlotMap = React.useMemo(() => {
-    const items = weekSchedule.data ?? [];
+    const data = weekSchedule.data ?? [];
+    const q = searchQuery.toLowerCase().trim();
+    const filtered = q 
+      ? data.filter(pro => pro.proNumber.toLowerCase().includes(q) || pro.productName.toLowerCase().includes(q))
+      : data;
+      
+    const items = filtered;
     const range = { start: weekStart, end: weekEnd };
     const map = new Map<string, SlotItem[]>();
 
     for (const pro of items) {
-      // For machine view, we look at STEPS, not just the PRO start date.
-      const steps = (pro.steps ?? []).slice().sort((a, b) => a.orderNo - b.orderNo);
-      
-      for (const step of steps) {
-        // We need a machine to show in machine view
+      for (const step of (pro.steps ?? [])) {
         if (!step.machine?.id) continue;
-
-        // Determine start date for this STEP
-        // If step has startDate, use it. Else fallback to pro.startDate?
-        const stepStartVal = (step as any).startDate ?? pro.startDate; // Cast to any if types are stale
+        const stepStartVal = (step as any).startDate;
         if (!stepStartVal) continue;
 
-        // 1. Calculate Need
-        const need = shiftsNeededForStep({
-          qtyPoPcs: pro.qtyPoPcs,
-          up: step.up ?? null,
-          stdOutputPerShift: step.machine?.stdOutputPerShift,
-        });
+        const actualDay = startOfDay(new Date(stepStartVal));
+        const actualShift = shiftFromDate(new Date(stepStartVal));
 
-        // 2. Prepare Custom Shifts
-        const customShifts = (step as any).shifts ?? [];
-        const customMap = new Map<number, Date>();
-        customShifts.forEach((s: any) => {
-           customMap.set(s.shiftIndex, new Date(s.scheduledDate));
-        });
-
-        // 3. Setup Default Cursor
-        const start = new Date(stepStartVal);
-        let cursorDay = startOfDay(start);
-        let cursorShift = shiftFromDate(start);
-
-        // 4. Iterate Shifts
-        for (let i = 0; i < need; i++) {
-           let actualDay: Date;
-           let actualShift: number; // needed for logic, though machine view aggregates by day
-
-           if (customMap.has(i)) {
-               const d = customMap.get(i)!;
-               actualDay = startOfDay(d);
-               actualShift = shiftFromDate(d);
-           } else {
-               actualDay = new Date(cursorDay);
-               actualShift = cursorShift;
-           }
-
-           const slotId = `${dateKey(actualDay)}::${step.machine.id}`;
-          
-           if (actualDay >= range.start && actualDay <= range.end) {
-              const arr = map.get(slotId) ?? [];
-              arr.push({
-                 key: `${step.id}::${slotId}::${i}`, // Use STEP ID + Shift Index
-                 proId: pro.id,
-                 stepId: step.id, 
-                 shiftIndex: i,
-                 proNumber: pro.proNumber,
-                 productName: pro.productName,
-                 status: pro.status,
-                 orderNo: step.orderNo,
-                 processCode: pro.process?.code ?? "??",
-                 processName: pro.process?.name ?? "(tanpa nama)",
-                 machineName: step.machine?.name ?? null,
-                 up: step.up ?? 1,
-                 qtyPoPcs: pro.qtyPoPcs,
-                 startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
-                 materials: (step as any).materials ?? [],
-              });
-              map.set(slotId, arr);
-           }
-
-           // Advance Logic
-           if (cursorShift < 3) {
-              cursorShift++;
-           } else {
-              cursorShift = 1;
-              cursorDay.setDate(cursorDay.getDate() + 1);
-           }
+        const slotId = `${dateKey(actualDay)}::${step.machine.id}`;
+        
+        if (actualDay >= range.start && actualDay <= range.end) {
+           const arr = map.get(slotId) ?? [];
+           arr.push({
+              key: `${step.id}::${slotId}`, 
+              proId: pro.id,
+              stepId: step.id, 
+              proNumber: pro.proNumber,
+              productName: pro.productName,
+              status: pro.status,
+              orderNo: step.orderNo,
+              processCode: pro.process?.code ?? "??",
+              processName: pro.process?.name ?? "(tanpa nama)",
+              machineName: step.machine?.name ?? null,
+              up: step.up ?? 1,
+              qtyPoPcs: pro.qtyPoPcs,
+              startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
+              materials: (step as any).materials ?? [],
+           });
+           map.set(slotId, arr);
         }
       }
     }
     return map;
-  }, [weekSchedule.data, weekStart, weekEnd]);
+  }, [weekSchedule.data, weekStart, weekEnd, searchQuery]);
 
   return (
     <div className="space-y-4">
@@ -832,6 +684,17 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                : "Kalender Bulanan"
              }
           </p>
+        </div>
+
+        <div className="relative w-full sm:w-64">
+           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+           <Input
+             type="text"
+             placeholder="Cari No. PRO / Produk..."
+             className="pl-8"
+             value={searchQuery}
+             onChange={(e) => setSearchQuery(e.target.value)}
+           />
         </div>
       </div>
 

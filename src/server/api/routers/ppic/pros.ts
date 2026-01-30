@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "generated/prisma";
-import { createTRPCRouter, protectedProcedure } from "../../trpc";
-
-const ppicProcedure = protectedProcedure;
+import { createTRPCRouter, ppicProcedure, protectedProcedure } from "../../trpc";
 
 const pad3 = (n: number) => String(n).padStart(3, "0"); // 001..999
 const mm = (d: Date) => String(d.getMonth() + 1).padStart(2, "0");
@@ -84,6 +82,7 @@ export const prosRouter = createTRPCRouter({
                 },
               },
               startDate: true, // add this
+              estimatedShifts: true,
               materials: {
                 select: {
                   qtyReq: true,
@@ -230,6 +229,7 @@ export const prosRouter = createTRPCRouter({
                     qtyReq: new Prisma.Decimal(m.qtyReq * portion),
                   })),
                 },
+                estimatedShifts: need,
               },
             });
 
@@ -270,6 +270,7 @@ export const prosRouter = createTRPCRouter({
               up: true,
               machineId: true,
               startDate: true,
+              estimatedShifts: true,
               machine: {
                 select: {
                   id: true,
@@ -403,6 +404,7 @@ export const prosRouter = createTRPCRouter({
                   up: inputStep.up,
                   machineId: inputStep.machineId ?? null,
                   startDate: getShiftDate(currentDay, currentShift),
+                  estimatedShifts: need,
                   materials: {
                     create: inputStep.materials?.map((m) => ({
                       materialId: m.materialId,
@@ -463,7 +465,7 @@ export const prosRouter = createTRPCRouter({
       });
     }),
 
-  getSchedule: ppicProcedure
+  getSchedule: protectedProcedure
     .input(
       z.object({
         start: z.coerce.date(),
@@ -512,6 +514,13 @@ export const prosRouter = createTRPCRouter({
                 select: { id: true, name: true, stdOutputPerShift: true },
               },
               startDate: true, // add this
+              estimatedShifts: true,
+              materials: {
+                select: {
+                  material: { select: { name: true, uom: true } },
+                  qtyReq: true,
+                },
+              },
             },
           },
         },

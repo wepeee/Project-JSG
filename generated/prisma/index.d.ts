@@ -7479,6 +7479,7 @@ export namespace Prisma {
     proId: number | null
     orderNo: number | null
     up: number | null
+    estimatedShifts: number | null
     machineId: number | null
   }
 
@@ -7487,6 +7488,7 @@ export namespace Prisma {
     proId: number | null
     orderNo: number | null
     up: number | null
+    estimatedShifts: number | null
     machineId: number | null
   }
 
@@ -7495,6 +7497,7 @@ export namespace Prisma {
     proId: number | null
     orderNo: number | null
     up: number | null
+    estimatedShifts: number | null
     startDate: Date | null
     machineId: number | null
   }
@@ -7504,6 +7507,7 @@ export namespace Prisma {
     proId: number | null
     orderNo: number | null
     up: number | null
+    estimatedShifts: number | null
     startDate: Date | null
     machineId: number | null
   }
@@ -7513,6 +7517,7 @@ export namespace Prisma {
     proId: number
     orderNo: number
     up: number
+    estimatedShifts: number
     startDate: number
     machineId: number
     _all: number
@@ -7524,6 +7529,7 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     up?: true
+    estimatedShifts?: true
     machineId?: true
   }
 
@@ -7532,6 +7538,7 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     up?: true
+    estimatedShifts?: true
     machineId?: true
   }
 
@@ -7540,6 +7547,7 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     up?: true
+    estimatedShifts?: true
     startDate?: true
     machineId?: true
   }
@@ -7549,6 +7557,7 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     up?: true
+    estimatedShifts?: true
     startDate?: true
     machineId?: true
   }
@@ -7558,6 +7567,7 @@ export namespace Prisma {
     proId?: true
     orderNo?: true
     up?: true
+    estimatedShifts?: true
     startDate?: true
     machineId?: true
     _all?: true
@@ -7654,6 +7664,7 @@ export namespace Prisma {
     proId: number
     orderNo: number
     up: number | null
+    estimatedShifts: number | null
     startDate: Date | null
     machineId: number | null
     _count: ProStepCountAggregateOutputType | null
@@ -7682,6 +7693,7 @@ export namespace Prisma {
     proId?: boolean
     orderNo?: boolean
     up?: boolean
+    estimatedShifts?: boolean
     startDate?: boolean
     machineId?: boolean
     pro?: boolean | ProDefaultArgs<ExtArgs>
@@ -7697,11 +7709,12 @@ export namespace Prisma {
     proId?: boolean
     orderNo?: boolean
     up?: boolean
+    estimatedShifts?: boolean
     startDate?: boolean
     machineId?: boolean
   }
 
-  export type ProStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "up" | "startDate" | "machineId", ExtArgs["result"]["proStep"]>
+  export type ProStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "up" | "estimatedShifts" | "startDate" | "machineId", ExtArgs["result"]["proStep"]>
   export type ProStepInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pro?: boolean | ProDefaultArgs<ExtArgs>
     machine?: boolean | ProStep$machineArgs<ExtArgs>
@@ -7721,6 +7734,7 @@ export namespace Prisma {
       proId: number
       orderNo: number
       up: number | null
+      estimatedShifts: number | null
       startDate: Date | null
       machineId: number | null
     }, ExtArgs["result"]["proStep"]>
@@ -8099,6 +8113,7 @@ export namespace Prisma {
     readonly proId: FieldRef<"ProStep", 'Int'>
     readonly orderNo: FieldRef<"ProStep", 'Int'>
     readonly up: FieldRef<"ProStep", 'Int'>
+    readonly estimatedShifts: FieldRef<"ProStep", 'Int'>
     readonly startDate: FieldRef<"ProStep", 'DateTime'>
     readonly machineId: FieldRef<"ProStep", 'Int'>
   }
@@ -9561,6 +9576,7 @@ export namespace Prisma {
     proId: 'proId',
     orderNo: 'orderNo',
     up: 'up',
+    estimatedShifts: 'estimatedShifts',
     startDate: 'startDate',
     machineId: 'machineId'
   };
@@ -10072,6 +10088,7 @@ export namespace Prisma {
     proId?: IntFilter<"ProStep"> | number
     orderNo?: IntFilter<"ProStep"> | number
     up?: IntNullableFilter<"ProStep"> | number | null
+    estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
@@ -10084,6 +10101,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     up?: SortOrderInput | SortOrder
+    estimatedShifts?: SortOrderInput | SortOrder
     startDate?: SortOrderInput | SortOrder
     machineId?: SortOrderInput | SortOrder
     pro?: ProOrderByWithRelationInput
@@ -10100,6 +10118,7 @@ export namespace Prisma {
     proId?: IntFilter<"ProStep"> | number
     orderNo?: IntFilter<"ProStep"> | number
     up?: IntNullableFilter<"ProStep"> | number | null
+    estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
@@ -10112,6 +10131,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     up?: SortOrderInput | SortOrder
+    estimatedShifts?: SortOrderInput | SortOrder
     startDate?: SortOrderInput | SortOrder
     machineId?: SortOrderInput | SortOrder
     _count?: ProStepCountOrderByAggregateInput
@@ -10129,6 +10149,7 @@ export namespace Prisma {
     proId?: IntWithAggregatesFilter<"ProStep"> | number
     orderNo?: IntWithAggregatesFilter<"ProStep"> | number
     up?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
+    estimatedShifts?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableWithAggregatesFilter<"ProStep"> | Date | string | null
     machineId?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
   }
@@ -10552,6 +10573,7 @@ export namespace Prisma {
   export type ProStepCreateInput = {
     orderNo: number
     up?: number | null
+    estimatedShifts?: number | null
     startDate?: Date | string | null
     pro: ProCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
@@ -10563,6 +10585,7 @@ export namespace Prisma {
     proId: number
     orderNo: number
     up?: number | null
+    estimatedShifts?: number | null
     startDate?: Date | string | null
     machineId?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
@@ -10571,6 +10594,7 @@ export namespace Prisma {
   export type ProStepUpdateInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
@@ -10582,6 +10606,7 @@ export namespace Prisma {
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
@@ -10592,6 +10617,7 @@ export namespace Prisma {
     proId: number
     orderNo: number
     up?: number | null
+    estimatedShifts?: number | null
     startDate?: Date | string | null
     machineId?: number | null
   }
@@ -10599,6 +10625,7 @@ export namespace Prisma {
   export type ProStepUpdateManyMutationInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
@@ -10607,6 +10634,7 @@ export namespace Prisma {
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
   }
@@ -11173,6 +11201,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     up?: SortOrder
+    estimatedShifts?: SortOrder
     startDate?: SortOrder
     machineId?: SortOrder
   }
@@ -11182,6 +11211,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     up?: SortOrder
+    estimatedShifts?: SortOrder
     machineId?: SortOrder
   }
 
@@ -11190,6 +11220,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     up?: SortOrder
+    estimatedShifts?: SortOrder
     startDate?: SortOrder
     machineId?: SortOrder
   }
@@ -11199,6 +11230,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     up?: SortOrder
+    estimatedShifts?: SortOrder
     startDate?: SortOrder
     machineId?: SortOrder
   }
@@ -11208,6 +11240,7 @@ export namespace Prisma {
     proId?: SortOrder
     orderNo?: SortOrder
     up?: SortOrder
+    estimatedShifts?: SortOrder
     machineId?: SortOrder
   }
 
@@ -11897,6 +11930,7 @@ export namespace Prisma {
   export type ProStepCreateWithoutMachineInput = {
     orderNo: number
     up?: number | null
+    estimatedShifts?: number | null
     startDate?: Date | string | null
     pro: ProCreateNestedOneWithoutStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
@@ -11907,6 +11941,7 @@ export namespace Prisma {
     proId: number
     orderNo: number
     up?: number | null
+    estimatedShifts?: number | null
     startDate?: Date | string | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
   }
@@ -11945,6 +11980,7 @@ export namespace Prisma {
     proId?: IntFilter<"ProStep"> | number
     orderNo?: IntFilter<"ProStep"> | number
     up?: IntNullableFilter<"ProStep"> | number | null
+    estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
   }
@@ -12079,6 +12115,7 @@ export namespace Prisma {
   export type ProStepCreateWithoutProInput = {
     orderNo: number
     up?: number | null
+    estimatedShifts?: number | null
     startDate?: Date | string | null
     machine?: MachineCreateNestedOneWithoutProStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
@@ -12088,6 +12125,7 @@ export namespace Prisma {
     id?: number
     orderNo: number
     up?: number | null
+    estimatedShifts?: number | null
     startDate?: Date | string | null
     machineId?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
@@ -12301,6 +12339,7 @@ export namespace Prisma {
   export type ProStepCreateWithoutMaterialsInput = {
     orderNo: number
     up?: number | null
+    estimatedShifts?: number | null
     startDate?: Date | string | null
     pro: ProCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
@@ -12311,6 +12350,7 @@ export namespace Prisma {
     proId: number
     orderNo: number
     up?: number | null
+    estimatedShifts?: number | null
     startDate?: Date | string | null
     machineId?: number | null
   }
@@ -12354,6 +12394,7 @@ export namespace Prisma {
   export type ProStepUpdateWithoutMaterialsInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
@@ -12364,6 +12405,7 @@ export namespace Prisma {
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
   }
@@ -12399,12 +12441,14 @@ export namespace Prisma {
     proId: number
     orderNo: number
     up?: number | null
+    estimatedShifts?: number | null
     startDate?: Date | string | null
   }
 
   export type ProStepUpdateWithoutMachineInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
@@ -12415,6 +12459,7 @@ export namespace Prisma {
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
   }
@@ -12424,6 +12469,7 @@ export namespace Prisma {
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
@@ -12499,6 +12545,7 @@ export namespace Prisma {
     id?: number
     orderNo: number
     up?: number | null
+    estimatedShifts?: number | null
     startDate?: Date | string | null
     machineId?: number | null
   }
@@ -12506,6 +12553,7 @@ export namespace Prisma {
   export type ProStepUpdateWithoutProInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machine?: MachineUpdateOneWithoutProStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
@@ -12515,6 +12563,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
@@ -12524,6 +12573,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
   }

@@ -130,7 +130,8 @@ model ProStep {
 
   orderNo   Int // 1,2,3...
   
-  up          Int?
+  up              Int?
+  estimatedShifts Int?
 
   startDate       DateTime?
 

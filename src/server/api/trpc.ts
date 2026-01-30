@@ -143,7 +143,7 @@ export const ppicProcedure = protectedProcedure.use(({ ctx, next }) => {
   const role = ctx.session.user.role;
 
   // PPIC boleh, SUPERADMIN boleh (biar superadmin bisa bantu kalau perlu)
-  if (role !== "PPIC") {
+  if (role !== "PPIC" && role !== "SUPERADMIN") {
     throw new TRPCError({ code: "FORBIDDEN", message: "PPIC only" });
   }
 

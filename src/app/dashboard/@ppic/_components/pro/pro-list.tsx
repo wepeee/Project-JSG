@@ -635,7 +635,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
           materialId: m.materialId,
           qtyReq: m.qtyReq ? String(m.qtyReq) : "",
         })),
-        startDate: dt ? dt.toISOString().slice(0, 10) : null,
+        startDate: dt ? `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}` : null,
         shift: dt ? shiftFromDate(dt) : 1,
       };
     });
@@ -957,7 +957,9 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                          const std = stdOutputPerShift || 1000;
                          
                          const actualQty = baseUp > 0 ? baseQty / baseUp : baseQty;
-                         const totalShifts = (machineUom === 'sheet') ? Math.max(1, Math.ceil(actualQty / std)) : 1;
+                         const totalShifts = isDraft 
+                            ? ((machineUom === 'sheet') ? Math.max(1, Math.ceil(actualQty / std)) : 1)
+                            : ((item as any).estimatedShifts || 1);
                         
                         const scheduleList = [];
                         const shouldExpand = editing && expandDraft;
