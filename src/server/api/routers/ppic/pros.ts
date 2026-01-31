@@ -107,8 +107,10 @@ export const prosRouter = createTRPCRouter({
     .input(
       z.object({
         productName: z.string().min(1),
+        partNumber: z.string().optional(), // Added
         processId: z.number().int().positive(), // New: header process
         qtyPoPcs: z.number().int().positive(),
+        proNumber: z.string().optional(), // Manual PRO override
         startDate: z.coerce.date().optional(),
         expand: z.boolean().default(true).optional(),
         steps: z
@@ -156,14 +158,26 @@ export const prosRouter = createTRPCRouter({
       const prefix = `${proc.code}${mm(baseDate)}${yy(baseDate)}`; // 6 digit
 
       return ctx.db.$transaction(async (tx) => {
-        const seq = await tx.proSequence.upsert({
-          where: { prefix },
-          update: { last: { increment: 1 } },
-          create: { prefix, last: 1 },
-          select: { last: true },
-        });
+        let proNumber = input.proNumber?.trim();
 
-        const proNumber = `${prefix}${pad3(seq.last)}`; // 9 digit
+        if (!proNumber) {
+           const seq = await tx.proSequence.upsert({
+             where: { prefix },
+             update: { last: { increment: 1 } },
+             create: { prefix, last: 1 },
+             select: { last: true },
+           });
+           proNumber = `${prefix}${pad3(seq.last)}`; // 9 digit
+        } else {
+           // Check uniqueness if manual
+           const exist = await tx.pro.findUnique({ where: { proNumber } });
+           if (exist) {
+              throw new TRPCError({
+                 code: "BAD_REQUEST",
+                 message: `PRO Number '${proNumber}' sudah ada.`,
+              });
+           }
+        }
 
         // AUTO-SET PRO.startDate from first step's startDate
         const firstStepDate = input.steps[0]?.startDate ?? undefined;
@@ -173,6 +187,7 @@ export const prosRouter = createTRPCRouter({
             proNumber,
             processId: input.processId,
             productName: input.productName,
+            partNumber: input.partNumber, // Added
             qtyPoPcs: input.qtyPoPcs,
             startDate: firstStepDate, // Auto from first step
             status: "OPEN",
@@ -309,6 +324,7 @@ export const prosRouter = createTRPCRouter({
       z.object({
         id: z.number().int().positive(),
         productName: z.string().min(1),
+        partNumber: z.string().optional(), // Added
         processId: z.number().int().positive(), // Allow changing process
         qtyPoPcs: z.number().int().positive(),
         startDate: z.coerce.date().optional(),
@@ -359,6 +375,7 @@ export const prosRouter = createTRPCRouter({
           data: {
             processId: input.processId,
             productName: input.productName,
+            ...(input.partNumber !== undefined ? { partNumber: input.partNumber } : {}), // Update if provided
             qtyPoPcs: input.qtyPoPcs,
             startDate: input.startDate,
             ...(input.status ? { status: input.status } : {}),

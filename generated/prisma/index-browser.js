@@ -164,6 +164,7 @@ exports.Prisma.ProScalarFieldEnum = {
   id: 'id',
   proNumber: 'proNumber',
   productName: 'productName',
+  partNumber: 'partNumber',
   qtyPoPcs: 'qtyPoPcs',
   startDate: 'startDate',
   status: 'status',
@@ -226,7 +227,8 @@ exports.Prisma.ProSequenceOrderByRelevanceFieldEnum = {
 
 exports.Prisma.ProOrderByRelevanceFieldEnum = {
   proNumber: 'proNumber',
-  productName: 'productName'
+  productName: 'productName',
+  partNumber: 'partNumber'
 };
 exports.Role = exports.$Enums.Role = {
   SUPERADMIN: 'SUPERADMIN',

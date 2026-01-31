@@ -54,6 +54,50 @@ function newStep(): StepDraft {
   };
 }
 
+// Simple CSV Parser
+function parseCSV(text: string) {
+  const result: string[][] = [];
+  const lines = text.split(/\r?\n/);
+  
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    
+    const row: string[] = [];
+    let curVal = "";
+    let insideQuote = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (insideQuote) {
+            if (char === '"') {
+                // Check if next is quote (escape)
+                if (i + 1 < line.length && line[i + 1] === '"') {
+                    curVal += '"';
+                    i++;
+                } else {
+                    insideQuote = false;
+                }
+            } else {
+                curVal += char;
+            }
+        } else {
+            if (char === '"') {
+                insideQuote = true;
+            } else if (char === ',') {
+                row.push(curVal.trim());
+                curVal = "";
+            } else {
+                curVal += char;
+            }
+        }
+    }
+    row.push(curVal.trim()); // Last col
+    result.push(row);
+  }
+  return result;
+}
+
 export default function ProPlanner() {
   const utils = api.useUtils();
   const processes = api.processes.list.useQuery();
@@ -62,13 +106,22 @@ export default function ProPlanner() {
 
   // Header PRO
   const [productName, setProductName] = React.useState("");
+  const [partNumber, setPartNumber] = React.useState(""); // New
   const [processId, setProcessId] = React.useState<number | null>(null);
   const [qtyPoPcs, setQtyPoPcs] = React.useState<string>("");
+  const [manualProNumber, setManualProNumber] = React.useState("");
 
   const createPro = api.pros.create.useMutation({
-    onSuccess: async () => {
+    onSuccess: async (created) => {
       await utils.pros.list.invalidate();
       await utils.pros.getSchedule.invalidate();
+      setOk(`PRO dibuat: ${created.proNumber}`);
+      setProductName("");
+      setPartNumber("");
+      // setProcessId(null); // Keep process selected for convenience?
+      setQtyPoPcs("");
+      setManualProNumber("");
+      setSteps([]);
     },
   });
 
@@ -88,6 +141,8 @@ export default function ProPlanner() {
   const [err, setErr] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   const getProcess = (id: number | null) =>
     id ? ((processes.data ?? []).find((p) => p.id === id) ?? null) : null;
 
@@ -96,6 +151,130 @@ export default function ProPlanner() {
 
   const getMaterial = (id: number | null) =>
     id ? ((materials.data ?? []).find((m) => m.id === id) ?? null) : null;
+
+  // CSV Import Logic
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setErr(null);
+    setOk(null);
+
+    try {
+      const text = await file.text();
+      const rows = parseCSV(text);
+
+      if (rows.length < 2) {
+        throw new Error("Format CSV tidak valid (terlalu pendek)");
+      }
+
+      // Identify columns based on header (assumed row 0)
+      // Format: R, MACHINE, Production Order, Name, Total Up, Qty Order, Start, End, Material, UoM, Qty
+      // Indices: 0, 1,       2,                3,    4,        5,         6,     7,   8,        9,   10
+      
+      const machineList = machines.data ?? [];
+      const materialList = materials.data ?? [];
+
+      const newSteps: StepDraft[] = [];
+      let foundHeaderInfo = false;
+      let detectedUp = "";
+
+      for (let i = 1; i < rows.length; i++) {
+        const cols = rows[i];
+        if (!cols || cols.length < 2) continue;
+
+        // machine
+        const machineName = cols[1]?.trim() ?? "";
+        if (!machineName) continue; // Skip empty rows
+
+        // Check for header info row (has Qty Order)
+        const qtyOrderStr = cols[5]?.trim();
+        const totalUpStr = cols[4]?.trim();
+        const proNumCsv = cols[2]?.trim(); // Production Order
+
+        // If this row has Qty Order, treat it as Header info source
+        if (qtyOrderStr && !foundHeaderInfo) {
+           const cleanedQty = qtyOrderStr.replace(/\./g, "").replace(/,/g, ""); // Remove dots/commas
+           if (!isNaN(Number(cleanedQty))) {
+              setQtyPoPcs(cleanedQty);
+              foundHeaderInfo = true;
+           }
+           
+           // Product Name from Name column (col 3) if available
+           const nameVal = cols[3]?.trim();
+           if (nameVal) setProductName(nameVal);
+
+           // Global UP
+           if (totalUpStr) {
+              detectedUp = totalUpStr;
+           }
+
+            // PRO Number from Col 2
+           if (proNumCsv) {
+              setManualProNumber(proNumCsv);
+           }
+        }
+
+        // --- Create Step ---
+        // 1. Machine Match
+        const mach = machineList.find(m => m.name.trim().toLowerCase() === machineName.trim().toLowerCase());
+        
+        // 2. Start Date (M/D/YYYY or D/M/YYYY -> assuming M/D/YYYY)
+        const dateStr = cols[6]?.trim();
+        let formattedDate = "";
+        if (dateStr) {
+           const d = new Date(dateStr);
+           if (!isNaN(d.getTime())) {
+              formattedDate = d.toISOString().split('T')[0]!; // YYYY-MM-DD
+           }
+        }
+
+        // 3. Materials
+        // Split by '+'
+        const matNames = (cols[8]?.trim() ?? "").split('+');
+        const matQties = (cols[10]?.trim() ?? "").split('+');
+        // uom ignored for ID match, but maybe useful for validation? (cols[9])
+
+        const stepMats: StepDraftMaterial[] = [];
+        
+        for (let k = 0; k < matNames.length; k++) {
+           const mName = matNames[k]?.trim();
+           if (!mName) continue;
+           
+           const mQtyRaw = matQties[k]?.trim(); 
+           // Clean format number?
+           const mQty = mQtyRaw ? mQtyRaw.replace(",", ".") : ""; // JS number uses dot
+
+           // Match name
+           const foundMat = materialList.find(m => m.name.trim().toLowerCase() === mName.toLowerCase());
+           
+           stepMats.push({
+              key: uid(),
+              materialId: foundMat ? foundMat.id : null,
+              qtyReq: foundMat ? mQty : "", // Only fill qty if material matched? Or fill anyway?
+           });
+        }
+        
+        // Add empty if none
+        if (stepMats.length === 0) stepMats.push({ key: uid(), materialId: null, qtyReq: "" });
+
+        newSteps.push({
+          key: uid(),
+          up: detectedUp || "1", // Use detected up or default 1
+          machineId: mach ? mach.id : null,
+          startDate: formattedDate,
+          materials: stepMats
+        });
+      }
+
+      setSteps(prev => [...prev, ...newSteps]);
+      setOk(`Berhasil import ${newSteps.length} steps.`);
+    } catch (err: any) {
+      setErr("Gagal import: " + err.message);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const openAdd = () => {
     setErr(null);
@@ -114,8 +293,12 @@ export default function ProPlanner() {
 
   const saveDraft = () => {
     setErr(null);
+    // if (!processId) return setErr("Proses wajib dipilih di header"); 
+    // ^ Allow adding steps before selecting process? current logic strictly requires processId.
+    // Let's keep strictness
     if (!processId) return setErr("Proses wajib dipilih di header");
-
+    
+    // ... rest of validation
     const upNum = Number(draft.up);
     if (!draft.up.trim() || !Number.isFinite(upNum) || upNum < 0) {
       return setErr("UP wajib >= 0 (oleh 0)");
@@ -176,12 +359,14 @@ export default function ProPlanner() {
 
     const payload = {
       productName: prod,
+      partNumber: partNumber.trim() || undefined,
       qtyPoPcs: qty,
       processId: processId,
+      proNumber: manualProNumber ? manualProNumber.trim() : undefined,
       steps: steps.map((s) => ({
         up: Number(s.up),
         machineId: s.machineId ?? null,
-        startDate: s.startDate ? new Date(`${s.startDate}T00:00:00`) : undefined,
+        startDate: s.startDate ? new Date(s.startDate) : undefined,
         materials: s.materials
           .filter(m => m.materialId) 
           .map((m) => ({ materialId: m.materialId!, qtyReq: Number(m.qtyReq) })),
@@ -190,11 +375,7 @@ export default function ProPlanner() {
 
     try {
       const created = await createPro.mutateAsync(payload);
-      setOk(`PRO dibuat: ${created.proNumber}`);
-      setProductName("");
-      setProcessId(null);
-      setQtyPoPcs("");
-      setSteps([]);
+      // onSuccess handles reset
     } catch (e: any) {
       setErr(e?.message ?? "Gagal membuat PRO");
     }
@@ -213,14 +394,32 @@ export default function ProPlanner() {
         </CardHeader>
 
         <CardContent className="space-y-4">
+          <input
+            type="file"
+            accept=".csv"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleImport}
+          />
+
           {/* Header PRO */}
           <div className="grid gap-3 lg:grid-cols-4">
-            <div className="space-y-2 lg:col-span-2">
+            <div className="space-y-2 lg:col-span-1">
               <div className="text-sm font-medium">Produk</div>
               <Input
                 value={productName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProductName(e.target.value)}
                 placeholder="Nama produk"
+                autoComplete="off"
+              />
+            </div>
+
+            <div className="space-y-2 lg:col-span-1">
+              <div className="text-sm font-medium">Part Number</div>
+              <Input
+                value={partNumber}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPartNumber(e.target.value)}
+                placeholder="Part Number"
                 autoComplete="off"
               />
             </div>
@@ -253,12 +452,31 @@ export default function ProPlanner() {
                 placeholder="contoh: 100000"
               />
             </div>
+
+            <div className="space-y-2 lg:col-span-1">
+              <div className="text-sm font-medium">No. PRO (Manual/Import)</div>
+              <Input
+                value={manualProNumber}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setManualProNumber(e.target.value)}
+                placeholder="(Auto)"
+                className="bg-muted/30"
+              />
+            </div>
           </div>
 
           <Separator />
 
           {/* Actions */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={loadingMaster}
+            >
+              Import CSV
+            </Button>
+          
             <Button
               type="button"
               variant="outline"
@@ -306,7 +524,7 @@ export default function ProPlanner() {
                         colSpan={7}
                         className="py-8 text-center text-sm opacity-70"
                       >
-                        Belum ada step. Klik "+ Tambah Step".
+                        Belum ada step. Klik "Import CSV" atau "+ Tambah Step".
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -319,14 +537,19 @@ export default function ProPlanner() {
                           <TableCell className="text-center">
                             {s.up || "-"}
                           </TableCell>
-                          <TableCell>{m?.name ?? "-"}</TableCell>
+                          <TableCell>
+                             <div className="flex flex-col">
+                                <span>{m?.name ?? <span className="text-destructive font-medium italic">Mesin tidak ditemukan</span>}</span>
+                                {s.startDate && <span className="text-[10px] text-muted-foreground">{s.startDate}</span>}
+                             </div>
+                          </TableCell>
                           <TableCell>
                              <div className="flex flex-col gap-1">
                                {s.materials.map((m: StepDraftMaterial) => {
-                                  const matName = getMaterial(m.materialId)?.name ?? "-";
+                                  const matInfo = getMaterial(m.materialId);
                                   return (
                                     <div key={m.key} className="text-xs border-b last:border-0 pb-0.5">
-                                      {matName}
+                                      {matInfo?.name ?? <span className="text-destructive font-medium italic">Unknown Material</span>}
                                     </div>
                                   )
                                 })}
@@ -425,8 +648,6 @@ export default function ProPlanner() {
                     const poNum = Number(qtyPoPcs);
                     
                   setDraft((d: StepDraft) => {
-                       const poNum = Number(qtyPoPcs);
-                       
                        // Recalc materials if material is sheet
                        const newMaterials = d.materials.map((m: StepDraftMaterial) => {
                           const matInfo = materials.data?.find((x: any) => x.id === m.materialId);
@@ -452,8 +673,6 @@ export default function ProPlanner() {
                   value={draft.machineId ?? ""}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                      const val = e.target.value ? Number(e.target.value) : null;
-                     const selectedMachine = machines.data?.find((m: any) => m.id === val);
-                     const isSheet = selectedMachine?.uom === 'sheet';
                      
                      setDraft((d: StepDraft) => {
                         return {
