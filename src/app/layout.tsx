@@ -1,5 +1,6 @@
 import "~/styles/globals.css";
 import { Providers } from "./providers";
+import { auth } from "~/server/auth";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
@@ -17,14 +18,16 @@ const geist = Geist({
   variable: "--font-geist-sans",
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const session = await auth();
+
   return (
     <html lang="en" suppressHydrationWarning className={`${geist.variable}`}>
       <body suppressHydrationWarning>
         <TRPCReactProvider>
-          <Providers>{children}</Providers>
+          <Providers session={session}>{children}</Providers>
         </TRPCReactProvider>
       </body>
     </html>
