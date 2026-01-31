@@ -278,17 +278,6 @@ export default function ProPlanner() {
                mQty = parseVal(mQtyRaw.trim());
            }
 
-           // Fallback: Extract from Name (e.g. "Material 2.5 KG")
-           if (!mQty) {
-              // Regex for extracting number before unit
-              // Avoid dimensions (cm, mm) or density (gsm)
-              const rx = /(?:^|[\s\(])([\d]+(?:[.,]\d+)?)\s*(?:kg|g|l|ml|pcs|roll|sheet|rim|box|pack|set)(?:\)|$)/i;
-              const match = mNameRaw.match(rx);
-              if (match && match[1]) {
-                  mQty = parseVal(match[1]);
-              }
-           }
-
            // Match name (Normalized)
            const nSearch = normalize(mNameRaw);
            let foundMat = materialList.find(m => normalize(m.name) === nSearch);
