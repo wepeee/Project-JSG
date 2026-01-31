@@ -540,6 +540,7 @@ export const prosRouter = createTRPCRouter({
           qtyPoPcs: true,
           startDate: true,
           status: true,
+          type: true,
           process: { select: { name: true, code: true } }, // Added to header
           steps: {
             orderBy: { orderNo: "asc" },

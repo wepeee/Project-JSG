@@ -282,6 +282,7 @@ export default function PPICSchedule({ onSelectPro }: Props) {
 
   // View mode
   const [viewMode, setViewMode] = React.useState<"shift" | "machine">("shift");
+  const [proType, setProType] = React.useState<"PAPER" | "RIGID">("PAPER");
 
   // Search state
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -586,9 +587,14 @@ export default function PPICSchedule({ onSelectPro }: Props) {
 
     const data = monthSchedule.data ?? [];
     const q = searchQuery.toLowerCase().trim();
-    const filtered = q 
-      ? data.filter(pro => pro.proNumber.toLowerCase().includes(q) || pro.productName.toLowerCase().includes(q))
-      : data;
+    const filtered = data
+      .filter((pro) => pro.type === proType)
+      .filter((pro) =>
+        q
+          ? pro.proNumber.toLowerCase().includes(q) ||
+            pro.productName.toLowerCase().includes(q)
+          : true,
+      );
 
     for (const pro of filtered) {
       for (const step of pro.steps ?? []) {
@@ -624,19 +630,29 @@ export default function PPICSchedule({ onSelectPro }: Props) {
   const shiftSlotMap = React.useMemo(() => {
     const data = weekSchedule.data ?? [];
     const q = searchQuery.toLowerCase().trim();
-    const filtered = q 
-      ? data.filter(pro => pro.proNumber.toLowerCase().includes(q) || pro.productName.toLowerCase().includes(q))
-      : data;
+    const filtered = data
+      .filter((pro) => pro.type === proType)
+      .filter((pro) =>
+        q
+          ? pro.proNumber.toLowerCase().includes(q) ||
+            pro.productName.toLowerCase().includes(q)
+          : true,
+      );
     return buildShiftSlots(filtered, { start: weekStart, end: weekEnd });
-  }, [weekSchedule.data, weekStart, weekEnd, searchQuery]);
+  }, [weekSchedule.data, weekStart, weekEnd, searchQuery, proType]);
 
   // Machine grid data (week)
   const machineSlotData = React.useMemo(() => {
     const data = weekSchedule.data ?? [];
     const q = searchQuery.toLowerCase().trim();
-    const filtered = q 
-      ? data.filter(pro => pro.proNumber.toLowerCase().includes(q) || pro.productName.toLowerCase().includes(q))
-      : data;
+    const filtered = data
+      .filter((pro) => pro.type === proType)
+      .filter((pro) =>
+        q
+          ? pro.proNumber.toLowerCase().includes(q) ||
+            pro.productName.toLowerCase().includes(q)
+          : true,
+      );
       
     const items = filtered;
     const range = { start: weekStart, end: weekEnd };
@@ -688,16 +704,31 @@ export default function PPICSchedule({ onSelectPro }: Props) {
       }
     }
     return { itemsMap, usageMap };
-  }, [weekSchedule.data, weekStart, weekEnd, searchQuery]);
+  }, [weekSchedule.data, weekStart, weekEnd, searchQuery, proType]);
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold">PPIC Schedule</h2>
-          <p className="text-xs opacity-60">
+          <div className="flex items-center gap-2 mt-1">
+            <Tabs
+              value={proType}
+              onValueChange={(v) => setProType(v as "PAPER" | "RIGID")}
+            >
+              <TabsList className="h-7">
+                <TabsTrigger value="PAPER" className="text-xs h-5 px-2">
+                  Paper
+                </TabsTrigger>
+                <TabsTrigger value="RIGID" className="text-xs h-5 px-2">
+                  Rigid
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          <p className="text-xs opacity-60 mt-1">
              {tab === "shift" 
-               ? (viewMode === "shift" ? "View per Shift (06-11, 11-16, 16-21)" : "View per Mesin (Schedule per PRO Step)") 
+               ? (viewMode === "shift" ? "View per Shift" : "View per Mesin") 
                : "Kalender Bulanan"
              }
           </p>
