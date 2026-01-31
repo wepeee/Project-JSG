@@ -170,15 +170,16 @@ export default function ProPlanner() {
         throw new Error("Format CSV tidak valid (terlalu pendek)");
       }
 
-      // Identify columns based on header (assumed row 0)
-      // Format: R, MACHINE, Production Order, Name, Total Up, Qty Order, Start, End, Material, UoM, Qty
-      // Indices: 0, 1,       2,                3,    4,        5,         6,     7,   8,        9,   10
-      
       const machineList = machines.data ?? [];
       const materialList = materials.data ?? [];
+      const processList = processes.data ?? [];
 
       const newSteps: StepDraft[] = [];
       let foundHeaderInfo = false;
+      let detectedUp = "";
+
+      // Helper for loose matching
+      const normalize = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase();
 
       for (let i = 1; i < rows.length; i++) {
         const cols = rows[i];
@@ -205,16 +206,33 @@ export default function ProPlanner() {
            const nameVal = cols[3]?.trim();
            if (nameVal) setProductName(nameVal);
 
+           // Global UP
+           if (totalUpStr) {
+             detectedUp = totalUpStr;
+           }
+
            if (proNumCsv) {
               setManualProNumber(proNumCsv);
+              
+              // Auto-detect process from first 2 chars
+              const prefix = proNumCsv.substring(0, 2).toUpperCase();
+              const foundProc = processList.find(p => p.code === prefix);
+              if (foundProc) {
+                 setProcessId(foundProc.id);
+              }
            }
         }
 
-        const partNum = cols[0]?.trim();
+        const partNum = cols[0]?.trim(); // Use col 0 (header R) as Part Number? Or is it R for row no? Usually R is row no. But earlier I saw comments.
+        // Wait, user didn't clarify Part Number col. I will leave it blank? Or use col 0 if it looks like part num?
+        // Let's stick to simple logic for now, Part Num manual or if previously was mapped.
+        // Actually the previous code mapped `partNum = cols[0]` which is usually Row Number. 
+        // I should ignore it unless confirmed. Leaving it as is for now not to regress, 
+        // but user only asked about UoM and matching.
 
         // --- Create Step ---
-        // 1. Machine Match
-        const mach = machineList.find(m => m.name.trim().toLowerCase() === machineName.trim().toLowerCase());
+        // 1. Machine Match (Normalized)
+        const mach = machineList.find(m => normalize(m.name) === normalize(machineName));
         
         // 2. Start Date (M/D/YYYY or D/M/YYYY -> assuming M/D/YYYY)
         const dateStr = cols[6]?.trim();
@@ -228,28 +246,67 @@ export default function ProPlanner() {
 
         // 3. Materials
         // Split by '+'
+        // Format: ..., 8:Material, 9:Qty (Shifted due to removed UoM)
         const matNames = (cols[8]?.trim() ?? "").split('+');
-        const matQties = (cols[10]?.trim() ?? "").split('+');
-        // uom ignored for ID match, but maybe useful for validation? (cols[9])
+        // Qty Logic: Try Col 9, Fallback Col 10
+        let qtyColVal = cols[9]?.trim();
+        if (!qtyColVal) {
+             const c10 = cols[10]?.trim();
+             if (c10 && /[0-9]/.test(c10)) qtyColVal = c10;
+        }
+        const matQties = (qtyColVal ?? "").split('+'); 
 
         const stepMats: StepDraftMaterial[] = [];
         
         for (let k = 0; k < matNames.length; k++) {
-           const mName = matNames[k]?.trim();
-           if (!mName) continue;
+           const mNameRaw = matNames[k]?.trim();
+           if (!mNameRaw) continue;
            
            const mQtyRaw = matQties[k]?.trim(); 
-           // Clean format number?
-           const mQty = mQtyRaw ? mQtyRaw.replace(",", ".") : ""; // JS number uses dot
+           
+           // Robust Qty Parse
+           let mQty = "";
+           const parseVal = (s: string) => {
+               if (s.includes(",")) return s.replace(/\./g, "").replace(",", ".");
+               const parts = s.split(".");
+               if (parts.length > 2) return s.replace(/\./g, "");
+               if (parts.length === 2 && parts[1]?.length === 3) return s.replace(/\./g, "");
+               return s;
+           };
 
-           // Match name
-           const cleanSearch = mName.toLowerCase();
-           let foundMat = materialList.find(m => m.name.trim().toLowerCase() === cleanSearch);
+           if (mQtyRaw) {
+               mQty = parseVal(mQtyRaw.trim());
+           }
+
+           // Fallback: Extract from Name (e.g. "Material 2.5 KG")
+           if (!mQty) {
+              // Regex for extracting number before unit
+              // Avoid dimensions (cm, mm) or density (gsm)
+              const rx = /(?:^|[\s\(])([\d]+(?:[.,]\d+)?)\s*(?:kg|g|l|ml|pcs|roll|sheet|rim|box|pack|set)(?:\)|$)/i;
+              const match = mNameRaw.match(rx);
+              if (match && match[1]) {
+                  mQty = parseVal(match[1]);
+              }
+           }
+
+           // Match name (Normalized)
+           const nSearch = normalize(mNameRaw);
+           let foundMat = materialList.find(m => normalize(m.name) === nSearch);
 
            // Fallback: Partial Match (if unique)
-           // e.g. CSV "Ivory 300" matches DB "Kertas Ivory 300"
            if (!foundMat) {
-              const candidates = materialList.filter(m => m.name.trim().toLowerCase().includes(cleanSearch));
+              // Try finding if DB name contains CSV name OR CSV name contains DB name (sometimes CSV is more descriptive or less)
+              // User case: "IVORY VA RDD  300 GSM 79 X 109 CM" in CSV.
+              // DB might correspond to "IVORY VA RDD 300 GSM"
+              // normalize() handles spaces. 
+              // nSearch might be "ivory va rdd 300 gsm 79 x 109 cm"
+              // db might be "ivory va rdd 300 gsm"
+              
+              const candidates = materialList.filter(m => {
+                 const nDb = normalize(m.name);
+                 return nDb.includes(nSearch) || nSearch.includes(nDb);
+              });
+
               if (candidates.length === 1) {
                   foundMat = candidates[0];
               }
@@ -258,12 +315,12 @@ export default function ProPlanner() {
            stepMats.push({
               key: uid(),
               materialId: foundMat ? foundMat.id : null,
-              qtyReq: foundMat ? mQty : "", // Only fill qty if material matched? Or fill anyway?
+              qtyReq: mQty, // Allow qty even if material not found
            });
         }
         
-        // Add empty if none
-        if (stepMats.length === 0) stepMats.push({ key: uid(), materialId: null, qtyReq: "" });
+        // REMOVED: if (stepMats.length === 0) stepMats.push({ key: uid(), materialId: null, qtyReq: "" });
+        // User request: empty cell = no material. So we allow empty array.
 
         newSteps.push({
           key: uid(),
@@ -413,119 +470,137 @@ export default function ProPlanner() {
           />
 
           {/* Header PRO */}
-          <div className="grid gap-3 lg:grid-cols-4">
-            <div className="space-y-2 lg:col-span-1">
-              <div className="text-sm font-medium">Produk</div>
-              <Input
-                value={productName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProductName(e.target.value)}
-                placeholder="Nama produk"
-                autoComplete="off"
-              />
-            </div>
+          <div className="grid gap-6">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+              <div className="space-y-2 lg:col-span-5">
+                <div className="text-sm font-medium">Produk</div>
+                <Input
+                  value={productName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setProductName(e.target.value)
+                  }
+                  placeholder="Nama produk"
+                  autoComplete="off"
+                />
+              </div>
 
+              {/* Type Selector (Paper/Rigid) */}
+              <div className="space-y-2 lg:col-span-4">
+                <div className="text-sm font-medium">Tipe Box</div>
+                <div className="flex items-center gap-1 rounded-md border p-1">
+                  <Button
+                    type="button"
+                    variant={proType === "PAPER" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-8 flex-1 text-xs"
+                    onClick={() => setProType("PAPER")}
+                  >
+                    Paper Box
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={proType === "RIGID" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-8 flex-1 text-xs"
+                    onClick={() => setProType("RIGID")}
+                  >
+                    Rigid Box
+                  </Button>
+                </div>
+              </div>
 
-
-            {/* Type Selector (Paper/Rigid) */}
-            <div className="space-y-2 lg:col-span-1">
-              <div className="text-sm font-medium">Tipe Box</div>
-              <div className="flex items-center gap-1 rounded-md border p-1">
-                 <Button
-                   type="button"
-                   variant={proType === "PAPER" ? "default" : "ghost"}
-                   size="sm"
-                   className="flex-1 h-8 text-xs"
-                   onClick={() => setProType("PAPER")}
-                 >
-                   Paper Box
-                 </Button>
-                 <Button
-                   type="button"
-                   variant={proType === "RIGID" ? "default" : "ghost"}
-                   size="sm"
-                   className="flex-1 h-8 text-xs"
-                   onClick={() => setProType("RIGID")}
-                 >
-                   Rigid Box
-                 </Button>
+              <div className="space-y-2 lg:col-span-3">
+                <div className="text-sm font-medium">Jumlah PO (pcs)</div>
+                <Input
+                  type="number"
+                  value={qtyPoPcs}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setQtyPoPcs(e.target.value)
+                  }
+                  placeholder="contoh: 100000"
+                />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="text-sm font-medium">Proses (Prefix PRO)</div>
-              <select
-                value={processId ?? ""}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  setProcessId(e.target.value ? Number(e.target.value) : null)
-                }
-                className={control}
-                disabled={loadingMaster}
-              >
-                <option value="">Pilih proses</option>
-                {(processes.data ?? []).map((p: any) => (
-                  <option key={p.id} value={p.id}>
-                    {p.code} - {p.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <div className="grid grid-cols-1 gap-4 border-b pb-6 lg:grid-cols-12 lg:items-end">
+              <div className="space-y-2 lg:col-span-4">
+                <div className="flex justify-between text-sm font-medium">
+                  <span>Proses (Prefix PRO)</span>
+                  {headerProcess && (
+                    <span className="text-xs font-normal text-muted-foreground">
+                      Prefix: {headerProcess.code}
+                    </span>
+                  )}
+                </div>
+                <select
+                  value={processId ?? ""}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setProcessId(e.target.value ? Number(e.target.value) : null)
+                  }
+                  className={control}
+                  disabled={loadingMaster}
+                >
+                  <option value="">Pilih proses</option>
+                  {(processes.data ?? []).map((p: any) => (
+                    <option key={p.id} value={p.id}>
+                      {p.code} - {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="space-y-2">
-              <div className="text-sm font-medium">Jumlah PO (pcs)</div>
-              <Input
-                type="number"
-                value={qtyPoPcs}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQtyPoPcs(e.target.value)}
-                placeholder="contoh: 100000"
-              />
-            </div>
+              <div className="space-y-2 lg:col-span-3">
+                <div className="text-sm font-medium">No. PRO (Manual/Import)</div>
+                <Input
+                  value={manualProNumber}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setManualProNumber(e.target.value)
+                  }
+                  placeholder="(Auto)"
+                  className="bg-muted/30"
+                />
+              </div>
 
-            <div className="space-y-2 lg:col-span-1">
-              <div className="text-sm font-medium">No. PRO (Manual/Import)</div>
-              <Input
-                value={manualProNumber}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setManualProNumber(e.target.value)}
-                placeholder="(Auto)"
-                className="bg-muted/30"
-              />
-            </div>
-          </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:col-span-5 lg:justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={loadingMaster}
+                >
+                  Import CSV
+                </Button>
 
-          <Separator />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={openAdd}
+                  disabled={loadingMaster}
+                >
+                  + Tambah Step
+                </Button>
 
-          {/* Actions */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={loadingMaster}
-            >
-              Import CSV
-            </Button>
-          
-            <Button
-              type="button"
-              variant="outline"
-              onClick={openAdd}
-              disabled={loadingMaster}
-            >
-              + Tambah Step
-            </Button>
-
-            <Button
-              type="button"
-              onClick={submitPro}
-              disabled={createPro.isPending || loadingMaster}
-            >
-              {createPro.isPending ? "Membuat..." : "Buat PRO"}
-            </Button>
-
-            <div className="text-xs opacity-70 sm:ml-auto">
-              No. PRO prefix:{" "}
-              {headerProcess ? `${headerProcess.code}(bulan)(tahun)` : "-"}
+                <Button
+                  type="button"
+                  onClick={submitPro}
+                  disabled={createPro.isPending || loadingMaster}
+                >
+                  {createPro.isPending ? "Membuat..." : "Buat PRO"}
+                </Button>
+              </div>
             </div>
           </div>
+
+          {err && (
+            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive font-medium">
+              {err}
+            </div>
+          )}
+          {ok && (
+            <div className="rounded-md bg-green-500/15 p-3 text-sm text-green-600 font-medium">
+              {ok}
+            </div>
+          )}
 
           {/* Steps table */}
           <div className="overflow-x-auto rounded-md border">
@@ -535,9 +610,9 @@ export default function ProPlanner() {
                   <TableRow>
                     <TableHead className="w-16">No.</TableHead>
 
-                    <TableHead className="w-24">UP</TableHead>
                     <TableHead className="w-32">Part No.</TableHead>
                     <TableHead>Machine</TableHead>
+                    <TableHead className="w-24">UP</TableHead>
                     <TableHead>Material</TableHead>
                     <TableHead className="w-24">Qty</TableHead>
                     <TableHead className="w-24">UoM</TableHead>
@@ -549,10 +624,15 @@ export default function ProPlanner() {
                   {steps.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={7}
-                        className="py-8 text-center text-sm opacity-70"
+                        colSpan={8}
+                        className="py-12 text-center text-muted-foreground"
                       >
-                        Belum ada step. Klik "Import CSV" atau "+ Tambah Step".
+                        <div className="flex flex-col items-center gap-1">
+                          <p className="font-semibold">Belum ada step</p>
+                          <p className="text-sm">
+                            Klik "Import CSV" atau "+ Tambah Step" untuk memulai.
+                          </p>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -562,9 +642,6 @@ export default function ProPlanner() {
                         <TableRow key={s.key}>
                           <TableCell>{idx + 1}</TableCell>
 
-                          <TableCell className="text-center">
-                            {s.up || "-"}
-                          </TableCell>
                           <TableCell>
                             {s.partNumber || "-"}
                           </TableCell>
@@ -573,6 +650,9 @@ export default function ProPlanner() {
                                 <span>{m?.name ?? <span className="text-destructive font-medium italic">Mesin tidak ditemukan</span>}</span>
                                 {s.startDate && <span className="text-[10px] text-muted-foreground">{s.startDate}</span>}
                              </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {s.up || "-"}
                           </TableCell>
                           <TableCell>
                              <div className="flex flex-col gap-1">
@@ -648,8 +728,7 @@ export default function ProPlanner() {
             </div>
           </div>
 
-          {err ? <p className="text-destructive text-sm">{err}</p> : null}
-          {ok ? <p className="text-sm">{ok}</p> : null}
+
         </CardContent>
       </Card>
 
