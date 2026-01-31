@@ -30,6 +30,7 @@ type NavKey =
 export default function PPICShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("prolist");
   const [open, setOpen] = React.useState(false);
+  const [proTypeFilter, setProTypeFilter] = React.useState<"PAPER" | "RIGID" | "ALL">("PAPER"); // Added
   
   const [jumpToProId, setJumpToProId] = React.useState<number | null>(null);
 
@@ -81,10 +82,15 @@ export default function PPICShell({ user }: Props) {
           </div>
 
           <nav className="flex flex-1 flex-col gap-1 px-2">
-            <SidebarItem
+            <SidebarItemWithSubmenu
               label="Daftar PRO"
               active={active === "prolist"}
               onClick={() => setActive("prolist")}
+              submenu={[
+                { label: "Paper Box", onClick: () => { setActive("prolist"); setProTypeFilter("PAPER"); } },
+                { label: "Rigid Box", onClick: () => { setActive("prolist"); setProTypeFilter("RIGID"); } },
+                { label: "Semua", onClick: () => { setActive("prolist"); setProTypeFilter("ALL"); } },
+              ]}
             />
             <SidebarItem
               label="Perencanaan PRO"
@@ -148,13 +154,18 @@ export default function PPICShell({ user }: Props) {
               </div>
 
               <nav className="flex flex-col gap-1 px-2 py-3">
-                <SidebarItem
+                <SidebarItemWithSubmenu
                   label="Daftar PRO"
                   active={active === "prolist"}
                   onClick={() => {
                     setActive("prolist");
                     setOpen(false);
                   }}
+                  submenu={[
+                    { label: "Paper Box", onClick: () => { setActive("prolist"); setProTypeFilter("PAPER"); setOpen(false); } },
+                    { label: "Rigid Box", onClick: () => { setActive("prolist"); setProTypeFilter("RIGID"); setOpen(false); } },
+                    { label: "Semua", onClick: () => { setActive("prolist"); setProTypeFilter("ALL"); setOpen(false); } },
+                  ]}
                 />
                 <SidebarItem
                   label="Perencanaan PRO"
@@ -222,7 +233,8 @@ export default function PPICShell({ user }: Props) {
           {active === "prolist" ? (
             <ProList 
               initialSelectedId={jumpToProId} 
-              onClearJump={() => setJumpToProId(null)} 
+              onClearJump={() => setJumpToProId(null)}
+              initialTypeFilter={proTypeFilter} // Added
             />
           ) : active === "planning" ? (
             <ProPlanner />
@@ -264,5 +276,59 @@ function SidebarItem({
     >
       {label}
     </button>
+  );
+}
+
+function SidebarItemWithSubmenu({
+  label,
+  active,
+  onClick,
+  submenu,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  submenu: Array<{ label: string; onClick: () => void }>;
+}) {
+  const [showSubmenu, setShowSubmenu] = React.useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => {
+          onClick();
+          setShowSubmenu(!showSubmenu);
+        }}
+        className={[
+          "w-full rounded-md px-3 py-2 text-left text-sm flex items-center justify-between",
+          active ? "bg-muted font-medium" : "hover:bg-muted/60",
+        ].join(" ")}
+      >
+        <span>{label}</span>
+        <svg
+          className={`h-4 w-4 transition-transform ${showSubmenu ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {showSubmenu && (
+        <div className="ml-4 mt-1 space-y-1">
+          {submenu.map((item, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={item.onClick}
+              className="w-full rounded-md px-3 py-1.5 text-left text-xs hover:bg-muted/60"
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

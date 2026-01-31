@@ -6439,7 +6439,6 @@ export namespace Prisma {
     id: number | null
     proNumber: string | null
     productName: string | null
-    partNumber: string | null
     qtyPoPcs: number | null
     startDate: Date | null
     status: $Enums.ProStatus | null
@@ -6453,7 +6452,6 @@ export namespace Prisma {
     id: number | null
     proNumber: string | null
     productName: string | null
-    partNumber: string | null
     qtyPoPcs: number | null
     startDate: Date | null
     status: $Enums.ProStatus | null
@@ -6467,7 +6465,6 @@ export namespace Prisma {
     id: number
     proNumber: number
     productName: number
-    partNumber: number
     qtyPoPcs: number
     startDate: number
     status: number
@@ -6495,7 +6492,6 @@ export namespace Prisma {
     id?: true
     proNumber?: true
     productName?: true
-    partNumber?: true
     qtyPoPcs?: true
     startDate?: true
     status?: true
@@ -6509,7 +6505,6 @@ export namespace Prisma {
     id?: true
     proNumber?: true
     productName?: true
-    partNumber?: true
     qtyPoPcs?: true
     startDate?: true
     status?: true
@@ -6523,7 +6518,6 @@ export namespace Prisma {
     id?: true
     proNumber?: true
     productName?: true
-    partNumber?: true
     qtyPoPcs?: true
     startDate?: true
     status?: true
@@ -6624,7 +6618,6 @@ export namespace Prisma {
     id: number
     proNumber: string
     productName: string
-    partNumber: string | null
     qtyPoPcs: number
     startDate: Date | null
     status: $Enums.ProStatus
@@ -6657,7 +6650,6 @@ export namespace Prisma {
     id?: boolean
     proNumber?: boolean
     productName?: boolean
-    partNumber?: boolean
     qtyPoPcs?: boolean
     startDate?: boolean
     status?: boolean
@@ -6676,7 +6668,6 @@ export namespace Prisma {
     id?: boolean
     proNumber?: boolean
     productName?: boolean
-    partNumber?: boolean
     qtyPoPcs?: boolean
     startDate?: boolean
     status?: boolean
@@ -6686,7 +6677,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "partNumber" | "qtyPoPcs" | "startDate" | "status" | "type" | "processId" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
+  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "qtyPoPcs" | "startDate" | "status" | "type" | "processId" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
   export type ProInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     process?: boolean | Pro$processArgs<ExtArgs>
     steps?: boolean | Pro$stepsArgs<ExtArgs>
@@ -6703,7 +6694,6 @@ export namespace Prisma {
       id: number
       proNumber: string
       productName: string
-      partNumber: string | null
       qtyPoPcs: number
       startDate: Date | null
       status: $Enums.ProStatus
@@ -7085,7 +7075,6 @@ export namespace Prisma {
     readonly id: FieldRef<"Pro", 'Int'>
     readonly proNumber: FieldRef<"Pro", 'String'>
     readonly productName: FieldRef<"Pro", 'String'>
-    readonly partNumber: FieldRef<"Pro", 'String'>
     readonly qtyPoPcs: FieldRef<"Pro", 'Int'>
     readonly startDate: FieldRef<"Pro", 'DateTime'>
     readonly status: FieldRef<"Pro", 'ProStatus'>
@@ -9606,7 +9595,6 @@ export namespace Prisma {
     id: 'id',
     proNumber: 'proNumber',
     productName: 'productName',
-    partNumber: 'partNumber',
     qtyPoPcs: 'qtyPoPcs',
     startDate: 'startDate',
     status: 'status',
@@ -9701,8 +9689,7 @@ export namespace Prisma {
 
   export const ProOrderByRelevanceFieldEnum: {
     proNumber: 'proNumber',
-    productName: 'productName',
-    partNumber: 'partNumber'
+    productName: 'productName'
   };
 
   export type ProOrderByRelevanceFieldEnum = (typeof ProOrderByRelevanceFieldEnum)[keyof typeof ProOrderByRelevanceFieldEnum]
@@ -10070,7 +10057,6 @@ export namespace Prisma {
     id?: IntFilter<"Pro"> | number
     proNumber?: StringFilter<"Pro"> | string
     productName?: StringFilter<"Pro"> | string
-    partNumber?: StringNullableFilter<"Pro"> | string | null
     qtyPoPcs?: IntFilter<"Pro"> | number
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
@@ -10086,7 +10072,6 @@ export namespace Prisma {
     id?: SortOrder
     proNumber?: SortOrder
     productName?: SortOrder
-    partNumber?: SortOrderInput | SortOrder
     qtyPoPcs?: SortOrder
     startDate?: SortOrderInput | SortOrder
     status?: SortOrder
@@ -10106,7 +10091,6 @@ export namespace Prisma {
     OR?: ProWhereInput[]
     NOT?: ProWhereInput | ProWhereInput[]
     productName?: StringFilter<"Pro"> | string
-    partNumber?: StringNullableFilter<"Pro"> | string | null
     qtyPoPcs?: IntFilter<"Pro"> | number
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
@@ -10122,7 +10106,6 @@ export namespace Prisma {
     id?: SortOrder
     proNumber?: SortOrder
     productName?: SortOrder
-    partNumber?: SortOrderInput | SortOrder
     qtyPoPcs?: SortOrder
     startDate?: SortOrderInput | SortOrder
     status?: SortOrder
@@ -10144,7 +10127,6 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"Pro"> | number
     proNumber?: StringWithAggregatesFilter<"Pro"> | string
     productName?: StringWithAggregatesFilter<"Pro"> | string
-    partNumber?: StringNullableWithAggregatesFilter<"Pro"> | string | null
     qtyPoPcs?: IntWithAggregatesFilter<"Pro"> | number
     startDate?: DateTimeNullableWithAggregatesFilter<"Pro"> | Date | string | null
     status?: EnumProStatusWithAggregatesFilter<"Pro"> | $Enums.ProStatus
@@ -10569,7 +10551,6 @@ export namespace Prisma {
   export type ProCreateInput = {
     proNumber: string
     productName: string
-    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -10584,7 +10565,6 @@ export namespace Prisma {
     id?: number
     proNumber: string
     productName: string
-    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -10598,7 +10578,6 @@ export namespace Prisma {
   export type ProUpdateInput = {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -10613,7 +10592,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -10628,7 +10606,6 @@ export namespace Prisma {
     id?: number
     proNumber: string
     productName: string
-    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -10641,7 +10618,6 @@ export namespace Prisma {
   export type ProUpdateManyMutationInput = {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -10654,7 +10630,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -11205,7 +11180,6 @@ export namespace Prisma {
     id?: SortOrder
     proNumber?: SortOrder
     productName?: SortOrder
-    partNumber?: SortOrder
     qtyPoPcs?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
@@ -11225,7 +11199,6 @@ export namespace Prisma {
     id?: SortOrder
     proNumber?: SortOrder
     productName?: SortOrder
-    partNumber?: SortOrder
     qtyPoPcs?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
@@ -11239,7 +11212,6 @@ export namespace Prisma {
     id?: SortOrder
     proNumber?: SortOrder
     productName?: SortOrder
-    partNumber?: SortOrder
     qtyPoPcs?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
@@ -12192,7 +12164,6 @@ export namespace Prisma {
   export type ProCreateWithoutProcessInput = {
     proNumber: string
     productName: string
-    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -12206,7 +12177,6 @@ export namespace Prisma {
     id?: number
     proNumber: string
     productName: string
-    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -12249,7 +12219,6 @@ export namespace Prisma {
     id?: IntFilter<"Pro"> | number
     proNumber?: StringFilter<"Pro"> | string
     productName?: StringFilter<"Pro"> | string
-    partNumber?: StringNullableFilter<"Pro"> | string | null
     qtyPoPcs?: IntFilter<"Pro"> | number
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
@@ -12347,7 +12316,6 @@ export namespace Prisma {
   export type ProCreateWithoutStepsInput = {
     proNumber: string
     productName: string
-    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -12361,7 +12329,6 @@ export namespace Prisma {
     id?: number
     proNumber: string
     productName: string
-    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -12437,7 +12404,6 @@ export namespace Prisma {
   export type ProUpdateWithoutStepsInput = {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -12451,7 +12417,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -12681,7 +12646,6 @@ export namespace Prisma {
     id?: number
     proNumber: string
     productName: string
-    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -12693,7 +12657,6 @@ export namespace Prisma {
   export type ProUpdateWithoutProcessInput = {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -12707,7 +12670,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -12721,7 +12683,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus

@@ -24,6 +24,14 @@ import {
   TableRow,
 } from "~/components/ui/table";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
+
 type Status = "OPEN" | "IN_PROGRESS" | "DONE" | "CANCELLED";
 
 function fmtDate(d?: Date | string | null) {
@@ -71,6 +79,7 @@ function getShiftNo(d?: Date | string | null): string {
 type Props = {
   initialSelectedId?: number | null;
   onClearJump?: () => void;
+  initialTypeFilter?: "PAPER" | "RIGID" | "ALL"; // Added
 };
 
 
@@ -227,7 +236,7 @@ type StepDraft = {
   partNumber?: string;
 };
 
-export default function ProList({ initialSelectedId, onClearJump }: Props) {
+export default function ProList({ initialSelectedId, onClearJump, initialTypeFilter }: Props) {
   const utils = api.useUtils();
   const processes = api.processes.list.useQuery();
   const machines = api.machines.list.useQuery();
@@ -248,7 +257,14 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
   // ===== LIST STATE =====
   const [q, setQ] = React.useState("");
   const [status, setStatus] = React.useState<Status | "ALL">("ALL");
-  const [typeFilter, setTypeFilter] = React.useState<"ALL" | "PAPER" | "RIGID">("ALL"); // Added
+  const [typeFilter, setTypeFilter] = React.useState<"ALL" | "PAPER" | "RIGID" | "OTHER">(initialTypeFilter || "PAPER"); // Use prop or default to PAPER
+
+  // Sync with external filter changes
+  React.useEffect(() => {
+    if (initialTypeFilter) {
+      setTypeFilter(initialTypeFilter);
+    }
+  }, [initialTypeFilter]);
 
   const list = api.pros.list.useQuery({
     q: q.trim() ? q.trim() : undefined,
@@ -1427,7 +1443,28 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>Daftar PRO</CardTitle>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+               <Button variant="ghost" className="text-xl font-semibold px-2 -ml-2 h-auto hover:bg-muted/50">
+                  Daftar PRO {typeFilter === "PAPER" ? "(Paper Box)" : typeFilter === "RIGID" ? "(Rigid Box)" : typeFilter === "OTHER" ? "(Other)" : "(Semua)"}
+                  <ChevronDown className="ml-2 h-5 w-5 opacity-50" />
+               </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+               <DropdownMenuItem onClick={() => setTypeFilter("PAPER")}>
+                  Paper Box
+               </DropdownMenuItem>
+               <DropdownMenuItem onClick={() => setTypeFilter("RIGID")}>
+                  Rigid Box
+               </DropdownMenuItem>
+               <DropdownMenuItem onClick={() => setTypeFilter("OTHER")}>
+                  Other
+               </DropdownMenuItem>
+               <DropdownMenuItem onClick={() => setTypeFilter("ALL")}>
+                  Semua
+               </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <Input
@@ -1436,15 +1473,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
               placeholder="Cari No. PRO / Produk..."
               className="sm:w-72"
             />
-            <select
-               value={typeFilter}
-               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTypeFilter(e.target.value as any)}
-               className="border-input bg-background h-10 rounded-md border px-3 text-sm sm:w-36"
-            >
-               <option value="ALL">Semua Type</option>
-               <option value="PAPER">Paper Box</option>
-               <option value="RIGID">Rigid Box</option>
-            </select>
+
 
             <select
               value={status}

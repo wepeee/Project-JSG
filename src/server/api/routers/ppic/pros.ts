@@ -111,7 +111,6 @@ export const prosRouter = createTRPCRouter({
     .input(
       z.object({
         productName: z.string().min(1),
-        partNumber: z.string().optional(), // Added
         processId: z.number().int().positive(), // New: header process
         type: z.enum(["PAPER", "RIGID", "OTHER"]).default("PAPER"), // Added
         qtyPoPcs: z.number().int().positive(),
@@ -193,7 +192,6 @@ export const prosRouter = createTRPCRouter({
             proNumber,
             processId: input.processId,
             productName: input.productName,
-            partNumber: input.partNumber, // Added
             qtyPoPcs: input.qtyPoPcs,
             startDate: firstStepDate, // Auto from first step
             status: "OPEN",

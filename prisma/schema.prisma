@@ -118,7 +118,6 @@ model Pro {
   id          Int       @id @default(autoincrement())
   proNumber   String    @unique @db.VarChar(9)
   productName String
-  partNumber  String? // Added
   qtyPoPcs    Int
   startDate   DateTime?
   status      ProStatus @default(OPEN)
