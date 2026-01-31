@@ -224,6 +224,7 @@ type StepDraft = {
   materials: Array<{ key: string; materialId: number; qtyReq: string }>;
   startDate?: string | null;
   shift: number; // 1, 2, or 3
+  partNumber?: string;
 };
 
 export default function ProList({ initialSelectedId, onClearJump }: Props) {
@@ -247,10 +248,12 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
   // ===== LIST STATE =====
   const [q, setQ] = React.useState("");
   const [status, setStatus] = React.useState<Status | "ALL">("ALL");
+  const [typeFilter, setTypeFilter] = React.useState<"ALL" | "PAPER" | "RIGID">("ALL"); // Added
 
   const list = api.pros.list.useQuery({
     q: q.trim() ? q.trim() : undefined,
     status: status === "ALL" ? undefined : status,
+    type: typeFilter === "ALL" ? undefined : typeFilter, // Added
     take: 50,
   });
 
@@ -278,7 +281,10 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
     materials: [],
     startDate: null,
     shift: 1,
+    partNumber: "",
   });
+
+  const [proTypeDraft, setProTypeDraft] = React.useState<"PAPER" | "RIGID" | "OTHER">("PAPER"); // Added
 
   const openAddStep = () => {
     setEditingStepKey(null);
@@ -290,6 +296,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
       ],
       startDate: null,
       shift: 1,
+      partNumber: "",
     });
     setStepDialogOpen(true);
   };
@@ -302,6 +309,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
       materials: step.materials,
       startDate: step.startDate,
       shift: step.shift,
+      partNumber: step.partNumber,
     });
     setStepDialogOpen(true);
   };
@@ -538,6 +546,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                     qtyPoPcs: variables.qtyPoPcs,
                     startDate: variables.startDate ?? pro.startDate,
                     status: variables.status ?? pro.status,
+                    type: variables.type ?? (pro as any).type, // Added
                   }
                 : pro
             ),
@@ -641,6 +650,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
         })),
         startDate: dt ? `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}` : null,
         shift: dt ? shiftFromDate(dt) : 1,
+        partNumber: (s as any).partNumber ?? "",
       };
     });
   }, [detail.data]);
@@ -652,6 +662,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
     setStatusDraft((detail.data?.status as Status) ?? "OPEN");
     setExpandDraft(false);
     setProcessDraftId(detail.data?.processId ?? null);
+    setProTypeDraft((detail.data as any).type ?? "PAPER"); // Added
   };
 
   const cancelEdit = () => {
@@ -714,8 +725,10 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
             qtyReq: Number(m.qtyReq),
           })),
           startDate: combineDateShift(s.startDate, s.shift),
+          partNumber: s.partNumber,
         })),
       expand: expandDraft,
+      type: proTypeDraft, // Added
     });
   };
 
@@ -897,6 +910,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                     <TableRow>
                       <TableHead>Machine</TableHead>
                       <TableHead className="w-24 text-right">UP</TableHead>
+                      <TableHead className="w-32">Part No.</TableHead>
                       <TableHead>Material</TableHead>
                       <TableHead className="w-24 text-right">Qty Mat</TableHead>
                       <TableHead className="w-20">UoM</TableHead>
@@ -1047,6 +1061,20 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                                        />
                                     ) : (
                                        upVal ? Number(upVal).toLocaleString('id-ID') : "-"
+                                    )}
+                                 </TableCell>
+
+                                 <TableCell className="text-xs">
+                                    {isMainRow && editing ? (
+                                       <Input 
+                                         className="h-8 w-32 bg-background border-input text-xs"
+                                         value={(item as StepDraft).partNumber || ""}
+                                         onChange={(e) => {
+                                           setStepDrafts(prev => prev.map(x => x.key === (item as StepDraft).key ? { ...x, partNumber: e.target.value } : x));
+                                         }}
+                                       />
+                                    ) : (
+                                      (isDraft ? (item as StepDraft).partNumber : (item as any).partNumber) || "-"
                                     )}
                                  </TableCell>
                                  
@@ -1230,6 +1258,17 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                 </div>
 
                 <div className="space-y-2">
+                  <div className="text-sm font-medium">Part Number (Step)</div>
+                  <Input
+                    value={stepDraft.partNumber || ""}
+                    onChange={(e) =>
+                      setStepDraft((prev) => ({ ...prev, partNumber: e.target.value }))
+                    }
+                    placeholder="Part Number"
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <div className="text-sm font-medium">Machine (optional)</div>
                   <select
                     value={stepDraft.machineId ?? ""}
@@ -1398,9 +1437,19 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
               className="sm:w-72"
             />
             <select
+               value={typeFilter}
+               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTypeFilter(e.target.value as any)}
+               className="border-input bg-background h-10 rounded-md border px-3 text-sm sm:w-36"
+            >
+               <option value="ALL">Semua Type</option>
+               <option value="PAPER">Paper Box</option>
+               <option value="RIGID">Rigid Box</option>
+            </select>
+
+            <select
               value={status}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatus(e.target.value as any)}
-              className="border-input bg-background h-10 rounded-md border px-3 text-sm sm:w-48"
+              className="border-input bg-background h-10 rounded-md border px-3 text-sm sm:w-36"
             >
               <option value="ALL">Semua Status</option>
               <option value="OPEN">OPEN</option>
@@ -1419,6 +1468,7 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-44">No. PRO</TableHead>
+                  <TableHead className="w-24">Tipe</TableHead>
                   <TableHead>Produk</TableHead>
                   <TableHead className="w-32 text-right">Qty PO</TableHead>
                   <TableHead className="w-28">Mulai</TableHead>
@@ -1452,6 +1502,17 @@ export default function ProList({ initialSelectedId, onClearJump }: Props) {
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">
                         {p.proNumber}
+                      </TableCell>
+                      <TableCell className="text-xs">
+                          {(p as any).type === "PAPER" ? (
+                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-blue-100 text-blue-800">
+                               PPR
+                             </span>
+                          ) : (p as any).type === "RIGID" ? (
+                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800">
+                               RGD
+                             </span>
+                          ) : "-"}
                       </TableCell>
                       <TableCell>{p.productName}</TableCell>
                       <TableCell className="text-right">

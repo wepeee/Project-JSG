@@ -168,6 +168,7 @@ exports.Prisma.ProScalarFieldEnum = {
   qtyPoPcs: 'qtyPoPcs',
   startDate: 'startDate',
   status: 'status',
+  type: 'type',
   processId: 'processId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -180,7 +181,8 @@ exports.Prisma.ProStepScalarFieldEnum = {
   up: 'up',
   estimatedShifts: 'estimatedShifts',
   startDate: 'startDate',
-  machineId: 'machineId'
+  machineId: 'machineId',
+  partNumber: 'partNumber'
 };
 
 exports.Prisma.ProStepMaterialScalarFieldEnum = {
@@ -230,6 +232,10 @@ exports.Prisma.ProOrderByRelevanceFieldEnum = {
   productName: 'productName',
   partNumber: 'partNumber'
 };
+
+exports.Prisma.ProStepOrderByRelevanceFieldEnum = {
+  partNumber: 'partNumber'
+};
 exports.Role = exports.$Enums.Role = {
   SUPERADMIN: 'SUPERADMIN',
   ADMIN: 'ADMIN',
@@ -250,6 +256,12 @@ exports.ProStatus = exports.$Enums.ProStatus = {
   IN_PROGRESS: 'IN_PROGRESS',
   DONE: 'DONE',
   CANCELLED: 'CANCELLED'
+};
+
+exports.ProType = exports.$Enums.ProType = {
+  PAPER: 'PAPER',
+  RIGID: 'RIGID',
+  OTHER: 'OTHER'
 };
 
 exports.Prisma.ModelName = {

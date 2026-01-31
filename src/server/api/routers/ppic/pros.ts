@@ -35,6 +35,7 @@ export const prosRouter = createTRPCRouter({
       z.object({
         q: z.string().optional(), // search proNumber / productName
         status: z.enum(["OPEN", "IN_PROGRESS", "DONE", "CANCELLED"]).optional(),
+        type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(), // Added
         take: z.number().min(5).max(50).default(20),
         cursor: z.number().int().positive().optional(), // pakai Pro.id
       }),
@@ -45,6 +46,7 @@ export const prosRouter = createTRPCRouter({
 
       const where: any = {};
       if (input.status) where.status = input.status;
+      if (input.type) where.type = input.type; // Added
 
       if (q) {
         where.OR = [
@@ -65,6 +67,7 @@ export const prosRouter = createTRPCRouter({
           qtyPoPcs: true,
           startDate: true,
           status: true,
+          type: true, // Added
           createdAt: true,
           process: { select: { code: true, name: true } }, // Added to header
           steps: {
@@ -82,6 +85,7 @@ export const prosRouter = createTRPCRouter({
                 },
               },
               startDate: true, // add this
+              partNumber: true, // Added
               estimatedShifts: true,
               materials: {
                 select: {
@@ -109,6 +113,7 @@ export const prosRouter = createTRPCRouter({
         productName: z.string().min(1),
         partNumber: z.string().optional(), // Added
         processId: z.number().int().positive(), // New: header process
+        type: z.enum(["PAPER", "RIGID", "OTHER"]).default("PAPER"), // Added
         qtyPoPcs: z.number().int().positive(),
         proNumber: z.string().optional(), // Manual PRO override
         startDate: z.coerce.date().optional(),
@@ -127,6 +132,7 @@ export const prosRouter = createTRPCRouter({
                 )
                 .default([]),
               startDate: z.coerce.date().optional(),
+              partNumber: z.string().optional(), // Added to step input
             }),
           )
           .min(1),
@@ -191,6 +197,7 @@ export const prosRouter = createTRPCRouter({
             qtyPoPcs: input.qtyPoPcs,
             startDate: firstStepDate, // Auto from first step
             status: "OPEN",
+            type: input.type, // Added
           },
         });
 
@@ -242,6 +249,7 @@ export const prosRouter = createTRPCRouter({
                 up: inputStep.up,
                 machineId: inputStep.machineId ?? null,
                 startDate: getShiftDate(currentDay, currentShift),
+                partNumber: inputStep.partNumber, // Added
                 materials: {
                   create: (inputStep.materials ?? []).map((m) => ({
                     materialId: m.materialId,
@@ -289,6 +297,7 @@ export const prosRouter = createTRPCRouter({
               up: true,
               machineId: true,
               startDate: true,
+              partNumber: true, // Added
               estimatedShifts: true,
               machine: {
                 select: {
@@ -330,6 +339,7 @@ export const prosRouter = createTRPCRouter({
         startDate: z.coerce.date().optional(),
         expand: z.boolean().default(false).optional(),
         status: z.enum(["OPEN", "IN_PROGRESS", "DONE", "CANCELLED"]).optional(),
+        type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(), // Added
         steps: z
           .array(
             z.object({
@@ -345,6 +355,7 @@ export const prosRouter = createTRPCRouter({
                 )
                 .optional(),
               startDate: z.coerce.date().optional(),
+              partNumber: z.string().optional(), // Added to step input
             }),
           )
           .min(1),
@@ -379,6 +390,7 @@ export const prosRouter = createTRPCRouter({
             qtyPoPcs: input.qtyPoPcs,
             startDate: input.startDate,
             ...(input.status ? { status: input.status } : {}),
+            ...(input.type ? { type: input.type } : {}), // Added
           },
         });
 
@@ -429,6 +441,7 @@ export const prosRouter = createTRPCRouter({
                   up: inputStep.up,
                   machineId: inputStep.machineId ?? null,
                   startDate: getShiftDate(currentDay, currentShift),
+                  partNumber: inputStep.partNumber, // Added
                   estimatedShifts: need,
                   materials: {
                     create: inputStep.materials?.map((m) => ({
@@ -540,6 +553,7 @@ export const prosRouter = createTRPCRouter({
                 select: { id: true, name: true, stdOutputPerShift: true },
               },
               startDate: true, // add this
+              partNumber: true, // Added
               estimatedShifts: true,
               materials: {
                 select: {

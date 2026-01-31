@@ -36,6 +36,7 @@ type StepDraft = {
   machineId: number | null;
   materials: StepDraftMaterial[];
   startDate: string; 
+  partNumber?: string;
 };
 
 function uid() {
@@ -51,6 +52,7 @@ function newStep(): StepDraft {
     machineId: null,
     materials: [{ key: uid(), materialId: null, qtyReq: "" }],
     startDate: "",
+    partNumber: "",
   };
 }
 
@@ -106,9 +108,9 @@ export default function ProPlanner() {
 
   // Header PRO
   const [productName, setProductName] = React.useState("");
-  const [partNumber, setPartNumber] = React.useState(""); // New
   const [processId, setProcessId] = React.useState<number | null>(null);
   const [qtyPoPcs, setQtyPoPcs] = React.useState<string>("");
+  const [proType, setProType] = React.useState<"PAPER" | "RIGID" | "OTHER">("PAPER"); // Added
   const [manualProNumber, setManualProNumber] = React.useState("");
 
   const createPro = api.pros.create.useMutation({
@@ -117,8 +119,8 @@ export default function ProPlanner() {
       await utils.pros.getSchedule.invalidate();
       setOk(`PRO dibuat: ${created.proNumber}`);
       setProductName("");
-      setPartNumber("");
-      // setProcessId(null); // Keep process selected for convenience?
+      // setProcessId(null); 
+      // setProType("PAPER"); // Keep selected type for convenience
       setQtyPoPcs("");
       setManualProNumber("");
       setSteps([]);
@@ -177,7 +179,6 @@ export default function ProPlanner() {
 
       const newSteps: StepDraft[] = [];
       let foundHeaderInfo = false;
-      let detectedUp = "";
 
       for (let i = 1; i < rows.length; i++) {
         const cols = rows[i];
@@ -204,16 +205,12 @@ export default function ProPlanner() {
            const nameVal = cols[3]?.trim();
            if (nameVal) setProductName(nameVal);
 
-           // Global UP
-           if (totalUpStr) {
-              detectedUp = totalUpStr;
-           }
-
-            // PRO Number from Col 2
            if (proNumCsv) {
               setManualProNumber(proNumCsv);
            }
         }
+
+        const partNum = cols[0]?.trim();
 
         // --- Create Step ---
         // 1. Machine Match
@@ -246,7 +243,17 @@ export default function ProPlanner() {
            const mQty = mQtyRaw ? mQtyRaw.replace(",", ".") : ""; // JS number uses dot
 
            // Match name
-           const foundMat = materialList.find(m => m.name.trim().toLowerCase() === mName.toLowerCase());
+           const cleanSearch = mName.toLowerCase();
+           let foundMat = materialList.find(m => m.name.trim().toLowerCase() === cleanSearch);
+
+           // Fallback: Partial Match (if unique)
+           // e.g. CSV "Ivory 300" matches DB "Kertas Ivory 300"
+           if (!foundMat) {
+              const candidates = materialList.filter(m => m.name.trim().toLowerCase().includes(cleanSearch));
+              if (candidates.length === 1) {
+                  foundMat = candidates[0];
+              }
+           }
            
            stepMats.push({
               key: uid(),
@@ -260,9 +267,10 @@ export default function ProPlanner() {
 
         newSteps.push({
           key: uid(),
-          up: detectedUp || "1", // Use detected up or default 1
+          up: totalUpStr || "1", // Use row specific up or default 1
           machineId: mach ? mach.id : null,
           startDate: formattedDate,
+          partNumber: partNum || "",
           materials: stepMats
         });
       }
@@ -359,14 +367,16 @@ export default function ProPlanner() {
 
     const payload = {
       productName: prod,
-      partNumber: partNumber.trim() || undefined,
+      partNumber: undefined,
       qtyPoPcs: qty,
       processId: processId,
+      type: proType, // Added
       proNumber: manualProNumber ? manualProNumber.trim() : undefined,
       steps: steps.map((s) => ({
         up: Number(s.up),
         machineId: s.machineId ?? null,
         startDate: s.startDate ? new Date(s.startDate) : undefined,
+        partNumber: s.partNumber?.trim() || undefined,
         materials: s.materials
           .filter(m => m.materialId) 
           .map((m) => ({ materialId: m.materialId!, qtyReq: Number(m.qtyReq) })),
@@ -414,14 +424,31 @@ export default function ProPlanner() {
               />
             </div>
 
+
+
+            {/* Type Selector (Paper/Rigid) */}
             <div className="space-y-2 lg:col-span-1">
-              <div className="text-sm font-medium">Part Number</div>
-              <Input
-                value={partNumber}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPartNumber(e.target.value)}
-                placeholder="Part Number"
-                autoComplete="off"
-              />
+              <div className="text-sm font-medium">Tipe Box</div>
+              <div className="flex items-center gap-1 rounded-md border p-1">
+                 <Button
+                   type="button"
+                   variant={proType === "PAPER" ? "default" : "ghost"}
+                   size="sm"
+                   className="flex-1 h-8 text-xs"
+                   onClick={() => setProType("PAPER")}
+                 >
+                   Paper Box
+                 </Button>
+                 <Button
+                   type="button"
+                   variant={proType === "RIGID" ? "default" : "ghost"}
+                   size="sm"
+                   className="flex-1 h-8 text-xs"
+                   onClick={() => setProType("RIGID")}
+                 >
+                   Rigid Box
+                 </Button>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -509,6 +536,7 @@ export default function ProPlanner() {
                     <TableHead className="w-16">No.</TableHead>
 
                     <TableHead className="w-24">UP</TableHead>
+                    <TableHead className="w-32">Part No.</TableHead>
                     <TableHead>Machine</TableHead>
                     <TableHead>Material</TableHead>
                     <TableHead className="w-24">Qty</TableHead>
@@ -536,6 +564,9 @@ export default function ProPlanner() {
 
                           <TableCell className="text-center">
                             {s.up || "-"}
+                          </TableCell>
+                          <TableCell>
+                            {s.partNumber || "-"}
                           </TableCell>
                           <TableCell>
                              <div className="flex flex-col">
@@ -664,6 +695,17 @@ export default function ProPlanner() {
                     });
                   }}
                   placeholder="contoh: 4"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Part Number (Step)</div>
+                <Input
+                  value={draft.partNumber || ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setDraft((d: StepDraft) => ({ ...d, partNumber: e.target.value }))
+                  }
+                  placeholder="Part Number for this step"
                 />
               </div>
 
