@@ -152,9 +152,19 @@ const DOWNTIME_LISTS: Record<string, string[]> = {
 
 // --- HELPER ---
 
-const getLphType = (proType: string, machineName: string): LphType => {
-  if (proType === "PAPER") return "PAPER";
+const getLphType = (pro: any, machineName: string): LphType => {
+  // 1. PAPER Strategy: One size fits all (mostly)
+  if (pro.type === "PAPER") return "PAPER";
 
+  // 2. RIGID Strategy: Depend on PRO Process Code
+  const pCode = pro.process?.code;
+  if (pCode === "11") return "INJECTION";
+  if (pCode === "12") return "BLOW_MOULDING";
+  if (pCode === "14") return "PRINTING"; // Screen Printing
+  if (pCode === "29") return "PACKING_ASSEMBLY"; // FG
+  // Add other Rigid codes if needed (e.g. 13 Assembly if used for Rigid)
+
+  // 3. Fallback: Machine Name Parsing (Legacy/Safety)
   const m = machineName.toUpperCase();
   if (m.includes("IMM") || m.includes("INJECTION")) return "INJECTION";
   if (m.includes("EBM") || m.includes("BLOW")) return "BLOW_MOULDING";
@@ -244,7 +254,7 @@ export function ProductionReportModal({
   React.useEffect(() => {
     if (open && task) {
       // 1. Detect Type
-      const type = getLphType(task.pro.type, task.step.machine?.name || "");
+      const type = getLphType(task.pro, task.step.machine?.name || "");
       setLphType(type);
 
       // 2. Load Draft

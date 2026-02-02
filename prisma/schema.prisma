@@ -97,6 +97,8 @@ model Process {
   code String @unique @db.VarChar(2) // WAJIB 2 digit: "11"
   name String @unique
 
+  type ProType @default(PAPER)
+
   pros Pro[]
 }
 

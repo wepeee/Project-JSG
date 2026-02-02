@@ -4692,18 +4692,21 @@ export namespace Prisma {
     id: number | null
     code: string | null
     name: string | null
+    type: $Enums.ProType | null
   }
 
   export type ProcessMaxAggregateOutputType = {
     id: number | null
     code: string | null
     name: string | null
+    type: $Enums.ProType | null
   }
 
   export type ProcessCountAggregateOutputType = {
     id: number
     code: number
     name: number
+    type: number
     _all: number
   }
 
@@ -4720,18 +4723,21 @@ export namespace Prisma {
     id?: true
     code?: true
     name?: true
+    type?: true
   }
 
   export type ProcessMaxAggregateInputType = {
     id?: true
     code?: true
     name?: true
+    type?: true
   }
 
   export type ProcessCountAggregateInputType = {
     id?: true
     code?: true
     name?: true
+    type?: true
     _all?: true
   }
 
@@ -4825,6 +4831,7 @@ export namespace Prisma {
     id: number
     code: string
     name: string
+    type: $Enums.ProType
     _count: ProcessCountAggregateOutputType | null
     _avg: ProcessAvgAggregateOutputType | null
     _sum: ProcessSumAggregateOutputType | null
@@ -4850,6 +4857,7 @@ export namespace Prisma {
     id?: boolean
     code?: boolean
     name?: boolean
+    type?: boolean
     pros?: boolean | Process$prosArgs<ExtArgs>
     _count?: boolean | ProcessCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["process"]>
@@ -4860,9 +4868,10 @@ export namespace Prisma {
     id?: boolean
     code?: boolean
     name?: boolean
+    type?: boolean
   }
 
-  export type ProcessOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name", ExtArgs["result"]["process"]>
+  export type ProcessOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "type", ExtArgs["result"]["process"]>
   export type ProcessInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pros?: boolean | Process$prosArgs<ExtArgs>
     _count?: boolean | ProcessCountOutputTypeDefaultArgs<ExtArgs>
@@ -4877,6 +4886,7 @@ export namespace Prisma {
       id: number
       code: string
       name: string
+      type: $Enums.ProType
     }, ExtArgs["result"]["process"]>
     composites: {}
   }
@@ -5250,6 +5260,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Process", 'Int'>
     readonly code: FieldRef<"Process", 'String'>
     readonly name: FieldRef<"Process", 'String'>
+    readonly type: FieldRef<"Process", 'ProType'>
   }
     
 
@@ -11058,7 +11069,8 @@ export namespace Prisma {
   export const ProcessScalarFieldEnum: {
     id: 'id',
     code: 'code',
-    name: 'name'
+    name: 'name',
+    type: 'type'
   };
 
   export type ProcessScalarFieldEnum = (typeof ProcessScalarFieldEnum)[keyof typeof ProcessScalarFieldEnum]
@@ -11299,16 +11311,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'ProStatus'
+   * Reference to a field of type 'ProType'
    */
-  export type EnumProStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProStatus'>
+  export type EnumProTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProType'>
     
 
 
   /**
-   * Reference to a field of type 'ProType'
+   * Reference to a field of type 'ProStatus'
    */
-  export type EnumProTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProType'>
+  export type EnumProStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProStatus'>
     
 
 
@@ -11553,6 +11565,7 @@ export namespace Prisma {
     id?: IntFilter<"Process"> | number
     code?: StringFilter<"Process"> | string
     name?: StringFilter<"Process"> | string
+    type?: EnumProTypeFilter<"Process"> | $Enums.ProType
     pros?: ProListRelationFilter
   }
 
@@ -11560,6 +11573,7 @@ export namespace Prisma {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
+    type?: SortOrder
     pros?: ProOrderByRelationAggregateInput
     _relevance?: ProcessOrderByRelevanceInput
   }
@@ -11571,6 +11585,7 @@ export namespace Prisma {
     AND?: ProcessWhereInput | ProcessWhereInput[]
     OR?: ProcessWhereInput[]
     NOT?: ProcessWhereInput | ProcessWhereInput[]
+    type?: EnumProTypeFilter<"Process"> | $Enums.ProType
     pros?: ProListRelationFilter
   }, "id" | "code" | "name">
 
@@ -11578,6 +11593,7 @@ export namespace Prisma {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
+    type?: SortOrder
     _count?: ProcessCountOrderByAggregateInput
     _avg?: ProcessAvgOrderByAggregateInput
     _max?: ProcessMaxOrderByAggregateInput
@@ -11592,6 +11608,7 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"Process"> | number
     code?: StringWithAggregatesFilter<"Process"> | string
     name?: StringWithAggregatesFilter<"Process"> | string
+    type?: EnumProTypeWithAggregatesFilter<"Process"> | $Enums.ProType
   }
 
   export type ProSequenceWhereInput = {
@@ -12263,6 +12280,7 @@ export namespace Prisma {
   export type ProcessCreateInput = {
     code: string
     name: string
+    type?: $Enums.ProType
     pros?: ProCreateNestedManyWithoutProcessInput
   }
 
@@ -12270,12 +12288,14 @@ export namespace Prisma {
     id?: number
     code: string
     name: string
+    type?: $Enums.ProType
     pros?: ProUncheckedCreateNestedManyWithoutProcessInput
   }
 
   export type ProcessUpdateInput = {
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     pros?: ProUpdateManyWithoutProcessNestedInput
   }
 
@@ -12283,6 +12303,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     pros?: ProUncheckedUpdateManyWithoutProcessNestedInput
   }
 
@@ -12290,17 +12311,20 @@ export namespace Prisma {
     id?: number
     code: string
     name: string
+    type?: $Enums.ProType
   }
 
   export type ProcessUpdateManyMutationInput = {
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
   }
 
   export type ProcessUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
   }
 
   export type ProSequenceCreateInput = {
@@ -13110,6 +13134,13 @@ export namespace Prisma {
     id?: SortOrder
   }
 
+  export type EnumProTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProType | EnumProTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ProType[]
+    notIn?: $Enums.ProType[]
+    not?: NestedEnumProTypeFilter<$PrismaModel> | $Enums.ProType
+  }
+
   export type ProListRelationFilter = {
     every?: ProWhereInput
     some?: ProWhereInput
@@ -13130,6 +13161,7 @@ export namespace Prisma {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
+    type?: SortOrder
   }
 
   export type ProcessAvgOrderByAggregateInput = {
@@ -13140,16 +13172,28 @@ export namespace Prisma {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
+    type?: SortOrder
   }
 
   export type ProcessMinOrderByAggregateInput = {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
+    type?: SortOrder
   }
 
   export type ProcessSumOrderByAggregateInput = {
     id?: SortOrder
+  }
+
+  export type EnumProTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProType | EnumProTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ProType[]
+    notIn?: $Enums.ProType[]
+    not?: NestedEnumProTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumProTypeFilter<$PrismaModel>
+    _max?: NestedEnumProTypeFilter<$PrismaModel>
   }
 
   export type ProSequenceOrderByRelevanceInput = {
@@ -13197,13 +13241,6 @@ export namespace Prisma {
     in?: $Enums.ProStatus[]
     notIn?: $Enums.ProStatus[]
     not?: NestedEnumProStatusFilter<$PrismaModel> | $Enums.ProStatus
-  }
-
-  export type EnumProTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.ProType | EnumProTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.ProType[]
-    notIn?: $Enums.ProType[]
-    not?: NestedEnumProTypeFilter<$PrismaModel> | $Enums.ProType
   }
 
   export type BoolFilter<$PrismaModel = never> = {
@@ -13309,16 +13346,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProStatusFilter<$PrismaModel>
     _max?: NestedEnumProStatusFilter<$PrismaModel>
-  }
-
-  export type EnumProTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ProType | EnumProTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.ProType[]
-    notIn?: $Enums.ProType[]
-    not?: NestedEnumProTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumProTypeFilter<$PrismaModel>
-    _max?: NestedEnumProTypeFilter<$PrismaModel>
   }
 
   export type BoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -13877,6 +13904,10 @@ export namespace Prisma {
     connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
   }
 
+  export type EnumProTypeFieldUpdateOperationsInput = {
+    set?: $Enums.ProType
+  }
+
   export type ProUpdateManyWithoutProcessNestedInput = {
     create?: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput> | ProCreateWithoutProcessInput[] | ProUncheckedCreateWithoutProcessInput[]
     connectOrCreate?: ProCreateOrConnectWithoutProcessInput | ProCreateOrConnectWithoutProcessInput[]
@@ -13931,10 +13962,6 @@ export namespace Prisma {
 
   export type EnumProStatusFieldUpdateOperationsInput = {
     set?: $Enums.ProStatus
-  }
-
-  export type EnumProTypeFieldUpdateOperationsInput = {
-    set?: $Enums.ProType
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -14337,6 +14364,23 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedEnumProTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProType | EnumProTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ProType[]
+    notIn?: $Enums.ProType[]
+    not?: NestedEnumProTypeFilter<$PrismaModel> | $Enums.ProType
+  }
+
+  export type NestedEnumProTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProType | EnumProTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ProType[]
+    notIn?: $Enums.ProType[]
+    not?: NestedEnumProTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumProTypeFilter<$PrismaModel>
+    _max?: NestedEnumProTypeFilter<$PrismaModel>
+  }
+
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | null
@@ -14353,13 +14397,6 @@ export namespace Prisma {
     in?: $Enums.ProStatus[]
     notIn?: $Enums.ProStatus[]
     not?: NestedEnumProStatusFilter<$PrismaModel> | $Enums.ProStatus
-  }
-
-  export type NestedEnumProTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.ProType | EnumProTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.ProType[]
-    notIn?: $Enums.ProType[]
-    not?: NestedEnumProTypeFilter<$PrismaModel> | $Enums.ProType
   }
 
   export type NestedBoolFilter<$PrismaModel = never> = {
@@ -14389,16 +14426,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProStatusFilter<$PrismaModel>
     _max?: NestedEnumProStatusFilter<$PrismaModel>
-  }
-
-  export type NestedEnumProTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ProType | EnumProTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.ProType[]
-    notIn?: $Enums.ProType[]
-    not?: NestedEnumProTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumProTypeFilter<$PrismaModel>
-    _max?: NestedEnumProTypeFilter<$PrismaModel>
   }
 
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -14722,12 +14749,14 @@ export namespace Prisma {
   export type ProcessCreateWithoutProsInput = {
     code: string
     name: string
+    type?: $Enums.ProType
   }
 
   export type ProcessUncheckedCreateWithoutProsInput = {
     id?: number
     code: string
     name: string
+    type?: $Enums.ProType
   }
 
   export type ProcessCreateOrConnectWithoutProsInput = {
@@ -14788,12 +14817,14 @@ export namespace Prisma {
   export type ProcessUpdateWithoutProsInput = {
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
   }
 
   export type ProcessUncheckedUpdateWithoutProsInput = {
     id?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
   }
 
   export type ProStepUpsertWithWhereUniqueWithoutProInput = {

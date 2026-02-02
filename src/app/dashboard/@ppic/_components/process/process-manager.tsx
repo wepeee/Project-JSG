@@ -18,7 +18,7 @@ import {
 export default function ProcessManager() {
   const utils = api.useUtils();
 
-  const processes = api.processes.list.useQuery();
+  const processes = api.processes.list.useQuery({});
 
   const createProc = api.processes.create.useMutation({
     onSuccess: async () => utils.processes.list.invalidate(),
@@ -34,10 +34,14 @@ export default function ProcessManager() {
 
   const [code, setCode] = React.useState("");
   const [name, setName] = React.useState("");
+  const [type, setType] = React.useState<"PAPER" | "RIGID">("PAPER");
 
   const [editingId, setEditingId] = React.useState<number | null>(null);
   const [editingCode, setEditingCode] = React.useState("");
   const [editingName, setEditingName] = React.useState("");
+  const [editingType, setEditingType] = React.useState<"PAPER" | "RIGID">(
+    "PAPER",
+  );
 
   const [err, setErr] = React.useState<string | null>(null);
 
@@ -58,19 +62,27 @@ export default function ProcessManager() {
     if (!n) return setErr("Nama proses wajib diisi");
 
     try {
-      await createProc.mutateAsync({ code: c, name: n });
+      // @ts-ignore - backend will be updated
+      await createProc.mutateAsync({ code: c, name: n, type });
       setCode("");
       setName("");
+      setType("PAPER");
     } catch (e: any) {
       setErr(e?.message ?? "Gagal tambah proses");
     }
   };
 
-  const startEdit = (p: { id: number; code: string; name: string }) => {
+  const startEdit = (p: {
+    id: number;
+    code: string;
+    name: string;
+    type: any;
+  }) => {
     setErr(null);
     setEditingId(p.id);
     setEditingCode(p.code);
     setEditingName(p.name);
+    setEditingType((p.type as "PAPER" | "RIGID") || "PAPER");
   };
 
   const cancelEdit = () => {
@@ -89,7 +101,13 @@ export default function ProcessManager() {
     if (!n) return setErr("Nama proses wajib diisi");
 
     try {
-      await updateProc.mutateAsync({ id: editingId, code: c, name: n });
+      // @ts-ignore
+      await updateProc.mutateAsync({
+        id: editingId,
+        code: c,
+        name: n,
+        type: editingType,
+      });
       cancelEdit();
     } catch (e: any) {
       setErr(e?.message ?? "Gagal update proses");
@@ -113,17 +131,25 @@ export default function ProcessManager() {
           <CardTitle>Tambah Proses</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-4">
             <Input
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="Kode (2 digit) contoh: 11"
+              placeholder="Kode (2 digit)"
             />
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Nama proses contoh: CETAK"
+              placeholder="Nama proses"
             />
+            <select
+              className="border-input bg-background h-10 rounded-md border px-3 text-sm"
+              value={type}
+              onChange={(e) => setType(e.target.value as any)}
+            >
+              <option value="PAPER">PAPER</option>
+              <option value="RIGID">RIGID</option>
+            </select>
             <Button onClick={onCreate} disabled={createProc.isPending}>
               {createProc.isPending ? "..." : "Tambah"}
             </Button>
@@ -160,6 +186,7 @@ export default function ProcessManager() {
                   <TableRow>
                     <TableHead>Kode</TableHead>
                     <TableHead>Nama</TableHead>
+                    <TableHead>Tipe</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -188,6 +215,22 @@ export default function ProcessManager() {
                             p.name
                           )}
                         </TableCell>
+                        <TableCell>
+                          {isEdit ? (
+                            <select
+                              className="border-input bg-background h-8 w-full rounded-md border px-2 text-sm"
+                              value={editingType}
+                              onChange={(e) =>
+                                setEditingType(e.target.value as any)
+                              }
+                            >
+                              <option value="PAPER">PAPER</option>
+                              <option value="RIGID">RIGID</option>
+                            </select>
+                          ) : (
+                            ((p as any).type ?? "-")
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
                           {isEdit ? (
                             <div className="flex justify-end gap-2">
@@ -205,7 +248,7 @@ export default function ProcessManager() {
                             <div className="flex justify-end gap-2">
                               <Button
                                 variant="outline"
-                                onClick={() => startEdit(p)}
+                                onClick={() => startEdit(p as any)}
                               >
                                 Edit
                               </Button>

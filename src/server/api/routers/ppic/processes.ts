@@ -7,21 +7,31 @@ import { createTRPCRouter, protectedProcedure } from "../../trpc";
 const ppicProcedure = protectedProcedure;
 
 export const processesRouter = createTRPCRouter({
-  list: ppicProcedure.query(({ ctx }) => {
-    return ctx.db.process.findMany({ orderBy: { code: "asc" } });
-  }),
+  list: ppicProcedure
+    .input(z.object({ type: z.enum(["PAPER", "RIGID", "OTHER"]).optional() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.process.findMany({
+        where: input.type ? { type: input.type } : undefined,
+        orderBy: { code: "asc" },
+      });
+    }),
 
   create: ppicProcedure
     .input(
       z.object({
         code: z.string().regex(/^\d{2}$/, "Kode proses harus 2 digit (00-99)"),
         name: z.string().min(1, "Nama proses wajib diisi"),
+        type: z.enum(["PAPER", "RIGID", "OTHER"]).optional().default("PAPER"),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
         return await ctx.db.process.create({
-          data: { code: input.code, name: input.name.trim() },
+          data: {
+            code: input.code,
+            name: input.name.trim(),
+            type: input.type,
+          },
         });
       } catch (e: any) {
         if (
@@ -43,13 +53,18 @@ export const processesRouter = createTRPCRouter({
         id: z.number().int().positive(),
         code: z.string().regex(/^\d{2}$/),
         name: z.string().min(1),
+        type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
         return await ctx.db.process.update({
           where: { id: input.id },
-          data: { code: input.code, name: input.name.trim() },
+          data: {
+            code: input.code,
+            name: input.name.trim(),
+            type: input.type,
+          },
         });
       } catch (e: any) {
         if (

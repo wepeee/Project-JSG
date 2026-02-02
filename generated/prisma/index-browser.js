@@ -152,7 +152,8 @@ exports.Prisma.MaterialScalarFieldEnum = {
 exports.Prisma.ProcessScalarFieldEnum = {
   id: 'id',
   code: 'code',
-  name: 'name'
+  name: 'name',
+  type: 'type'
 };
 
 exports.Prisma.ProSequenceScalarFieldEnum = {
@@ -309,17 +310,17 @@ exports.Uom = exports.$Enums.Uom = {
   cm: 'cm'
 };
 
+exports.ProType = exports.$Enums.ProType = {
+  PAPER: 'PAPER',
+  RIGID: 'RIGID',
+  OTHER: 'OTHER'
+};
+
 exports.ProStatus = exports.$Enums.ProStatus = {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
   DONE: 'DONE',
   CANCELLED: 'CANCELLED'
-};
-
-exports.ProType = exports.$Enums.ProType = {
-  PAPER: 'PAPER',
-  RIGID: 'RIGID',
-  OTHER: 'OTHER'
 };
 
 exports.LphType = exports.$Enums.LphType = {

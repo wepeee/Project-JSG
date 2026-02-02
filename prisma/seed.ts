@@ -463,14 +463,17 @@ async function main() {
     { code: "28", name: "UV SPOT" },
     { code: "29", name: "FG" },
     { code: "30", name: "SCREEN TRAIN OS - CA" },
-
   ];
 
+  const rigidCodes = ["11", "12", "14", "29"];
   for (const proc of processes) {
+    const isRigid = rigidCodes.includes(proc.code);
+    const type = isRigid ? "RIGID" : "PAPER";
+
     await db.process.upsert({
       where: { code: proc.code },
-      update: { name: proc.name },
-      create: { code: proc.code, name: proc.name },
+      update: { name: proc.name, type },
+      create: { code: proc.code, name: proc.name, type },
     });
   }
 

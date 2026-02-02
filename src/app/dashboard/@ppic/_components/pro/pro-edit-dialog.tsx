@@ -46,7 +46,7 @@ function uid() {
 export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
   const utils = api.useUtils();
 
-  const processes = api.processes.list.useQuery();
+  const processes = api.processes.list.useQuery({});
   const machines = api.machines.list.useQuery();
   const materials = api.materials.list.useQuery();
 

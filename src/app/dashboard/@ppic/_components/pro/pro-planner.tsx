@@ -120,11 +120,6 @@ function parseCSV(text: string) {
 }
 
 export default function ProPlanner() {
-  const utils = api.useUtils();
-  const processes = api.processes.list.useQuery();
-  const machines = api.machines.list.useQuery();
-  const materials = api.materials.list.useQuery();
-
   // Header PRO
   const [productName, setProductName] = React.useState("");
   const [processId, setProcessId] = React.useState<number | null>(null);
@@ -133,6 +128,11 @@ export default function ProPlanner() {
     "PAPER",
   ); // Added
   const [manualProNumber, setManualProNumber] = React.useState("");
+
+  const utils = api.useUtils();
+  const processes = api.processes.list.useQuery({ type: proType });
+  const machines = api.machines.list.useQuery();
+  const materials = api.materials.list.useQuery();
 
   const createPro = api.pros.create.useMutation({
     onSuccess: async (created) => {
