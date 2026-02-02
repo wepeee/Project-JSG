@@ -275,12 +275,25 @@ export default function ProPlanner() {
         );
 
         // 2. Start Date (M/D/YYYY or D/M/YYYY -> assuming M/D/YYYY)
+        // 2. Start Date (Try parsing DD/MM/YYYY, DD-MM-YYYY, or standard)
         const dateStr = cols[6]?.trim();
         let formattedDate = "";
+
         if (dateStr) {
-          const d = new Date(dateStr);
-          if (!isNaN(d.getTime())) {
-            formattedDate = d.toISOString().split("T")[0]!; // YYYY-MM-DD
+          // Check for DD/MM/YYYY or DD-MM-YYYY
+          const dmy = dateStr.match(
+            /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/,
+          );
+          if (dmy) {
+            const day = dmy[1]!.padStart(2, "0");
+            const month = dmy[2]!.padStart(2, "0");
+            const year = dmy[3];
+            formattedDate = `${year}-${month}-${day}`;
+          } else {
+            const d = new Date(dateStr);
+            if (!isNaN(d.getTime())) {
+              formattedDate = d.toISOString().split("T")[0]!;
+            }
           }
         }
 
