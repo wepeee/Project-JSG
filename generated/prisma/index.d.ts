@@ -84,6 +84,14 @@ export const Uom: {
 export type Uom = (typeof Uom)[keyof typeof Uom]
 
 
+export const MachineType: {
+  PAPER: 'PAPER',
+  RIGID: 'RIGID'
+};
+
+export type MachineType = (typeof MachineType)[keyof typeof MachineType]
+
+
 export const ProStatus: {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
@@ -122,6 +130,10 @@ export const Role: typeof $Enums.Role
 export type Uom = $Enums.Uom
 
 export const Uom: typeof $Enums.Uom
+
+export type MachineType = $Enums.MachineType
+
+export const MachineType: typeof $Enums.MachineType
 
 export type ProStatus = $Enums.ProStatus
 
@@ -2665,12 +2677,22 @@ export namespace Prisma {
     id: number | null
     stdOutputPerHour: number | null
     stdOutputPerShift: number | null
+    cycleTimeSec: Decimal | null
+    cycleTimeMin: Decimal | null
+    cavity: number | null
+    manPower: number | null
+    stdOutputPerDay: number | null
   }
 
   export type MachineSumAggregateOutputType = {
     id: number | null
     stdOutputPerHour: number | null
     stdOutputPerShift: number | null
+    cycleTimeSec: Decimal | null
+    cycleTimeMin: Decimal | null
+    cavity: number | null
+    manPower: number | null
+    stdOutputPerDay: number | null
   }
 
   export type MachineMinAggregateOutputType = {
@@ -2679,7 +2701,17 @@ export namespace Prisma {
     stdOutputPerHour: number | null
     stdOutputPerShift: number | null
     uom: $Enums.Uom | null
+    type: $Enums.MachineType | null
     remark: string | null
+    partNumber: string | null
+    cycleTimeSec: Decimal | null
+    cycleTimeMin: Decimal | null
+    cavity: number | null
+    manPower: number | null
+    stdOutputPerDay: number | null
+    workCenter: string | null
+    shortDesc: string | null
+    phase: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2690,7 +2722,17 @@ export namespace Prisma {
     stdOutputPerHour: number | null
     stdOutputPerShift: number | null
     uom: $Enums.Uom | null
+    type: $Enums.MachineType | null
     remark: string | null
+    partNumber: string | null
+    cycleTimeSec: Decimal | null
+    cycleTimeMin: Decimal | null
+    cavity: number | null
+    manPower: number | null
+    stdOutputPerDay: number | null
+    workCenter: string | null
+    shortDesc: string | null
+    phase: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2701,7 +2743,17 @@ export namespace Prisma {
     stdOutputPerHour: number
     stdOutputPerShift: number
     uom: number
+    type: number
     remark: number
+    partNumber: number
+    cycleTimeSec: number
+    cycleTimeMin: number
+    cavity: number
+    manPower: number
+    stdOutputPerDay: number
+    workCenter: number
+    shortDesc: number
+    phase: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -2712,12 +2764,22 @@ export namespace Prisma {
     id?: true
     stdOutputPerHour?: true
     stdOutputPerShift?: true
+    cycleTimeSec?: true
+    cycleTimeMin?: true
+    cavity?: true
+    manPower?: true
+    stdOutputPerDay?: true
   }
 
   export type MachineSumAggregateInputType = {
     id?: true
     stdOutputPerHour?: true
     stdOutputPerShift?: true
+    cycleTimeSec?: true
+    cycleTimeMin?: true
+    cavity?: true
+    manPower?: true
+    stdOutputPerDay?: true
   }
 
   export type MachineMinAggregateInputType = {
@@ -2726,7 +2788,17 @@ export namespace Prisma {
     stdOutputPerHour?: true
     stdOutputPerShift?: true
     uom?: true
+    type?: true
     remark?: true
+    partNumber?: true
+    cycleTimeSec?: true
+    cycleTimeMin?: true
+    cavity?: true
+    manPower?: true
+    stdOutputPerDay?: true
+    workCenter?: true
+    shortDesc?: true
+    phase?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2737,7 +2809,17 @@ export namespace Prisma {
     stdOutputPerHour?: true
     stdOutputPerShift?: true
     uom?: true
+    type?: true
     remark?: true
+    partNumber?: true
+    cycleTimeSec?: true
+    cycleTimeMin?: true
+    cavity?: true
+    manPower?: true
+    stdOutputPerDay?: true
+    workCenter?: true
+    shortDesc?: true
+    phase?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2748,7 +2830,17 @@ export namespace Prisma {
     stdOutputPerHour?: true
     stdOutputPerShift?: true
     uom?: true
+    type?: true
     remark?: true
+    partNumber?: true
+    cycleTimeSec?: true
+    cycleTimeMin?: true
+    cavity?: true
+    manPower?: true
+    stdOutputPerDay?: true
+    workCenter?: true
+    shortDesc?: true
+    phase?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -2846,7 +2938,17 @@ export namespace Prisma {
     stdOutputPerHour: number
     stdOutputPerShift: number
     uom: $Enums.Uom
+    type: $Enums.MachineType
     remark: string | null
+    partNumber: string | null
+    cycleTimeSec: Decimal | null
+    cycleTimeMin: Decimal | null
+    cavity: number | null
+    manPower: number | null
+    stdOutputPerDay: number | null
+    workCenter: string | null
+    shortDesc: string | null
+    phase: string | null
     createdAt: Date
     updatedAt: Date
     _count: MachineCountAggregateOutputType | null
@@ -2876,7 +2978,17 @@ export namespace Prisma {
     stdOutputPerHour?: boolean
     stdOutputPerShift?: boolean
     uom?: boolean
+    type?: boolean
     remark?: boolean
+    partNumber?: boolean
+    cycleTimeSec?: boolean
+    cycleTimeMin?: boolean
+    cavity?: boolean
+    manPower?: boolean
+    stdOutputPerDay?: boolean
+    workCenter?: boolean
+    shortDesc?: boolean
+    phase?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     proSteps?: boolean | Machine$proStepsArgs<ExtArgs>
@@ -2891,12 +3003,22 @@ export namespace Prisma {
     stdOutputPerHour?: boolean
     stdOutputPerShift?: boolean
     uom?: boolean
+    type?: boolean
     remark?: boolean
+    partNumber?: boolean
+    cycleTimeSec?: boolean
+    cycleTimeMin?: boolean
+    cavity?: boolean
+    manPower?: boolean
+    stdOutputPerDay?: boolean
+    workCenter?: boolean
+    shortDesc?: boolean
+    phase?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type MachineOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "stdOutputPerHour" | "stdOutputPerShift" | "uom" | "remark" | "createdAt" | "updatedAt", ExtArgs["result"]["machine"]>
+  export type MachineOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "stdOutputPerHour" | "stdOutputPerShift" | "uom" | "type" | "remark" | "partNumber" | "cycleTimeSec" | "cycleTimeMin" | "cavity" | "manPower" | "stdOutputPerDay" | "workCenter" | "shortDesc" | "phase" | "createdAt" | "updatedAt", ExtArgs["result"]["machine"]>
   export type MachineInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     proSteps?: boolean | Machine$proStepsArgs<ExtArgs>
     _count?: boolean | MachineCountOutputTypeDefaultArgs<ExtArgs>
@@ -2913,7 +3035,17 @@ export namespace Prisma {
       stdOutputPerHour: number
       stdOutputPerShift: number
       uom: $Enums.Uom
+      type: $Enums.MachineType
       remark: string | null
+      partNumber: string | null
+      cycleTimeSec: Prisma.Decimal | null
+      cycleTimeMin: Prisma.Decimal | null
+      cavity: number | null
+      manPower: number | null
+      stdOutputPerDay: number | null
+      workCenter: string | null
+      shortDesc: string | null
+      phase: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["machine"]>
@@ -3291,7 +3423,17 @@ export namespace Prisma {
     readonly stdOutputPerHour: FieldRef<"Machine", 'Int'>
     readonly stdOutputPerShift: FieldRef<"Machine", 'Int'>
     readonly uom: FieldRef<"Machine", 'Uom'>
+    readonly type: FieldRef<"Machine", 'MachineType'>
     readonly remark: FieldRef<"Machine", 'String'>
+    readonly partNumber: FieldRef<"Machine", 'String'>
+    readonly cycleTimeSec: FieldRef<"Machine", 'Decimal'>
+    readonly cycleTimeMin: FieldRef<"Machine", 'Decimal'>
+    readonly cavity: FieldRef<"Machine", 'Int'>
+    readonly manPower: FieldRef<"Machine", 'Int'>
+    readonly stdOutputPerDay: FieldRef<"Machine", 'Int'>
+    readonly workCenter: FieldRef<"Machine", 'String'>
+    readonly shortDesc: FieldRef<"Machine", 'String'>
+    readonly phase: FieldRef<"Machine", 'String'>
     readonly createdAt: FieldRef<"Machine", 'DateTime'>
     readonly updatedAt: FieldRef<"Machine", 'DateTime'>
   }
@@ -11047,7 +11189,17 @@ export namespace Prisma {
     stdOutputPerHour: 'stdOutputPerHour',
     stdOutputPerShift: 'stdOutputPerShift',
     uom: 'uom',
+    type: 'type',
     remark: 'remark',
+    partNumber: 'partNumber',
+    cycleTimeSec: 'cycleTimeSec',
+    cycleTimeMin: 'cycleTimeMin',
+    cavity: 'cavity',
+    manPower: 'manPower',
+    stdOutputPerDay: 'stdOutputPerDay',
+    workCenter: 'workCenter',
+    shortDesc: 'shortDesc',
+    phase: 'phase',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -11199,7 +11351,11 @@ export namespace Prisma {
 
   export const MachineOrderByRelevanceFieldEnum: {
     name: 'name',
-    remark: 'remark'
+    remark: 'remark',
+    partNumber: 'partNumber',
+    workCenter: 'workCenter',
+    shortDesc: 'shortDesc',
+    phase: 'phase'
   };
 
   export type MachineOrderByRelevanceFieldEnum = (typeof MachineOrderByRelevanceFieldEnum)[keyof typeof MachineOrderByRelevanceFieldEnum]
@@ -11311,6 +11467,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'MachineType'
+   */
+  export type EnumMachineTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MachineType'>
+    
+
+
+  /**
+   * Reference to a field of type 'Decimal'
+   */
+  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+  /**
    * Reference to a field of type 'ProType'
    */
   export type EnumProTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProType'>
@@ -11328,13 +11498,6 @@ export namespace Prisma {
    * Reference to a field of type 'Boolean'
    */
   export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-  /**
-   * Reference to a field of type 'Decimal'
-   */
-  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
     
 
 
@@ -11436,7 +11599,17 @@ export namespace Prisma {
     stdOutputPerHour?: IntFilter<"Machine"> | number
     stdOutputPerShift?: IntFilter<"Machine"> | number
     uom?: EnumUomFilter<"Machine"> | $Enums.Uom
+    type?: EnumMachineTypeFilter<"Machine"> | $Enums.MachineType
     remark?: StringNullableFilter<"Machine"> | string | null
+    partNumber?: StringNullableFilter<"Machine"> | string | null
+    cycleTimeSec?: DecimalNullableFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: DecimalNullableFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
+    cavity?: IntNullableFilter<"Machine"> | number | null
+    manPower?: IntNullableFilter<"Machine"> | number | null
+    stdOutputPerDay?: IntNullableFilter<"Machine"> | number | null
+    workCenter?: StringNullableFilter<"Machine"> | string | null
+    shortDesc?: StringNullableFilter<"Machine"> | string | null
+    phase?: StringNullableFilter<"Machine"> | string | null
     createdAt?: DateTimeFilter<"Machine"> | Date | string
     updatedAt?: DateTimeFilter<"Machine"> | Date | string
     proSteps?: ProStepListRelationFilter
@@ -11448,7 +11621,17 @@ export namespace Prisma {
     stdOutputPerHour?: SortOrder
     stdOutputPerShift?: SortOrder
     uom?: SortOrder
+    type?: SortOrder
     remark?: SortOrderInput | SortOrder
+    partNumber?: SortOrderInput | SortOrder
+    cycleTimeSec?: SortOrderInput | SortOrder
+    cycleTimeMin?: SortOrderInput | SortOrder
+    cavity?: SortOrderInput | SortOrder
+    manPower?: SortOrderInput | SortOrder
+    stdOutputPerDay?: SortOrderInput | SortOrder
+    workCenter?: SortOrderInput | SortOrder
+    shortDesc?: SortOrderInput | SortOrder
+    phase?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     proSteps?: ProStepOrderByRelationAggregateInput
@@ -11464,7 +11647,17 @@ export namespace Prisma {
     stdOutputPerHour?: IntFilter<"Machine"> | number
     stdOutputPerShift?: IntFilter<"Machine"> | number
     uom?: EnumUomFilter<"Machine"> | $Enums.Uom
+    type?: EnumMachineTypeFilter<"Machine"> | $Enums.MachineType
     remark?: StringNullableFilter<"Machine"> | string | null
+    partNumber?: StringNullableFilter<"Machine"> | string | null
+    cycleTimeSec?: DecimalNullableFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: DecimalNullableFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
+    cavity?: IntNullableFilter<"Machine"> | number | null
+    manPower?: IntNullableFilter<"Machine"> | number | null
+    stdOutputPerDay?: IntNullableFilter<"Machine"> | number | null
+    workCenter?: StringNullableFilter<"Machine"> | string | null
+    shortDesc?: StringNullableFilter<"Machine"> | string | null
+    phase?: StringNullableFilter<"Machine"> | string | null
     createdAt?: DateTimeFilter<"Machine"> | Date | string
     updatedAt?: DateTimeFilter<"Machine"> | Date | string
     proSteps?: ProStepListRelationFilter
@@ -11476,7 +11669,17 @@ export namespace Prisma {
     stdOutputPerHour?: SortOrder
     stdOutputPerShift?: SortOrder
     uom?: SortOrder
+    type?: SortOrder
     remark?: SortOrderInput | SortOrder
+    partNumber?: SortOrderInput | SortOrder
+    cycleTimeSec?: SortOrderInput | SortOrder
+    cycleTimeMin?: SortOrderInput | SortOrder
+    cavity?: SortOrderInput | SortOrder
+    manPower?: SortOrderInput | SortOrder
+    stdOutputPerDay?: SortOrderInput | SortOrder
+    workCenter?: SortOrderInput | SortOrder
+    shortDesc?: SortOrderInput | SortOrder
+    phase?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: MachineCountOrderByAggregateInput
@@ -11495,7 +11698,17 @@ export namespace Prisma {
     stdOutputPerHour?: IntWithAggregatesFilter<"Machine"> | number
     stdOutputPerShift?: IntWithAggregatesFilter<"Machine"> | number
     uom?: EnumUomWithAggregatesFilter<"Machine"> | $Enums.Uom
+    type?: EnumMachineTypeWithAggregatesFilter<"Machine"> | $Enums.MachineType
     remark?: StringNullableWithAggregatesFilter<"Machine"> | string | null
+    partNumber?: StringNullableWithAggregatesFilter<"Machine"> | string | null
+    cycleTimeSec?: DecimalNullableWithAggregatesFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: DecimalNullableWithAggregatesFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
+    cavity?: IntNullableWithAggregatesFilter<"Machine"> | number | null
+    manPower?: IntNullableWithAggregatesFilter<"Machine"> | number | null
+    stdOutputPerDay?: IntNullableWithAggregatesFilter<"Machine"> | number | null
+    workCenter?: StringNullableWithAggregatesFilter<"Machine"> | string | null
+    shortDesc?: StringNullableWithAggregatesFilter<"Machine"> | string | null
+    phase?: StringNullableWithAggregatesFilter<"Machine"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Machine"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Machine"> | Date | string
   }
@@ -12147,7 +12360,17 @@ export namespace Prisma {
     stdOutputPerHour: number
     stdOutputPerShift: number
     uom: $Enums.Uom
+    type?: $Enums.MachineType
     remark?: string | null
+    partNumber?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    shortDesc?: string | null
+    phase?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     proSteps?: ProStepCreateNestedManyWithoutMachineInput
@@ -12159,7 +12382,17 @@ export namespace Prisma {
     stdOutputPerHour: number
     stdOutputPerShift: number
     uom: $Enums.Uom
+    type?: $Enums.MachineType
     remark?: string | null
+    partNumber?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    shortDesc?: string | null
+    phase?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     proSteps?: ProStepUncheckedCreateNestedManyWithoutMachineInput
@@ -12170,7 +12403,17 @@ export namespace Prisma {
     stdOutputPerHour?: IntFieldUpdateOperationsInput | number
     stdOutputPerShift?: IntFieldUpdateOperationsInput | number
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
+    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proSteps?: ProStepUpdateManyWithoutMachineNestedInput
@@ -12182,7 +12425,17 @@ export namespace Prisma {
     stdOutputPerHour?: IntFieldUpdateOperationsInput | number
     stdOutputPerShift?: IntFieldUpdateOperationsInput | number
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
+    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proSteps?: ProStepUncheckedUpdateManyWithoutMachineNestedInput
@@ -12194,7 +12447,17 @@ export namespace Prisma {
     stdOutputPerHour: number
     stdOutputPerShift: number
     uom: $Enums.Uom
+    type?: $Enums.MachineType
     remark?: string | null
+    partNumber?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    shortDesc?: string | null
+    phase?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12204,7 +12467,17 @@ export namespace Prisma {
     stdOutputPerHour?: IntFieldUpdateOperationsInput | number
     stdOutputPerShift?: IntFieldUpdateOperationsInput | number
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
+    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12215,7 +12488,17 @@ export namespace Prisma {
     stdOutputPerHour?: IntFieldUpdateOperationsInput | number
     stdOutputPerShift?: IntFieldUpdateOperationsInput | number
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
+    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12961,6 +13244,13 @@ export namespace Prisma {
     not?: NestedEnumUomFilter<$PrismaModel> | $Enums.Uom
   }
 
+  export type EnumMachineTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.MachineType | EnumMachineTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MachineType[]
+    notIn?: $Enums.MachineType[]
+    not?: NestedEnumMachineTypeFilter<$PrismaModel> | $Enums.MachineType
+  }
+
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -12974,6 +13264,28 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     search?: string
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type DecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type ProStepListRelationFilter = {
@@ -13003,7 +13315,17 @@ export namespace Prisma {
     stdOutputPerHour?: SortOrder
     stdOutputPerShift?: SortOrder
     uom?: SortOrder
+    type?: SortOrder
     remark?: SortOrder
+    partNumber?: SortOrder
+    cycleTimeSec?: SortOrder
+    cycleTimeMin?: SortOrder
+    cavity?: SortOrder
+    manPower?: SortOrder
+    stdOutputPerDay?: SortOrder
+    workCenter?: SortOrder
+    shortDesc?: SortOrder
+    phase?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13012,6 +13334,11 @@ export namespace Prisma {
     id?: SortOrder
     stdOutputPerHour?: SortOrder
     stdOutputPerShift?: SortOrder
+    cycleTimeSec?: SortOrder
+    cycleTimeMin?: SortOrder
+    cavity?: SortOrder
+    manPower?: SortOrder
+    stdOutputPerDay?: SortOrder
   }
 
   export type MachineMaxOrderByAggregateInput = {
@@ -13020,7 +13347,17 @@ export namespace Prisma {
     stdOutputPerHour?: SortOrder
     stdOutputPerShift?: SortOrder
     uom?: SortOrder
+    type?: SortOrder
     remark?: SortOrder
+    partNumber?: SortOrder
+    cycleTimeSec?: SortOrder
+    cycleTimeMin?: SortOrder
+    cavity?: SortOrder
+    manPower?: SortOrder
+    stdOutputPerDay?: SortOrder
+    workCenter?: SortOrder
+    shortDesc?: SortOrder
+    phase?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13031,7 +13368,17 @@ export namespace Prisma {
     stdOutputPerHour?: SortOrder
     stdOutputPerShift?: SortOrder
     uom?: SortOrder
+    type?: SortOrder
     remark?: SortOrder
+    partNumber?: SortOrder
+    cycleTimeSec?: SortOrder
+    cycleTimeMin?: SortOrder
+    cavity?: SortOrder
+    manPower?: SortOrder
+    stdOutputPerDay?: SortOrder
+    workCenter?: SortOrder
+    shortDesc?: SortOrder
+    phase?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13040,6 +13387,11 @@ export namespace Prisma {
     id?: SortOrder
     stdOutputPerHour?: SortOrder
     stdOutputPerShift?: SortOrder
+    cycleTimeSec?: SortOrder
+    cycleTimeMin?: SortOrder
+    cavity?: SortOrder
+    manPower?: SortOrder
+    stdOutputPerDay?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -13068,6 +13420,16 @@ export namespace Prisma {
     _max?: NestedEnumUomFilter<$PrismaModel>
   }
 
+  export type EnumMachineTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MachineType | EnumMachineTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MachineType[]
+    notIn?: $Enums.MachineType[]
+    not?: NestedEnumMachineTypeWithAggregatesFilter<$PrismaModel> | $Enums.MachineType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMachineTypeFilter<$PrismaModel>
+    _max?: NestedEnumMachineTypeFilter<$PrismaModel>
+  }
+
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -13084,6 +13446,38 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type ProStepMaterialListRelationFilter = {
@@ -13248,17 +13642,6 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type ProcessNullableScalarRelationFilter = {
     is?: ProcessWhereInput | null
     isNot?: ProcessWhereInput | null
@@ -13356,33 +13739,6 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type DecimalNullableFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
   export type ProScalarRelationFilter = {
     is?: ProWhereInput
     isNot?: ProWhereInput
@@ -13478,22 +13834,6 @@ export namespace Prisma {
     manPowerStd?: SortOrder
     cycleTimeStd?: SortOrder
     cavityStd?: SortOrder
-  }
-
-  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedDecimalNullableFilter<$PrismaModel>
-    _sum?: NestedDecimalNullableFilter<$PrismaModel>
-    _min?: NestedDecimalNullableFilter<$PrismaModel>
-    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type DecimalFilter<$PrismaModel = never> = {
@@ -13816,8 +14156,28 @@ export namespace Prisma {
     set?: $Enums.Uom
   }
 
+  export type EnumMachineTypeFieldUpdateOperationsInput = {
+    set?: $Enums.MachineType
+  }
+
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type NullableDecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string | null
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type ProStepUpdateManyWithoutMachineNestedInput = {
@@ -13992,14 +14352,6 @@ export namespace Prisma {
     deleteMany?: ProStepScalarWhereInput | ProStepScalarWhereInput[]
   }
 
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type ProStepUncheckedUpdateManyWithoutProNestedInput = {
     create?: XOR<ProStepCreateWithoutProInput, ProStepUncheckedCreateWithoutProInput> | ProStepCreateWithoutProInput[] | ProStepUncheckedCreateWithoutProInput[]
     connectOrCreate?: ProStepCreateOrConnectWithoutProInput | ProStepCreateOrConnectWithoutProInput[]
@@ -14052,14 +14404,6 @@ export namespace Prisma {
     connectOrCreate?: ProductionReportCreateOrConnectWithoutStepInput | ProductionReportCreateOrConnectWithoutStepInput[]
     createMany?: ProductionReportCreateManyStepInputEnvelope
     connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
-  }
-
-  export type NullableDecimalFieldUpdateOperationsInput = {
-    set?: Decimal | DecimalJsLike | number | string | null
-    increment?: Decimal | DecimalJsLike | number | string
-    decrement?: Decimal | DecimalJsLike | number | string
-    multiply?: Decimal | DecimalJsLike | number | string
-    divide?: Decimal | DecimalJsLike | number | string
   }
 
   export type ProUpdateOneRequiredWithoutStepsNestedInput = {
@@ -14283,6 +14627,13 @@ export namespace Prisma {
     not?: NestedEnumUomFilter<$PrismaModel> | $Enums.Uom
   }
 
+  export type NestedEnumMachineTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.MachineType | EnumMachineTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MachineType[]
+    notIn?: $Enums.MachineType[]
+    not?: NestedEnumMachineTypeFilter<$PrismaModel> | $Enums.MachineType
+  }
+
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -14296,6 +14647,28 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     search?: string
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -14335,6 +14708,16 @@ export namespace Prisma {
     _max?: NestedEnumUomFilter<$PrismaModel>
   }
 
+  export type NestedEnumMachineTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MachineType | EnumMachineTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MachineType[]
+    notIn?: $Enums.MachineType[]
+    not?: NestedEnumMachineTypeWithAggregatesFilter<$PrismaModel> | $Enums.MachineType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMachineTypeFilter<$PrismaModel>
+    _max?: NestedEnumMachineTypeFilter<$PrismaModel>
+  }
+
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -14353,7 +14736,23 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
+  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | null
     notIn?: number[] | null
@@ -14361,7 +14760,23 @@ export namespace Prisma {
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedEnumProTypeFilter<$PrismaModel = never> = {
@@ -14434,60 +14849,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
-  }
-
-  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
-  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedDecimalNullableFilter<$PrismaModel>
-    _sum?: NestedDecimalNullableFilter<$PrismaModel>
-    _min?: NestedDecimalNullableFilter<$PrismaModel>
-    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type NestedDecimalFilter<$PrismaModel = never> = {
@@ -14880,7 +15241,17 @@ export namespace Prisma {
     stdOutputPerHour: number
     stdOutputPerShift: number
     uom: $Enums.Uom
+    type?: $Enums.MachineType
     remark?: string | null
+    partNumber?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    shortDesc?: string | null
+    phase?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -14891,7 +15262,17 @@ export namespace Prisma {
     stdOutputPerHour: number
     stdOutputPerShift: number
     uom: $Enums.Uom
+    type?: $Enums.MachineType
     remark?: string | null
+    partNumber?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    shortDesc?: string | null
+    phase?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -15050,7 +15431,17 @@ export namespace Prisma {
     stdOutputPerHour?: IntFieldUpdateOperationsInput | number
     stdOutputPerShift?: IntFieldUpdateOperationsInput | number
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
+    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15061,7 +15452,17 @@ export namespace Prisma {
     stdOutputPerHour?: IntFieldUpdateOperationsInput | number
     stdOutputPerShift?: IntFieldUpdateOperationsInput | number
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
+    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

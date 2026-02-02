@@ -136,7 +136,17 @@ exports.Prisma.MachineScalarFieldEnum = {
   stdOutputPerHour: 'stdOutputPerHour',
   stdOutputPerShift: 'stdOutputPerShift',
   uom: 'uom',
+  type: 'type',
   remark: 'remark',
+  partNumber: 'partNumber',
+  cycleTimeSec: 'cycleTimeSec',
+  cycleTimeMin: 'cycleTimeMin',
+  cavity: 'cavity',
+  manPower: 'manPower',
+  stdOutputPerDay: 'stdOutputPerDay',
+  workCenter: 'workCenter',
+  shortDesc: 'shortDesc',
+  phase: 'phase',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -252,7 +262,11 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.MachineOrderByRelevanceFieldEnum = {
   name: 'name',
-  remark: 'remark'
+  remark: 'remark',
+  partNumber: 'partNumber',
+  workCenter: 'workCenter',
+  shortDesc: 'shortDesc',
+  phase: 'phase'
 };
 
 exports.Prisma.MaterialOrderByRelevanceFieldEnum = {
@@ -308,6 +322,11 @@ exports.Uom = exports.$Enums.Uom = {
   pcs: 'pcs',
   meter: 'meter',
   cm: 'cm'
+};
+
+exports.MachineType = exports.$Enums.MachineType = {
+  PAPER: 'PAPER',
+  RIGID: 'RIGID'
 };
 
 exports.ProType = exports.$Enums.ProType = {

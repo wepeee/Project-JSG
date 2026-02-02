@@ -41,13 +41,32 @@ enum Uom {
   cm
 }
 
+
+
+enum MachineType {
+  PAPER
+  RIGID
+}
+
 model Machine {
   id                Int     @id @default(autoincrement())
   name              String
   stdOutputPerHour  Int
   stdOutputPerShift Int
   uom               Uom
+  type              MachineType @default(PAPER)
   remark            String?
+
+  // Rigid Specific Fields
+  partNumber       String?
+  cycleTimeSec     Decimal?  @db.Decimal(10, 3)
+  cycleTimeMin     Decimal?  @db.Decimal(10, 3)
+  cavity           Int?
+  manPower         Int?
+  stdOutputPerDay  Int?
+  workCenter       String?
+  shortDesc        String?
+  phase            String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -154,9 +173,9 @@ model ProStep {
   partNumber String?
 
   // --- Target / Standards (for Reporting) ---
-  manPowerStd Int?
+  manPowerStd  Int?
   cycleTimeStd Decimal? @db.Decimal(10, 2)
-  cavityStd   Int?
+  cavityStd    Int?
 
   materials         ProStepMaterial[]
   productionReports ProductionReport[]

@@ -131,7 +131,10 @@ export default function ProPlanner() {
 
   const utils = api.useUtils();
   const processes = api.processes.list.useQuery({ type: proType });
-  const machines = api.machines.list.useQuery();
+  const machines = api.machines.list.useQuery({
+    // @ts-ignore
+    type: proType === "OTHER" ? undefined : proType,
+  });
   const materials = api.materials.list.useQuery();
 
   const createPro = api.pros.create.useMutation({

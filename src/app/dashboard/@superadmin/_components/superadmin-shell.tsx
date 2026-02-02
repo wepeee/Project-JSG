@@ -18,7 +18,7 @@ type Props = {
   };
 };
 
-type NavKey = "users" | "machines" | "settings" | "audit";
+type NavKey = "users" | "machines_paper" | "machines_rigid" | "settings" | "audit";
 
 export default function SuperadminShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("users");
@@ -27,11 +27,13 @@ export default function SuperadminShell({ user }: Props) {
   const title =
     active === "users"
       ? "Kelola Akun"
-      : active === "machines"
-        ? "Kelola Mesin"
-        : active === "settings"
-          ? "Pengaturan"
-          : "Audit Log";
+      : active === "machines_paper"
+        ? "Kelola Mesin Paper"
+        : active === "machines_rigid"
+          ? "Kelola Mesin Rigid"
+          : active === "settings"
+            ? "Pengaturan"
+            : "Audit Log";
 
   return (
     <div className="bg-background min-h-screen w-full">
@@ -82,11 +84,22 @@ export default function SuperadminShell({ user }: Props) {
               active={active === "settings"}
               onClick={() => setActive("settings")}
             />
+            <div className="pt-2 pb-1 text-xs font-semibold opacity-50 px-3">
+              MESIN
+            </div>
             <SidebarItem
-              label="Mesin"
-              active={active === "machines"}
+              label="Mesin Paper"
+              active={active === "machines_paper"}
               onClick={() => {
-                setActive("machines");
+                setActive("machines_paper");
+                setOpen(false);
+              }}
+            />
+            <SidebarItem
+              label="Mesin Rigid"
+              active={active === "machines_rigid"}
+              onClick={() => {
+                setActive("machines_rigid");
                 setOpen(false);
               }}
             />
@@ -156,11 +169,22 @@ export default function SuperadminShell({ user }: Props) {
                     setOpen(false);
                   }}
                 />
+                 <div className="pt-2 pb-1 text-xs font-semibold opacity-50 px-3">
+                  MESIN
+                </div>
                 <SidebarItem
-                  label="Mesin"
-                  active={active === "machines"}
+                  label="Mesin Paper"
+                  active={active === "machines_paper"}
                   onClick={() => {
-                    setActive("machines");
+                    setActive("machines_paper");
+                    setOpen(false);
+                  }}
+                />
+                <SidebarItem
+                  label="Mesin Rigid"
+                  active={active === "machines_rigid"}
+                  onClick={() => {
+                    setActive("machines_rigid");
                     setOpen(false);
                   }}
                 />
@@ -203,8 +227,10 @@ export default function SuperadminShell({ user }: Props) {
             <div className="rounded-md border p-4 text-sm opacity-80">
               Pengaturan belum dibuat. Nanti kita rapihin.
             </div>
+          ) : active === "machines_paper" ? (
+            <MachineManager machineType="PAPER" />
           ) : (
-            <MachineManager />
+            <MachineManager machineType="RIGID" />
           )}
         </main>
       </div>

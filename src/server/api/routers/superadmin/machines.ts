@@ -6,17 +6,28 @@ import {
   superAdminProcedure,
 } from "../../trpc";
 
-import { Uom } from "~/../generated/prisma";
+import { Uom, MachineType } from "~/../generated/prisma";
 
 const SHIFT_HOURS = 6.8; // sesuaikan kalau jam shift kamu beda
 
 export const machinesRouter = createTRPCRouter({
-  list: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db.machine.findMany({
-      orderBy: { name: "asc" },
-      take: 200,
-    });
-  }),
+  list: protectedProcedure
+    .input(
+      z
+        .object({
+          type: z.nativeEnum(MachineType).optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.db.machine.findMany({
+        where: {
+          type: input?.type,
+        },
+        orderBy: { name: "asc" },
+        take: 200,
+      });
+    }),
 
   create: superAdminProcedure
     .input(
@@ -26,7 +37,19 @@ export const machinesRouter = createTRPCRouter({
         // frontend boleh kirim, tapi server gak percaya
         stdOutputPerShift: z.number().int().nonnegative().optional(),
         uom: z.nativeEnum(Uom),
+        type: z.nativeEnum(MachineType).default("PAPER"),
         remark: z.string().optional(),
+        
+        // Rigid Fields
+        partNumber: z.string().optional(),
+        cycleTimeSec: z.number().optional(), 
+        cycleTimeMin: z.number().optional(),
+        cavity: z.number().int().optional(),
+        manPower: z.number().int().optional(),
+        stdOutputPerDay: z.number().int().optional(),
+        workCenter: z.string().optional(),
+        shortDesc: z.string().optional(),
+        phase: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -38,16 +61,18 @@ export const machinesRouter = createTRPCRouter({
           stdOutputPerHour: input.stdOutputPerHour,
           stdOutputPerShift: computedShift, // ✅ server source of truth
           uom: input.uom,
+          type: input.type,
           remark: input.remark,
-        },
-        select: {
-          id: true,
-          name: true,
-          stdOutputPerHour: true,
-          stdOutputPerShift: true,
-          uom: true,
-          remark: true,
-          createdAt: true,
+
+          partNumber: input.partNumber,
+          cycleTimeSec: input.cycleTimeSec,
+          cycleTimeMin: input.cycleTimeMin,
+          cavity: input.cavity,
+          manPower: input.manPower,
+          stdOutputPerDay: input.stdOutputPerDay,
+          workCenter: input.workCenter,
+          shortDesc: input.shortDesc,
+          phase: input.phase,
         },
       });
     }),
