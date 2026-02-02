@@ -24,6 +24,25 @@ import {
   TableRow,
 } from "~/components/ui/table";
 
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
+
 type StepDraftMaterial = {
   key: string;
   materialId: number | null;
@@ -35,7 +54,7 @@ type StepDraft = {
   up: string;
   machineId: number | null;
   materials: StepDraftMaterial[];
-  startDate: string; 
+  startDate: string;
   partNumber?: string;
 };
 
@@ -60,39 +79,39 @@ function newStep(): StepDraft {
 function parseCSV(text: string) {
   const result: string[][] = [];
   const lines = text.split(/\r?\n/);
-  
+
   for (const line of lines) {
     if (!line.trim()) continue;
-    
+
     const row: string[] = [];
     let curVal = "";
     let insideQuote = false;
-    
+
     for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        
-        if (insideQuote) {
-            if (char === '"') {
-                // Check if next is quote (escape)
-                if (i + 1 < line.length && line[i + 1] === '"') {
-                    curVal += '"';
-                    i++;
-                } else {
-                    insideQuote = false;
-                }
-            } else {
-                curVal += char;
-            }
+      const char = line[i];
+
+      if (insideQuote) {
+        if (char === '"') {
+          // Check if next is quote (escape)
+          if (i + 1 < line.length && line[i + 1] === '"') {
+            curVal += '"';
+            i++;
+          } else {
+            insideQuote = false;
+          }
         } else {
-            if (char === '"') {
-                insideQuote = true;
-            } else if (char === ',') {
-                row.push(curVal.trim());
-                curVal = "";
-            } else {
-                curVal += char;
-            }
+          curVal += char;
         }
+      } else {
+        if (char === '"') {
+          insideQuote = true;
+        } else if (char === ",") {
+          row.push(curVal.trim());
+          curVal = "";
+        } else {
+          curVal += char;
+        }
+      }
     }
     row.push(curVal.trim()); // Last col
     result.push(row);
@@ -110,7 +129,9 @@ export default function ProPlanner() {
   const [productName, setProductName] = React.useState("");
   const [processId, setProcessId] = React.useState<number | null>(null);
   const [qtyPoPcs, setQtyPoPcs] = React.useState<string>("");
-  const [proType, setProType] = React.useState<"PAPER" | "RIGID" | "OTHER">("PAPER"); // Added
+  const [proType, setProType] = React.useState<"PAPER" | "RIGID" | "OTHER">(
+    "PAPER",
+  ); // Added
   const [manualProNumber, setManualProNumber] = React.useState("");
 
   const createPro = api.pros.create.useMutation({
@@ -119,7 +140,7 @@ export default function ProPlanner() {
       await utils.pros.getSchedule.invalidate();
       setOk(`PRO dibuat: ${created.proNumber}`);
       setProductName("");
-      // setProcessId(null); 
+      // setProcessId(null);
       // setProType("PAPER"); // Keep selected type for convenience
       setQtyPoPcs("");
       setManualProNumber("");
@@ -128,16 +149,32 @@ export default function ProPlanner() {
   });
 
   const loadingMaster =
-    processes.isLoading ||
-    machines.isLoading ||
-    materials.isLoading;
+    processes.isLoading || machines.isLoading || materials.isLoading;
 
   // Steps
   const [steps, setSteps] = React.useState<StepDraft[]>([]);
 
-  // Dialog state
   const [open, setOpen] = React.useState(false);
   const [editKey, setEditKey] = React.useState<string | null>(null);
+
+  // DnD Sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setSteps((items) => {
+        const oldIndex = items.findIndex((i) => i.key === active.id);
+        const newIndex = items.findIndex((i) => i.key === over?.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  }
   const [draft, setDraft] = React.useState<StepDraft>(newStep());
 
   const [err, setErr] = React.useState<string | null>(null);
@@ -179,7 +216,8 @@ export default function ProPlanner() {
       let detectedUp = "";
 
       // Helper for loose matching
-      const normalize = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase();
+      const normalize = (s: string) =>
+        s.replace(/\s+/g, " ").trim().toLowerCase();
 
       for (let i = 1; i < rows.length; i++) {
         const cols = rows[i];
@@ -196,118 +234,123 @@ export default function ProPlanner() {
 
         // If this row has Qty Order, treat it as Header info source
         if (qtyOrderStr && !foundHeaderInfo) {
-           const cleanedQty = qtyOrderStr.replace(/\./g, "").replace(/,/g, ""); // Remove dots/commas
-           if (!isNaN(Number(cleanedQty))) {
-              setQtyPoPcs(cleanedQty);
-              foundHeaderInfo = true;
-           }
-           
-           // Product Name from Name column (col 3) if available
-           const nameVal = cols[3]?.trim();
-           if (nameVal) setProductName(nameVal);
+          const cleanedQty = qtyOrderStr.replace(/\./g, "").replace(/,/g, ""); // Remove dots/commas
+          if (!isNaN(Number(cleanedQty))) {
+            setQtyPoPcs(cleanedQty);
+            foundHeaderInfo = true;
+          }
 
-           // Global UP
-           if (totalUpStr) {
-             detectedUp = totalUpStr;
-           }
+          // Product Name from Name column (col 3) if available
+          const nameVal = cols[3]?.trim();
+          if (nameVal) setProductName(nameVal);
 
-           if (proNumCsv) {
-              setManualProNumber(proNumCsv);
-              
-              // Auto-detect process from first 2 chars
-              const prefix = proNumCsv.substring(0, 2).toUpperCase();
-              const foundProc = processList.find(p => p.code === prefix);
-              if (foundProc) {
-                 setProcessId(foundProc.id);
-              }
-           }
+          // Global UP
+          if (totalUpStr) {
+            detectedUp = totalUpStr;
+          }
+
+          if (proNumCsv) {
+            setManualProNumber(proNumCsv);
+
+            // Auto-detect process from first 2 chars
+            const prefix = proNumCsv.substring(0, 2).toUpperCase();
+            const foundProc = processList.find((p) => p.code === prefix);
+            if (foundProc) {
+              setProcessId(foundProc.id);
+            }
+          }
         }
 
         const partNum = cols[0]?.trim(); // Use col 0 (header R) as Part Number? Or is it R for row no? Usually R is row no. But earlier I saw comments.
         // Wait, user didn't clarify Part Number col. I will leave it blank? Or use col 0 if it looks like part num?
         // Let's stick to simple logic for now, Part Num manual or if previously was mapped.
-        // Actually the previous code mapped `partNum = cols[0]` which is usually Row Number. 
-        // I should ignore it unless confirmed. Leaving it as is for now not to regress, 
+        // Actually the previous code mapped `partNum = cols[0]` which is usually Row Number.
+        // I should ignore it unless confirmed. Leaving it as is for now not to regress,
         // but user only asked about UoM and matching.
 
         // --- Create Step ---
         // 1. Machine Match (Normalized)
-        const mach = machineList.find(m => normalize(m.name) === normalize(machineName));
-        
+        const mach = machineList.find(
+          (m) => normalize(m.name) === normalize(machineName),
+        );
+
         // 2. Start Date (M/D/YYYY or D/M/YYYY -> assuming M/D/YYYY)
         const dateStr = cols[6]?.trim();
         let formattedDate = "";
         if (dateStr) {
-           const d = new Date(dateStr);
-           if (!isNaN(d.getTime())) {
-              formattedDate = d.toISOString().split('T')[0]!; // YYYY-MM-DD
-           }
+          const d = new Date(dateStr);
+          if (!isNaN(d.getTime())) {
+            formattedDate = d.toISOString().split("T")[0]!; // YYYY-MM-DD
+          }
         }
 
         // 3. Materials
         // Split by '+'
         // Format: ..., 8:Material, 9:Qty (Shifted due to removed UoM)
-        const matNames = (cols[8]?.trim() ?? "").split('+');
+        const matNames = (cols[8]?.trim() ?? "").split("+");
         // Qty Logic: Try Col 9, Fallback Col 10
         let qtyColVal = cols[9]?.trim();
         if (!qtyColVal) {
-             const c10 = cols[10]?.trim();
-             if (c10 && /[0-9]/.test(c10)) qtyColVal = c10;
+          const c10 = cols[10]?.trim();
+          if (c10 && /[0-9]/.test(c10)) qtyColVal = c10;
         }
-        const matQties = (qtyColVal ?? "").split('+'); 
+        const matQties = (qtyColVal ?? "").split("+");
 
         const stepMats: StepDraftMaterial[] = [];
-        
+
         for (let k = 0; k < matNames.length; k++) {
-           const mNameRaw = matNames[k]?.trim();
-           if (!mNameRaw) continue;
-           
-           const mQtyRaw = matQties[k]?.trim(); 
-           
-           // Robust Qty Parse
-           let mQty = "";
-           const parseVal = (s: string) => {
-               if (s.includes(",")) return s.replace(/\./g, "").replace(",", ".");
-               const parts = s.split(".");
-               if (parts.length > 2) return s.replace(/\./g, "");
-               if (parts.length === 2 && parts[1]?.length === 3) return s.replace(/\./g, "");
-               return s;
-           };
+          const mNameRaw = matNames[k]?.trim();
+          if (!mNameRaw) continue;
 
-           if (mQtyRaw) {
-               mQty = parseVal(mQtyRaw.trim());
-           }
+          const mQtyRaw = matQties[k]?.trim();
 
-           // Match name (Normalized)
-           const nSearch = normalize(mNameRaw);
-           let foundMat = materialList.find(m => normalize(m.name) === nSearch);
+          // Robust Qty Parse
+          let mQty = "";
+          const parseVal = (s: string) => {
+            if (s.includes(",")) return s.replace(/\./g, "").replace(",", ".");
+            const parts = s.split(".");
+            if (parts.length > 2) return s.replace(/\./g, "");
+            if (parts.length === 2 && parts[1]?.length === 3)
+              return s.replace(/\./g, "");
+            return s;
+          };
 
-           // Fallback: Partial Match (if unique)
-           if (!foundMat) {
-              // Try finding if DB name contains CSV name OR CSV name contains DB name (sometimes CSV is more descriptive or less)
-              // User case: "IVORY VA RDD  300 GSM 79 X 109 CM" in CSV.
-              // DB might correspond to "IVORY VA RDD 300 GSM"
-              // normalize() handles spaces. 
-              // nSearch might be "ivory va rdd 300 gsm 79 x 109 cm"
-              // db might be "ivory va rdd 300 gsm"
-              
-              const candidates = materialList.filter(m => {
-                 const nDb = normalize(m.name);
-                 return nDb.includes(nSearch) || nSearch.includes(nDb);
-              });
+          if (mQtyRaw) {
+            mQty = parseVal(mQtyRaw.trim());
+          }
 
-              if (candidates.length === 1) {
-                  foundMat = candidates[0];
-              }
-           }
-           
-           stepMats.push({
-              key: uid(),
-              materialId: foundMat ? foundMat.id : null,
-              qtyReq: mQty, // Allow qty even if material not found
-           });
+          // Match name (Normalized)
+          const nSearch = normalize(mNameRaw);
+          let foundMat = materialList.find(
+            (m) => normalize(m.name) === nSearch,
+          );
+
+          // Fallback: Partial Match (if unique)
+          if (!foundMat) {
+            // Try finding if DB name contains CSV name OR CSV name contains DB name (sometimes CSV is more descriptive or less)
+            // User case: "IVORY VA RDD  300 GSM 79 X 109 CM" in CSV.
+            // DB might correspond to "IVORY VA RDD 300 GSM"
+            // normalize() handles spaces.
+            // nSearch might be "ivory va rdd 300 gsm 79 x 109 cm"
+            // db might be "ivory va rdd 300 gsm"
+
+            const candidates = materialList.filter((m) => {
+              const nDb = normalize(m.name);
+              return nDb.includes(nSearch) || nSearch.includes(nDb);
+            });
+
+            if (candidates.length === 1) {
+              foundMat = candidates[0];
+            }
+          }
+
+          stepMats.push({
+            key: uid(),
+            materialId: foundMat ? foundMat.id : null,
+            qtyReq: mQty, // Allow qty even if material not found
+          });
         }
-        
+
         // REMOVED: if (stepMats.length === 0) stepMats.push({ key: uid(), materialId: null, qtyReq: "" });
         // User request: empty cell = no material. So we allow empty array.
 
@@ -317,11 +360,11 @@ export default function ProPlanner() {
           machineId: mach ? mach.id : null,
           startDate: formattedDate,
           partNumber: partNum || "",
-          materials: stepMats
+          materials: stepMats,
         });
       }
 
-      setSteps(prev => [...prev, ...newSteps]);
+      setSteps((prev) => [...prev, ...newSteps]);
       setOk(`Berhasil import ${newSteps.length} steps.`);
     } catch (err: any) {
       setErr("Gagal import: " + err.message);
@@ -347,11 +390,11 @@ export default function ProPlanner() {
 
   const saveDraft = () => {
     setErr(null);
-    // if (!processId) return setErr("Proses wajib dipilih di header"); 
+    // if (!processId) return setErr("Proses wajib dipilih di header");
     // ^ Allow adding steps before selecting process? current logic strictly requires processId.
     // Let's keep strictness
     if (!processId) return setErr("Proses wajib dipilih di header");
-    
+
     // ... rest of validation
     const upNum = Number(draft.up);
     if (!draft.up.trim() || !Number.isFinite(upNum) || upNum < 0) {
@@ -361,10 +404,10 @@ export default function ProPlanner() {
     if (draft.materials.length > 0) {
       for (const m of draft.materials) {
         if (m.materialId) {
-           const q = Number(m.qtyReq);
-           if (!m.qtyReq.trim() || !Number.isFinite(q) || q <= 0) {
-             return setErr("Qty Req material wajib > 0");
-           }
+          const q = Number(m.qtyReq);
+          if (!m.qtyReq.trim() || !Number.isFinite(q) || q <= 0) {
+            return setErr("Qty Req material wajib > 0");
+          }
         }
       }
     }
@@ -424,8 +467,11 @@ export default function ProPlanner() {
         startDate: s.startDate ? new Date(s.startDate) : undefined,
         partNumber: s.partNumber?.trim() || undefined,
         materials: s.materials
-          .filter(m => m.materialId) 
-          .map((m) => ({ materialId: m.materialId!, qtyReq: Number(m.qtyReq) })),
+          .filter((m) => m.materialId)
+          .map((m) => ({
+            materialId: m.materialId!,
+            qtyReq: Number(m.qtyReq),
+          })),
       })),
     };
 
@@ -516,7 +562,7 @@ export default function ProPlanner() {
                 <div className="flex justify-between text-sm font-medium">
                   <span>Proses (Prefix PRO)</span>
                   {headerProcess && (
-                    <span className="text-xs font-normal text-muted-foreground">
+                    <span className="text-muted-foreground text-xs font-normal">
                       Prefix: {headerProcess.code}
                     </span>
                   )}
@@ -539,7 +585,9 @@ export default function ProPlanner() {
               </div>
 
               <div className="space-y-2 lg:col-span-3">
-                <div className="text-sm font-medium">No. PRO (Manual/Import)</div>
+                <div className="text-sm font-medium">
+                  No. PRO (Manual/Import)
+                </div>
                 <Input
                   value={manualProNumber}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -581,143 +629,82 @@ export default function ProPlanner() {
           </div>
 
           {err && (
-            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive font-medium">
+            <div className="bg-destructive/15 text-destructive rounded-md p-3 text-sm font-medium">
               {err}
             </div>
           )}
           {ok && (
-            <div className="rounded-md bg-green-500/15 p-3 text-sm text-green-600 font-medium">
+            <div className="rounded-md bg-green-500/15 p-3 text-sm font-medium text-green-600">
               {ok}
             </div>
           )}
 
           {/* Steps table */}
-          <div className="overflow-x-auto rounded-md border">
-            <div className="min-w-[860px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">No.</TableHead>
-
-                    <TableHead className="w-32">Part No.</TableHead>
-                    <TableHead>Machine</TableHead>
-                    <TableHead className="w-24">UP</TableHead>
-                    <TableHead>Material</TableHead>
-                    <TableHead className="w-24">Qty</TableHead>
-                    <TableHead className="w-24">UoM</TableHead>
-                    <TableHead className="w-[260px] text-right">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {steps.length === 0 ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="overflow-x-auto rounded-md border">
+              <div className="min-w-[860px]">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        className="py-12 text-center text-muted-foreground"
-                      >
-                        <div className="flex flex-col items-center gap-1">
-                          <p className="font-semibold">Belum ada step</p>
-                          <p className="text-sm">
-                            Klik "Import CSV" atau "+ Tambah Step" untuk memulai.
-                          </p>
-                        </div>
-                      </TableCell>
+                      <TableHead className="w-10"></TableHead>
+                      <TableHead className="w-16">No.</TableHead>
+
+                      <TableHead className="w-32">Part No.</TableHead>
+                      <TableHead>Machine</TableHead>
+                      <TableHead className="w-24">Tanggal</TableHead>
+                      <TableHead className="w-24">UP</TableHead>
+                      <TableHead>Material</TableHead>
+                      <TableHead className="w-24 text-right">Qty</TableHead>
+                      <TableHead className="w-24 text-right">UoM</TableHead>
+                      <TableHead className="w-[180px] text-right">
+                        Aksi
+                      </TableHead>
                     </TableRow>
-                  ) : (
-                    steps.map((s: StepDraft, idx: number) => {
-                      const m = getMachine(s.machineId);
-                      return (
-                        <TableRow key={s.key}>
-                          <TableCell>{idx + 1}</TableCell>
+                  </TableHeader>
 
-                          <TableCell>
-                            {s.partNumber || "-"}
-                          </TableCell>
-                          <TableCell>
-                             <div className="flex flex-col">
-                                <span>{m?.name ?? <span className="text-destructive font-medium italic">Mesin tidak ditemukan</span>}</span>
-                                {s.startDate && <span className="text-[10px] text-muted-foreground">{s.startDate}</span>}
-                             </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {s.up || "-"}
-                          </TableCell>
-                          <TableCell>
-                             <div className="flex flex-col gap-1">
-                               {s.materials.map((m: StepDraftMaterial) => {
-                                  const matInfo = getMaterial(m.materialId);
-                                  return (
-                                    <div key={m.key} className="text-xs border-b last:border-0 pb-0.5">
-                                      {matInfo?.name ?? <span className="text-destructive font-medium italic">Unknown Material</span>}
-                                    </div>
-                                  )
-                                })}
-                               {s.materials.length === 0 && "-"}
-                             </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                             <div className="flex flex-col gap-1">
-                               {s.materials.map((m: StepDraftMaterial) => (
-                                    <div key={m.key} className="text-xs border-b last:border-0 pb-0.5">
-                                      {m.qtyReq?.trim() ? Number(m.qtyReq).toLocaleString("id-ID") : "-"}
-                                    </div>
-                               ))}
-                             </div>
-                          </TableCell>
-                          <TableCell>
-                             <div className="flex flex-col gap-1">
-                               {s.materials.map((m: StepDraftMaterial) => (
-                                    <div key={m.key} className="text-xs border-b last:border-0 pb-0.5">
-                                      {getMaterial(m.materialId)?.uom ?? "-"}
-                                    </div>
-                               ))}
-                             </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="inline-flex gap-2">
-                              <Button
-                                variant="outline"
-                                className="h-9"
-                                onClick={() => moveStep(s.key, "up")}
-                                disabled={idx === 0}
-                              >
-                                Up
-                              </Button>
-                              <Button
-                                variant="outline"
-                                className="h-9"
-                                onClick={() => moveStep(s.key, "down")}
-                                disabled={idx === steps.length - 1}
-                              >
-                                Down
-                              </Button>
-                              <Button
-                                variant="outline"
-                                className="h-9"
-                                onClick={() => openEdit(s)}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                className="h-9"
-                                onClick={() => removeStep(s.key)}
-                              >
-                                Hapus
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
+                  <TableBody>
+                    {steps.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={10}
+                          className="text-muted-foreground py-12 text-center"
+                        >
+                          <div className="flex flex-col items-center gap-1">
+                            <p className="font-semibold">Belum ada step</p>
+                            <p className="text-sm">
+                              Klik "Import CSV" atau "+ Tambah Step" untuk
+                              memulai.
+                            </p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      <SortableContext
+                        items={steps.map((s) => s.key)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {steps.map((s, idx) => (
+                          <SortableRow
+                            key={s.key}
+                            step={s}
+                            idx={idx}
+                            machines={machines.data ?? []}
+                            materialsList={materials.data ?? []}
+                            onEdit={openEdit}
+                            onRemove={removeStep}
+                          />
+                        ))}
+                      </SortableContext>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
-          </div>
-
-
+          </DndContext>
         </CardContent>
       </Card>
 
@@ -745,21 +732,26 @@ export default function ProPlanner() {
                     const newUp = e.target.value;
                     const upNum = Number(newUp);
                     const poNum = Number(qtyPoPcs);
-                    
-                  setDraft((d: StepDraft) => {
-                       // Recalc materials if material is sheet
-                       const newMaterials = d.materials.map((m: StepDraftMaterial) => {
-                          const matInfo = materials.data?.find((x: any) => x.id === m.materialId);
-                          const isSheet = matInfo?.uom?.toLowerCase() === "sheet";
-                          
+
+                    setDraft((d: StepDraft) => {
+                      // Recalc materials if material is sheet
+                      const newMaterials = d.materials.map(
+                        (m: StepDraftMaterial) => {
+                          const matInfo = materials.data?.find(
+                            (x: any) => x.id === m.materialId,
+                          );
+                          const isSheet =
+                            matInfo?.uom?.toLowerCase() === "sheet";
+
                           if (isSheet && upNum > 0 && poNum > 0) {
-                             const autoQty = String(Math.ceil(poNum / upNum));
-                             return { ...m, qtyReq: autoQty };
+                            const autoQty = String(Math.ceil(poNum / upNum));
+                            return { ...m, qtyReq: autoQty };
                           }
                           return m;
-                       });
-                       
-                       return { ...d, up: newUp, materials: newMaterials };
+                        },
+                      );
+
+                      return { ...d, up: newUp, materials: newMaterials };
                     });
                   }}
                   placeholder="contoh: 4"
@@ -771,7 +763,10 @@ export default function ProPlanner() {
                 <Input
                   value={draft.partNumber || ""}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setDraft((d: StepDraft) => ({ ...d, partNumber: e.target.value }))
+                    setDraft((d: StepDraft) => ({
+                      ...d,
+                      partNumber: e.target.value,
+                    }))
                   }
                   placeholder="Part Number for this step"
                 />
@@ -782,14 +777,14 @@ export default function ProPlanner() {
                 <select
                   value={draft.machineId ?? ""}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                     const val = e.target.value ? Number(e.target.value) : null;
-                     
-                     setDraft((d: StepDraft) => {
-                        return {
-                           ...d,
-                           machineId: val,
-                        };
-                     });
+                    const val = e.target.value ? Number(e.target.value) : null;
+
+                    setDraft((d: StepDraft) => {
+                      return {
+                        ...d,
+                        machineId: val,
+                      };
+                    });
                   }}
                   className={control}
                   disabled={loadingMaster}
@@ -809,7 +804,10 @@ export default function ProPlanner() {
                   type="date"
                   value={draft.startDate}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setDraft((d: StepDraft) => ({ ...d, startDate: e.target.value }))
+                    setDraft((d: StepDraft) => ({
+                      ...d,
+                      startDate: e.target.value,
+                    }))
                   }
                   placeholder="dd/mm/yyyy"
                 />
@@ -818,109 +816,135 @@ export default function ProPlanner() {
 
             <Separator />
 
-             {/* Materials Section */}
+            {/* Materials Section */}
             <div className="space-y-3">
-               <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium">Material (optional)</div>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-7 text-xs border"
-                    onClick={() => setDraft((d: StepDraft) => ({ ...d, materials: [...d.materials, { key: uid(), materialId: null, qtyReq: "" }] }))}
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-medium">Material (optional)</div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 border text-xs"
+                  onClick={() =>
+                    setDraft((d: StepDraft) => ({
+                      ...d,
+                      materials: [
+                        ...d.materials,
+                        { key: uid(), materialId: null, qtyReq: "" },
+                      ],
+                    }))
+                  }
+                >
+                  + Tambah Material
+                </Button>
+              </div>
+
+              <div className="max-h-[300px] space-y-2 overflow-y-auto pr-1">
+                {draft.materials.map((mat: StepDraftMaterial, mIdx: number) => (
+                  <div
+                    key={mat.key}
+                    className="grid grid-cols-12 items-end gap-2 border-b pb-2 last:border-0 last:pb-0"
                   >
-                    + Tambah Material
-                  </Button>
-               </div>
-               
-               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                 {draft.materials.map((mat: StepDraftMaterial, mIdx: number) => (
-                    <div key={mat.key} className="grid grid-cols-12 gap-2 items-end border-b pb-2 last:border-0 last:pb-0">
-                       {/* Material Select */}
-                       <div className="col-span-6">
-                          <label className="text-[10px] text-muted-foreground">Item</label>
-                          <select
-                            value={mat.materialId ?? ""}
-                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                              const v = e.target.value ? Number(e.target.value) : null;
-                              
-                              setDraft((d: StepDraft) => {
-                                 const selectedMaterial = materials.data?.find((m: any) => m.id === v);
-                                 const isSheet = selectedMaterial?.uom?.toLowerCase() === 'sheet';
-                                 
-                                 const poNum = Number(qtyPoPcs);
-                                 const upNum = Number(d.up);
-                                 
-                                 let autoQty = mat.qtyReq;
-                                 
-                                 // Auto calc if sheet
-                                 if (v && isSheet && upNum > 0 && poNum > 0) {
-                                    autoQty = String(Math.ceil(poNum / upNum));
-                                 }
-                                 
-                                 const newMats = [...d.materials];
-                                 newMats[mIdx] = { ...mat, materialId: v, qtyReq: v ? autoQty : "" };
-                                 return { ...d, materials: newMats };
-                              });
-                            }}
-                            className={`${control} h-8 text-xs py-0`} 
-                            disabled={loadingMaster}
-                          >
-                            <option value="">(pilih)</option>
-                            {(materials.data ?? []).map((m: any) => (
-                              <option key={m.id} value={m.id}>
-                                {m.name}
-                              </option>
-                            ))}
-                          </select>
-                       </div>
-                       
-                       {/* Qty Input */}
-                       <div className="col-span-4">
-                          <label className="text-[10px] text-muted-foreground">
-                             Qty ({getMaterial(mat.materialId)?.uom ?? "-"})
-                          </label>
-                          <Input
-                            type="number"
-                            className="h-8 text-xs"
-                            value={mat.qtyReq}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                               const val = e.target.value;
-                               setDraft((d: StepDraft) => {
-                                  const newMats = [...d.materials];
-                                  newMats[mIdx] = { ...mat, qtyReq: val };
-                                  return { ...d, materials: newMats };
-                               })
-                            }}
-                            disabled={!mat.materialId}
-                            placeholder="Qty"
-                          />
-                       </div>
-                       
-                       {/* Delete Btn */}
-                       <div className="col-span-2">
-                          <Button
-                             type="button"
-                             variant="ghost" 
-                             size="icon"
-                             className="h-8 w-8 text-destructive hover:text-destructive"
-                             onClick={() => setDraft((d: StepDraft) => {
-                                const newMats = d.materials.filter((m: StepDraftMaterial) => m.key !== mat.key);
-                                return { ...d, materials: newMats };
-                             })}
-                          >
-                             x
-                          </Button>
-                       </div>
+                    {/* Material Select */}
+                    <div className="col-span-6">
+                      <label className="text-muted-foreground text-[10px]">
+                        Item
+                      </label>
+                      <select
+                        value={mat.materialId ?? ""}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                          const v = e.target.value
+                            ? Number(e.target.value)
+                            : null;
+
+                          setDraft((d: StepDraft) => {
+                            const selectedMaterial = materials.data?.find(
+                              (m: any) => m.id === v,
+                            );
+                            const isSheet =
+                              selectedMaterial?.uom?.toLowerCase() === "sheet";
+
+                            const poNum = Number(qtyPoPcs);
+                            const upNum = Number(d.up);
+
+                            let autoQty = mat.qtyReq;
+
+                            // Auto calc if sheet
+                            if (v && isSheet && upNum > 0 && poNum > 0) {
+                              autoQty = String(Math.ceil(poNum / upNum));
+                            }
+
+                            const newMats = [...d.materials];
+                            newMats[mIdx] = {
+                              ...mat,
+                              materialId: v,
+                              qtyReq: v ? autoQty : "",
+                            };
+                            return { ...d, materials: newMats };
+                          });
+                        }}
+                        className={`${control} h-8 py-0 text-xs`}
+                        disabled={loadingMaster}
+                      >
+                        <option value="">(pilih)</option>
+                        {(materials.data ?? []).map((m: any) => (
+                          <option key={m.id} value={m.id}>
+                            {m.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                 ))}
-                 
-                 {draft.materials.length === 0 && (
-                    <div className="text-center text-xs text-muted-foreground py-2 border border-dashed rounded">
-                       Tidak ada material.
+
+                    {/* Qty Input */}
+                    <div className="col-span-4">
+                      <label className="text-muted-foreground text-[10px]">
+                        Qty ({getMaterial(mat.materialId)?.uom ?? "-"})
+                      </label>
+                      <Input
+                        type="number"
+                        className="h-8 text-xs"
+                        value={mat.qtyReq}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const val = e.target.value;
+                          setDraft((d: StepDraft) => {
+                            const newMats = [...d.materials];
+                            newMats[mIdx] = { ...mat, qtyReq: val };
+                            return { ...d, materials: newMats };
+                          });
+                        }}
+                        disabled={!mat.materialId}
+                        placeholder="Qty"
+                      />
                     </div>
-                 )}
-               </div>
+
+                    {/* Delete Btn */}
+                    <div className="col-span-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive h-8 w-8"
+                        onClick={() =>
+                          setDraft((d: StepDraft) => {
+                            const newMats = d.materials.filter(
+                              (m: StepDraftMaterial) => m.key !== mat.key,
+                            );
+                            return { ...d, materials: newMats };
+                          })
+                        }
+                      >
+                        x
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+
+                {draft.materials.length === 0 && (
+                  <div className="text-muted-foreground rounded border border-dashed py-2 text-center text-xs">
+                    Tidak ada material.
+                  </div>
+                )}
+              </div>
             </div>
 
             {err ? <p className="text-destructive text-sm">{err}</p> : null}
@@ -941,5 +965,127 @@ export default function ProPlanner() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function SortableRow({
+  step,
+  idx,
+  machines,
+  materialsList,
+  onEdit,
+  onRemove,
+}: {
+  step: StepDraft;
+  idx: number;
+  machines: any[];
+  materialsList: any[];
+  onEdit: (s: StepDraft) => void;
+  onRemove: (k: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: step.key });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    position: "relative" as const,
+    zIndex: isDragging ? 999 : "auto",
+  };
+
+  const m = machines.find((x) => x.id === step.machineId);
+  const getMatName = (id: number) =>
+    materialsList.find((x) => x.id === id)?.name ?? "-";
+  const getMatUom = (id: number) =>
+    materialsList.find((x) => x.id === id)?.uom ?? "-";
+
+  return (
+    <TableRow ref={setNodeRef} style={style} className="group">
+      <TableCell className="w-10 p-0 pl-2 text-center">
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab touch-none rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 active:cursor-grabbing"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+      </TableCell>
+      <TableCell>{idx + 1}</TableCell>
+      <TableCell>{step.partNumber || "-"}</TableCell>
+      <TableCell>
+        <div className="flex flex-col">
+          <span className="text-sm font-medium">
+            {m?.name ?? (
+              <span className="text-destructive italic">Unknown</span>
+            )}
+          </span>
+        </div>
+      </TableCell>
+      <TableCell className="text-center text-xs">
+        {step.startDate || "-"}
+      </TableCell>
+      <TableCell className="text-center">{step.up || "-"}</TableCell>
+      <TableCell>
+        <div className="flex flex-col gap-1">
+          {step.materials.map((mat) => (
+            <div key={mat.key} className="border-b pb-1 text-xs last:border-0">
+              {getMatName(mat.materialId!)}
+            </div>
+          ))}
+          {step.materials.length === 0 && "-"}
+        </div>
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex flex-col gap-1">
+          {step.materials.map((mat) => (
+            <div
+              key={mat.key}
+              className="border-b pb-1 font-mono text-xs last:border-0"
+            >
+              {mat.qtyReq ? Number(mat.qtyReq).toLocaleString("id-ID") : "-"}
+            </div>
+          ))}
+        </div>
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex flex-col gap-1">
+          {step.materials.map((mat) => (
+            <div
+              key={mat.key}
+              className="text-muted-foreground border-b pb-1 text-xs last:border-0"
+            >
+              {getMatUom(mat.materialId!)}
+            </div>
+          ))}
+        </div>
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="inline-flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => onEdit(step)}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive h-7 px-2 text-xs"
+            onClick={() => onRemove(step.key)}
+          >
+            Hapus
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }
