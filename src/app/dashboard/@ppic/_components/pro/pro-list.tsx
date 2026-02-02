@@ -913,6 +913,16 @@ export default function ProList({ initialSelectedId, onClearJump, initialTypeFil
                     </label>
                  </div>
               )}
+              
+              {/* Display Auto Shift Expansion Flag */}
+              {!editing && (p as any).autoShiftExpansion && (
+                <div className="flex items-center gap-2 lg:col-span-12 pt-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                    <span className="text-sm">🔄</span>
+                    PRO dibuat dengan otomatisasi shift
+                  </span>
+                </div>
+              )}
             </div>
 
             {err ? <p className="text-destructive text-sm">{err}</p> : null}

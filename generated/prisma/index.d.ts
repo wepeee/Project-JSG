@@ -6443,6 +6443,7 @@ export namespace Prisma {
     startDate: Date | null
     status: $Enums.ProStatus | null
     type: $Enums.ProType | null
+    autoShiftExpansion: boolean | null
     processId: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -6456,6 +6457,7 @@ export namespace Prisma {
     startDate: Date | null
     status: $Enums.ProStatus | null
     type: $Enums.ProType | null
+    autoShiftExpansion: boolean | null
     processId: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -6469,6 +6471,7 @@ export namespace Prisma {
     startDate: number
     status: number
     type: number
+    autoShiftExpansion: number
     processId: number
     createdAt: number
     updatedAt: number
@@ -6496,6 +6499,7 @@ export namespace Prisma {
     startDate?: true
     status?: true
     type?: true
+    autoShiftExpansion?: true
     processId?: true
     createdAt?: true
     updatedAt?: true
@@ -6509,6 +6513,7 @@ export namespace Prisma {
     startDate?: true
     status?: true
     type?: true
+    autoShiftExpansion?: true
     processId?: true
     createdAt?: true
     updatedAt?: true
@@ -6522,6 +6527,7 @@ export namespace Prisma {
     startDate?: true
     status?: true
     type?: true
+    autoShiftExpansion?: true
     processId?: true
     createdAt?: true
     updatedAt?: true
@@ -6622,6 +6628,7 @@ export namespace Prisma {
     startDate: Date | null
     status: $Enums.ProStatus
     type: $Enums.ProType
+    autoShiftExpansion: boolean
     processId: number | null
     createdAt: Date
     updatedAt: Date
@@ -6654,6 +6661,7 @@ export namespace Prisma {
     startDate?: boolean
     status?: boolean
     type?: boolean
+    autoShiftExpansion?: boolean
     processId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -6672,12 +6680,13 @@ export namespace Prisma {
     startDate?: boolean
     status?: boolean
     type?: boolean
+    autoShiftExpansion?: boolean
     processId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "qtyPoPcs" | "startDate" | "status" | "type" | "processId" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
+  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "qtyPoPcs" | "startDate" | "status" | "type" | "autoShiftExpansion" | "processId" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
   export type ProInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     process?: boolean | Pro$processArgs<ExtArgs>
     steps?: boolean | Pro$stepsArgs<ExtArgs>
@@ -6698,6 +6707,7 @@ export namespace Prisma {
       startDate: Date | null
       status: $Enums.ProStatus
       type: $Enums.ProType
+      autoShiftExpansion: boolean
       processId: number | null
       createdAt: Date
       updatedAt: Date
@@ -7079,6 +7089,7 @@ export namespace Prisma {
     readonly startDate: FieldRef<"Pro", 'DateTime'>
     readonly status: FieldRef<"Pro", 'ProStatus'>
     readonly type: FieldRef<"Pro", 'ProType'>
+    readonly autoShiftExpansion: FieldRef<"Pro", 'Boolean'>
     readonly processId: FieldRef<"Pro", 'Int'>
     readonly createdAt: FieldRef<"Pro", 'DateTime'>
     readonly updatedAt: FieldRef<"Pro", 'DateTime'>
@@ -9599,6 +9610,7 @@ export namespace Prisma {
     startDate: 'startDate',
     status: 'status',
     type: 'type',
+    autoShiftExpansion: 'autoShiftExpansion',
     processId: 'processId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -9753,6 +9765,13 @@ export namespace Prisma {
    * Reference to a field of type 'ProType'
    */
   export type EnumProTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProType'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -10061,6 +10080,7 @@ export namespace Prisma {
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
     type?: EnumProTypeFilter<"Pro"> | $Enums.ProType
+    autoShiftExpansion?: BoolFilter<"Pro"> | boolean
     processId?: IntNullableFilter<"Pro"> | number | null
     createdAt?: DateTimeFilter<"Pro"> | Date | string
     updatedAt?: DateTimeFilter<"Pro"> | Date | string
@@ -10076,6 +10096,7 @@ export namespace Prisma {
     startDate?: SortOrderInput | SortOrder
     status?: SortOrder
     type?: SortOrder
+    autoShiftExpansion?: SortOrder
     processId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10095,6 +10116,7 @@ export namespace Prisma {
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
     type?: EnumProTypeFilter<"Pro"> | $Enums.ProType
+    autoShiftExpansion?: BoolFilter<"Pro"> | boolean
     processId?: IntNullableFilter<"Pro"> | number | null
     createdAt?: DateTimeFilter<"Pro"> | Date | string
     updatedAt?: DateTimeFilter<"Pro"> | Date | string
@@ -10110,6 +10132,7 @@ export namespace Prisma {
     startDate?: SortOrderInput | SortOrder
     status?: SortOrder
     type?: SortOrder
+    autoShiftExpansion?: SortOrder
     processId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10131,6 +10154,7 @@ export namespace Prisma {
     startDate?: DateTimeNullableWithAggregatesFilter<"Pro"> | Date | string | null
     status?: EnumProStatusWithAggregatesFilter<"Pro"> | $Enums.ProStatus
     type?: EnumProTypeWithAggregatesFilter<"Pro"> | $Enums.ProType
+    autoShiftExpansion?: BoolWithAggregatesFilter<"Pro"> | boolean
     processId?: IntNullableWithAggregatesFilter<"Pro"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"Pro"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Pro"> | Date | string
@@ -10555,6 +10579,7 @@ export namespace Prisma {
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     type?: $Enums.ProType
+    autoShiftExpansion?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     process?: ProcessCreateNestedOneWithoutProsInput
@@ -10569,6 +10594,7 @@ export namespace Prisma {
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     type?: $Enums.ProType
+    autoShiftExpansion?: boolean
     processId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -10582,6 +10608,7 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     process?: ProcessUpdateOneWithoutProsNestedInput
@@ -10596,6 +10623,7 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     processId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10610,6 +10638,7 @@ export namespace Prisma {
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     type?: $Enums.ProType
+    autoShiftExpansion?: boolean
     processId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -10622,6 +10651,7 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10634,6 +10664,7 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     processId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11154,6 +11185,11 @@ export namespace Prisma {
     not?: NestedEnumProTypeFilter<$PrismaModel> | $Enums.ProType
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | null
@@ -11184,6 +11220,7 @@ export namespace Prisma {
     startDate?: SortOrder
     status?: SortOrder
     type?: SortOrder
+    autoShiftExpansion?: SortOrder
     processId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11203,6 +11240,7 @@ export namespace Prisma {
     startDate?: SortOrder
     status?: SortOrder
     type?: SortOrder
+    autoShiftExpansion?: SortOrder
     processId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11216,6 +11254,7 @@ export namespace Prisma {
     startDate?: SortOrder
     status?: SortOrder
     type?: SortOrder
+    autoShiftExpansion?: SortOrder
     processId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -11259,6 +11298,14 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProTypeFilter<$PrismaModel>
     _max?: NestedEnumProTypeFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -11610,6 +11657,10 @@ export namespace Prisma {
 
   export type EnumProTypeFieldUpdateOperationsInput = {
     set?: $Enums.ProType
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type ProcessUpdateOneWithoutProsNestedInput = {
@@ -11965,6 +12016,11 @@ export namespace Prisma {
     not?: NestedEnumProTypeFilter<$PrismaModel> | $Enums.ProType
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | null
@@ -11997,6 +12053,14 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProTypeFilter<$PrismaModel>
     _max?: NestedEnumProTypeFilter<$PrismaModel>
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -12168,6 +12232,7 @@ export namespace Prisma {
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     type?: $Enums.ProType
+    autoShiftExpansion?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     steps?: ProStepCreateNestedManyWithoutProInput
@@ -12181,6 +12246,7 @@ export namespace Prisma {
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     type?: $Enums.ProType
+    autoShiftExpansion?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     steps?: ProStepUncheckedCreateNestedManyWithoutProInput
@@ -12223,6 +12289,7 @@ export namespace Prisma {
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
     type?: EnumProTypeFilter<"Pro"> | $Enums.ProType
+    autoShiftExpansion?: BoolFilter<"Pro"> | boolean
     processId?: IntNullableFilter<"Pro"> | number | null
     createdAt?: DateTimeFilter<"Pro"> | Date | string
     updatedAt?: DateTimeFilter<"Pro"> | Date | string
@@ -12320,6 +12387,7 @@ export namespace Prisma {
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     type?: $Enums.ProType
+    autoShiftExpansion?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     process?: ProcessCreateNestedOneWithoutProsInput
@@ -12333,6 +12401,7 @@ export namespace Prisma {
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     type?: $Enums.ProType
+    autoShiftExpansion?: boolean
     processId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -12408,6 +12477,7 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     process?: ProcessUpdateOneWithoutProsNestedInput
@@ -12421,6 +12491,7 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     processId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12650,6 +12721,7 @@ export namespace Prisma {
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     type?: $Enums.ProType
+    autoShiftExpansion?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12661,6 +12733,7 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     steps?: ProStepUpdateManyWithoutProNestedInput
@@ -12674,6 +12747,7 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     steps?: ProStepUncheckedUpdateManyWithoutProNestedInput
@@ -12687,6 +12761,7 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

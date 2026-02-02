@@ -168,6 +168,7 @@ exports.Prisma.ProScalarFieldEnum = {
   startDate: 'startDate',
   status: 'status',
   type: 'type',
+  autoShiftExpansion: 'autoShiftExpansion',
   processId: 'processId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

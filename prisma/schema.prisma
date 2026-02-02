@@ -122,6 +122,9 @@ model Pro {
   startDate   DateTime?
   status      ProStatus @default(OPEN)
   type        ProType   @default(PAPER)
+  
+  // Flag untuk menandai PRO dibuat dengan otomatisasi shift
+  autoShiftExpansion Boolean @default(false)
 
   processId   Int?
   process     Process?  @relation(fields: [processId], references: [id])

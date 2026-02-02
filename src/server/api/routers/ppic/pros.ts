@@ -68,6 +68,7 @@ export const prosRouter = createTRPCRouter({
           startDate: true,
           status: true,
           type: true, // Added
+          autoShiftExpansion: true, // Added flag
           createdAt: true,
           process: { select: { code: true, name: true } }, // Added to header
           steps: {
@@ -117,6 +118,7 @@ export const prosRouter = createTRPCRouter({
         proNumber: z.string().optional(), // Manual PRO override
         startDate: z.coerce.date().optional(),
         expand: z.boolean().default(true).optional(),
+        autoShiftExpansion: z.boolean().default(false).optional(), // Flag otomatisasi shift
         steps: z
           .array(
             z.object({
@@ -196,6 +198,7 @@ export const prosRouter = createTRPCRouter({
             startDate: firstStepDate, // Auto from first step
             status: "OPEN",
             type: input.type, // Added
+            autoShiftExpansion: input.autoShiftExpansion ?? false, // Save flag
           },
         });
 
@@ -285,6 +288,7 @@ export const prosRouter = createTRPCRouter({
           status: true,
           createdAt: true,
           updatedAt: true,
+          autoShiftExpansion: true, // Added flag
           processId: true, // Added to header
           process: { select: { code: true, name: true } }, // Added to header
           steps: {
@@ -541,6 +545,7 @@ export const prosRouter = createTRPCRouter({
           startDate: true,
           status: true,
           type: true,
+          autoShiftExpansion: true, // Added flag
           process: { select: { name: true, code: true } }, // Added to header
           steps: {
             orderBy: { orderNo: "asc" },

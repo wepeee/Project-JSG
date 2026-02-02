@@ -133,6 +133,7 @@ export default function ProPlanner() {
     "PAPER",
   ); // Added
   const [manualProNumber, setManualProNumber] = React.useState("");
+  const [autoShiftExpansion, setAutoShiftExpansion] = React.useState(false); // Flag untuk otomatisasi shift
 
   const createPro = api.pros.create.useMutation({
     onSuccess: async (created) => {
@@ -460,6 +461,7 @@ export default function ProPlanner() {
       qtyPoPcs: qty,
       processId: processId,
       type: proType, // Added
+      autoShiftExpansion: autoShiftExpansion, // Flag otomatisasi shift
       proNumber: manualProNumber ? manualProNumber.trim() : undefined,
       steps: steps.map((s) => ({
         up: Number(s.up),
@@ -596,6 +598,26 @@ export default function ProPlanner() {
                   placeholder="(Auto)"
                   className="bg-muted/30"
                 />
+              </div>
+
+              {/* Checkbox untuk Auto Shift Expansion */}
+              <div className="flex items-center gap-2 lg:col-span-12 pt-2">
+                <input
+                  type="checkbox"
+                  id="autoShiftExpansion"
+                  checked={autoShiftExpansion}
+                  onChange={(e) => setAutoShiftExpansion(e.target.checked)}
+                  className="h-4 w-4 cursor-pointer"
+                />
+                <label
+                  htmlFor="autoShiftExpansion"
+                  className="text-sm font-medium text-blue-600 cursor-pointer"
+                >
+                  🔄 Otomatis tambahkan shift sesuai kapasitas mesin
+                </label>
+                <span className="text-xs text-muted-foreground">
+                  (PRO akan otomatis di-split per shift berdasarkan stdOutputPerShift mesin)
+                </span>
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:col-span-5 lg:justify-end">
