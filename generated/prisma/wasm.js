@@ -154,7 +154,10 @@ exports.Prisma.ProStepScalarFieldEnum = {
   estimatedShifts: 'estimatedShifts',
   startDate: 'startDate',
   machineId: 'machineId',
-  partNumber: 'partNumber'
+  partNumber: 'partNumber',
+  manPowerStd: 'manPowerStd',
+  cycleTimeStd: 'cycleTimeStd',
+  cavityStd: 'cavityStd'
 };
 
 exports.Prisma.ProStepMaterialScalarFieldEnum = {
@@ -164,9 +167,47 @@ exports.Prisma.ProStepMaterialScalarFieldEnum = {
   qtyReq: 'qtyReq'
 };
 
+exports.Prisma.ProductionReportScalarFieldEnum = {
+  id: 'id',
+  proStepId: 'proStepId',
+  reportDate: 'reportDate',
+  shift: 'shift',
+  operatorName: 'operatorName',
+  reportType: 'reportType',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  batchNo: 'batchNo',
+  manPowerStd: 'manPowerStd',
+  manPowerAct: 'manPowerAct',
+  cycleTimeStd: 'cycleTimeStd',
+  cycleTimeAct: 'cycleTimeAct',
+  cavityStd: 'cavityStd',
+  cavityAct: 'cavityAct',
+  inputMaterialQty: 'inputMaterialQty',
+  materialRunnerQty: 'materialRunnerQty',
+  materialPurgeQty: 'materialPurgeQty',
+  qtyPassOn: 'qtyPassOn',
+  qtyHold: 'qtyHold',
+  qtyWip: 'qtyWip',
+  qtyGood: 'qtyGood',
+  qtyReject: 'qtyReject',
+  rejectBreakdown: 'rejectBreakdown',
+  downtimeBreakdown: 'downtimeBreakdown',
+  totalDowntime: 'totalDowntime',
+  notes: 'notes',
+  metaData: 'metaData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.UserOrderByRelevanceFieldEnum = {
@@ -207,6 +248,24 @@ exports.Prisma.ProOrderByRelevanceFieldEnum = {
 exports.Prisma.ProStepOrderByRelevanceFieldEnum = {
   partNumber: 'partNumber'
 };
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.ProductionReportOrderByRelevanceFieldEnum = {
+  id: 'id',
+  operatorName: 'operatorName',
+  batchNo: 'batchNo',
+  notes: 'notes'
+};
 exports.Role = exports.$Enums.Role = {
   SUPERADMIN: 'SUPERADMIN',
   ADMIN: 'ADMIN',
@@ -235,6 +294,14 @@ exports.ProType = exports.$Enums.ProType = {
   OTHER: 'OTHER'
 };
 
+exports.LphType = exports.$Enums.LphType = {
+  PAPER: 'PAPER',
+  PRINTING: 'PRINTING',
+  PACKING_ASSEMBLY: 'PACKING_ASSEMBLY',
+  BLOW_MOULDING: 'BLOW_MOULDING',
+  INJECTION: 'INJECTION'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Machine: 'Machine',
@@ -243,7 +310,8 @@ exports.Prisma.ModelName = {
   ProSequence: 'ProSequence',
   Pro: 'Pro',
   ProStep: 'ProStep',
-  ProStepMaterial: 'ProStepMaterial'
+  ProStepMaterial: 'ProStepMaterial',
+  ProductionReport: 'ProductionReport'
 };
 /**
  * Create the Client
@@ -284,6 +352,7 @@ const config = {
     "db"
   ],
   "activeProvider": "mysql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -292,13 +361,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n  // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below\n  // Further reading:\n  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema\n  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string\n  url      = env(\"DATABASE_URL\")\n}\n\nenum Role {\n  SUPERADMIN\n  ADMIN\n  PPIC\n  OPERATOR\n  MASTER\n}\n\nmodel User {\n  id           String   @id @default(cuid())\n  username     String   @unique\n  passwordHash String   @db.VarChar(255)\n  role         Role     @default(ADMIN)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n\n// Mesin\n\nenum Uom {\n  sheet\n  pcs\n  meter\n  cm\n}\n\nmodel Machine {\n  id                Int     @id @default(autoincrement())\n  name              String\n  stdOutputPerHour  Int\n  stdOutputPerShift Int\n  uom               Uom\n  remark            String?\n\n  createdAt DateTime  @default(now())\n  updatedAt DateTime  @updatedAt\n  proSteps  ProStep[]\n}\n\n// model MachineCapability {\n//   // stepId manual: 1=FRONT,2=BACK,4=CUTTING...\n//   stepId        Int\n\n//   machineId     Int\n//   machine       Machine  @relation(fields: [machineId], references: [id], onDelete: Cascade)\n\n//   name          String   // FRONT/BACK/OPV\n//   fullName      String   // \"SPEEDMASTER SX-74 FRONT\"\n//   standardSpeed Int\n//   uom           String\n//   remark        String?\n\n// //   dailyReports  DailyReport[]\n\n//   @@id([machineId, stepId])          // ✅ ini kuncinya\n//   @@unique([machineId, name])        // optional tapi bagus\n//   @@index([machineId])\n// }\n\n// material / bahan baku\n\nmodel Material {\n  id               Int               @id @default(autoincrement())\n  name             String            @unique\n  uom              String\n  createdAt        DateTime          @default(now())\n  updatedAt        DateTime          @updatedAt\n  proStepMaterials ProStepMaterial[]\n}\n\nenum ProStatus {\n  OPEN\n  IN_PROGRESS\n  DONE\n  CANCELLED\n}\n\nmodel Process {\n  id   Int    @id @default(autoincrement())\n  code String @unique @db.VarChar(2) // WAJIB 2 digit: \"11\"\n  name String @unique\n\n  pros Pro[]\n}\n\nmodel ProSequence {\n  // prefix = (processCode 2 digit) + (MM 2 digit) + (YY 2 digit) = 6 digit\n  prefix String @id @db.VarChar(6)\n  last   Int\n}\n\nenum ProType {\n  PAPER\n  RIGID\n  OTHER\n}\n\nmodel Pro {\n  id          Int       @id @default(autoincrement())\n  proNumber   String    @unique @db.VarChar(9)\n  productName String\n  qtyPoPcs    Int\n  startDate   DateTime?\n  status      ProStatus @default(OPEN)\n  type        ProType   @default(PAPER)\n\n  // Flag untuk menandai PRO dibuat dengan otomatisasi shift\n  autoShiftExpansion Boolean @default(false)\n\n  processId Int?\n  process   Process? @relation(fields: [processId], references: [id])\n\n  steps ProStep[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel ProStep {\n  id    Int @id @default(autoincrement())\n  proId Int\n  pro   Pro @relation(fields: [proId], references: [id], onDelete: Cascade)\n\n  orderNo Int // 1,2,3...\n\n  up              Int?\n  estimatedShifts Int?\n\n  startDate DateTime?\n\n  machineId Int?\n  machine   Machine? @relation(fields: [machineId], references: [id])\n\n  partNumber String?\n\n  materials ProStepMaterial[]\n\n  @@unique([proId, orderNo])\n  @@index([proId])\n}\n\nmodel ProStepMaterial {\n  id     Int     @id @default(autoincrement())\n  stepId Int\n  step   ProStep @relation(fields: [stepId], references: [id], onDelete: Cascade)\n\n  materialId Int\n  material   Material @relation(fields: [materialId], references: [id])\n\n  qtyReq Decimal @db.Decimal(12, 3)\n\n  @@unique([stepId, materialId])\n  @@index([stepId])\n}\n",
-  "inlineSchemaHash": "12c597b749bbcad7ed04c6861bd18fe8df2778cd4a3f0f5f2c7b52d0807a8fd7",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mysql\"\n  // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below\n  // Further reading:\n  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema\n  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string\n  url      = env(\"DATABASE_URL\")\n}\n\nenum Role {\n  SUPERADMIN\n  ADMIN\n  PPIC\n  OPERATOR\n  MASTER\n}\n\nmodel User {\n  id           String   @id @default(cuid())\n  username     String   @unique\n  passwordHash String   @db.VarChar(255)\n  role         Role     @default(ADMIN)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n\n// Mesin\n\nenum Uom {\n  sheet\n  pcs\n  meter\n  cm\n}\n\nmodel Machine {\n  id                Int     @id @default(autoincrement())\n  name              String\n  stdOutputPerHour  Int\n  stdOutputPerShift Int\n  uom               Uom\n  remark            String?\n\n  createdAt DateTime  @default(now())\n  updatedAt DateTime  @updatedAt\n  proSteps  ProStep[]\n}\n\n// model MachineCapability {\n//   // stepId manual: 1=FRONT,2=BACK,4=CUTTING...\n//   stepId        Int\n\n//   machineId     Int\n//   machine       Machine  @relation(fields: [machineId], references: [id], onDelete: Cascade)\n\n//   name          String   // FRONT/BACK/OPV\n//   fullName      String   // \"SPEEDMASTER SX-74 FRONT\"\n//   standardSpeed Int\n//   uom           String\n//   remark        String?\n\n// //   dailyReports  DailyReport[]\n\n//   @@id([machineId, stepId])          // ✅ ini kuncinya\n//   @@unique([machineId, name])        // optional tapi bagus\n//   @@index([machineId])\n// }\n\n// material / bahan baku\n\nmodel Material {\n  id               Int               @id @default(autoincrement())\n  name             String            @unique\n  uom              String\n  createdAt        DateTime          @default(now())\n  updatedAt        DateTime          @updatedAt\n  proStepMaterials ProStepMaterial[]\n}\n\nenum ProStatus {\n  OPEN\n  IN_PROGRESS\n  DONE\n  CANCELLED\n}\n\nmodel Process {\n  id   Int    @id @default(autoincrement())\n  code String @unique @db.VarChar(2) // WAJIB 2 digit: \"11\"\n  name String @unique\n\n  pros Pro[]\n}\n\nmodel ProSequence {\n  // prefix = (processCode 2 digit) + (MM 2 digit) + (YY 2 digit) = 6 digit\n  prefix String @id @db.VarChar(6)\n  last   Int\n}\n\nenum ProType {\n  PAPER\n  RIGID\n  OTHER\n}\n\nmodel Pro {\n  id          Int       @id @default(autoincrement())\n  proNumber   String    @unique @db.VarChar(9)\n  productName String\n  qtyPoPcs    Int\n  startDate   DateTime?\n  status      ProStatus @default(OPEN)\n  type        ProType   @default(PAPER)\n\n  autoShiftExpansion Boolean @default(false)\n\n  // Flag untuk menandai PRO dibuat dengan otomatisasi shift\n\n  processId Int?\n  process   Process? @relation(fields: [processId], references: [id])\n\n  steps ProStep[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel ProStep {\n  id    Int @id @default(autoincrement())\n  proId Int\n  pro   Pro @relation(fields: [proId], references: [id], onDelete: Cascade)\n\n  orderNo Int // 1,2,3...\n\n  up              Int?\n  estimatedShifts Int?\n\n  startDate DateTime?\n\n  machineId Int?\n  machine   Machine? @relation(fields: [machineId], references: [id])\n\n  partNumber String?\n\n  // --- Target / Standards (for Reporting) ---\n  manPowerStd  Int?\n  cycleTimeStd Decimal? @db.Decimal(10, 2)\n  cavityStd    Int?\n\n  materials         ProStepMaterial[]\n  productionReports ProductionReport[]\n\n  @@unique([proId, orderNo])\n  @@index([proId])\n}\n\nmodel ProStepMaterial {\n  id     Int     @id @default(autoincrement())\n  stepId Int\n  step   ProStep @relation(fields: [stepId], references: [id], onDelete: Cascade)\n\n  materialId Int\n  material   Material @relation(fields: [materialId], references: [id])\n\n  qtyReq Decimal @db.Decimal(12, 3)\n  // --- Laporan Produksi Harian (LPH) ---\n\n  @@unique([stepId, materialId])\n  @@index([stepId])\n}\n\nenum LphType {\n  PAPER\n  PRINTING\n  PACKING_ASSEMBLY // Packing & Assembly merged as per excel structure\n  BLOW_MOULDING\n  INJECTION\n}\n\nmodel ProductionReport {\n  id String @id @default(cuid())\n\n  // Header Info\n  proStepId Int\n  step      ProStep @relation(fields: [proStepId], references: [id])\n\n  reportDate DateTime // Tanggal Laporan\n  shift      Int // 1, 2, 3\n\n  operatorName String\n\n  reportType LphType\n\n  // Common Time\n  startTime DateTime? // Jam Mulai\n  endTime   DateTime? // Jam Selesai\n\n  // --- Rigid Specific Header ---\n  batchNo String? // Batch No (Rigid)\n\n  // --- Resources (Rigid) ---\n  manPowerStd Int? // MP Std\n  manPowerAct Int? // MP Actual\n\n  cycleTimeStd Decimal? // CT Std (Detik)\n  cycleTimeAct Decimal? // CT Actual (Detik)\n\n  cavityStd Int? // Cavity Std (Blow/Injection)\n  cavityAct Int? // Cavity Actual (Blow/Injection)\n\n  // --- Material Usage ---\n  // Paper: \"Input Material\"\n  // Rigid (Blow/Inj): \"Total Material Tuang\", \"Gulungan/Cucian\", \"Runner\"\n  inputMaterialQty  Decimal? @default(0) // Paper: Input Material, Rigid: Material Tuang\n  materialRunnerQty Decimal? @default(0) // Rigid: PT/Runner\n  materialPurgeQty  Decimal? @default(0) // Rigid: Gulungan/Cucian\n\n  // --- Output Results ---\n  qtyPassOn Decimal? @default(0)\n  qtyHold   Decimal? @default(0)\n  qtyWip    Decimal? @default(0)\n\n  qtyGood   Decimal @default(0) // Finish Good / Total Output / Output Baik\n  qtyReject Decimal @default(0) // Total Reject\n\n  // --- Reject Details (JSON) ---\n  // Store dynamic columns like \"Bintik\", \"Warna\", \"Baret\", etc.\n  // Format: { \"bintik\": 10, \"warna\": 5, ... }\n  rejectBreakdown Json?\n\n  // --- Downtime Details (JSON) ---\n  // Store dynamic columns like \"Tunggu Approval\", \"Setup\", \"Machine Problem\"\n  // Format: { \"setup\": 30, \"no_order\": 60, ... }\n  downtimeBreakdown Json?\n\n  totalDowntime Int @default(0) // Total menit downtime\n\n  // --- Notes ---\n  notes String? @db.Text\n\n  // Meta data for calculated fields snapshots if needed (OEE, %, etc) or extra columns\n  metaData Json?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([proStepId])\n  @@index([reportDate])\n}\n",
+  "inlineSchemaHash": "d18856efa6e12f1cbd382aa20de887e81a4443110c40815e15365bb7066f4640",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Machine\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stdOutputPerHour\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"stdOutputPerShift\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"uom\",\"kind\":\"enum\",\"type\":\"Uom\"},{\"name\":\"remark\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"proSteps\",\"kind\":\"object\",\"type\":\"ProStep\",\"relationName\":\"MachineToProStep\"}],\"dbName\":null},\"Material\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"uom\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"proStepMaterials\",\"kind\":\"object\",\"type\":\"ProStepMaterial\",\"relationName\":\"MaterialToProStepMaterial\"}],\"dbName\":null},\"Process\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"code\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pros\",\"kind\":\"object\",\"type\":\"Pro\",\"relationName\":\"ProToProcess\"}],\"dbName\":null},\"ProSequence\":{\"fields\":[{\"name\":\"prefix\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"last\",\"kind\":\"scalar\",\"type\":\"Int\"}],\"dbName\":null},\"Pro\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"proNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"productName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"qtyPoPcs\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ProStatus\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"ProType\"},{\"name\":\"autoShiftExpansion\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"processId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"process\",\"kind\":\"object\",\"type\":\"Process\",\"relationName\":\"ProToProcess\"},{\"name\":\"steps\",\"kind\":\"object\",\"type\":\"ProStep\",\"relationName\":\"ProToProStep\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"ProStep\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"proId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"pro\",\"kind\":\"object\",\"type\":\"Pro\",\"relationName\":\"ProToProStep\"},{\"name\":\"orderNo\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"up\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"estimatedShifts\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"machineId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"machine\",\"kind\":\"object\",\"type\":\"Machine\",\"relationName\":\"MachineToProStep\"},{\"name\":\"partNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"materials\",\"kind\":\"object\",\"type\":\"ProStepMaterial\",\"relationName\":\"ProStepToProStepMaterial\"}],\"dbName\":null},\"ProStepMaterial\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"stepId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"step\",\"kind\":\"object\",\"type\":\"ProStep\",\"relationName\":\"ProStepToProStepMaterial\"},{\"name\":\"materialId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"material\",\"kind\":\"object\",\"type\":\"Material\",\"relationName\":\"MaterialToProStepMaterial\"},{\"name\":\"qtyReq\",\"kind\":\"scalar\",\"type\":\"Decimal\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Machine\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stdOutputPerHour\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"stdOutputPerShift\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"uom\",\"kind\":\"enum\",\"type\":\"Uom\"},{\"name\":\"remark\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"proSteps\",\"kind\":\"object\",\"type\":\"ProStep\",\"relationName\":\"MachineToProStep\"}],\"dbName\":null},\"Material\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"uom\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"proStepMaterials\",\"kind\":\"object\",\"type\":\"ProStepMaterial\",\"relationName\":\"MaterialToProStepMaterial\"}],\"dbName\":null},\"Process\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"code\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pros\",\"kind\":\"object\",\"type\":\"Pro\",\"relationName\":\"ProToProcess\"}],\"dbName\":null},\"ProSequence\":{\"fields\":[{\"name\":\"prefix\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"last\",\"kind\":\"scalar\",\"type\":\"Int\"}],\"dbName\":null},\"Pro\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"proNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"productName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"qtyPoPcs\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ProStatus\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"ProType\"},{\"name\":\"autoShiftExpansion\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"processId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"process\",\"kind\":\"object\",\"type\":\"Process\",\"relationName\":\"ProToProcess\"},{\"name\":\"steps\",\"kind\":\"object\",\"type\":\"ProStep\",\"relationName\":\"ProToProStep\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"ProStep\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"proId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"pro\",\"kind\":\"object\",\"type\":\"Pro\",\"relationName\":\"ProToProStep\"},{\"name\":\"orderNo\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"up\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"estimatedShifts\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"machineId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"machine\",\"kind\":\"object\",\"type\":\"Machine\",\"relationName\":\"MachineToProStep\"},{\"name\":\"partNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"manPowerStd\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"cycleTimeStd\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"cavityStd\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"materials\",\"kind\":\"object\",\"type\":\"ProStepMaterial\",\"relationName\":\"ProStepToProStepMaterial\"},{\"name\":\"productionReports\",\"kind\":\"object\",\"type\":\"ProductionReport\",\"relationName\":\"ProStepToProductionReport\"}],\"dbName\":null},\"ProStepMaterial\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"stepId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"step\",\"kind\":\"object\",\"type\":\"ProStep\",\"relationName\":\"ProStepToProStepMaterial\"},{\"name\":\"materialId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"material\",\"kind\":\"object\",\"type\":\"Material\",\"relationName\":\"MaterialToProStepMaterial\"},{\"name\":\"qtyReq\",\"kind\":\"scalar\",\"type\":\"Decimal\"}],\"dbName\":null},\"ProductionReport\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"proStepId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"step\",\"kind\":\"object\",\"type\":\"ProStep\",\"relationName\":\"ProStepToProductionReport\"},{\"name\":\"reportDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"shift\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"operatorName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"reportType\",\"kind\":\"enum\",\"type\":\"LphType\"},{\"name\":\"startTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"batchNo\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"manPowerStd\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"manPowerAct\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"cycleTimeStd\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"cycleTimeAct\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"cavityStd\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"cavityAct\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"inputMaterialQty\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"materialRunnerQty\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"materialPurgeQty\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"qtyPassOn\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"qtyHold\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"qtyWip\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"qtyGood\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"qtyReject\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"rejectBreakdown\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"downtimeBreakdown\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"totalDowntime\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"metaData\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

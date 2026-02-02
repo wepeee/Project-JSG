@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "generated/prisma";
-import { createTRPCRouter, ppicProcedure, protectedProcedure } from "../../trpc";
+import {
+  createTRPCRouter,
+  ppicProcedure,
+  protectedProcedure,
+} from "../../trpc";
 
 const pad3 = (n: number) => String(n).padStart(3, "0"); // 001..999
 const mm = (d: Date) => String(d.getMonth() + 1).padStart(2, "0");
@@ -77,6 +81,9 @@ export const prosRouter = createTRPCRouter({
               id: true,
               orderNo: true,
               up: true,
+              manPowerStd: true,
+              cycleTimeStd: true,
+              cavityStd: true,
               machine: {
                 select: {
                   name: true,
@@ -134,6 +141,10 @@ export const prosRouter = createTRPCRouter({
                 .default([]),
               startDate: z.coerce.date().optional(),
               partNumber: z.string().optional(), // Added to step input
+              // Standard Params
+              manPowerStd: z.number().int().optional(),
+              cycleTimeStd: z.number().optional(),
+              cavityStd: z.number().int().optional(),
             }),
           )
           .min(1),
@@ -168,22 +179,22 @@ export const prosRouter = createTRPCRouter({
         let proNumber = input.proNumber?.trim();
 
         if (!proNumber) {
-           const seq = await tx.proSequence.upsert({
-             where: { prefix },
-             update: { last: { increment: 1 } },
-             create: { prefix, last: 1 },
-             select: { last: true },
-           });
-           proNumber = `${prefix}${pad3(seq.last)}`; // 9 digit
+          const seq = await tx.proSequence.upsert({
+            where: { prefix },
+            update: { last: { increment: 1 } },
+            create: { prefix, last: 1 },
+            select: { last: true },
+          });
+          proNumber = `${prefix}${pad3(seq.last)}`; // 9 digit
         } else {
-           // Check uniqueness if manual
-           const exist = await tx.pro.findUnique({ where: { proNumber } });
-           if (exist) {
-              throw new TRPCError({
-                 code: "BAD_REQUEST",
-                 message: `PRO Number '${proNumber}' sudah ada.`,
-              });
-           }
+          // Check uniqueness if manual
+          const exist = await tx.pro.findUnique({ where: { proNumber } });
+          if (exist) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `PRO Number '${proNumber}' sudah ada.`,
+            });
+          }
         }
 
         // AUTO-SET PRO.startDate from first step's startDate
@@ -204,7 +215,7 @@ export const prosRouter = createTRPCRouter({
 
         // -------------------------------------------------------------
         // AUTOMATIC EXPANSION: 1 Shift = 1 ProStep row
-        
+
         let proStartDate = input.startDate ?? new Date();
         let currentDay = startOfDay(proStartDate);
         let currentShift = getShiftFromTime(proStartDate);
@@ -214,18 +225,25 @@ export const prosRouter = createTRPCRouter({
         for (const inputStep of input.steps) {
           const std = 1000; // Default if no machine
           const firstMatQty = inputStep.materials[0]?.qtyReq;
-          const qty = firstMatQty !== undefined ? Number(firstMatQty) : input.qtyPoPcs;
-          const up = firstMatQty !== undefined ? 1 : (inputStep.up || 1);
+          const qty =
+            firstMatQty !== undefined ? Number(firstMatQty) : input.qtyPoPcs;
+          const up = firstMatQty !== undefined ? 1 : inputStep.up || 1;
 
           let machineStd = std;
           let isSheet = false;
           if (inputStep.machineId) {
-             const m = await tx.machine.findUnique({ where: { id: inputStep.machineId }, select: { stdOutputPerShift: true, uom: true } });
-             if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
-             if (m?.uom === 'sheet') isSheet = true;
+            const m = await tx.machine.findUnique({
+              where: { id: inputStep.machineId },
+              select: { stdOutputPerShift: true, uom: true },
+            });
+            if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
+            if (m?.uom === "sheet") isSheet = true;
           }
 
-          const need = (input.expand !== false && isSheet) ? Math.max(1, Math.ceil(qty / (up * machineStd))) : 1;
+          const need =
+            input.expand !== false && isSheet
+              ? Math.max(1, Math.ceil(qty / (up * machineStd)))
+              : 1;
 
           // Use inputStep's startDate as anchor if provided
           if (inputStep.startDate) {
@@ -236,11 +254,20 @@ export const prosRouter = createTRPCRouter({
           const totalSheets = up > 0 ? qty / up : qty;
 
           for (let i = 0; i < need; i++) {
-            const sheetsInThisShift = Math.max(0, Math.min(totalSheets - i * machineStd, machineStd));
-            const portion = totalSheets > 0 ? sheetsInThisShift / totalSheets : 1;
+            const sheetsInThisShift = Math.max(
+              0,
+              Math.min(totalSheets - i * machineStd, machineStd),
+            );
+            const portion =
+              totalSheets > 0 ? sheetsInThisShift / totalSheets : 1;
 
             if (sheetsInThisShift > 0 && inputStep.machineId) {
-               await checkCapacity(tx, inputStep.machineId, getShiftDate(currentDay, currentShift), sheetsInThisShift);
+              await checkCapacity(
+                tx,
+                inputStep.machineId,
+                getShiftDate(currentDay, currentShift),
+                sheetsInThisShift,
+              );
             }
 
             await tx.proStep.create({
@@ -251,6 +278,12 @@ export const prosRouter = createTRPCRouter({
                 machineId: inputStep.machineId ?? null,
                 startDate: getShiftDate(currentDay, currentShift),
                 partNumber: inputStep.partNumber, // Added
+                // Standard Params
+                manPowerStd: inputStep.manPowerStd,
+                cycleTimeStd: inputStep.cycleTimeStd
+                  ? new Prisma.Decimal(inputStep.cycleTimeStd)
+                  : undefined,
+                cavityStd: inputStep.cavityStd,
                 materials: {
                   create: (inputStep.materials ?? []).map((m) => ({
                     materialId: m.materialId,
@@ -263,8 +296,11 @@ export const prosRouter = createTRPCRouter({
 
             // Advance cursor if we are expanding OR if no explicit start date on step
             if (input.expand !== false) {
-               if (currentShift < 2) currentShift++;
-               else { currentShift = 0; currentDay.setDate(currentDay.getDate() + 1); }
+              if (currentShift < 2) currentShift++;
+              else {
+                currentShift = 0;
+                currentDay.setDate(currentDay.getDate() + 1);
+              }
             }
           }
         }
@@ -298,6 +334,9 @@ export const prosRouter = createTRPCRouter({
               orderNo: true,
               up: true,
               machineId: true,
+              manPowerStd: true,
+              cycleTimeStd: true,
+              cavityStd: true,
               startDate: true,
               partNumber: true, // Added
               estimatedShifts: true,
@@ -353,11 +392,15 @@ export const prosRouter = createTRPCRouter({
                   z.object({
                     materialId: z.number().int().positive(),
                     qtyReq: z.number().positive(),
-                  })
+                  }),
                 )
                 .optional(),
               startDate: z.coerce.date().optional(),
               partNumber: z.string().optional(), // Added to step input
+              // Standard Params
+              manPowerStd: z.number().int().optional(),
+              cycleTimeStd: z.number().optional(),
+              cavityStd: z.number().int().optional(),
             }),
           )
           .min(1),
@@ -366,7 +409,7 @@ export const prosRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
       return db.$transaction(async (tx) => {
-        // 1. Fetch old PRO 
+        // 1. Fetch old PRO
         const oldPro = await tx.pro.findUnique({
           where: { id: input.id },
           select: {
@@ -388,7 +431,9 @@ export const prosRouter = createTRPCRouter({
           data: {
             processId: input.processId,
             productName: input.productName,
-            ...(input.partNumber !== undefined ? { partNumber: input.partNumber } : {}), // Update if provided
+            ...(input.partNumber !== undefined
+              ? { partNumber: input.partNumber }
+              : {}), // Update if provided
             qtyPoPcs: input.qtyPoPcs,
             startDate: input.startDate,
             ...(input.status ? { status: input.status } : {}),
@@ -400,65 +445,94 @@ export const prosRouter = createTRPCRouter({
         await tx.proStep.deleteMany({ where: { proId: input.id } });
 
         // 4. Recreate steps (EXPANDED)
-        let currentDay = startOfDay(input.startDate ?? oldPro.startDate ?? new Date());
-        let currentShift = getShiftFromTime(input.startDate ?? oldPro.startDate ?? new Date());
+        let currentDay = startOfDay(
+          input.startDate ?? oldPro.startDate ?? new Date(),
+        );
+        let currentShift = getShiftFromTime(
+          input.startDate ?? oldPro.startDate ?? new Date(),
+        );
 
         let globalOrderNo = 1;
 
         for (const inputStep of input.steps) {
-           const std = 1000;
-           const firstMatQty = inputStep.materials?.[0]?.qtyReq;
-           const qty = firstMatQty !== undefined ? Number(firstMatQty) : input.qtyPoPcs;
-           const up = firstMatQty !== undefined ? 1 : (inputStep.up || 1);
+          const std = 1000;
+          const firstMatQty = inputStep.materials?.[0]?.qtyReq;
+          const qty =
+            firstMatQty !== undefined ? Number(firstMatQty) : input.qtyPoPcs;
+          const up = firstMatQty !== undefined ? 1 : inputStep.up || 1;
 
-           let machineStd = std;
-           let isSheet = false;
-           if (inputStep.machineId) {
-              const m = await tx.machine.findUnique({ where: { id: inputStep.machineId }, select: { stdOutputPerShift: true, uom: true } });
-              if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
-              if (m?.uom === 'sheet') isSheet = true;
-           }
+          let machineStd = std;
+          let isSheet = false;
+          if (inputStep.machineId) {
+            const m = await tx.machine.findUnique({
+              where: { id: inputStep.machineId },
+              select: { stdOutputPerShift: true, uom: true },
+            });
+            if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
+            if (m?.uom === "sheet") isSheet = true;
+          }
 
-           const need = (input.expand && isSheet) ? Math.max(1, Math.ceil(qty / (up * machineStd))) : 1;
-           
-           if (inputStep.startDate) {
-              currentDay = startOfDay(new Date(inputStep.startDate));
-              currentShift = getShiftFromTime(new Date(inputStep.startDate));
-           }
+          const need =
+            input.expand && isSheet
+              ? Math.max(1, Math.ceil(qty / (up * machineStd)))
+              : 1;
 
-           const totalSheets = up > 0 ? qty / up : qty;
+          if (inputStep.startDate) {
+            currentDay = startOfDay(new Date(inputStep.startDate));
+            currentShift = getShiftFromTime(new Date(inputStep.startDate));
+          }
 
-           for (let i = 0; i < need; i++) {
-              const sheetsInThisShift = Math.max(0, Math.min(totalSheets - i * machineStd, machineStd));
-              const portion = totalSheets > 0 ? sheetsInThisShift / totalSheets : 1;
+          const totalSheets = up > 0 ? qty / up : qty;
 
-              if (sheetsInThisShift > 0 && inputStep.machineId) {
-                 await checkCapacity(tx, inputStep.machineId, getShiftDate(currentDay, currentShift), sheetsInThisShift);
-              }
+          for (let i = 0; i < need; i++) {
+            const sheetsInThisShift = Math.max(
+              0,
+              Math.min(totalSheets - i * machineStd, machineStd),
+            );
+            const portion =
+              totalSheets > 0 ? sheetsInThisShift / totalSheets : 1;
 
-              await tx.proStep.create({
-                data: {
-                  proId: input.id,
-                  orderNo: globalOrderNo++,
-                  up: inputStep.up,
-                  machineId: inputStep.machineId ?? null,
-                  startDate: getShiftDate(currentDay, currentShift),
-                  partNumber: inputStep.partNumber, // Added
-                  estimatedShifts: need,
-                  materials: {
-                    create: inputStep.materials?.map((m) => ({
+            if (sheetsInThisShift > 0 && inputStep.machineId) {
+              await checkCapacity(
+                tx,
+                inputStep.machineId,
+                getShiftDate(currentDay, currentShift),
+                sheetsInThisShift,
+              );
+            }
+
+            await tx.proStep.create({
+              data: {
+                proId: input.id,
+                orderNo: globalOrderNo++,
+                up: inputStep.up,
+                machineId: inputStep.machineId ?? null,
+                startDate: getShiftDate(currentDay, currentShift),
+                partNumber: inputStep.partNumber, // Added
+                manPowerStd: inputStep.manPowerStd, // Added
+                cycleTimeStd: inputStep.cycleTimeStd
+                  ? new Prisma.Decimal(inputStep.cycleTimeStd)
+                  : undefined, // Added
+                cavityStd: inputStep.cavityStd, // Added
+                estimatedShifts: need,
+                materials: {
+                  create:
+                    inputStep.materials?.map((m) => ({
                       materialId: m.materialId,
                       qtyReq: new Prisma.Decimal(m.qtyReq * portion),
                     })) ?? [],
-                  }
-                }
-              });
+                },
+              },
+            });
 
-              if (input.expand) {
-                 if (currentShift < 2) currentShift++;
-                 else { currentShift = 0; currentDay.setDate(currentDay.getDate() + 1); }
+            if (input.expand) {
+              if (currentShift < 2) currentShift++;
+              else {
+                currentShift = 0;
+                currentDay.setDate(currentDay.getDate() + 1);
               }
-           }
+            }
+          }
         }
 
         return tx.pro.findUnique({
@@ -467,7 +541,6 @@ export const prosRouter = createTRPCRouter({
         });
       });
     }),
-
 
   delete: ppicProcedure
     .input(z.object({ id: z.number().int().positive() }))
@@ -553,6 +626,9 @@ export const prosRouter = createTRPCRouter({
               id: true,
               orderNo: true,
               up: true,
+              manPowerStd: true,
+              cycleTimeStd: true,
+              cavityStd: true,
               machine: {
                 select: { id: true, name: true, stdOutputPerShift: true },
               },
@@ -616,9 +692,9 @@ async function checkCapacity(
         : getShiftFromTime(slotDate) === 1
           ? "Shift 2"
           : "Shift 3";
-          
+
     const dStr = slotDate.toLocaleDateString("id-ID");
-    
+
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: `Mesin ${machine.name} overload di ${dStr} ${shiftName}. Kapasitas: ${max}, Terisi: ${currentLoad}, Request: ${Math.ceil(newLoadSheets)}.`,

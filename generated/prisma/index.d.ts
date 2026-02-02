@@ -53,6 +53,11 @@ export type ProStep = $Result.DefaultSelection<Prisma.$ProStepPayload>
  * 
  */
 export type ProStepMaterial = $Result.DefaultSelection<Prisma.$ProStepMaterialPayload>
+/**
+ * Model ProductionReport
+ * 
+ */
+export type ProductionReport = $Result.DefaultSelection<Prisma.$ProductionReportPayload>
 
 /**
  * Enums
@@ -97,6 +102,17 @@ export const ProType: {
 
 export type ProType = (typeof ProType)[keyof typeof ProType]
 
+
+export const LphType: {
+  PAPER: 'PAPER',
+  PRINTING: 'PRINTING',
+  PACKING_ASSEMBLY: 'PACKING_ASSEMBLY',
+  BLOW_MOULDING: 'BLOW_MOULDING',
+  INJECTION: 'INJECTION'
+};
+
+export type LphType = (typeof LphType)[keyof typeof LphType]
+
 }
 
 export type Role = $Enums.Role
@@ -114,6 +130,10 @@ export const ProStatus: typeof $Enums.ProStatus
 export type ProType = $Enums.ProType
 
 export const ProType: typeof $Enums.ProType
+
+export type LphType = $Enums.LphType
+
+export const LphType: typeof $Enums.LphType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -312,6 +332,16 @@ export class PrismaClient<
     * ```
     */
   get proStepMaterial(): Prisma.ProStepMaterialDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.productionReport`: Exposes CRUD operations for the **ProductionReport** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ProductionReports
+    * const productionReports = await prisma.productionReport.findMany()
+    * ```
+    */
+  get productionReport(): Prisma.ProductionReportDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -760,7 +790,8 @@ export namespace Prisma {
     ProSequence: 'ProSequence',
     Pro: 'Pro',
     ProStep: 'ProStep',
-    ProStepMaterial: 'ProStepMaterial'
+    ProStepMaterial: 'ProStepMaterial',
+    ProductionReport: 'ProductionReport'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -779,7 +810,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "machine" | "material" | "process" | "proSequence" | "pro" | "proStep" | "proStepMaterial"
+      modelProps: "user" | "machine" | "material" | "process" | "proSequence" | "pro" | "proStep" | "proStepMaterial" | "productionReport"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1311,6 +1342,72 @@ export namespace Prisma {
           }
         }
       }
+      ProductionReport: {
+        payload: Prisma.$ProductionReportPayload<ExtArgs>
+        fields: Prisma.ProductionReportFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ProductionReportFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductionReportPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ProductionReportFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductionReportPayload>
+          }
+          findFirst: {
+            args: Prisma.ProductionReportFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductionReportPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ProductionReportFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductionReportPayload>
+          }
+          findMany: {
+            args: Prisma.ProductionReportFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductionReportPayload>[]
+          }
+          create: {
+            args: Prisma.ProductionReportCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductionReportPayload>
+          }
+          createMany: {
+            args: Prisma.ProductionReportCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ProductionReportDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductionReportPayload>
+          }
+          update: {
+            args: Prisma.ProductionReportUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductionReportPayload>
+          }
+          deleteMany: {
+            args: Prisma.ProductionReportDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ProductionReportUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ProductionReportUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductionReportPayload>
+          }
+          aggregate: {
+            args: Prisma.ProductionReportAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateProductionReport>
+          }
+          groupBy: {
+            args: Prisma.ProductionReportGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ProductionReportGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ProductionReportCountArgs<ExtArgs>
+            result: $Utils.Optional<ProductionReportCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1415,6 +1512,7 @@ export namespace Prisma {
     pro?: ProOmit
     proStep?: ProStepOmit
     proStepMaterial?: ProStepMaterialOmit
+    productionReport?: ProductionReportOmit
   }
 
   /* Types for Logging */
@@ -1620,10 +1718,12 @@ export namespace Prisma {
 
   export type ProStepCountOutputType = {
     materials: number
+    productionReports: number
   }
 
   export type ProStepCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     materials?: boolean | ProStepCountOutputTypeCountMaterialsArgs
+    productionReports?: boolean | ProStepCountOutputTypeCountProductionReportsArgs
   }
 
   // Custom InputTypes
@@ -1642,6 +1742,13 @@ export namespace Prisma {
    */
   export type ProStepCountOutputTypeCountMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProStepMaterialWhereInput
+  }
+
+  /**
+   * ProStepCountOutputType without action
+   */
+  export type ProStepCountOutputTypeCountProductionReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProductionReportWhereInput
   }
 
 
@@ -7516,6 +7623,9 @@ export namespace Prisma {
     up: number | null
     estimatedShifts: number | null
     machineId: number | null
+    manPowerStd: number | null
+    cycleTimeStd: Decimal | null
+    cavityStd: number | null
   }
 
   export type ProStepSumAggregateOutputType = {
@@ -7525,6 +7635,9 @@ export namespace Prisma {
     up: number | null
     estimatedShifts: number | null
     machineId: number | null
+    manPowerStd: number | null
+    cycleTimeStd: Decimal | null
+    cavityStd: number | null
   }
 
   export type ProStepMinAggregateOutputType = {
@@ -7536,6 +7649,9 @@ export namespace Prisma {
     startDate: Date | null
     machineId: number | null
     partNumber: string | null
+    manPowerStd: number | null
+    cycleTimeStd: Decimal | null
+    cavityStd: number | null
   }
 
   export type ProStepMaxAggregateOutputType = {
@@ -7547,6 +7663,9 @@ export namespace Prisma {
     startDate: Date | null
     machineId: number | null
     partNumber: string | null
+    manPowerStd: number | null
+    cycleTimeStd: Decimal | null
+    cavityStd: number | null
   }
 
   export type ProStepCountAggregateOutputType = {
@@ -7558,6 +7677,9 @@ export namespace Prisma {
     startDate: number
     machineId: number
     partNumber: number
+    manPowerStd: number
+    cycleTimeStd: number
+    cavityStd: number
     _all: number
   }
 
@@ -7569,6 +7691,9 @@ export namespace Prisma {
     up?: true
     estimatedShifts?: true
     machineId?: true
+    manPowerStd?: true
+    cycleTimeStd?: true
+    cavityStd?: true
   }
 
   export type ProStepSumAggregateInputType = {
@@ -7578,6 +7703,9 @@ export namespace Prisma {
     up?: true
     estimatedShifts?: true
     machineId?: true
+    manPowerStd?: true
+    cycleTimeStd?: true
+    cavityStd?: true
   }
 
   export type ProStepMinAggregateInputType = {
@@ -7589,6 +7717,9 @@ export namespace Prisma {
     startDate?: true
     machineId?: true
     partNumber?: true
+    manPowerStd?: true
+    cycleTimeStd?: true
+    cavityStd?: true
   }
 
   export type ProStepMaxAggregateInputType = {
@@ -7600,6 +7731,9 @@ export namespace Prisma {
     startDate?: true
     machineId?: true
     partNumber?: true
+    manPowerStd?: true
+    cycleTimeStd?: true
+    cavityStd?: true
   }
 
   export type ProStepCountAggregateInputType = {
@@ -7611,6 +7745,9 @@ export namespace Prisma {
     startDate?: true
     machineId?: true
     partNumber?: true
+    manPowerStd?: true
+    cycleTimeStd?: true
+    cavityStd?: true
     _all?: true
   }
 
@@ -7709,6 +7846,9 @@ export namespace Prisma {
     startDate: Date | null
     machineId: number | null
     partNumber: string | null
+    manPowerStd: number | null
+    cycleTimeStd: Decimal | null
+    cavityStd: number | null
     _count: ProStepCountAggregateOutputType | null
     _avg: ProStepAvgAggregateOutputType | null
     _sum: ProStepSumAggregateOutputType | null
@@ -7739,9 +7879,13 @@ export namespace Prisma {
     startDate?: boolean
     machineId?: boolean
     partNumber?: boolean
+    manPowerStd?: boolean
+    cycleTimeStd?: boolean
+    cavityStd?: boolean
     pro?: boolean | ProDefaultArgs<ExtArgs>
     machine?: boolean | ProStep$machineArgs<ExtArgs>
     materials?: boolean | ProStep$materialsArgs<ExtArgs>
+    productionReports?: boolean | ProStep$productionReportsArgs<ExtArgs>
     _count?: boolean | ProStepCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["proStep"]>
 
@@ -7756,13 +7900,17 @@ export namespace Prisma {
     startDate?: boolean
     machineId?: boolean
     partNumber?: boolean
+    manPowerStd?: boolean
+    cycleTimeStd?: boolean
+    cavityStd?: boolean
   }
 
-  export type ProStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "up" | "estimatedShifts" | "startDate" | "machineId" | "partNumber", ExtArgs["result"]["proStep"]>
+  export type ProStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "up" | "estimatedShifts" | "startDate" | "machineId" | "partNumber" | "manPowerStd" | "cycleTimeStd" | "cavityStd", ExtArgs["result"]["proStep"]>
   export type ProStepInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pro?: boolean | ProDefaultArgs<ExtArgs>
     machine?: boolean | ProStep$machineArgs<ExtArgs>
     materials?: boolean | ProStep$materialsArgs<ExtArgs>
+    productionReports?: boolean | ProStep$productionReportsArgs<ExtArgs>
     _count?: boolean | ProStepCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -7772,6 +7920,7 @@ export namespace Prisma {
       pro: Prisma.$ProPayload<ExtArgs>
       machine: Prisma.$MachinePayload<ExtArgs> | null
       materials: Prisma.$ProStepMaterialPayload<ExtArgs>[]
+      productionReports: Prisma.$ProductionReportPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -7782,6 +7931,9 @@ export namespace Prisma {
       startDate: Date | null
       machineId: number | null
       partNumber: string | null
+      manPowerStd: number | null
+      cycleTimeStd: Prisma.Decimal | null
+      cavityStd: number | null
     }, ExtArgs["result"]["proStep"]>
     composites: {}
   }
@@ -8125,6 +8277,7 @@ export namespace Prisma {
     pro<T extends ProDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProDefaultArgs<ExtArgs>>): Prisma__ProClient<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     machine<T extends ProStep$machineArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$machineArgs<ExtArgs>>): Prisma__MachineClient<$Result.GetResult<Prisma.$MachinePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     materials<T extends ProStep$materialsArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$materialsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    productionReports<T extends ProStep$productionReportsArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$productionReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8162,6 +8315,9 @@ export namespace Prisma {
     readonly startDate: FieldRef<"ProStep", 'DateTime'>
     readonly machineId: FieldRef<"ProStep", 'Int'>
     readonly partNumber: FieldRef<"ProStep", 'String'>
+    readonly manPowerStd: FieldRef<"ProStep", 'Int'>
+    readonly cycleTimeStd: FieldRef<"ProStep", 'Decimal'>
+    readonly cavityStd: FieldRef<"ProStep", 'Int'>
   }
     
 
@@ -8545,6 +8701,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProStepMaterialScalarFieldEnum | ProStepMaterialScalarFieldEnum[]
+  }
+
+  /**
+   * ProStep.productionReports
+   */
+  export type ProStep$productionReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    where?: ProductionReportWhereInput
+    orderBy?: ProductionReportOrderByWithRelationInput | ProductionReportOrderByWithRelationInput[]
+    cursor?: ProductionReportWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProductionReportScalarFieldEnum | ProductionReportScalarFieldEnum[]
   }
 
   /**
@@ -9535,6 +9715,1296 @@ export namespace Prisma {
 
 
   /**
+   * Model ProductionReport
+   */
+
+  export type AggregateProductionReport = {
+    _count: ProductionReportCountAggregateOutputType | null
+    _avg: ProductionReportAvgAggregateOutputType | null
+    _sum: ProductionReportSumAggregateOutputType | null
+    _min: ProductionReportMinAggregateOutputType | null
+    _max: ProductionReportMaxAggregateOutputType | null
+  }
+
+  export type ProductionReportAvgAggregateOutputType = {
+    proStepId: number | null
+    shift: number | null
+    manPowerStd: number | null
+    manPowerAct: number | null
+    cycleTimeStd: Decimal | null
+    cycleTimeAct: Decimal | null
+    cavityStd: number | null
+    cavityAct: number | null
+    inputMaterialQty: Decimal | null
+    materialRunnerQty: Decimal | null
+    materialPurgeQty: Decimal | null
+    qtyPassOn: Decimal | null
+    qtyHold: Decimal | null
+    qtyWip: Decimal | null
+    qtyGood: Decimal | null
+    qtyReject: Decimal | null
+    totalDowntime: number | null
+  }
+
+  export type ProductionReportSumAggregateOutputType = {
+    proStepId: number | null
+    shift: number | null
+    manPowerStd: number | null
+    manPowerAct: number | null
+    cycleTimeStd: Decimal | null
+    cycleTimeAct: Decimal | null
+    cavityStd: number | null
+    cavityAct: number | null
+    inputMaterialQty: Decimal | null
+    materialRunnerQty: Decimal | null
+    materialPurgeQty: Decimal | null
+    qtyPassOn: Decimal | null
+    qtyHold: Decimal | null
+    qtyWip: Decimal | null
+    qtyGood: Decimal | null
+    qtyReject: Decimal | null
+    totalDowntime: number | null
+  }
+
+  export type ProductionReportMinAggregateOutputType = {
+    id: string | null
+    proStepId: number | null
+    reportDate: Date | null
+    shift: number | null
+    operatorName: string | null
+    reportType: $Enums.LphType | null
+    startTime: Date | null
+    endTime: Date | null
+    batchNo: string | null
+    manPowerStd: number | null
+    manPowerAct: number | null
+    cycleTimeStd: Decimal | null
+    cycleTimeAct: Decimal | null
+    cavityStd: number | null
+    cavityAct: number | null
+    inputMaterialQty: Decimal | null
+    materialRunnerQty: Decimal | null
+    materialPurgeQty: Decimal | null
+    qtyPassOn: Decimal | null
+    qtyHold: Decimal | null
+    qtyWip: Decimal | null
+    qtyGood: Decimal | null
+    qtyReject: Decimal | null
+    totalDowntime: number | null
+    notes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ProductionReportMaxAggregateOutputType = {
+    id: string | null
+    proStepId: number | null
+    reportDate: Date | null
+    shift: number | null
+    operatorName: string | null
+    reportType: $Enums.LphType | null
+    startTime: Date | null
+    endTime: Date | null
+    batchNo: string | null
+    manPowerStd: number | null
+    manPowerAct: number | null
+    cycleTimeStd: Decimal | null
+    cycleTimeAct: Decimal | null
+    cavityStd: number | null
+    cavityAct: number | null
+    inputMaterialQty: Decimal | null
+    materialRunnerQty: Decimal | null
+    materialPurgeQty: Decimal | null
+    qtyPassOn: Decimal | null
+    qtyHold: Decimal | null
+    qtyWip: Decimal | null
+    qtyGood: Decimal | null
+    qtyReject: Decimal | null
+    totalDowntime: number | null
+    notes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ProductionReportCountAggregateOutputType = {
+    id: number
+    proStepId: number
+    reportDate: number
+    shift: number
+    operatorName: number
+    reportType: number
+    startTime: number
+    endTime: number
+    batchNo: number
+    manPowerStd: number
+    manPowerAct: number
+    cycleTimeStd: number
+    cycleTimeAct: number
+    cavityStd: number
+    cavityAct: number
+    inputMaterialQty: number
+    materialRunnerQty: number
+    materialPurgeQty: number
+    qtyPassOn: number
+    qtyHold: number
+    qtyWip: number
+    qtyGood: number
+    qtyReject: number
+    rejectBreakdown: number
+    downtimeBreakdown: number
+    totalDowntime: number
+    notes: number
+    metaData: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ProductionReportAvgAggregateInputType = {
+    proStepId?: true
+    shift?: true
+    manPowerStd?: true
+    manPowerAct?: true
+    cycleTimeStd?: true
+    cycleTimeAct?: true
+    cavityStd?: true
+    cavityAct?: true
+    inputMaterialQty?: true
+    materialRunnerQty?: true
+    materialPurgeQty?: true
+    qtyPassOn?: true
+    qtyHold?: true
+    qtyWip?: true
+    qtyGood?: true
+    qtyReject?: true
+    totalDowntime?: true
+  }
+
+  export type ProductionReportSumAggregateInputType = {
+    proStepId?: true
+    shift?: true
+    manPowerStd?: true
+    manPowerAct?: true
+    cycleTimeStd?: true
+    cycleTimeAct?: true
+    cavityStd?: true
+    cavityAct?: true
+    inputMaterialQty?: true
+    materialRunnerQty?: true
+    materialPurgeQty?: true
+    qtyPassOn?: true
+    qtyHold?: true
+    qtyWip?: true
+    qtyGood?: true
+    qtyReject?: true
+    totalDowntime?: true
+  }
+
+  export type ProductionReportMinAggregateInputType = {
+    id?: true
+    proStepId?: true
+    reportDate?: true
+    shift?: true
+    operatorName?: true
+    reportType?: true
+    startTime?: true
+    endTime?: true
+    batchNo?: true
+    manPowerStd?: true
+    manPowerAct?: true
+    cycleTimeStd?: true
+    cycleTimeAct?: true
+    cavityStd?: true
+    cavityAct?: true
+    inputMaterialQty?: true
+    materialRunnerQty?: true
+    materialPurgeQty?: true
+    qtyPassOn?: true
+    qtyHold?: true
+    qtyWip?: true
+    qtyGood?: true
+    qtyReject?: true
+    totalDowntime?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ProductionReportMaxAggregateInputType = {
+    id?: true
+    proStepId?: true
+    reportDate?: true
+    shift?: true
+    operatorName?: true
+    reportType?: true
+    startTime?: true
+    endTime?: true
+    batchNo?: true
+    manPowerStd?: true
+    manPowerAct?: true
+    cycleTimeStd?: true
+    cycleTimeAct?: true
+    cavityStd?: true
+    cavityAct?: true
+    inputMaterialQty?: true
+    materialRunnerQty?: true
+    materialPurgeQty?: true
+    qtyPassOn?: true
+    qtyHold?: true
+    qtyWip?: true
+    qtyGood?: true
+    qtyReject?: true
+    totalDowntime?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ProductionReportCountAggregateInputType = {
+    id?: true
+    proStepId?: true
+    reportDate?: true
+    shift?: true
+    operatorName?: true
+    reportType?: true
+    startTime?: true
+    endTime?: true
+    batchNo?: true
+    manPowerStd?: true
+    manPowerAct?: true
+    cycleTimeStd?: true
+    cycleTimeAct?: true
+    cavityStd?: true
+    cavityAct?: true
+    inputMaterialQty?: true
+    materialRunnerQty?: true
+    materialPurgeQty?: true
+    qtyPassOn?: true
+    qtyHold?: true
+    qtyWip?: true
+    qtyGood?: true
+    qtyReject?: true
+    rejectBreakdown?: true
+    downtimeBreakdown?: true
+    totalDowntime?: true
+    notes?: true
+    metaData?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ProductionReportAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProductionReport to aggregate.
+     */
+    where?: ProductionReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductionReports to fetch.
+     */
+    orderBy?: ProductionReportOrderByWithRelationInput | ProductionReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ProductionReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductionReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductionReports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ProductionReports
+    **/
+    _count?: true | ProductionReportCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ProductionReportAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ProductionReportSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ProductionReportMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ProductionReportMaxAggregateInputType
+  }
+
+  export type GetProductionReportAggregateType<T extends ProductionReportAggregateArgs> = {
+        [P in keyof T & keyof AggregateProductionReport]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateProductionReport[P]>
+      : GetScalarType<T[P], AggregateProductionReport[P]>
+  }
+
+
+
+
+  export type ProductionReportGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProductionReportWhereInput
+    orderBy?: ProductionReportOrderByWithAggregationInput | ProductionReportOrderByWithAggregationInput[]
+    by: ProductionReportScalarFieldEnum[] | ProductionReportScalarFieldEnum
+    having?: ProductionReportScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ProductionReportCountAggregateInputType | true
+    _avg?: ProductionReportAvgAggregateInputType
+    _sum?: ProductionReportSumAggregateInputType
+    _min?: ProductionReportMinAggregateInputType
+    _max?: ProductionReportMaxAggregateInputType
+  }
+
+  export type ProductionReportGroupByOutputType = {
+    id: string
+    proStepId: number
+    reportDate: Date
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime: Date | null
+    endTime: Date | null
+    batchNo: string | null
+    manPowerStd: number | null
+    manPowerAct: number | null
+    cycleTimeStd: Decimal | null
+    cycleTimeAct: Decimal | null
+    cavityStd: number | null
+    cavityAct: number | null
+    inputMaterialQty: Decimal | null
+    materialRunnerQty: Decimal | null
+    materialPurgeQty: Decimal | null
+    qtyPassOn: Decimal | null
+    qtyHold: Decimal | null
+    qtyWip: Decimal | null
+    qtyGood: Decimal
+    qtyReject: Decimal
+    rejectBreakdown: JsonValue | null
+    downtimeBreakdown: JsonValue | null
+    totalDowntime: number
+    notes: string | null
+    metaData: JsonValue | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ProductionReportCountAggregateOutputType | null
+    _avg: ProductionReportAvgAggregateOutputType | null
+    _sum: ProductionReportSumAggregateOutputType | null
+    _min: ProductionReportMinAggregateOutputType | null
+    _max: ProductionReportMaxAggregateOutputType | null
+  }
+
+  type GetProductionReportGroupByPayload<T extends ProductionReportGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ProductionReportGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ProductionReportGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ProductionReportGroupByOutputType[P]>
+            : GetScalarType<T[P], ProductionReportGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ProductionReportSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    proStepId?: boolean
+    reportDate?: boolean
+    shift?: boolean
+    operatorName?: boolean
+    reportType?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    batchNo?: boolean
+    manPowerStd?: boolean
+    manPowerAct?: boolean
+    cycleTimeStd?: boolean
+    cycleTimeAct?: boolean
+    cavityStd?: boolean
+    cavityAct?: boolean
+    inputMaterialQty?: boolean
+    materialRunnerQty?: boolean
+    materialPurgeQty?: boolean
+    qtyPassOn?: boolean
+    qtyHold?: boolean
+    qtyWip?: boolean
+    qtyGood?: boolean
+    qtyReject?: boolean
+    rejectBreakdown?: boolean
+    downtimeBreakdown?: boolean
+    totalDowntime?: boolean
+    notes?: boolean
+    metaData?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    step?: boolean | ProStepDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["productionReport"]>
+
+
+
+  export type ProductionReportSelectScalar = {
+    id?: boolean
+    proStepId?: boolean
+    reportDate?: boolean
+    shift?: boolean
+    operatorName?: boolean
+    reportType?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    batchNo?: boolean
+    manPowerStd?: boolean
+    manPowerAct?: boolean
+    cycleTimeStd?: boolean
+    cycleTimeAct?: boolean
+    cavityStd?: boolean
+    cavityAct?: boolean
+    inputMaterialQty?: boolean
+    materialRunnerQty?: boolean
+    materialPurgeQty?: boolean
+    qtyPassOn?: boolean
+    qtyHold?: boolean
+    qtyWip?: boolean
+    qtyGood?: boolean
+    qtyReject?: boolean
+    rejectBreakdown?: boolean
+    downtimeBreakdown?: boolean
+    totalDowntime?: boolean
+    notes?: boolean
+    metaData?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ProductionReportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proStepId" | "reportDate" | "shift" | "operatorName" | "reportType" | "startTime" | "endTime" | "batchNo" | "manPowerStd" | "manPowerAct" | "cycleTimeStd" | "cycleTimeAct" | "cavityStd" | "cavityAct" | "inputMaterialQty" | "materialRunnerQty" | "materialPurgeQty" | "qtyPassOn" | "qtyHold" | "qtyWip" | "qtyGood" | "qtyReject" | "rejectBreakdown" | "downtimeBreakdown" | "totalDowntime" | "notes" | "metaData" | "createdAt" | "updatedAt", ExtArgs["result"]["productionReport"]>
+  export type ProductionReportInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    step?: boolean | ProStepDefaultArgs<ExtArgs>
+  }
+
+  export type $ProductionReportPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ProductionReport"
+    objects: {
+      step: Prisma.$ProStepPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      proStepId: number
+      reportDate: Date
+      shift: number
+      operatorName: string
+      reportType: $Enums.LphType
+      startTime: Date | null
+      endTime: Date | null
+      batchNo: string | null
+      manPowerStd: number | null
+      manPowerAct: number | null
+      cycleTimeStd: Prisma.Decimal | null
+      cycleTimeAct: Prisma.Decimal | null
+      cavityStd: number | null
+      cavityAct: number | null
+      inputMaterialQty: Prisma.Decimal | null
+      materialRunnerQty: Prisma.Decimal | null
+      materialPurgeQty: Prisma.Decimal | null
+      qtyPassOn: Prisma.Decimal | null
+      qtyHold: Prisma.Decimal | null
+      qtyWip: Prisma.Decimal | null
+      qtyGood: Prisma.Decimal
+      qtyReject: Prisma.Decimal
+      rejectBreakdown: Prisma.JsonValue | null
+      downtimeBreakdown: Prisma.JsonValue | null
+      totalDowntime: number
+      notes: string | null
+      metaData: Prisma.JsonValue | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["productionReport"]>
+    composites: {}
+  }
+
+  type ProductionReportGetPayload<S extends boolean | null | undefined | ProductionReportDefaultArgs> = $Result.GetResult<Prisma.$ProductionReportPayload, S>
+
+  type ProductionReportCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ProductionReportFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ProductionReportCountAggregateInputType | true
+    }
+
+  export interface ProductionReportDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProductionReport'], meta: { name: 'ProductionReport' } }
+    /**
+     * Find zero or one ProductionReport that matches the filter.
+     * @param {ProductionReportFindUniqueArgs} args - Arguments to find a ProductionReport
+     * @example
+     * // Get one ProductionReport
+     * const productionReport = await prisma.productionReport.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ProductionReportFindUniqueArgs>(args: SelectSubset<T, ProductionReportFindUniqueArgs<ExtArgs>>): Prisma__ProductionReportClient<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ProductionReport that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ProductionReportFindUniqueOrThrowArgs} args - Arguments to find a ProductionReport
+     * @example
+     * // Get one ProductionReport
+     * const productionReport = await prisma.productionReport.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ProductionReportFindUniqueOrThrowArgs>(args: SelectSubset<T, ProductionReportFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProductionReportClient<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProductionReport that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductionReportFindFirstArgs} args - Arguments to find a ProductionReport
+     * @example
+     * // Get one ProductionReport
+     * const productionReport = await prisma.productionReport.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ProductionReportFindFirstArgs>(args?: SelectSubset<T, ProductionReportFindFirstArgs<ExtArgs>>): Prisma__ProductionReportClient<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProductionReport that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductionReportFindFirstOrThrowArgs} args - Arguments to find a ProductionReport
+     * @example
+     * // Get one ProductionReport
+     * const productionReport = await prisma.productionReport.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ProductionReportFindFirstOrThrowArgs>(args?: SelectSubset<T, ProductionReportFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProductionReportClient<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ProductionReports that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductionReportFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ProductionReports
+     * const productionReports = await prisma.productionReport.findMany()
+     * 
+     * // Get first 10 ProductionReports
+     * const productionReports = await prisma.productionReport.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const productionReportWithIdOnly = await prisma.productionReport.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ProductionReportFindManyArgs>(args?: SelectSubset<T, ProductionReportFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ProductionReport.
+     * @param {ProductionReportCreateArgs} args - Arguments to create a ProductionReport.
+     * @example
+     * // Create one ProductionReport
+     * const ProductionReport = await prisma.productionReport.create({
+     *   data: {
+     *     // ... data to create a ProductionReport
+     *   }
+     * })
+     * 
+     */
+    create<T extends ProductionReportCreateArgs>(args: SelectSubset<T, ProductionReportCreateArgs<ExtArgs>>): Prisma__ProductionReportClient<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ProductionReports.
+     * @param {ProductionReportCreateManyArgs} args - Arguments to create many ProductionReports.
+     * @example
+     * // Create many ProductionReports
+     * const productionReport = await prisma.productionReport.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ProductionReportCreateManyArgs>(args?: SelectSubset<T, ProductionReportCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ProductionReport.
+     * @param {ProductionReportDeleteArgs} args - Arguments to delete one ProductionReport.
+     * @example
+     * // Delete one ProductionReport
+     * const ProductionReport = await prisma.productionReport.delete({
+     *   where: {
+     *     // ... filter to delete one ProductionReport
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ProductionReportDeleteArgs>(args: SelectSubset<T, ProductionReportDeleteArgs<ExtArgs>>): Prisma__ProductionReportClient<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ProductionReport.
+     * @param {ProductionReportUpdateArgs} args - Arguments to update one ProductionReport.
+     * @example
+     * // Update one ProductionReport
+     * const productionReport = await prisma.productionReport.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ProductionReportUpdateArgs>(args: SelectSubset<T, ProductionReportUpdateArgs<ExtArgs>>): Prisma__ProductionReportClient<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ProductionReports.
+     * @param {ProductionReportDeleteManyArgs} args - Arguments to filter ProductionReports to delete.
+     * @example
+     * // Delete a few ProductionReports
+     * const { count } = await prisma.productionReport.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ProductionReportDeleteManyArgs>(args?: SelectSubset<T, ProductionReportDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProductionReports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductionReportUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ProductionReports
+     * const productionReport = await prisma.productionReport.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ProductionReportUpdateManyArgs>(args: SelectSubset<T, ProductionReportUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ProductionReport.
+     * @param {ProductionReportUpsertArgs} args - Arguments to update or create a ProductionReport.
+     * @example
+     * // Update or create a ProductionReport
+     * const productionReport = await prisma.productionReport.upsert({
+     *   create: {
+     *     // ... data to create a ProductionReport
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ProductionReport we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ProductionReportUpsertArgs>(args: SelectSubset<T, ProductionReportUpsertArgs<ExtArgs>>): Prisma__ProductionReportClient<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ProductionReports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductionReportCountArgs} args - Arguments to filter ProductionReports to count.
+     * @example
+     * // Count the number of ProductionReports
+     * const count = await prisma.productionReport.count({
+     *   where: {
+     *     // ... the filter for the ProductionReports we want to count
+     *   }
+     * })
+    **/
+    count<T extends ProductionReportCountArgs>(
+      args?: Subset<T, ProductionReportCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ProductionReportCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ProductionReport.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductionReportAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ProductionReportAggregateArgs>(args: Subset<T, ProductionReportAggregateArgs>): Prisma.PrismaPromise<GetProductionReportAggregateType<T>>
+
+    /**
+     * Group by ProductionReport.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductionReportGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ProductionReportGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ProductionReportGroupByArgs['orderBy'] }
+        : { orderBy?: ProductionReportGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ProductionReportGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProductionReportGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ProductionReport model
+   */
+  readonly fields: ProductionReportFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ProductionReport.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ProductionReportClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    step<T extends ProStepDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProStepDefaultArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ProductionReport model
+   */
+  interface ProductionReportFieldRefs {
+    readonly id: FieldRef<"ProductionReport", 'String'>
+    readonly proStepId: FieldRef<"ProductionReport", 'Int'>
+    readonly reportDate: FieldRef<"ProductionReport", 'DateTime'>
+    readonly shift: FieldRef<"ProductionReport", 'Int'>
+    readonly operatorName: FieldRef<"ProductionReport", 'String'>
+    readonly reportType: FieldRef<"ProductionReport", 'LphType'>
+    readonly startTime: FieldRef<"ProductionReport", 'DateTime'>
+    readonly endTime: FieldRef<"ProductionReport", 'DateTime'>
+    readonly batchNo: FieldRef<"ProductionReport", 'String'>
+    readonly manPowerStd: FieldRef<"ProductionReport", 'Int'>
+    readonly manPowerAct: FieldRef<"ProductionReport", 'Int'>
+    readonly cycleTimeStd: FieldRef<"ProductionReport", 'Decimal'>
+    readonly cycleTimeAct: FieldRef<"ProductionReport", 'Decimal'>
+    readonly cavityStd: FieldRef<"ProductionReport", 'Int'>
+    readonly cavityAct: FieldRef<"ProductionReport", 'Int'>
+    readonly inputMaterialQty: FieldRef<"ProductionReport", 'Decimal'>
+    readonly materialRunnerQty: FieldRef<"ProductionReport", 'Decimal'>
+    readonly materialPurgeQty: FieldRef<"ProductionReport", 'Decimal'>
+    readonly qtyPassOn: FieldRef<"ProductionReport", 'Decimal'>
+    readonly qtyHold: FieldRef<"ProductionReport", 'Decimal'>
+    readonly qtyWip: FieldRef<"ProductionReport", 'Decimal'>
+    readonly qtyGood: FieldRef<"ProductionReport", 'Decimal'>
+    readonly qtyReject: FieldRef<"ProductionReport", 'Decimal'>
+    readonly rejectBreakdown: FieldRef<"ProductionReport", 'Json'>
+    readonly downtimeBreakdown: FieldRef<"ProductionReport", 'Json'>
+    readonly totalDowntime: FieldRef<"ProductionReport", 'Int'>
+    readonly notes: FieldRef<"ProductionReport", 'String'>
+    readonly metaData: FieldRef<"ProductionReport", 'Json'>
+    readonly createdAt: FieldRef<"ProductionReport", 'DateTime'>
+    readonly updatedAt: FieldRef<"ProductionReport", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ProductionReport findUnique
+   */
+  export type ProductionReportFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductionReport to fetch.
+     */
+    where: ProductionReportWhereUniqueInput
+  }
+
+  /**
+   * ProductionReport findUniqueOrThrow
+   */
+  export type ProductionReportFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductionReport to fetch.
+     */
+    where: ProductionReportWhereUniqueInput
+  }
+
+  /**
+   * ProductionReport findFirst
+   */
+  export type ProductionReportFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductionReport to fetch.
+     */
+    where?: ProductionReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductionReports to fetch.
+     */
+    orderBy?: ProductionReportOrderByWithRelationInput | ProductionReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProductionReports.
+     */
+    cursor?: ProductionReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductionReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductionReports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductionReports.
+     */
+    distinct?: ProductionReportScalarFieldEnum | ProductionReportScalarFieldEnum[]
+  }
+
+  /**
+   * ProductionReport findFirstOrThrow
+   */
+  export type ProductionReportFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductionReport to fetch.
+     */
+    where?: ProductionReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductionReports to fetch.
+     */
+    orderBy?: ProductionReportOrderByWithRelationInput | ProductionReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProductionReports.
+     */
+    cursor?: ProductionReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductionReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductionReports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductionReports.
+     */
+    distinct?: ProductionReportScalarFieldEnum | ProductionReportScalarFieldEnum[]
+  }
+
+  /**
+   * ProductionReport findMany
+   */
+  export type ProductionReportFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductionReports to fetch.
+     */
+    where?: ProductionReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductionReports to fetch.
+     */
+    orderBy?: ProductionReportOrderByWithRelationInput | ProductionReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ProductionReports.
+     */
+    cursor?: ProductionReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductionReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductionReports.
+     */
+    skip?: number
+    distinct?: ProductionReportScalarFieldEnum | ProductionReportScalarFieldEnum[]
+  }
+
+  /**
+   * ProductionReport create
+   */
+  export type ProductionReportCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ProductionReport.
+     */
+    data: XOR<ProductionReportCreateInput, ProductionReportUncheckedCreateInput>
+  }
+
+  /**
+   * ProductionReport createMany
+   */
+  export type ProductionReportCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ProductionReports.
+     */
+    data: ProductionReportCreateManyInput | ProductionReportCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ProductionReport update
+   */
+  export type ProductionReportUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ProductionReport.
+     */
+    data: XOR<ProductionReportUpdateInput, ProductionReportUncheckedUpdateInput>
+    /**
+     * Choose, which ProductionReport to update.
+     */
+    where: ProductionReportWhereUniqueInput
+  }
+
+  /**
+   * ProductionReport updateMany
+   */
+  export type ProductionReportUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ProductionReports.
+     */
+    data: XOR<ProductionReportUpdateManyMutationInput, ProductionReportUncheckedUpdateManyInput>
+    /**
+     * Filter which ProductionReports to update
+     */
+    where?: ProductionReportWhereInput
+    /**
+     * Limit how many ProductionReports to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProductionReport upsert
+   */
+  export type ProductionReportUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ProductionReport to update in case it exists.
+     */
+    where: ProductionReportWhereUniqueInput
+    /**
+     * In case the ProductionReport found by the `where` argument doesn't exist, create a new ProductionReport with this data.
+     */
+    create: XOR<ProductionReportCreateInput, ProductionReportUncheckedCreateInput>
+    /**
+     * In case the ProductionReport was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ProductionReportUpdateInput, ProductionReportUncheckedUpdateInput>
+  }
+
+  /**
+   * ProductionReport delete
+   */
+  export type ProductionReportDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    /**
+     * Filter which ProductionReport to delete.
+     */
+    where: ProductionReportWhereUniqueInput
+  }
+
+  /**
+   * ProductionReport deleteMany
+   */
+  export type ProductionReportDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProductionReports to delete
+     */
+    where?: ProductionReportWhereInput
+    /**
+     * Limit how many ProductionReports to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProductionReport without action
+   */
+  export type ProductionReportDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -9627,7 +11097,10 @@ export namespace Prisma {
     estimatedShifts: 'estimatedShifts',
     startDate: 'startDate',
     machineId: 'machineId',
-    partNumber: 'partNumber'
+    partNumber: 'partNumber',
+    manPowerStd: 'manPowerStd',
+    cycleTimeStd: 'cycleTimeStd',
+    cavityStd: 'cavityStd'
   };
 
   export type ProStepScalarFieldEnum = (typeof ProStepScalarFieldEnum)[keyof typeof ProStepScalarFieldEnum]
@@ -9643,12 +11116,56 @@ export namespace Prisma {
   export type ProStepMaterialScalarFieldEnum = (typeof ProStepMaterialScalarFieldEnum)[keyof typeof ProStepMaterialScalarFieldEnum]
 
 
+  export const ProductionReportScalarFieldEnum: {
+    id: 'id',
+    proStepId: 'proStepId',
+    reportDate: 'reportDate',
+    shift: 'shift',
+    operatorName: 'operatorName',
+    reportType: 'reportType',
+    startTime: 'startTime',
+    endTime: 'endTime',
+    batchNo: 'batchNo',
+    manPowerStd: 'manPowerStd',
+    manPowerAct: 'manPowerAct',
+    cycleTimeStd: 'cycleTimeStd',
+    cycleTimeAct: 'cycleTimeAct',
+    cavityStd: 'cavityStd',
+    cavityAct: 'cavityAct',
+    inputMaterialQty: 'inputMaterialQty',
+    materialRunnerQty: 'materialRunnerQty',
+    materialPurgeQty: 'materialPurgeQty',
+    qtyPassOn: 'qtyPassOn',
+    qtyHold: 'qtyHold',
+    qtyWip: 'qtyWip',
+    qtyGood: 'qtyGood',
+    qtyReject: 'qtyReject',
+    rejectBreakdown: 'rejectBreakdown',
+    downtimeBreakdown: 'downtimeBreakdown',
+    totalDowntime: 'totalDowntime',
+    notes: 'notes',
+    metaData: 'metaData',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ProductionReportScalarFieldEnum = (typeof ProductionReportScalarFieldEnum)[keyof typeof ProductionReportScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
   export const UserOrderByRelevanceFieldEnum: {
@@ -9712,6 +11229,33 @@ export namespace Prisma {
   };
 
   export type ProStepOrderByRelevanceFieldEnum = (typeof ProStepOrderByRelevanceFieldEnum)[keyof typeof ProStepOrderByRelevanceFieldEnum]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+  export const QueryMode: {
+    default: 'default',
+    insensitive: 'insensitive'
+  };
+
+  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+  export const ProductionReportOrderByRelevanceFieldEnum: {
+    id: 'id',
+    operatorName: 'operatorName',
+    batchNo: 'batchNo',
+    notes: 'notes'
+  };
+
+  export type ProductionReportOrderByRelevanceFieldEnum = (typeof ProductionReportOrderByRelevanceFieldEnum)[keyof typeof ProductionReportOrderByRelevanceFieldEnum]
 
 
   /**
@@ -9779,6 +11323,27 @@ export namespace Prisma {
    * Reference to a field of type 'Decimal'
    */
   export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+  /**
+   * Reference to a field of type 'LphType'
+   */
+  export type EnumLphTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LphType'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -10172,9 +11737,13 @@ export namespace Prisma {
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
     partNumber?: StringNullableFilter<"ProStep"> | string | null
+    manPowerStd?: IntNullableFilter<"ProStep"> | number | null
+    cycleTimeStd?: DecimalNullableFilter<"ProStep"> | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: IntNullableFilter<"ProStep"> | number | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
     machine?: XOR<MachineNullableScalarRelationFilter, MachineWhereInput> | null
     materials?: ProStepMaterialListRelationFilter
+    productionReports?: ProductionReportListRelationFilter
   }
 
   export type ProStepOrderByWithRelationInput = {
@@ -10186,9 +11755,13 @@ export namespace Prisma {
     startDate?: SortOrderInput | SortOrder
     machineId?: SortOrderInput | SortOrder
     partNumber?: SortOrderInput | SortOrder
+    manPowerStd?: SortOrderInput | SortOrder
+    cycleTimeStd?: SortOrderInput | SortOrder
+    cavityStd?: SortOrderInput | SortOrder
     pro?: ProOrderByWithRelationInput
     machine?: MachineOrderByWithRelationInput
     materials?: ProStepMaterialOrderByRelationAggregateInput
+    productionReports?: ProductionReportOrderByRelationAggregateInput
     _relevance?: ProStepOrderByRelevanceInput
   }
 
@@ -10205,9 +11778,13 @@ export namespace Prisma {
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
     partNumber?: StringNullableFilter<"ProStep"> | string | null
+    manPowerStd?: IntNullableFilter<"ProStep"> | number | null
+    cycleTimeStd?: DecimalNullableFilter<"ProStep"> | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: IntNullableFilter<"ProStep"> | number | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
     machine?: XOR<MachineNullableScalarRelationFilter, MachineWhereInput> | null
     materials?: ProStepMaterialListRelationFilter
+    productionReports?: ProductionReportListRelationFilter
   }, "id" | "proId_orderNo">
 
   export type ProStepOrderByWithAggregationInput = {
@@ -10219,6 +11796,9 @@ export namespace Prisma {
     startDate?: SortOrderInput | SortOrder
     machineId?: SortOrderInput | SortOrder
     partNumber?: SortOrderInput | SortOrder
+    manPowerStd?: SortOrderInput | SortOrder
+    cycleTimeStd?: SortOrderInput | SortOrder
+    cavityStd?: SortOrderInput | SortOrder
     _count?: ProStepCountOrderByAggregateInput
     _avg?: ProStepAvgOrderByAggregateInput
     _max?: ProStepMaxOrderByAggregateInput
@@ -10238,6 +11818,9 @@ export namespace Prisma {
     startDate?: DateTimeNullableWithAggregatesFilter<"ProStep"> | Date | string | null
     machineId?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
     partNumber?: StringNullableWithAggregatesFilter<"ProStep"> | string | null
+    manPowerStd?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
+    cycleTimeStd?: DecimalNullableWithAggregatesFilter<"ProStep"> | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
   }
 
   export type ProStepMaterialWhereInput = {
@@ -10294,6 +11877,189 @@ export namespace Prisma {
     stepId?: IntWithAggregatesFilter<"ProStepMaterial"> | number
     materialId?: IntWithAggregatesFilter<"ProStepMaterial"> | number
     qtyReq?: DecimalWithAggregatesFilter<"ProStepMaterial"> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type ProductionReportWhereInput = {
+    AND?: ProductionReportWhereInput | ProductionReportWhereInput[]
+    OR?: ProductionReportWhereInput[]
+    NOT?: ProductionReportWhereInput | ProductionReportWhereInput[]
+    id?: StringFilter<"ProductionReport"> | string
+    proStepId?: IntFilter<"ProductionReport"> | number
+    reportDate?: DateTimeFilter<"ProductionReport"> | Date | string
+    shift?: IntFilter<"ProductionReport"> | number
+    operatorName?: StringFilter<"ProductionReport"> | string
+    reportType?: EnumLphTypeFilter<"ProductionReport"> | $Enums.LphType
+    startTime?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    endTime?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    batchNo?: StringNullableFilter<"ProductionReport"> | string | null
+    manPowerStd?: IntNullableFilter<"ProductionReport"> | number | null
+    manPowerAct?: IntNullableFilter<"ProductionReport"> | number | null
+    cycleTimeStd?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: IntNullableFilter<"ProductionReport"> | number | null
+    cavityAct?: IntNullableFilter<"ProductionReport"> | number | null
+    inputMaterialQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: JsonNullableFilter<"ProductionReport">
+    downtimeBreakdown?: JsonNullableFilter<"ProductionReport">
+    totalDowntime?: IntFilter<"ProductionReport"> | number
+    notes?: StringNullableFilter<"ProductionReport"> | string | null
+    metaData?: JsonNullableFilter<"ProductionReport">
+    createdAt?: DateTimeFilter<"ProductionReport"> | Date | string
+    updatedAt?: DateTimeFilter<"ProductionReport"> | Date | string
+    step?: XOR<ProStepScalarRelationFilter, ProStepWhereInput>
+  }
+
+  export type ProductionReportOrderByWithRelationInput = {
+    id?: SortOrder
+    proStepId?: SortOrder
+    reportDate?: SortOrder
+    shift?: SortOrder
+    operatorName?: SortOrder
+    reportType?: SortOrder
+    startTime?: SortOrderInput | SortOrder
+    endTime?: SortOrderInput | SortOrder
+    batchNo?: SortOrderInput | SortOrder
+    manPowerStd?: SortOrderInput | SortOrder
+    manPowerAct?: SortOrderInput | SortOrder
+    cycleTimeStd?: SortOrderInput | SortOrder
+    cycleTimeAct?: SortOrderInput | SortOrder
+    cavityStd?: SortOrderInput | SortOrder
+    cavityAct?: SortOrderInput | SortOrder
+    inputMaterialQty?: SortOrderInput | SortOrder
+    materialRunnerQty?: SortOrderInput | SortOrder
+    materialPurgeQty?: SortOrderInput | SortOrder
+    qtyPassOn?: SortOrderInput | SortOrder
+    qtyHold?: SortOrderInput | SortOrder
+    qtyWip?: SortOrderInput | SortOrder
+    qtyGood?: SortOrder
+    qtyReject?: SortOrder
+    rejectBreakdown?: SortOrderInput | SortOrder
+    downtimeBreakdown?: SortOrderInput | SortOrder
+    totalDowntime?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    metaData?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    step?: ProStepOrderByWithRelationInput
+    _relevance?: ProductionReportOrderByRelevanceInput
+  }
+
+  export type ProductionReportWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ProductionReportWhereInput | ProductionReportWhereInput[]
+    OR?: ProductionReportWhereInput[]
+    NOT?: ProductionReportWhereInput | ProductionReportWhereInput[]
+    proStepId?: IntFilter<"ProductionReport"> | number
+    reportDate?: DateTimeFilter<"ProductionReport"> | Date | string
+    shift?: IntFilter<"ProductionReport"> | number
+    operatorName?: StringFilter<"ProductionReport"> | string
+    reportType?: EnumLphTypeFilter<"ProductionReport"> | $Enums.LphType
+    startTime?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    endTime?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    batchNo?: StringNullableFilter<"ProductionReport"> | string | null
+    manPowerStd?: IntNullableFilter<"ProductionReport"> | number | null
+    manPowerAct?: IntNullableFilter<"ProductionReport"> | number | null
+    cycleTimeStd?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: IntNullableFilter<"ProductionReport"> | number | null
+    cavityAct?: IntNullableFilter<"ProductionReport"> | number | null
+    inputMaterialQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: JsonNullableFilter<"ProductionReport">
+    downtimeBreakdown?: JsonNullableFilter<"ProductionReport">
+    totalDowntime?: IntFilter<"ProductionReport"> | number
+    notes?: StringNullableFilter<"ProductionReport"> | string | null
+    metaData?: JsonNullableFilter<"ProductionReport">
+    createdAt?: DateTimeFilter<"ProductionReport"> | Date | string
+    updatedAt?: DateTimeFilter<"ProductionReport"> | Date | string
+    step?: XOR<ProStepScalarRelationFilter, ProStepWhereInput>
+  }, "id">
+
+  export type ProductionReportOrderByWithAggregationInput = {
+    id?: SortOrder
+    proStepId?: SortOrder
+    reportDate?: SortOrder
+    shift?: SortOrder
+    operatorName?: SortOrder
+    reportType?: SortOrder
+    startTime?: SortOrderInput | SortOrder
+    endTime?: SortOrderInput | SortOrder
+    batchNo?: SortOrderInput | SortOrder
+    manPowerStd?: SortOrderInput | SortOrder
+    manPowerAct?: SortOrderInput | SortOrder
+    cycleTimeStd?: SortOrderInput | SortOrder
+    cycleTimeAct?: SortOrderInput | SortOrder
+    cavityStd?: SortOrderInput | SortOrder
+    cavityAct?: SortOrderInput | SortOrder
+    inputMaterialQty?: SortOrderInput | SortOrder
+    materialRunnerQty?: SortOrderInput | SortOrder
+    materialPurgeQty?: SortOrderInput | SortOrder
+    qtyPassOn?: SortOrderInput | SortOrder
+    qtyHold?: SortOrderInput | SortOrder
+    qtyWip?: SortOrderInput | SortOrder
+    qtyGood?: SortOrder
+    qtyReject?: SortOrder
+    rejectBreakdown?: SortOrderInput | SortOrder
+    downtimeBreakdown?: SortOrderInput | SortOrder
+    totalDowntime?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    metaData?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ProductionReportCountOrderByAggregateInput
+    _avg?: ProductionReportAvgOrderByAggregateInput
+    _max?: ProductionReportMaxOrderByAggregateInput
+    _min?: ProductionReportMinOrderByAggregateInput
+    _sum?: ProductionReportSumOrderByAggregateInput
+  }
+
+  export type ProductionReportScalarWhereWithAggregatesInput = {
+    AND?: ProductionReportScalarWhereWithAggregatesInput | ProductionReportScalarWhereWithAggregatesInput[]
+    OR?: ProductionReportScalarWhereWithAggregatesInput[]
+    NOT?: ProductionReportScalarWhereWithAggregatesInput | ProductionReportScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ProductionReport"> | string
+    proStepId?: IntWithAggregatesFilter<"ProductionReport"> | number
+    reportDate?: DateTimeWithAggregatesFilter<"ProductionReport"> | Date | string
+    shift?: IntWithAggregatesFilter<"ProductionReport"> | number
+    operatorName?: StringWithAggregatesFilter<"ProductionReport"> | string
+    reportType?: EnumLphTypeWithAggregatesFilter<"ProductionReport"> | $Enums.LphType
+    startTime?: DateTimeNullableWithAggregatesFilter<"ProductionReport"> | Date | string | null
+    endTime?: DateTimeNullableWithAggregatesFilter<"ProductionReport"> | Date | string | null
+    batchNo?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
+    manPowerStd?: IntNullableWithAggregatesFilter<"ProductionReport"> | number | null
+    manPowerAct?: IntNullableWithAggregatesFilter<"ProductionReport"> | number | null
+    cycleTimeStd?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: IntNullableWithAggregatesFilter<"ProductionReport"> | number | null
+    cavityAct?: IntNullableWithAggregatesFilter<"ProductionReport"> | number | null
+    inputMaterialQty?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: JsonNullableWithAggregatesFilter<"ProductionReport">
+    downtimeBreakdown?: JsonNullableWithAggregatesFilter<"ProductionReport">
+    totalDowntime?: IntWithAggregatesFilter<"ProductionReport"> | number
+    notes?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
+    metaData?: JsonNullableWithAggregatesFilter<"ProductionReport">
+    createdAt?: DateTimeWithAggregatesFilter<"ProductionReport"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ProductionReport"> | Date | string
   }
 
   export type UserCreateInput = {
@@ -10676,9 +12442,13 @@ export namespace Prisma {
     estimatedShifts?: number | null
     startDate?: Date | string | null
     partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
+    productionReports?: ProductionReportCreateNestedManyWithoutStepInput
   }
 
   export type ProStepUncheckedCreateInput = {
@@ -10690,7 +12460,11 @@ export namespace Prisma {
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutStepInput
   }
 
   export type ProStepUpdateInput = {
@@ -10699,9 +12473,13 @@ export namespace Prisma {
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
+    productionReports?: ProductionReportUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateInput = {
@@ -10713,7 +12491,11 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepCreateManyInput = {
@@ -10725,6 +12507,9 @@ export namespace Prisma {
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
   }
 
   export type ProStepUpdateManyMutationInput = {
@@ -10733,6 +12518,9 @@ export namespace Prisma {
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ProStepUncheckedUpdateManyInput = {
@@ -10744,6 +12532,9 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ProStepMaterialCreateInput = {
@@ -10788,6 +12579,236 @@ export namespace Prisma {
     stepId?: IntFieldUpdateOperationsInput | number
     materialId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type ProductionReportCreateInput = {
+    id?: string
+    reportDate: Date | string
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    batchNo?: string | null
+    manPowerStd?: number | null
+    manPowerAct?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    cavityAct?: number | null
+    inputMaterialQty?: Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: Decimal | DecimalJsLike | number | string | null
+    qtyHold?: Decimal | DecimalJsLike | number | string | null
+    qtyWip?: Decimal | DecimalJsLike | number | string | null
+    qtyGood?: Decimal | DecimalJsLike | number | string
+    qtyReject?: Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: number
+    notes?: string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    step: ProStepCreateNestedOneWithoutProductionReportsInput
+  }
+
+  export type ProductionReportUncheckedCreateInput = {
+    id?: string
+    proStepId: number
+    reportDate: Date | string
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    batchNo?: string | null
+    manPowerStd?: number | null
+    manPowerAct?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    cavityAct?: number | null
+    inputMaterialQty?: Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: Decimal | DecimalJsLike | number | string | null
+    qtyHold?: Decimal | DecimalJsLike | number | string | null
+    qtyWip?: Decimal | DecimalJsLike | number | string | null
+    qtyGood?: Decimal | DecimalJsLike | number | string
+    qtyReject?: Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: number
+    notes?: string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductionReportUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    step?: ProStepUpdateOneRequiredWithoutProductionReportsNestedInput
+  }
+
+  export type ProductionReportUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    proStepId?: IntFieldUpdateOperationsInput | number
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductionReportCreateManyInput = {
+    id?: string
+    proStepId: number
+    reportDate: Date | string
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    batchNo?: string | null
+    manPowerStd?: number | null
+    manPowerAct?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    cavityAct?: number | null
+    inputMaterialQty?: Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: Decimal | DecimalJsLike | number | string | null
+    qtyHold?: Decimal | DecimalJsLike | number | string | null
+    qtyWip?: Decimal | DecimalJsLike | number | string | null
+    qtyGood?: Decimal | DecimalJsLike | number | string
+    qtyReject?: Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: number
+    notes?: string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductionReportUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductionReportUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    proStepId?: IntFieldUpdateOperationsInput | number
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -11324,6 +13345,17 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type DecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
   export type ProScalarRelationFilter = {
     is?: ProWhereInput
     isNot?: ProWhereInput
@@ -11332,6 +13364,16 @@ export namespace Prisma {
   export type MachineNullableScalarRelationFilter = {
     is?: MachineWhereInput | null
     isNot?: MachineWhereInput | null
+  }
+
+  export type ProductionReportListRelationFilter = {
+    every?: ProductionReportWhereInput
+    some?: ProductionReportWhereInput
+    none?: ProductionReportWhereInput
+  }
+
+  export type ProductionReportOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type ProStepOrderByRelevanceInput = {
@@ -11354,6 +13396,9 @@ export namespace Prisma {
     startDate?: SortOrder
     machineId?: SortOrder
     partNumber?: SortOrder
+    manPowerStd?: SortOrder
+    cycleTimeStd?: SortOrder
+    cavityStd?: SortOrder
   }
 
   export type ProStepAvgOrderByAggregateInput = {
@@ -11363,6 +13408,9 @@ export namespace Prisma {
     up?: SortOrder
     estimatedShifts?: SortOrder
     machineId?: SortOrder
+    manPowerStd?: SortOrder
+    cycleTimeStd?: SortOrder
+    cavityStd?: SortOrder
   }
 
   export type ProStepMaxOrderByAggregateInput = {
@@ -11374,6 +13422,9 @@ export namespace Prisma {
     startDate?: SortOrder
     machineId?: SortOrder
     partNumber?: SortOrder
+    manPowerStd?: SortOrder
+    cycleTimeStd?: SortOrder
+    cavityStd?: SortOrder
   }
 
   export type ProStepMinOrderByAggregateInput = {
@@ -11385,6 +13436,9 @@ export namespace Prisma {
     startDate?: SortOrder
     machineId?: SortOrder
     partNumber?: SortOrder
+    manPowerStd?: SortOrder
+    cycleTimeStd?: SortOrder
+    cavityStd?: SortOrder
   }
 
   export type ProStepSumOrderByAggregateInput = {
@@ -11394,6 +13448,25 @@ export namespace Prisma {
     up?: SortOrder
     estimatedShifts?: SortOrder
     machineId?: SortOrder
+    manPowerStd?: SortOrder
+    cycleTimeStd?: SortOrder
+    cavityStd?: SortOrder
+  }
+
+  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type DecimalFilter<$PrismaModel = never> = {
@@ -11471,6 +13544,211 @@ export namespace Prisma {
     _sum?: NestedDecimalFilter<$PrismaModel>
     _min?: NestedDecimalFilter<$PrismaModel>
     _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type EnumLphTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.LphType | EnumLphTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LphType[]
+    notIn?: $Enums.LphType[]
+    not?: NestedEnumLphTypeFilter<$PrismaModel> | $Enums.LphType
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type ProductionReportOrderByRelevanceInput = {
+    fields: ProductionReportOrderByRelevanceFieldEnum | ProductionReportOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type ProductionReportCountOrderByAggregateInput = {
+    id?: SortOrder
+    proStepId?: SortOrder
+    reportDate?: SortOrder
+    shift?: SortOrder
+    operatorName?: SortOrder
+    reportType?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    batchNo?: SortOrder
+    manPowerStd?: SortOrder
+    manPowerAct?: SortOrder
+    cycleTimeStd?: SortOrder
+    cycleTimeAct?: SortOrder
+    cavityStd?: SortOrder
+    cavityAct?: SortOrder
+    inputMaterialQty?: SortOrder
+    materialRunnerQty?: SortOrder
+    materialPurgeQty?: SortOrder
+    qtyPassOn?: SortOrder
+    qtyHold?: SortOrder
+    qtyWip?: SortOrder
+    qtyGood?: SortOrder
+    qtyReject?: SortOrder
+    rejectBreakdown?: SortOrder
+    downtimeBreakdown?: SortOrder
+    totalDowntime?: SortOrder
+    notes?: SortOrder
+    metaData?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProductionReportAvgOrderByAggregateInput = {
+    proStepId?: SortOrder
+    shift?: SortOrder
+    manPowerStd?: SortOrder
+    manPowerAct?: SortOrder
+    cycleTimeStd?: SortOrder
+    cycleTimeAct?: SortOrder
+    cavityStd?: SortOrder
+    cavityAct?: SortOrder
+    inputMaterialQty?: SortOrder
+    materialRunnerQty?: SortOrder
+    materialPurgeQty?: SortOrder
+    qtyPassOn?: SortOrder
+    qtyHold?: SortOrder
+    qtyWip?: SortOrder
+    qtyGood?: SortOrder
+    qtyReject?: SortOrder
+    totalDowntime?: SortOrder
+  }
+
+  export type ProductionReportMaxOrderByAggregateInput = {
+    id?: SortOrder
+    proStepId?: SortOrder
+    reportDate?: SortOrder
+    shift?: SortOrder
+    operatorName?: SortOrder
+    reportType?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    batchNo?: SortOrder
+    manPowerStd?: SortOrder
+    manPowerAct?: SortOrder
+    cycleTimeStd?: SortOrder
+    cycleTimeAct?: SortOrder
+    cavityStd?: SortOrder
+    cavityAct?: SortOrder
+    inputMaterialQty?: SortOrder
+    materialRunnerQty?: SortOrder
+    materialPurgeQty?: SortOrder
+    qtyPassOn?: SortOrder
+    qtyHold?: SortOrder
+    qtyWip?: SortOrder
+    qtyGood?: SortOrder
+    qtyReject?: SortOrder
+    totalDowntime?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProductionReportMinOrderByAggregateInput = {
+    id?: SortOrder
+    proStepId?: SortOrder
+    reportDate?: SortOrder
+    shift?: SortOrder
+    operatorName?: SortOrder
+    reportType?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    batchNo?: SortOrder
+    manPowerStd?: SortOrder
+    manPowerAct?: SortOrder
+    cycleTimeStd?: SortOrder
+    cycleTimeAct?: SortOrder
+    cavityStd?: SortOrder
+    cavityAct?: SortOrder
+    inputMaterialQty?: SortOrder
+    materialRunnerQty?: SortOrder
+    materialPurgeQty?: SortOrder
+    qtyPassOn?: SortOrder
+    qtyHold?: SortOrder
+    qtyWip?: SortOrder
+    qtyGood?: SortOrder
+    qtyReject?: SortOrder
+    totalDowntime?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProductionReportSumOrderByAggregateInput = {
+    proStepId?: SortOrder
+    shift?: SortOrder
+    manPowerStd?: SortOrder
+    manPowerAct?: SortOrder
+    cycleTimeStd?: SortOrder
+    cycleTimeAct?: SortOrder
+    cavityStd?: SortOrder
+    cavityAct?: SortOrder
+    inputMaterialQty?: SortOrder
+    materialRunnerQty?: SortOrder
+    materialPurgeQty?: SortOrder
+    qtyPassOn?: SortOrder
+    qtyHold?: SortOrder
+    qtyWip?: SortOrder
+    qtyGood?: SortOrder
+    qtyReject?: SortOrder
+    totalDowntime?: SortOrder
+  }
+
+  export type EnumLphTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LphType | EnumLphTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LphType[]
+    notIn?: $Enums.LphType[]
+    not?: NestedEnumLphTypeWithAggregatesFilter<$PrismaModel> | $Enums.LphType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLphTypeFilter<$PrismaModel>
+    _max?: NestedEnumLphTypeFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -11728,11 +14006,33 @@ export namespace Prisma {
     connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
   }
 
+  export type ProductionReportCreateNestedManyWithoutStepInput = {
+    create?: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput> | ProductionReportCreateWithoutStepInput[] | ProductionReportUncheckedCreateWithoutStepInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutStepInput | ProductionReportCreateOrConnectWithoutStepInput[]
+    createMany?: ProductionReportCreateManyStepInputEnvelope
+    connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+  }
+
   export type ProStepMaterialUncheckedCreateNestedManyWithoutStepInput = {
     create?: XOR<ProStepMaterialCreateWithoutStepInput, ProStepMaterialUncheckedCreateWithoutStepInput> | ProStepMaterialCreateWithoutStepInput[] | ProStepMaterialUncheckedCreateWithoutStepInput[]
     connectOrCreate?: ProStepMaterialCreateOrConnectWithoutStepInput | ProStepMaterialCreateOrConnectWithoutStepInput[]
     createMany?: ProStepMaterialCreateManyStepInputEnvelope
     connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
+  }
+
+  export type ProductionReportUncheckedCreateNestedManyWithoutStepInput = {
+    create?: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput> | ProductionReportCreateWithoutStepInput[] | ProductionReportUncheckedCreateWithoutStepInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutStepInput | ProductionReportCreateOrConnectWithoutStepInput[]
+    createMany?: ProductionReportCreateManyStepInputEnvelope
+    connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+  }
+
+  export type NullableDecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string | null
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
   }
 
   export type ProUpdateOneRequiredWithoutStepsNestedInput = {
@@ -11767,6 +14067,20 @@ export namespace Prisma {
     deleteMany?: ProStepMaterialScalarWhereInput | ProStepMaterialScalarWhereInput[]
   }
 
+  export type ProductionReportUpdateManyWithoutStepNestedInput = {
+    create?: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput> | ProductionReportCreateWithoutStepInput[] | ProductionReportUncheckedCreateWithoutStepInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutStepInput | ProductionReportCreateOrConnectWithoutStepInput[]
+    upsert?: ProductionReportUpsertWithWhereUniqueWithoutStepInput | ProductionReportUpsertWithWhereUniqueWithoutStepInput[]
+    createMany?: ProductionReportCreateManyStepInputEnvelope
+    set?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    disconnect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    delete?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    update?: ProductionReportUpdateWithWhereUniqueWithoutStepInput | ProductionReportUpdateWithWhereUniqueWithoutStepInput[]
+    updateMany?: ProductionReportUpdateManyWithWhereWithoutStepInput | ProductionReportUpdateManyWithWhereWithoutStepInput[]
+    deleteMany?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
+  }
+
   export type ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput = {
     create?: XOR<ProStepMaterialCreateWithoutStepInput, ProStepMaterialUncheckedCreateWithoutStepInput> | ProStepMaterialCreateWithoutStepInput[] | ProStepMaterialUncheckedCreateWithoutStepInput[]
     connectOrCreate?: ProStepMaterialCreateOrConnectWithoutStepInput | ProStepMaterialCreateOrConnectWithoutStepInput[]
@@ -11779,6 +14093,20 @@ export namespace Prisma {
     update?: ProStepMaterialUpdateWithWhereUniqueWithoutStepInput | ProStepMaterialUpdateWithWhereUniqueWithoutStepInput[]
     updateMany?: ProStepMaterialUpdateManyWithWhereWithoutStepInput | ProStepMaterialUpdateManyWithWhereWithoutStepInput[]
     deleteMany?: ProStepMaterialScalarWhereInput | ProStepMaterialScalarWhereInput[]
+  }
+
+  export type ProductionReportUncheckedUpdateManyWithoutStepNestedInput = {
+    create?: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput> | ProductionReportCreateWithoutStepInput[] | ProductionReportUncheckedCreateWithoutStepInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutStepInput | ProductionReportCreateOrConnectWithoutStepInput[]
+    upsert?: ProductionReportUpsertWithWhereUniqueWithoutStepInput | ProductionReportUpsertWithWhereUniqueWithoutStepInput[]
+    createMany?: ProductionReportCreateManyStepInputEnvelope
+    set?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    disconnect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    delete?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    update?: ProductionReportUpdateWithWhereUniqueWithoutStepInput | ProductionReportUpdateWithWhereUniqueWithoutStepInput[]
+    updateMany?: ProductionReportUpdateManyWithWhereWithoutStepInput | ProductionReportUpdateManyWithWhereWithoutStepInput[]
+    deleteMany?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
   }
 
   export type ProStepCreateNestedOneWithoutMaterialsInput = {
@@ -11815,6 +14143,24 @@ export namespace Prisma {
     upsert?: MaterialUpsertWithoutProStepMaterialsInput
     connect?: MaterialWhereUniqueInput
     update?: XOR<XOR<MaterialUpdateToOneWithWhereWithoutProStepMaterialsInput, MaterialUpdateWithoutProStepMaterialsInput>, MaterialUncheckedUpdateWithoutProStepMaterialsInput>
+  }
+
+  export type ProStepCreateNestedOneWithoutProductionReportsInput = {
+    create?: XOR<ProStepCreateWithoutProductionReportsInput, ProStepUncheckedCreateWithoutProductionReportsInput>
+    connectOrCreate?: ProStepCreateOrConnectWithoutProductionReportsInput
+    connect?: ProStepWhereUniqueInput
+  }
+
+  export type EnumLphTypeFieldUpdateOperationsInput = {
+    set?: $Enums.LphType
+  }
+
+  export type ProStepUpdateOneRequiredWithoutProductionReportsNestedInput = {
+    create?: XOR<ProStepCreateWithoutProductionReportsInput, ProStepUncheckedCreateWithoutProductionReportsInput>
+    connectOrCreate?: ProStepCreateOrConnectWithoutProductionReportsInput
+    upsert?: ProStepUpsertWithoutProductionReportsInput
+    connect?: ProStepWhereUniqueInput
+    update?: XOR<XOR<ProStepUpdateToOneWithWhereWithoutProductionReportsInput, ProStepUpdateWithoutProductionReportsInput>, ProStepUncheckedUpdateWithoutProductionReportsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -12090,6 +14436,33 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
   export type NestedDecimalFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     in?: Decimal[] | DecimalJsLike[] | number[] | string[]
@@ -12117,14 +14490,58 @@ export namespace Prisma {
     _max?: NestedDecimalFilter<$PrismaModel>
   }
 
+  export type NestedEnumLphTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.LphType | EnumLphTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LphType[]
+    notIn?: $Enums.LphType[]
+    not?: NestedEnumLphTypeFilter<$PrismaModel> | $Enums.LphType
+  }
+
+  export type NestedEnumLphTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LphType | EnumLphTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LphType[]
+    notIn?: $Enums.LphType[]
+    not?: NestedEnumLphTypeWithAggregatesFilter<$PrismaModel> | $Enums.LphType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLphTypeFilter<$PrismaModel>
+    _max?: NestedEnumLphTypeFilter<$PrismaModel>
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
   export type ProStepCreateWithoutMachineInput = {
     orderNo: number
     up?: number | null
     estimatedShifts?: number | null
     startDate?: Date | string | null
     partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
+    productionReports?: ProductionReportCreateNestedManyWithoutStepInput
   }
 
   export type ProStepUncheckedCreateWithoutMachineInput = {
@@ -12135,7 +14552,11 @@ export namespace Prisma {
     estimatedShifts?: number | null
     startDate?: Date | string | null
     partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutStepInput
   }
 
   export type ProStepCreateOrConnectWithoutMachineInput = {
@@ -12176,6 +14597,9 @@ export namespace Prisma {
     startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
     machineId?: IntNullableFilter<"ProStep"> | number | null
     partNumber?: StringNullableFilter<"ProStep"> | string | null
+    manPowerStd?: IntNullableFilter<"ProStep"> | number | null
+    cycleTimeStd?: DecimalNullableFilter<"ProStep"> | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: IntNullableFilter<"ProStep"> | number | null
   }
 
   export type ProStepMaterialCreateWithoutMaterialInput = {
@@ -12317,8 +14741,12 @@ export namespace Prisma {
     estimatedShifts?: number | null
     startDate?: Date | string | null
     partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
     machine?: MachineCreateNestedOneWithoutProStepsInput
     materials?: ProStepMaterialCreateNestedManyWithoutStepInput
+    productionReports?: ProductionReportCreateNestedManyWithoutStepInput
   }
 
   export type ProStepUncheckedCreateWithoutProInput = {
@@ -12329,7 +14757,11 @@ export namespace Prisma {
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
     materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutStepInput
   }
 
   export type ProStepCreateOrConnectWithoutProInput = {
@@ -12459,6 +14891,80 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ProductionReportCreateWithoutStepInput = {
+    id?: string
+    reportDate: Date | string
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    batchNo?: string | null
+    manPowerStd?: number | null
+    manPowerAct?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    cavityAct?: number | null
+    inputMaterialQty?: Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: Decimal | DecimalJsLike | number | string | null
+    qtyHold?: Decimal | DecimalJsLike | number | string | null
+    qtyWip?: Decimal | DecimalJsLike | number | string | null
+    qtyGood?: Decimal | DecimalJsLike | number | string
+    qtyReject?: Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: number
+    notes?: string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductionReportUncheckedCreateWithoutStepInput = {
+    id?: string
+    reportDate: Date | string
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    batchNo?: string | null
+    manPowerStd?: number | null
+    manPowerAct?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    cavityAct?: number | null
+    inputMaterialQty?: Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: Decimal | DecimalJsLike | number | string | null
+    qtyHold?: Decimal | DecimalJsLike | number | string | null
+    qtyWip?: Decimal | DecimalJsLike | number | string | null
+    qtyGood?: Decimal | DecimalJsLike | number | string
+    qtyReject?: Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: number
+    notes?: string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductionReportCreateOrConnectWithoutStepInput = {
+    where: ProductionReportWhereUniqueInput
+    create: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput>
+  }
+
+  export type ProductionReportCreateManyStepInputEnvelope = {
+    data: ProductionReportCreateManyStepInput | ProductionReportCreateManyStepInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ProUpsertWithoutStepsInput = {
     update: XOR<ProUpdateWithoutStepsInput, ProUncheckedUpdateWithoutStepsInput>
     create: XOR<ProCreateWithoutStepsInput, ProUncheckedCreateWithoutStepsInput>
@@ -12545,14 +15051,70 @@ export namespace Prisma {
     data: XOR<ProStepMaterialUpdateManyMutationInput, ProStepMaterialUncheckedUpdateManyWithoutStepInput>
   }
 
+  export type ProductionReportUpsertWithWhereUniqueWithoutStepInput = {
+    where: ProductionReportWhereUniqueInput
+    update: XOR<ProductionReportUpdateWithoutStepInput, ProductionReportUncheckedUpdateWithoutStepInput>
+    create: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput>
+  }
+
+  export type ProductionReportUpdateWithWhereUniqueWithoutStepInput = {
+    where: ProductionReportWhereUniqueInput
+    data: XOR<ProductionReportUpdateWithoutStepInput, ProductionReportUncheckedUpdateWithoutStepInput>
+  }
+
+  export type ProductionReportUpdateManyWithWhereWithoutStepInput = {
+    where: ProductionReportScalarWhereInput
+    data: XOR<ProductionReportUpdateManyMutationInput, ProductionReportUncheckedUpdateManyWithoutStepInput>
+  }
+
+  export type ProductionReportScalarWhereInput = {
+    AND?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
+    OR?: ProductionReportScalarWhereInput[]
+    NOT?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
+    id?: StringFilter<"ProductionReport"> | string
+    proStepId?: IntFilter<"ProductionReport"> | number
+    reportDate?: DateTimeFilter<"ProductionReport"> | Date | string
+    shift?: IntFilter<"ProductionReport"> | number
+    operatorName?: StringFilter<"ProductionReport"> | string
+    reportType?: EnumLphTypeFilter<"ProductionReport"> | $Enums.LphType
+    startTime?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    endTime?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    batchNo?: StringNullableFilter<"ProductionReport"> | string | null
+    manPowerStd?: IntNullableFilter<"ProductionReport"> | number | null
+    manPowerAct?: IntNullableFilter<"ProductionReport"> | number | null
+    cycleTimeStd?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: IntNullableFilter<"ProductionReport"> | number | null
+    cavityAct?: IntNullableFilter<"ProductionReport"> | number | null
+    inputMaterialQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: JsonNullableFilter<"ProductionReport">
+    downtimeBreakdown?: JsonNullableFilter<"ProductionReport">
+    totalDowntime?: IntFilter<"ProductionReport"> | number
+    notes?: StringNullableFilter<"ProductionReport"> | string | null
+    metaData?: JsonNullableFilter<"ProductionReport">
+    createdAt?: DateTimeFilter<"ProductionReport"> | Date | string
+    updatedAt?: DateTimeFilter<"ProductionReport"> | Date | string
+  }
+
   export type ProStepCreateWithoutMaterialsInput = {
     orderNo: number
     up?: number | null
     estimatedShifts?: number | null
     startDate?: Date | string | null
     partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
     pro: ProCreateNestedOneWithoutStepsInput
     machine?: MachineCreateNestedOneWithoutProStepsInput
+    productionReports?: ProductionReportCreateNestedManyWithoutStepInput
   }
 
   export type ProStepUncheckedCreateWithoutMaterialsInput = {
@@ -12564,6 +15126,10 @@ export namespace Prisma {
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutStepInput
   }
 
   export type ProStepCreateOrConnectWithoutMaterialsInput = {
@@ -12608,8 +15174,12 @@ export namespace Prisma {
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     machine?: MachineUpdateOneWithoutProStepsNestedInput
+    productionReports?: ProductionReportUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateWithoutMaterialsInput = {
@@ -12621,6 +15191,10 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutStepNestedInput
   }
 
   export type MaterialUpsertWithoutProStepMaterialsInput = {
@@ -12649,6 +15223,80 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ProStepCreateWithoutProductionReportsInput = {
+    orderNo: number
+    up?: number | null
+    estimatedShifts?: number | null
+    startDate?: Date | string | null
+    partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    pro: ProCreateNestedOneWithoutStepsInput
+    machine?: MachineCreateNestedOneWithoutProStepsInput
+    materials?: ProStepMaterialCreateNestedManyWithoutStepInput
+  }
+
+  export type ProStepUncheckedCreateWithoutProductionReportsInput = {
+    id?: number
+    proId: number
+    orderNo: number
+    up?: number | null
+    estimatedShifts?: number | null
+    startDate?: Date | string | null
+    machineId?: number | null
+    partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
+  }
+
+  export type ProStepCreateOrConnectWithoutProductionReportsInput = {
+    where: ProStepWhereUniqueInput
+    create: XOR<ProStepCreateWithoutProductionReportsInput, ProStepUncheckedCreateWithoutProductionReportsInput>
+  }
+
+  export type ProStepUpsertWithoutProductionReportsInput = {
+    update: XOR<ProStepUpdateWithoutProductionReportsInput, ProStepUncheckedUpdateWithoutProductionReportsInput>
+    create: XOR<ProStepCreateWithoutProductionReportsInput, ProStepUncheckedCreateWithoutProductionReportsInput>
+    where?: ProStepWhereInput
+  }
+
+  export type ProStepUpdateToOneWithWhereWithoutProductionReportsInput = {
+    where?: ProStepWhereInput
+    data: XOR<ProStepUpdateWithoutProductionReportsInput, ProStepUncheckedUpdateWithoutProductionReportsInput>
+  }
+
+  export type ProStepUpdateWithoutProductionReportsInput = {
+    orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    pro?: ProUpdateOneRequiredWithoutStepsNestedInput
+    machine?: MachineUpdateOneWithoutProStepsNestedInput
+    materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
+  }
+
+  export type ProStepUncheckedUpdateWithoutProductionReportsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    proId?: IntFieldUpdateOperationsInput | number
+    orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    machineId?: NullableIntFieldUpdateOperationsInput | number | null
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
+  }
+
   export type ProStepCreateManyMachineInput = {
     id?: number
     proId: number
@@ -12657,6 +15305,9 @@ export namespace Prisma {
     estimatedShifts?: number | null
     startDate?: Date | string | null
     partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
   }
 
   export type ProStepUpdateWithoutMachineInput = {
@@ -12665,8 +15316,12 @@ export namespace Prisma {
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
     pro?: ProUpdateOneRequiredWithoutStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
+    productionReports?: ProductionReportUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateWithoutMachineInput = {
@@ -12677,7 +15332,11 @@ export namespace Prisma {
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateManyWithoutMachineInput = {
@@ -12688,6 +15347,9 @@ export namespace Prisma {
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ProStepMaterialCreateManyMaterialInput = {
@@ -12774,6 +15436,9 @@ export namespace Prisma {
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
+    manPowerStd?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
   }
 
   export type ProStepUpdateWithoutProInput = {
@@ -12782,8 +15447,12 @@ export namespace Prisma {
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
     machine?: MachineUpdateOneWithoutProStepsNestedInput
     materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
+    productionReports?: ProductionReportUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateWithoutProInput = {
@@ -12794,7 +15463,11 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
     materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutStepNestedInput
   }
 
   export type ProStepUncheckedUpdateManyWithoutProInput = {
@@ -12805,12 +15478,47 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ProStepMaterialCreateManyStepInput = {
     id?: number
     materialId: number
     qtyReq: Decimal | DecimalJsLike | number | string
+  }
+
+  export type ProductionReportCreateManyStepInput = {
+    id?: string
+    reportDate: Date | string
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    batchNo?: string | null
+    manPowerStd?: number | null
+    manPowerAct?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    cavityAct?: number | null
+    inputMaterialQty?: Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: Decimal | DecimalJsLike | number | string | null
+    qtyHold?: Decimal | DecimalJsLike | number | string | null
+    qtyWip?: Decimal | DecimalJsLike | number | string | null
+    qtyGood?: Decimal | DecimalJsLike | number | string
+    qtyReject?: Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: number
+    notes?: string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ProStepMaterialUpdateWithoutStepInput = {
@@ -12828,6 +15536,102 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     materialId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type ProductionReportUpdateWithoutStepInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductionReportUncheckedUpdateWithoutStepInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductionReportUncheckedUpdateManyWithoutStepInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

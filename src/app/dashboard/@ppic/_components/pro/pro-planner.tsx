@@ -485,6 +485,7 @@ export default function ProPlanner() {
             materialId: m.materialId!,
             qtyReq: Number(m.qtyReq),
           })),
+        // Standard Params removed
       })),
     };
 
@@ -828,9 +829,6 @@ export default function ProPlanner() {
               </div>
             </div>
 
-            <Separator />
-
-            {/* Materials Section */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="text-sm font-medium">Material (optional)</div>

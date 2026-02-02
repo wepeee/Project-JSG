@@ -182,7 +182,10 @@ exports.Prisma.ProStepScalarFieldEnum = {
   estimatedShifts: 'estimatedShifts',
   startDate: 'startDate',
   machineId: 'machineId',
-  partNumber: 'partNumber'
+  partNumber: 'partNumber',
+  manPowerStd: 'manPowerStd',
+  cycleTimeStd: 'cycleTimeStd',
+  cavityStd: 'cavityStd'
 };
 
 exports.Prisma.ProStepMaterialScalarFieldEnum = {
@@ -192,9 +195,47 @@ exports.Prisma.ProStepMaterialScalarFieldEnum = {
   qtyReq: 'qtyReq'
 };
 
+exports.Prisma.ProductionReportScalarFieldEnum = {
+  id: 'id',
+  proStepId: 'proStepId',
+  reportDate: 'reportDate',
+  shift: 'shift',
+  operatorName: 'operatorName',
+  reportType: 'reportType',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  batchNo: 'batchNo',
+  manPowerStd: 'manPowerStd',
+  manPowerAct: 'manPowerAct',
+  cycleTimeStd: 'cycleTimeStd',
+  cycleTimeAct: 'cycleTimeAct',
+  cavityStd: 'cavityStd',
+  cavityAct: 'cavityAct',
+  inputMaterialQty: 'inputMaterialQty',
+  materialRunnerQty: 'materialRunnerQty',
+  materialPurgeQty: 'materialPurgeQty',
+  qtyPassOn: 'qtyPassOn',
+  qtyHold: 'qtyHold',
+  qtyWip: 'qtyWip',
+  qtyGood: 'qtyGood',
+  qtyReject: 'qtyReject',
+  rejectBreakdown: 'rejectBreakdown',
+  downtimeBreakdown: 'downtimeBreakdown',
+  totalDowntime: 'totalDowntime',
+  notes: 'notes',
+  metaData: 'metaData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.UserOrderByRelevanceFieldEnum = {
@@ -235,6 +276,24 @@ exports.Prisma.ProOrderByRelevanceFieldEnum = {
 exports.Prisma.ProStepOrderByRelevanceFieldEnum = {
   partNumber: 'partNumber'
 };
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.ProductionReportOrderByRelevanceFieldEnum = {
+  id: 'id',
+  operatorName: 'operatorName',
+  batchNo: 'batchNo',
+  notes: 'notes'
+};
 exports.Role = exports.$Enums.Role = {
   SUPERADMIN: 'SUPERADMIN',
   ADMIN: 'ADMIN',
@@ -263,6 +322,14 @@ exports.ProType = exports.$Enums.ProType = {
   OTHER: 'OTHER'
 };
 
+exports.LphType = exports.$Enums.LphType = {
+  PAPER: 'PAPER',
+  PRINTING: 'PRINTING',
+  PACKING_ASSEMBLY: 'PACKING_ASSEMBLY',
+  BLOW_MOULDING: 'BLOW_MOULDING',
+  INJECTION: 'INJECTION'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Machine: 'Machine',
@@ -271,7 +338,8 @@ exports.Prisma.ModelName = {
   ProSequence: 'ProSequence',
   Pro: 'Pro',
   ProStep: 'ProStep',
-  ProStepMaterial: 'ProStepMaterial'
+  ProStepMaterial: 'ProStepMaterial',
+  ProductionReport: 'ProductionReport'
 };
 
 /**

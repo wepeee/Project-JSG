@@ -121,6 +121,10 @@ model Pro {
   status      ProStatus @default(OPEN)
   type        ProType   @default(PAPER)
 
+  autoShiftExpansion Boolean @default(false)
+
+  // Flag untuk menandai PRO dibuat dengan otomatisasi shift
+
   processId Int?
   process   Process? @relation(fields: [processId], references: [id])
 
@@ -147,7 +151,13 @@ model ProStep {
 
   partNumber String?
 
-  materials ProStepMaterial[]
+  // --- Target / Standards (for Reporting) ---
+  manPowerStd  Int?
+  cycleTimeStd Decimal? @db.Decimal(10, 2)
+  cavityStd    Int?
+
+  materials         ProStepMaterial[]
+  productionReports ProductionReport[]
 
   @@unique([proId, orderNo])
   @@index([proId])
@@ -162,7 +172,87 @@ model ProStepMaterial {
   material   Material @relation(fields: [materialId], references: [id])
 
   qtyReq Decimal @db.Decimal(12, 3)
+  // --- Laporan Produksi Harian (LPH) ---
 
   @@unique([stepId, materialId])
   @@index([stepId])
+}
+
+enum LphType {
+  PAPER
+  PRINTING
+  PACKING_ASSEMBLY // Packing & Assembly merged as per excel structure
+  BLOW_MOULDING
+  INJECTION
+}
+
+model ProductionReport {
+  id String @id @default(cuid())
+
+  // Header Info
+  proStepId Int
+  step      ProStep @relation(fields: [proStepId], references: [id])
+
+  reportDate DateTime // Tanggal Laporan
+  shift      Int // 1, 2, 3
+
+  operatorName String
+
+  reportType LphType
+
+  // Common Time
+  startTime DateTime? // Jam Mulai
+  endTime   DateTime? // Jam Selesai
+
+  // --- Rigid Specific Header ---
+  batchNo String? // Batch No (Rigid)
+
+  // --- Resources (Rigid) ---
+  manPowerStd Int? // MP Std
+  manPowerAct Int? // MP Actual
+
+  cycleTimeStd Decimal? // CT Std (Detik)
+  cycleTimeAct Decimal? // CT Actual (Detik)
+
+  cavityStd Int? // Cavity Std (Blow/Injection)
+  cavityAct Int? // Cavity Actual (Blow/Injection)
+
+  // --- Material Usage ---
+  // Paper: "Input Material"
+  // Rigid (Blow/Inj): "Total Material Tuang", "Gulungan/Cucian", "Runner"
+  inputMaterialQty  Decimal? @default(0) // Paper: Input Material, Rigid: Material Tuang
+  materialRunnerQty Decimal? @default(0) // Rigid: PT/Runner
+  materialPurgeQty  Decimal? @default(0) // Rigid: Gulungan/Cucian
+
+  // --- Output Results ---
+  qtyPassOn Decimal? @default(0)
+  qtyHold   Decimal? @default(0)
+  qtyWip    Decimal? @default(0)
+
+  qtyGood   Decimal @default(0) // Finish Good / Total Output / Output Baik
+  qtyReject Decimal @default(0) // Total Reject
+
+  // --- Reject Details (JSON) ---
+  // Store dynamic columns like "Bintik", "Warna", "Baret", etc.
+  // Format: { "bintik": 10, "warna": 5, ... }
+  rejectBreakdown Json?
+
+  // --- Downtime Details (JSON) ---
+  // Store dynamic columns like "Tunggu Approval", "Setup", "Machine Problem"
+  // Format: { "setup": 30, "no_order": 60, ... }
+  downtimeBreakdown Json?
+
+  totalDowntime Int @default(0) // Total menit downtime
+
+  // --- Notes ---
+  notes String? @db.Text
+
+  // Meta data for calculated fields snapshots if needed (OEE, %, etc) or extra columns
+  metaData Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([proStepId])
+  @@index([reportDate])
 }
