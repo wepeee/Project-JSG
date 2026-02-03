@@ -30,6 +30,13 @@ const RIGID_DATA = [
   { partNumber: "72513085 (1)", productName: "PRINTING MANUAL - PRINTING KEMASAN BEBIOTIC KYUT HYDRATING LIP BALM (BL) - BLUE", ct: 25.2, cavity: 1, mp: 1, uom: "PCS", workCenter: "SK MANUAL", phase: "1 PHASE", stdHr: 142 },
   { partNumber: "72513083", productName: "PRINTING MANUAL - MELIA SKINCARE YOUTH INFINITE SUNSCREEN MIST", ct: 16.8, cavity: 1, mp: 1, uom: "PCS", workCenter: "SK MANUAL", phase: "1 PHASE", stdHr: 214 },
   { partNumber: "72604353", productName: "COVER ACRYLIC KKI - PRINTING PUV - WIP - NEW DESIGN", ct: 1.7, cavity: 1, mp: 2, uom: "PCS", workCenter: "PUV", phase: "1 PHASE", stdHr: 2100 },
+  { partNumber: "72513085 (2)", productName: "PRINTING MANUAL - PRINTING KEMASAN BEBIOTIC KYUT HYDRATING LIP BALM (CAP) - BLUE", ct: 25.2, cavity: 1, mp: 1, uom: "PCS", workCenter: "SK MANUAL", phase: "1 PHASE", stdHr: 143 },
+  { partNumber: "72513085 (3)", productName: "PRINTING MANUAL - PRINTING KEMASAN BEBIOTIC KYUT HYDRATING LIP BALM (BL) - WHITE", ct: 25.2, cavity: 1, mp: 1, uom: "PCS", workCenter: "SK MANUAL", phase: "1 PHASE", stdHr: 143 },
+  { partNumber: "72513085 (4)", productName: "PRINTING MANUAL - PRINTING KEMASAN BEBIOTIC KYUT HYDRATING LIP BALM (CAP) - WHITE", ct: 25.2, cavity: 1, mp: 1, uom: "PCS", workCenter: "SK MANUAL", phase: "1 PHASE", stdHr: 143 },
+  { partNumber: "72513085", productName: "PRINTING MANUAL - PRINTING BOTOL ENERGY SERUM 20 ML", ct: 19.38, cavity: 1, mp: 1, uom: "PCS", workCenter: "SK MANUAL", phase: "1 PHASE", stdHr: 186 },
+  { partNumber: "7250409", productName: "PRINTING PUV - PRINTING KEMASAN POT ACRYLIC SUNWHITE DAILY CREAM TUTUP PLASTIK 13,8 GR - BISINDO", ct: 3, cavity: 1, mp: 3, uom: "PCS", workCenter: "SK MANUAL", phase: "1 PHASE", stdHr: 1200 },
+  { partNumber: "72513114 (1)", productName: "PRINTING MANUAL - PRINTING KEMASAN MSG GLOZE LIP STAIN PHASE 1 (HITAM)", ct: 3, cavity: 1, mp: 3, uom: "PCS", workCenter: "SK MANUAL", phase: "1 PHASE", stdHr: 1200 },
+  { partNumber: "72513114 (2)", productName: "PRINTING MANUAL - PRINTING KEMASAN MSG GLOZE LIP STAIN PHASE 2 (BIRU)", ct: 3, cavity: 1, mp: 3, uom: "PCS", workCenter: "SK MANUAL", phase: "1 PHASE", stdHr: 1200 },
 ];
 
 async function main() {
