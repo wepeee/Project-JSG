@@ -196,12 +196,14 @@ interface ProductionReportModalProps {
     step: any;
     shift: number;
   } | null;
+  onDraftChange?: () => void;
 }
 
 export function ProductionReportModal({
   open,
   onOpenChange,
   task,
+  onDraftChange,
 }: ProductionReportModalProps) {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = React.useState("info");
@@ -210,6 +212,8 @@ export function ProductionReportModal({
 
   // Initial State derived from task
   const [lphType, setLphType] = React.useState<LphType>("PAPER");
+  const [isLoaded, setIsLoaded] = React.useState(false);
+  const skipNextSave = React.useRef(false);
 
   // Form Data State
   const [formData, setFormData] = React.useState({
@@ -266,11 +270,18 @@ export function ProductionReportModal({
     );
   }, [formData.rejects, formData.rejectSetup, formData.rejectProcess]);
 
-  const totalDowntime = React.useMemo(() => {
-    return Object.values(formData.downtimes).reduce(
-      (acc, val) => acc + (Number(val) || 0),
+  const totalDowntimeObj = React.useMemo(() => {
+    const allEntries = Object.entries(formData.downtimes);
+    const total = allEntries.reduce(
+      (acc, [_, val]) => acc + (Number(val) || 0),
       0,
     );
+
+    const planned = allEntries
+      .filter(([key]) => key.startsWith("PLANNED:"))
+      .reduce((acc, [_, val]) => acc + (Number(val) || 0), 0);
+
+    return { total, planned };
   }, [formData.downtimes]);
 
   // Calculate Totals & OEE
@@ -299,8 +310,14 @@ export function ProductionReportModal({
       tMin = diffMs > 0 ? diffMs / 1000 / 60 : 0;
     }
 
-    const operatingTime = tMin - totalDowntime;
-    const av = tMin > 0 ? (operatingTime / tMin) * 100 : 0;
+    const { total: totalDowntime, planned: totalPlannedDowntime } =
+      totalDowntimeObj;
+
+    const availableTime = tMin - totalPlannedDowntime;
+    const operatingTime = tMin - totalDowntime; // or availableTime - unplanned
+
+    // User Request: Availability = Operating Time / (Total Time - Planned Downtime)
+    const av = availableTime > 0 ? (operatingTime / availableTime) * 100 : 0;
 
     // 2. Output & Quality
     const good = Number(formData.qtyGood) || 0;
@@ -390,7 +407,8 @@ export function ProductionReportModal({
     formData.qtyPassOn,
     formData.qtyHold,
     formData.qtyWip,
-    totalDowntime,
+    formData.qtyWip,
+    totalDowntimeObj, // Updated dependency
     totalReject,
     lphType,
   ]);
@@ -434,7 +452,7 @@ export function ProductionReportModal({
               parsed.shift = String(task.shift);
             }
             if (!parsed.operatorName) {
-              parsed.operatorName = ""; // Explicitly empty
+              parsed.operatorName = session?.user?.name || "";
             }
 
             setFormData((prev) => ({ ...prev, ...parsed }));
@@ -449,7 +467,7 @@ export function ProductionReportModal({
             startDate: new Date().toISOString().slice(0, 10),
             endDate: new Date().toISOString().slice(0, 10),
             shift: String(task.shift), // Initial from task
-            operatorName: "", // Start empty per user request
+            operatorName: session?.user?.name || "",
             batchNo: "",
             mpStd: "",
             mpAct: "",
@@ -472,15 +490,27 @@ export function ProductionReportModal({
           });
         }
       }
+      setIsLoaded(true); // Mark as loaded so auto-save can start working
+    } else {
+      setIsLoaded(false); // Reset when closed
     }
   }, [open, task, draftKey, session]);
 
   // Auto Save
   React.useEffect(() => {
-    if (open && draftKey) {
-      localStorage.setItem(draftKey, JSON.stringify(formData));
+    // Skip save if explicitly requested (e.g. during reset)
+    if (skipNextSave.current) {
+      skipNextSave.current = false;
+      return;
     }
-  }, [formData, open, draftKey]);
+
+    // Only save if open, key exists, AND we have finished the initial load/reset
+    if (open && draftKey && isLoaded) {
+      localStorage.setItem(draftKey, JSON.stringify(formData));
+      window.dispatchEvent(new Event("draft-update"));
+      onDraftChange?.();
+    }
+  }, [formData, open, draftKey, isLoaded, onDraftChange]);
 
   if (!task) return null;
 
@@ -490,6 +520,8 @@ export function ProductionReportModal({
       utils.production.getHistory.invalidate(); // Refresh history
       alert("Laporan berhasil disimpan!");
       if (draftKey) localStorage.removeItem(draftKey);
+      window.dispatchEvent(new Event("draft-update"));
+      onDraftChange?.();
       setLoading(false);
       onOpenChange(false);
     },
@@ -497,58 +529,68 @@ export function ProductionReportModal({
       console.error(err);
       alert("Gagal menyimpan laporan: " + err.message);
       setLoading(false);
-    }
+    },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
+    if (!formData.operatorName.trim()) {
+      alert("Nama Operator wajib diisi!");
+      setLoading(false);
+      return;
+    }
+
     createReportMutation.mutate({
-        proStepId: task.step.id,
-        shift: Number(formData.shift) || task.shift,
-        reportDate: new Date(formData.startDate), // Basic date
-        operatorName: formData.operatorName,
-        reportType: lphType as any,
-        
-        startTime: formData.startTime,
-        endTime: formData.endTime, // These are HH:mm strings, handled by backend
-        
-        batchNo: formData.batchNo,
-        mpStd: Number(formData.mpStd) || undefined,
-        mpAct: Number(formData.mpAct) || undefined,
-        cycleTimeStd: Number(formData.ctStd) || undefined,
-        cycleTimeAct: Number(formData.ctAct) || undefined,
-        cavityStd: Number(formData.cavStd) || undefined,
-        cavityAct: Number(formData.cavAct) || undefined,
-        
-        inputMaterialQty: Number(formData.inputMaterial) || undefined,
-        materialRunnerQty: Number(formData.materialRunner) || undefined,
-        materialPurgeQty: Number(formData.materialPurge) || undefined,
-        
-        qtyGood: Number(formData.qtyGood) || 0,
-        qtyPassOn: Number(formData.qtyPassOn) || 0,
-        qtyHold: Number(formData.qtyHold) || 0,
-        qtyWip: Number(formData.qtyWip) || 0,
-        qtyReject: totalReject,
-        
-        // Convert "10" (string) to 10 (number) for backend records
-        rejectBreakdown: Object.fromEntries(
-            Object.entries(formData.rejects)
-            .filter(([_, v]) => Number(v) > 0)
-            .map(([k, v]) => [k, Number(v)])
-            .concat(
-                 Number(formData.rejectSetup) > 0 ? [["Reject Setup", Number(formData.rejectSetup)]] : [],
-                 Number(formData.rejectProcess) > 0 ? [["Reject Process", Number(formData.rejectProcess)]] : []
-            )
-        ),
-        downtimeBreakdown: Object.fromEntries(
-             Object.entries(formData.downtimes)
-             .filter(([_, v]) => Number(v) > 0)
-             .map(([k, v]) => [k, Number(v)])
-        ),
-        totalDowntime: totalDowntime,
-        notes: formData.notes
+      proStepId: task.step.id,
+      shift: Number(formData.shift) || task.shift,
+      reportDate: new Date(formData.startDate), // Basic date
+      operatorName: formData.operatorName,
+      reportType: lphType as any,
+
+      startTime: formData.startTime,
+      endTime: formData.endTime, // These are HH:mm strings, handled by backend
+
+      batchNo: formData.batchNo,
+      mpStd: Number(formData.mpStd) || undefined,
+      mpAct: Number(formData.mpAct) || undefined,
+      cycleTimeStd: Number(formData.ctStd) || undefined,
+      cycleTimeAct: Number(formData.ctAct) || undefined,
+      cavityStd: Number(formData.cavStd) || undefined,
+      cavityAct: Number(formData.cavAct) || undefined,
+
+      inputMaterialQty: Number(formData.inputMaterial) || undefined,
+      materialRunnerQty: Number(formData.materialRunner) || undefined,
+      materialPurgeQty: Number(formData.materialPurge) || undefined,
+
+      qtyGood: Number(formData.qtyGood) || 0,
+      qtyPassOn: Number(formData.qtyPassOn) || 0,
+      qtyHold: Number(formData.qtyHold) || 0,
+      qtyWip: Number(formData.qtyWip) || 0,
+      qtyReject: totalReject,
+
+      // Convert "10" (string) to 10 (number) for backend records
+      rejectBreakdown: Object.fromEntries(
+        Object.entries(formData.rejects)
+          .filter(([_, v]) => Number(v) > 0)
+          .map(([k, v]) => [k, Number(v)])
+          .concat(
+            Number(formData.rejectSetup) > 0
+              ? [["Reject Setup", Number(formData.rejectSetup)]]
+              : [],
+            Number(formData.rejectProcess) > 0
+              ? [["Reject Process", Number(formData.rejectProcess)]]
+              : [],
+          ),
+      ),
+      downtimeBreakdown: Object.fromEntries(
+        Object.entries(formData.downtimes)
+          .filter(([_, v]) => Number(v) > 0)
+          .map(([k, v]) => [k, Number(v)]),
+      ),
+      totalDowntime: totalDowntimeObj.total,
+      notes: formData.notes,
     });
   };
 
@@ -650,10 +692,8 @@ export function ProductionReportModal({
                       </Label>
                       <Input
                         value={formData.operatorName}
-                        onChange={(e) =>
-                          setFormData({ ...formData, operatorName: e.target.value })
-                        }
-                        className="border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
+                        disabled
+                        className="border-slate-800 bg-slate-900 text-slate-400 opacity-100" // Styled to look read-only but legible
                         placeholder="Nama Operator..."
                       />
                     </div>
@@ -1050,9 +1090,7 @@ export function ProductionReportModal({
                     <h3 className="flex items-center gap-2 text-sm font-bold tracking-wider text-amber-500 uppercase">
                       <Zap className="h-4 w-4" /> Downtime (Menit)
                     </h3>
-                    <div className="text-sm font-black text-amber-500">
-                      Total: {totalDowntime} mnt
-                    </div>
+                    <div>Total: {totalDowntimeObj.total} mnt</div>
                   </div>
 
                   <div className="space-y-6">
@@ -1077,9 +1115,14 @@ export function ProductionReportModal({
                               type="number"
                               placeholder="0"
                               className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-amber-500"
-                              value={formData.downtimes[label] || ""}
+                              value={
+                                formData.downtimes[`UNPLANNED:${label}`] || ""
+                              }
                               onChange={(e) =>
-                                handleDowntimeChange(label, e.target.value)
+                                handleDowntimeChange(
+                                  `UNPLANNED:${label}`,
+                                  e.target.value,
+                                )
                               }
                             />
                           </div>
@@ -1110,9 +1153,14 @@ export function ProductionReportModal({
                               type="number"
                               placeholder="0"
                               className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-blue-500"
-                              value={formData.downtimes[label] || ""}
+                              value={
+                                formData.downtimes[`PLANNED:${label}`] || ""
+                              }
                               onChange={(e) =>
-                                handleDowntimeChange(label, e.target.value)
+                                handleDowntimeChange(
+                                  `PLANNED:${label}`,
+                                  e.target.value,
+                                )
                               }
                             />
                           </div>
@@ -1272,15 +1320,14 @@ export function ProductionReportModal({
                 <div className="rounded-xl border border-blue-800 bg-blue-950/20 p-4 shadow-sm">
                   <h3 className="mb-4 flex items-center justify-between gap-2 text-sm font-bold text-blue-400">
                     <div className="flex items-center gap-2">
-                       <History className="h-4 w-4" /> Quick Report (Estimasi)
+                      <History className="h-4 w-4" /> Quick Report (Estimasi)
                     </div>
                     {/* Formula button removed */}
                   </h3>
 
                   {/* Formula text removed */}
 
-
-                  <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
                     <div className="space-y-1 rounded-lg bg-slate-950 p-3">
                       <Label className="text-[10px] text-slate-500 uppercase">
                         Total Waktu
@@ -1294,12 +1341,27 @@ export function ProductionReportModal({
                     </div>
                     <div className="space-y-1 rounded-lg bg-slate-950 p-3">
                       <Label className="text-[10px] text-slate-500 uppercase">
+                        Operating Time
+                      </Label>
+                      <div className="text-xl font-bold text-slate-200">
+                        {(totalTimeMinutes - totalDowntimeObj.total).toFixed(0)}{" "}
+                        <span className="text-sm font-normal text-slate-500">
+                          mnt
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                      <Label className="text-[10px] text-slate-500 uppercase">
                         Availability
                       </Label>
                       <div
                         className={`text-xl font-bold ${availability >= 90 ? "text-emerald-400" : "text-amber-400"}`}
                       >
                         {availability.toFixed(1)}%
+                        <p className="mt-1 text-[10px] font-normal text-slate-500">
+                          • Availability = (Operating Time / (Total Time -
+                          Planned Downtime)) × 100
+                        </p>
                       </div>
                     </div>
                     <div className="space-y-1 rounded-lg bg-slate-950 p-3">
@@ -1342,7 +1404,7 @@ export function ProductionReportModal({
                         {quality.toFixed(1)}%
                       </div>
                     </div>
-                    <div className="col-span-2 flex items-center justify-between rounded-lg border border-blue-800/50 bg-blue-900/20 p-3 md:col-span-4">
+                    <div className="col-span-2 flex items-center justify-between rounded-lg border border-blue-800/50 bg-blue-900/20 p-3 md:col-span-5">
                       <Label className="text-xs font-bold text-blue-300 uppercase">
                         OEE Score
                       </Label>
@@ -1359,16 +1421,71 @@ export function ProductionReportModal({
           </form>
         </div>
 
-        <DialogFooter className="flex flex-row items-center justify-between border-t border-slate-800 bg-slate-950 p-4 sm:p-6">
-          <span className="mr-auto flex items-center gap-1.5 text-[10px] text-slate-500 italic">
-            <Save className="h-3 w-3" /> Auto-saved
-          </span>
-          <div className="flex gap-2">
+        <DialogFooter className="flex flex-col-reverse gap-4 border-t border-slate-800 bg-slate-950 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-start">
+            <span className="flex items-center gap-1.5 text-[10px] text-slate-500 italic">
+              <Save className="h-3 w-3" /> Auto-saved
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const isPaper = lphType === "PAPER";
+                let prefilledCtStd = "";
+                if (task?.step.machine) {
+                  const m = task.step.machine;
+                  if (isPaper && m.stdOutputPerHour) {
+                    prefilledCtStd = String(m.stdOutputPerHour);
+                  } else if (!isPaper && m.cycleTimeSec) {
+                    prefilledCtStd = String(m.cycleTimeSec);
+                  }
+                }
+
+                if (confirm("Reset formulir & hapus draft?")) {
+                  skipNextSave.current = true;
+                  setFormData({
+                    startTime: new Date().toTimeString().slice(0, 5),
+                    endTime: "",
+                    startDate: new Date().toISOString().slice(0, 10),
+                    endDate: new Date().toISOString().slice(0, 10),
+                    shift: String(task?.shift || 1),
+                    operatorName: session?.user?.name || "",
+                    batchNo: "",
+                    mpStd: "",
+                    mpAct: "",
+                    ctStd: prefilledCtStd,
+                    ctAct: "",
+                    cavStd: "",
+                    cavAct: "",
+                    inputMaterial: "",
+                    materialRunner: "",
+                    materialPurge: "",
+                    qtyGood: "",
+                    qtyPassOn: "",
+                    qtyWip: "",
+                    qtyHold: "",
+                    rejectSetup: "",
+                    rejectProcess: "",
+                    rejects: {},
+                    downtimes: {},
+                    notes: "",
+                  });
+                  if (draftKey) localStorage.removeItem(draftKey);
+                  window.dispatchEvent(new Event("draft-update")); // Trigger update for other components
+                  onDraftChange?.();
+                  onOpenChange(false);
+                }
+              }}
+              className="mr-auto text-xs font-semibold text-red-500 underline hover:text-red-400"
+            >
+              Reset / Hapus Draft
+            </button>
+          </div>
+          <div className="flex w-full gap-2 sm:w-auto">
             <Button
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-slate-400 hover:bg-slate-900 hover:text-slate-200"
+              className="flex-1 text-slate-400 hover:bg-slate-900 hover:text-slate-200 sm:flex-none"
             >
               Batal
             </Button>
@@ -1376,7 +1493,7 @@ export function ProductionReportModal({
               form="lph-form"
               type="submit"
               disabled={loading}
-              className="bg-blue-600 px-8 font-bold shadow-lg shadow-blue-900/20 hover:bg-blue-700"
+              className="flex-1 bg-blue-600 px-8 font-bold shadow-lg shadow-blue-900/20 hover:bg-blue-700 sm:flex-none"
             >
               {loading ? "Menyimpan..." : "Simpan Laporan"}
             </Button>

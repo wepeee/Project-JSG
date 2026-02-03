@@ -14,16 +14,41 @@ interface TaskDetailViewProps {
 
 export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
   const [showAddModal, setShowAddModal] = React.useState(false);
+  const [hasDraft, setHasDraft] = React.useState(false);
 
-  // Fetch real reports for this step
-  const { data: reports } = api.production.getHistory.useQuery({ 
-      proStepId: task.step.id,
-      limit: 50
+  // Check for draft
+  const draftKey = `pro_report_v2_${task.step.id}`;
+
+  const checkDraft = React.useCallback(() => {
+    const saved = localStorage.getItem(draftKey);
+    setHasDraft(!!saved);
+  }, [draftKey]);
+
+  React.useEffect(() => {
+    checkDraft();
+    // Listen for storage events (if draft is cleared elsewhere)
+    window.addEventListener("storage", checkDraft);
+    // Custom event for when modal saves/clears draft
+    window.addEventListener("draft-update", checkDraft);
+
+    return () => {
+      window.removeEventListener("storage", checkDraft);
+      window.removeEventListener("draft-update", checkDraft);
+    };
+  }, [checkDraft]); // Re-check when modal closes
+
+  // Fetch real reports
+  const { data: reports } = api.production.getHistory.useQuery({
+    proStepId: task.step.id,
+    limit: 50,
   });
 
   const totalGood = React.useMemo(() => {
-     if (!reports) return 0;
-     return reports.reduce((acc, curr) => acc + Number(curr.qtyGood) + Number(curr.qtyPassOn), 0);
+    if (!reports) return 0;
+    return reports.reduce(
+      (acc, curr) => acc + Number(curr.qtyGood) + Number(curr.qtyPassOn),
+      0,
+    );
   }, [reports]);
 
   return (
@@ -69,14 +94,14 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
                 {task.pro.qtyPoPcs.toLocaleString("id-ID")}
               </div>
             </div>
-              <div className="rounded-2xl bg-blue-50 p-3 dark:bg-blue-900/20">
-                <div className="mb-1 text-[9px] font-bold tracking-widest text-blue-600 uppercase dark:text-blue-400">
-                  Total Good
-                </div>
-                <div className="text-lg font-black text-blue-700 dark:text-blue-300">
-                   {totalGood.toLocaleString("id-ID")}
-                </div>
+            <div className="rounded-2xl bg-blue-50 p-3 dark:bg-blue-900/20">
+              <div className="mb-1 text-[9px] font-bold tracking-widest text-blue-600 uppercase dark:text-blue-400">
+                Total Good
               </div>
+              <div className="text-lg font-black text-blue-700 dark:text-blue-300">
+                {totalGood.toLocaleString("id-ID")}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -95,6 +120,37 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
           </h3>
 
           <div className="space-y-3">
+            {/* DRAFT CARD */}
+            {hasDraft && (
+              <div
+                onClick={() => setShowAddModal(true)}
+                className="group cursor-pointer rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:hover:bg-amber-900/40"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400">
+                      <span className="text-xs font-black">!</span>
+                    </div>
+                    <div>
+                      <div className="font-bold text-amber-700 dark:text-amber-400">
+                        Draft Belum Disimpan
+                      </div>
+                      <div className="text-[10px] text-amber-600/70">
+                        Klik untuk melanjutkan pengisian...
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-amber-600 hover:bg-amber-200 hover:text-amber-800"
+                  >
+                    Lanjut &rarr;
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {reports?.map((rpt) => (
               <div
                 key={rpt.id}
@@ -104,11 +160,18 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
                   <div className="text-muted-foreground mb-1 flex items-center gap-1 text-[10px] font-bold uppercase">
                     <span>{rpt.operatorName}</span>
                     <span className="opacity-50">•</span>
-                    <span>{format(rpt.reportDate, "HH:mm") !== "00:00" ? format(rpt.reportDate, "HH:mm") : "Shift " + rpt.shift}</span>
+                    <span>
+                      {format(rpt.reportDate, "HH:mm") !== "00:00"
+                        ? format(rpt.reportDate, "HH:mm")
+                        : "Shift " + rpt.shift}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="rounded bg-green-100 px-2 py-0.5 text-xs font-black text-green-700">
-                      Good: {(Number(rpt.qtyGood) + Number(rpt.qtyPassOn)).toLocaleString()}
+                      Good:{" "}
+                      {(
+                        Number(rpt.qtyGood) + Number(rpt.qtyPassOn)
+                      ).toLocaleString()}
                     </div>
                     {Number(rpt.qtyReject) > 0 && (
                       <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-black text-red-700">
@@ -125,7 +188,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
               </div>
             ))}
 
-            {reports?.length === 0 && (
+            {!hasDraft && reports?.length === 0 && (
               <div className="text-muted-foreground py-8 text-center text-sm italic">
                 Belum ada laporan masuk.
               </div>
@@ -138,6 +201,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
         open={showAddModal}
         onOpenChange={setShowAddModal}
         task={task}
+        onDraftChange={checkDraft}
       />
     </div>
   );
