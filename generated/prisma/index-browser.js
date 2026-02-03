@@ -193,10 +193,7 @@ exports.Prisma.ProStepScalarFieldEnum = {
   estimatedShifts: 'estimatedShifts',
   startDate: 'startDate',
   machineId: 'machineId',
-  partNumber: 'partNumber',
-  manPowerStd: 'manPowerStd',
-  cycleTimeStd: 'cycleTimeStd',
-  cavityStd: 'cavityStd'
+  partNumber: 'partNumber'
 };
 
 exports.Prisma.ProStepMaterialScalarFieldEnum = {

@@ -173,9 +173,7 @@ model ProStep {
   partNumber String?
 
   // --- Target / Standards (for Reporting) ---
-  manPowerStd  Int?
-  cycleTimeStd Decimal? @db.Decimal(10, 2)
-  cavityStd    Int?
+
 
   materials         ProStepMaterial[]
   productionReports ProductionReport[]

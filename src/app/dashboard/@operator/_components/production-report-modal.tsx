@@ -113,41 +113,54 @@ const REJECT_LISTS: Record<LphType, string[]> = {
   ],
 };
 
-const DOWNTIME_LISTS: Record<string, string[]> = {
-  PAPER: [
-    "Tunggu Approval",
-    "Tunggu Material",
-    "Set Up & Change Over",
-    "Machine Problem",
-    "Mencari Tools",
-    "Running In",
-    "Operator Issue",
-    "Adjustment Process",
-    "Istirahat",
-    "Trial",
-    "Preventive",
-    "Lain-lain",
-  ],
-  RIGID: [
-    "No Order",
-    "Istirahat",
-    "Clean / CIL",
-    "Trial",
-    "Preventive",
-    "Loss HS",
-    "Material",
-    "Electrik",
-    "Mesin",
-    "Hydraulic",
-    "Robot",
-    "Utility",
-    "Start Mesin",
-    "Set Up",
-    "Approve",
-    "Mold/Tools",
-    "Proses",
-    "Lain-lain",
-  ],
+const DOWNTIME_LISTS: Record<
+  "PAPER" | "RIGID",
+  { PLANNED: string[]; UNPLANNED: string[] }
+> = {
+  PAPER: {
+    PLANNED: [
+      "Trouble PLN",
+      "Trial",
+      "Preventive Maintenance",
+      "Istirahat",
+      "Lain-lain",
+    ],
+    UNPLANNED: [
+      "Tunggu Approval",
+      "Tunggu Material",
+      "Set Up & Change Over",
+      "Machine Problem",
+      "Mencari Tools",
+      "Running In",
+      "Operator Issue",
+      "Adjustment Process",
+      "Lain-lain",
+    ],
+  },
+  RIGID: {
+    PLANNED: [
+      "No Order",
+      "Istirahat",
+      "Clean / CIL",
+      "Trial",
+      "Preventive",
+      "Start Mesin",
+      "Set Up",
+      "Approve",
+    ],
+    UNPLANNED: [
+      "Loss HS",
+      "Material",
+      "Electrik",
+      "Mesin",
+      "Hydraulic",
+      "Robot",
+      "Utility",
+      "Mold/Tools",
+      "Proses",
+      "Lain-lain",
+    ],
+  },
 };
 
 // --- HELPER ---
@@ -192,6 +205,7 @@ export function ProductionReportModal({
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = React.useState("info");
   const [loading, setLoading] = React.useState(false);
+  const [showRumus, setShowRumus] = React.useState(false);
 
   // Initial State derived from task
   const [lphType, setLphType] = React.useState<LphType>("PAPER");
@@ -200,6 +214,8 @@ export function ProductionReportModal({
   const [formData, setFormData] = React.useState({
     startTime: "",
     endTime: "",
+    startDate: "",
+    endDate: "",
 
     // Rigid Resources
     batchNo: "",
@@ -222,6 +238,8 @@ export function ProductionReportModal({
     qtyHold: "",
 
     // Rejects (Dynamic Key-Value)
+    rejectSetup: "",
+    rejectProcess: "",
     rejects: {} as Record<string, string>,
 
     // Downtime (Dynamic Key-Value)
@@ -232,11 +250,16 @@ export function ProductionReportModal({
 
   // Calculate Totals
   const totalReject = React.useMemo(() => {
-    return Object.values(formData.rejects).reduce(
+    const listTotal = Object.values(formData.rejects).reduce(
       (acc, val) => acc + (Number(val) || 0),
       0,
     );
-  }, [formData.rejects]);
+    return (
+      listTotal +
+      (Number(formData.rejectSetup) || 0) +
+      (Number(formData.rejectProcess) || 0)
+    );
+  }, [formData.rejects, formData.rejectSetup, formData.rejectProcess]);
 
   const totalDowntime = React.useMemo(() => {
     return Object.values(formData.downtimes).reduce(
@@ -245,7 +268,127 @@ export function ProductionReportModal({
     );
   }, [formData.downtimes]);
 
-  // Draft Logic
+  // Calculate Totals & OEE
+  const {
+    totalTimeMinutes,
+    availability,
+    performance,
+    quality,
+    oee,
+    valStd,
+    targetOutput,
+    speedPerMin,
+    speedPerHour,
+  } = React.useMemo(() => {
+    // 1. Availability
+    let tMin = 0;
+    if (
+      formData.startDate &&
+      formData.startTime &&
+      formData.endDate &&
+      formData.endTime
+    ) {
+      const start = new Date(`${formData.startDate}T${formData.startTime}`);
+      const end = new Date(`${formData.endDate}T${formData.endTime}`);
+      const diffMs = end.getTime() - start.getTime();
+      tMin = diffMs > 0 ? diffMs / 1000 / 60 : 0;
+    }
+
+    const operatingTime = tMin - totalDowntime;
+    const av = tMin > 0 ? (operatingTime / tMin) * 100 : 0;
+
+    // 2. Output & Quality
+    const good = Number(formData.qtyGood) || 0;
+    const passOn = Number(formData.qtyPassOn) || 0;
+    const hold = Number(formData.qtyHold) || 0;
+    const wip = Number(formData.qtyWip) || 0;
+
+    // Finish Good (calculated from components that are NOT reject)
+    // User says: Total Output = PASS ON + HOLD + WIP + TOTAL REJECT
+    // And: Finish Good = Total Output - Total Reject
+    // Implies: Finish Good = PASS ON + HOLD + WIP
+    // We also include 'good' input in case it's used instead of breakdown.
+    const finishGood = good + passOn + hold + wip;
+    const totalOut = finishGood + totalReject;
+
+    // Quality = PASS ON / Total Output (User Request)
+    // Note: We include 'good' just in case, but primary is Pass On.
+    // If user inputs 'good' instead of 'passOn', it should count.
+    // But commonly it's Pass On.
+    const qualityNumerator = passOn + good;
+    const q = totalOut > 0 ? (qualityNumerator / totalOut) * 100 : 0;
+
+    // 3. Performance
+    // Formula: (Total Output / Target Output) * 100
+    // Target Output = Speed/Menit * Operating Time (Waktu yang ada)
+    // IF RIGID: Input CT (sec) -> Speed/Menit = 60 / CT
+    // IF PAPER: Input Speed (hour) -> Speed/Menit = Speed / 60
+    // Total Output = PASS ON + HOLD + WIP + REJECT (+ Good if applicable)
+    let perf = 0;
+    const valStd = Number(formData.ctStd) || 0;
+
+    let targetOutputDisplay = 0;
+    let speedPerMin = 0;
+    let speedPerHour = 0;
+
+    if (valStd > 0) {
+      // Calculate speeds
+      if (lphType === "PAPER") {
+        speedPerMin = valStd / 60;
+        speedPerHour = valStd;
+      } else {
+        // Rigid: valStd is CT (sec).
+        // Speed/Min = 60 / CT
+        // Speed/Hour = (60/CT) * 60
+        if (valStd > 0) {
+          speedPerMin = 60 / valStd;
+          speedPerHour = speedPerMin * 60;
+        }
+      }
+
+      // User Request: Performance = (Output) / (Speed * Total Waktu)
+      // "Total Waktu" construed as totalTimeMinutes (tMin), not OperatingTime.
+      if (tMin > 0) {
+        targetOutputDisplay = speedPerMin * tMin;
+
+        const performanceNumerator = passOn + hold + wip + good;
+        perf =
+          targetOutputDisplay > 0
+            ? (performanceNumerator / targetOutputDisplay) * 100
+            : 0;
+      }
+    }
+
+    // 4. OEE (Calculate here to be in scope)
+    const oeeVal = (av / 100) * (perf / 100) * (q / 100) * 100;
+
+    // Note: If perf is 0 (because valStd is 0), OEE will be 0. Correct.
+
+    return {
+      totalTimeMinutes: tMin,
+      availability: av,
+      performance: perf,
+      quality: q,
+      oee: oeeVal,
+      valStd,
+      targetOutput: targetOutputDisplay,
+      speedPerMin,
+      speedPerHour,
+    };
+  }, [
+    formData.startDate,
+    formData.startTime,
+    formData.endDate,
+    formData.endTime,
+    formData.ctStd,
+    formData.qtyGood,
+    formData.qtyPassOn,
+    formData.qtyHold,
+    formData.qtyWip,
+    totalDowntime,
+    totalReject,
+    lphType,
+  ]);
   const draftKey = React.useMemo(
     () => (task ? `pro_report_v2_${task.step.id}` : ""),
     [task],
@@ -257,12 +400,30 @@ export function ProductionReportModal({
       const type = getLphType(task.pro, task.step.machine?.name || "");
       setLphType(type);
 
+      // Auto-fill Logic
+      const machine = task.step.machine;
+      const isPaper = type === "PAPER";
+      let prefilledCtStd = "";
+      if (machine) {
+        if (isPaper && machine.stdOutputPerHour) {
+          prefilledCtStd = String(machine.stdOutputPerHour);
+        } else if (!isPaper && machine.cycleTimeSec) {
+          prefilledCtStd = String(machine.cycleTimeSec);
+        }
+      }
+
       // 2. Load Draft
       if (draftKey) {
         const saved = localStorage.getItem(draftKey);
         if (saved) {
           try {
             const parsed = JSON.parse(saved);
+
+            // If draft has empty ctStd, try to fill from machine data
+            if (!parsed.ctStd || parsed.ctStd == 0) {
+              parsed.ctStd = prefilledCtStd;
+            }
+
             setFormData((prev) => ({ ...prev, ...parsed }));
           } catch (e) {
             console.error("Bad draft", e);
@@ -272,12 +433,14 @@ export function ProductionReportModal({
           setFormData({
             startTime: new Date().toTimeString().slice(0, 5),
             endTime: "",
+            startDate: new Date().toISOString().slice(0, 10),
+            endDate: new Date().toISOString().slice(0, 10),
             batchNo: "",
-            mpStd: task.step.manPowerStd ? String(task.step.manPowerStd) : "",
+            mpStd: "",
             mpAct: "",
-            ctStd: task.step.cycleTimeStd ? String(task.step.cycleTimeStd) : "",
+            ctStd: prefilledCtStd,
             ctAct: "",
-            cavStd: task.step.cavityStd ? String(task.step.cavityStd) : "",
+            cavStd: "",
             cavAct: "",
             inputMaterial: "",
             materialRunner: "",
@@ -286,6 +449,8 @@ export function ProductionReportModal({
             qtyPassOn: "",
             qtyWip: "",
             qtyHold: "",
+            rejectSetup: "",
+            rejectProcess: "",
             rejects: {},
             downtimes: {},
             notes: "",
@@ -433,34 +598,75 @@ export function ProductionReportModal({
                         className="w-16 border-slate-800 bg-slate-950 text-center font-bold text-slate-400"
                       />
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-slate-300">
-                        Jam Mulai
-                      </Label>
-                      <Input
-                        type="time"
-                        className="border-slate-800 bg-slate-950 text-slate-100 [color-scheme:dark] placeholder:text-slate-600"
-                        value={formData.startTime}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            startTime: e.target.value,
-                          })
-                        }
-                      />
+
+                    <div className="col-span-2 grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-slate-300">
+                          Tgl Mulai
+                        </Label>
+                        <Input
+                          type="date"
+                          className="border-slate-800 bg-slate-950 text-slate-100 [color-scheme:dark]"
+                          value={formData.startDate}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              startDate: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-slate-300">
+                          Jam Mulai
+                        </Label>
+                        <Input
+                          type="time"
+                          className="border-slate-800 bg-slate-950 text-slate-100 [color-scheme:dark] placeholder:text-slate-600"
+                          value={formData.startTime}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              startTime: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-slate-300">
-                        Jam Selesai
-                      </Label>
-                      <Input
-                        type="time"
-                        className="border-slate-800 bg-slate-950 text-slate-100 [color-scheme:dark] placeholder:text-slate-600"
-                        value={formData.endTime}
-                        onChange={(e) =>
-                          setFormData({ ...formData, endTime: e.target.value })
-                        }
-                      />
+
+                    <div className="col-span-2 grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-slate-300">
+                          Tgl Selesai
+                        </Label>
+                        <Input
+                          type="date"
+                          className="border-slate-800 bg-slate-950 text-slate-100 [color-scheme:dark]"
+                          value={formData.endDate}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              endDate: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-slate-300">
+                          Jam Selesai
+                        </Label>
+                        <Input
+                          type="time"
+                          className="border-slate-800 bg-slate-950 text-slate-100 [color-scheme:dark] placeholder:text-slate-600"
+                          value={formData.endTime}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              endTime: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -518,15 +724,17 @@ export function ProductionReportModal({
                         />
                       </div>
 
-                      {/* CT */}
+                      {/* CT / SPEED */}
                       <div className="space-y-1">
                         <Label className="text-xs text-slate-400">
-                          Cycle Time Std
+                          {isRigid
+                            ? "Cycle Time Std (detik)"
+                            : "Speed Std (Sheet/Jam)"}
                         </Label>
                         <Input
                           type="number"
-                          step="0.1"
-                          placeholder="0.0"
+                          step={isRigid ? "0.1" : "1"}
+                          placeholder="0"
                           className="border-slate-800 bg-slate-950 text-slate-100"
                           value={formData.ctStd}
                           onChange={(e) =>
@@ -536,12 +744,12 @@ export function ProductionReportModal({
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs text-slate-300">
-                          Cycle Time Act
+                          {isRigid ? "Cycle Time Act" : "Speed Act"}
                         </Label>
                         <Input
                           type="number"
-                          step="0.1"
-                          placeholder="0.0"
+                          step={isRigid ? "0.1" : "1"}
+                          placeholder="0"
                           className="border-blue-900/50 bg-blue-950/20 text-blue-100"
                           value={formData.ctAct}
                           onChange={(e) =>
@@ -692,10 +900,55 @@ export function ProductionReportModal({
               {/* --- TAB 3: REJECT & DOWNTIME --- */}
               <TabsContent value="reject" className="space-y-6">
                 {/* REJECT GRID */}
+                {/* REJECT GRID */}
                 <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
                   <h3 className="mb-4 text-sm font-bold tracking-wider text-red-400 uppercase">
                     Rincian Reject
                   </h3>
+
+                  {/* Standalone Rejects */}
+                  <div className="mb-6 grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="truncate text-[10px] text-slate-500 uppercase">
+                        Reject Set Up
+                      </Label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
+                        value={formData.rejectSetup}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            rejectSetup: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="truncate text-[10px] text-slate-500 uppercase">
+                        Reject Process
+                      </Label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
+                        value={formData.rejectProcess}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            rejectProcess: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <Separator className="my-4 bg-slate-800" />
+
+                  <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
+                    Reject Assembly
+                  </h4>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
                     {REJECT_LISTS[lphType].map((label) => (
                       <div key={label} className="space-y-1">
@@ -730,29 +983,70 @@ export function ProductionReportModal({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
-                    {(isRigid
-                      ? DOWNTIME_LISTS.RIGID
-                      : DOWNTIME_LISTS.PAPER
-                    )?.map((label) => (
-                      <div key={label} className="space-y-1">
-                        <Label
-                          className="truncate text-[10px] text-slate-500 uppercase"
-                          title={label}
-                        >
-                          {label}
-                        </Label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-amber-500"
-                          value={formData.downtimes[label] || ""}
-                          onChange={(e) =>
-                            handleDowntimeChange(label, e.target.value)
-                          }
-                        />
+                  <div className="space-y-6">
+                    {/* Unplanned */}
+                    <div>
+                      <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
+                        Unplanned / Breakdown
+                      </h4>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
+                        {(isRigid
+                          ? DOWNTIME_LISTS.RIGID.UNPLANNED
+                          : DOWNTIME_LISTS.PAPER.UNPLANNED
+                        ).map((label) => (
+                          <div key={label} className="space-y-1">
+                            <Label
+                              className="truncate text-[10px] text-slate-500 uppercase"
+                              title={label}
+                            >
+                              {label}
+                            </Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-amber-500"
+                              value={formData.downtimes[label] || ""}
+                              onChange={(e) =>
+                                handleDowntimeChange(label, e.target.value)
+                              }
+                            />
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+
+                    <Separator className="bg-slate-800" />
+
+                    {/* Planned */}
+                    <div>
+                      <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
+                        Planned Downtime
+                      </h4>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
+                        {(isRigid
+                          ? DOWNTIME_LISTS.RIGID.PLANNED
+                          : DOWNTIME_LISTS.PAPER.PLANNED
+                        ).map((label) => (
+                          <div key={label} className="space-y-1">
+                            <Label
+                              className="truncate text-[10px] text-slate-500 uppercase"
+                              title={label}
+                            >
+                              {label}
+                            </Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-blue-500"
+                              value={formData.downtimes[label] || ""}
+                              onChange={(e) =>
+                                handleDowntimeChange(label, e.target.value)
+                              }
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="mt-6 space-y-1.5">
@@ -808,6 +1102,22 @@ export function ProductionReportModal({
                       />
                     </div>
                     <div className="space-y-1.5">
+                      <Label className="text-xs text-slate-400">PASS ON</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0"
+                        className="border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
+                        value={formData.qtyPassOn}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            qtyPassOn: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1.5">
                       <Label className="text-xs text-slate-400">
                         WIP (Work In Progress)
                       </Label>
@@ -852,6 +1162,114 @@ export function ProductionReportModal({
                     </div>
                     <div className="text-3xl font-black text-red-500">
                       {totalReject.toLocaleString("id-ID")}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-blue-800 bg-blue-950/20 p-4 shadow-sm">
+                  <h3 className="mb-4 flex items-center justify-between gap-2 text-sm font-bold text-blue-400">
+                    <div className="flex items-center gap-2">
+                      <History className="h-4 w-4" /> Quick Report (Estimasi)
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowRumus(!showRumus)}
+                      className="flex items-center gap-1 rounded-full bg-blue-900/50 px-2.5 py-1 text-[10px] text-blue-300 transition-colors hover:bg-blue-800"
+                    >
+                      <span className="mr-1 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-slate-500 font-mono text-[9px]">
+                        ?
+                      </span>
+                      {showRumus ? "Tutup Rumus" : "Lihat Rumus"}
+                    </button>
+                  </h3>
+
+                  {showRumus && (
+                    <div className="mb-4 space-y-1 rounded-lg border border-blue-900/50 bg-blue-950/40 p-3 font-mono text-[10px] text-blue-200">
+                      <p>
+                        • Availability = (Operating Time / Total Time) × 100
+                      </p>
+                      <p>
+                        • Performance = ((Pass On + Hold + WIP) / (Speed × Total
+                        Waktu)) × 100
+                      </p>
+                      <p>• Quality = (Pass On / Total Output) × 100</p>
+                      <p>• OEE = Availability × Performance × Quality</p>
+                      <p className="mt-1 border-t border-blue-900/50 pt-1 text-slate-400">
+                        *(Speed × Total Waktu) = Kapasitas Standar
+                      </p>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                    <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                      <Label className="text-[10px] text-slate-500 uppercase">
+                        Total Waktu
+                      </Label>
+                      <div className="text-xl font-bold text-slate-200">
+                        {totalTimeMinutes.toFixed(0)}{" "}
+                        <span className="text-sm font-normal text-slate-500">
+                          mnt
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                      <Label className="text-[10px] text-slate-500 uppercase">
+                        Availability
+                      </Label>
+                      <div
+                        className={`text-xl font-bold ${availability >= 90 ? "text-emerald-400" : "text-amber-400"}`}
+                      >
+                        {availability.toFixed(1)}%
+                      </div>
+                    </div>
+                    <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                      <Label className="text-[10px] text-slate-500 uppercase">
+                        Performance
+                      </Label>
+                      <div
+                        className={`text-xl font-bold ${performance >= 90 ? "text-emerald-400" : "text-amber-400"}`}
+                      >
+                        {valStd > 0 ? (
+                          <>
+                            {performance.toFixed(1)}%
+                            <div className="mt-1 space-y-0.5 text-[10px] font-normal text-slate-500">
+                              <div>
+                                Kapasitas: {targetOutput.toLocaleString()}
+                              </div>
+                              <div
+                                className="text-slate-600"
+                                title="Speed Mesin"
+                              >
+                                Spd: {speedPerMin.toFixed(0)}/m |{" "}
+                                {speedPerHour.toLocaleString()}/h
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-xs font-medium text-red-400">
+                            Isi {lphType === "PAPER" ? "Speed" : "CT"} Std
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                      <Label className="text-[10px] text-slate-500 uppercase">
+                        Quality
+                      </Label>
+                      <div
+                        className={`text-xl font-bold ${quality >= 90 ? "text-emerald-400" : "text-amber-400"}`}
+                      >
+                        {quality.toFixed(1)}%
+                      </div>
+                    </div>
+                    <div className="col-span-2 flex items-center justify-between rounded-lg border border-blue-800/50 bg-blue-900/20 p-3 md:col-span-4">
+                      <Label className="text-xs font-bold text-blue-300 uppercase">
+                        OEE Score
+                      </Label>
+                      <div
+                        className={`text-2xl font-black ${oee >= 85 ? "text-emerald-400" : oee >= 60 ? "text-amber-400" : "text-red-400"}`}
+                      >
+                        {oee.toFixed(2)}%
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 import { PrismaClient } from "../generated/prisma"; // penting: sesuai schema output
 import { hash } from "bcryptjs";
+import { seedRigid } from "./seed_rigid";
 
 const db = new PrismaClient();
 
@@ -36,6 +37,24 @@ async function main() {
       username: ppicUser,
       passwordHash: ppicHash,
       role: "PPIC",
+    },
+  });
+
+  // Create Operator User
+  const opUser = "operator";
+  const opPass = "operator";
+  const opHash = await hash(opPass, 12);
+
+  await db.user.upsert({
+    where: { username: opUser },
+    update: {
+      passwordHash: opHash,
+      role: "OPERATOR",
+    },
+    create: {
+      username: opUser,
+      passwordHash: opHash,
+      role: "OPERATOR",
     },
   });
 
@@ -432,6 +451,7 @@ async function main() {
   ];
 
   // Material Seed Data (existing code...)
+  // Material Seed Data (existing code...)
   for (const mat of materials) {
     await db.material.upsert({
       where: { name: mat.name },
@@ -439,6 +459,9 @@ async function main() {
       create: { name: mat.name, uom: mat.uom },
     });
   }
+
+  // --- Run Rigid Seeding ---
+  await seedRigid(db);
 
   // Processes Seed Data
   const processes = [

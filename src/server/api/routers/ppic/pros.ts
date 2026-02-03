@@ -81,9 +81,6 @@ export const prosRouter = createTRPCRouter({
               id: true,
               orderNo: true,
               up: true,
-              manPowerStd: true,
-              cycleTimeStd: true,
-              cavityStd: true,
               machine: {
                 select: {
                   name: true,
@@ -141,10 +138,6 @@ export const prosRouter = createTRPCRouter({
                 .default([]),
               startDate: z.coerce.date().optional(),
               partNumber: z.string().optional(), // Added to step input
-              // Standard Params
-              manPowerStd: z.number().int().optional(),
-              cycleTimeStd: z.number().optional(),
-              cavityStd: z.number().int().optional(),
             }),
           )
           .min(1),
@@ -278,12 +271,6 @@ export const prosRouter = createTRPCRouter({
                 machineId: inputStep.machineId ?? null,
                 startDate: getShiftDate(currentDay, currentShift),
                 partNumber: inputStep.partNumber, // Added
-                // Standard Params
-                manPowerStd: inputStep.manPowerStd,
-                cycleTimeStd: inputStep.cycleTimeStd
-                  ? new Prisma.Decimal(inputStep.cycleTimeStd)
-                  : undefined,
-                cavityStd: inputStep.cavityStd,
                 materials: {
                   create: (inputStep.materials ?? []).map((m) => ({
                     materialId: m.materialId,
@@ -334,9 +321,6 @@ export const prosRouter = createTRPCRouter({
               orderNo: true,
               up: true,
               machineId: true,
-              manPowerStd: true,
-              cycleTimeStd: true,
-              cavityStd: true,
               startDate: true,
               partNumber: true, // Added
               estimatedShifts: true,
@@ -397,10 +381,6 @@ export const prosRouter = createTRPCRouter({
                 .optional(),
               startDate: z.coerce.date().optional(),
               partNumber: z.string().optional(), // Added to step input
-              // Standard Params
-              manPowerStd: z.number().int().optional(),
-              cycleTimeStd: z.number().optional(),
-              cavityStd: z.number().int().optional(),
             }),
           )
           .min(1),
@@ -509,11 +489,6 @@ export const prosRouter = createTRPCRouter({
                 machineId: inputStep.machineId ?? null,
                 startDate: getShiftDate(currentDay, currentShift),
                 partNumber: inputStep.partNumber, // Added
-                manPowerStd: inputStep.manPowerStd, // Added
-                cycleTimeStd: inputStep.cycleTimeStd
-                  ? new Prisma.Decimal(inputStep.cycleTimeStd)
-                  : undefined, // Added
-                cavityStd: inputStep.cavityStd, // Added
                 estimatedShifts: need,
                 materials: {
                   create:
@@ -626,11 +601,14 @@ export const prosRouter = createTRPCRouter({
               id: true,
               orderNo: true,
               up: true,
-              manPowerStd: true,
-              cycleTimeStd: true,
-              cavityStd: true,
               machine: {
-                select: { id: true, name: true, stdOutputPerShift: true },
+                select: {
+                  id: true,
+                  name: true,
+                  stdOutputPerShift: true,
+                  stdOutputPerHour: true,
+                  cycleTimeSec: true,
+                },
               },
               startDate: true, // add this
               partNumber: true, // Added
