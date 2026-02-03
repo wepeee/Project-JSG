@@ -30,6 +30,8 @@ model User {
   role         Role     @default(ADMIN)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  
+  productionReports ProductionReport[]
 }
 
 // Mesin
@@ -268,6 +270,9 @@ model ProductionReport {
 
   // Meta data for calculated fields snapshots if needed (OEE, %, etc) or extra columns
   metaData Json?
+
+  createdById String?
+  createdBy   User?   @relation(fields: [createdById], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

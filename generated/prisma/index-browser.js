@@ -232,6 +232,7 @@ exports.Prisma.ProductionReportScalarFieldEnum = {
   totalDowntime: 'totalDowntime',
   notes: 'notes',
   metaData: 'metaData',
+  createdById: 'createdById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -304,7 +305,8 @@ exports.Prisma.ProductionReportOrderByRelevanceFieldEnum = {
   id: 'id',
   operatorName: 'operatorName',
   batchNo: 'batchNo',
-  notes: 'notes'
+  notes: 'notes',
+  createdById: 'createdById'
 };
 exports.Role = exports.$Enums.Role = {
   SUPERADMIN: 'SUPERADMIN',

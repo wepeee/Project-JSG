@@ -28,6 +28,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { api } from "~/trpc/react";
 
 // --- CONSTANTS ---
 
@@ -205,7 +206,7 @@ export function ProductionReportModal({
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = React.useState("info");
   const [loading, setLoading] = React.useState(false);
-  const [showRumus, setShowRumus] = React.useState(false);
+  // const [showRumus, setShowRumus] = React.useState(false); // Removed formula toggle
 
   // Initial State derived from task
   const [lphType, setLphType] = React.useState<LphType>("PAPER");
@@ -225,6 +226,10 @@ export function ProductionReportModal({
     ctAct: "",
     cavStd: "",
     cavAct: "",
+
+    // Editable Header Info
+    shift: "",
+    operatorName: "",
 
     // Material
     inputMaterial: "", // Paper: input, Rigid: material tuang
@@ -424,6 +429,14 @@ export function ProductionReportModal({
               parsed.ctStd = prefilledCtStd;
             }
 
+            // Fallback for Shift & Operator if missing in draft
+            if (!parsed.shift) {
+              parsed.shift = String(task.shift);
+            }
+            if (!parsed.operatorName) {
+              parsed.operatorName = ""; // Explicitly empty
+            }
+
             setFormData((prev) => ({ ...prev, ...parsed }));
           } catch (e) {
             console.error("Bad draft", e);
@@ -435,6 +448,8 @@ export function ProductionReportModal({
             endTime: "",
             startDate: new Date().toISOString().slice(0, 10),
             endDate: new Date().toISOString().slice(0, 10),
+            shift: String(task.shift), // Initial from task
+            operatorName: "", // Start empty per user request
             batchNo: "",
             mpStd: "",
             mpAct: "",
@@ -458,7 +473,7 @@ export function ProductionReportModal({
         }
       }
     }
-  }, [open, task, draftKey]);
+  }, [open, task, draftKey, session]);
 
   // Auto Save
   React.useEffect(() => {
@@ -469,23 +484,72 @@ export function ProductionReportModal({
 
   if (!task) return null;
 
+  const utils = api.useUtils();
+  const createReportMutation = api.production.createReport.useMutation({
+    onSuccess: () => {
+      utils.production.getHistory.invalidate(); // Refresh history
+      alert("Laporan berhasil disimpan!");
+      if (draftKey) localStorage.removeItem(draftKey);
+      setLoading(false);
+      onOpenChange(false);
+    },
+    onError: (err) => {
+      console.error(err);
+      alert("Gagal menyimpan laporan: " + err.message);
+      setLoading(false);
+    }
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // TODO: Connect to trpc mutation
-    console.log("Submitting:", {
-      ...formData,
-      lphType,
-      operator: session?.user?.name,
+    createReportMutation.mutate({
+        proStepId: task.step.id,
+        shift: Number(formData.shift) || task.shift,
+        reportDate: new Date(formData.startDate), // Basic date
+        operatorName: formData.operatorName,
+        reportType: lphType as any,
+        
+        startTime: formData.startTime,
+        endTime: formData.endTime, // These are HH:mm strings, handled by backend
+        
+        batchNo: formData.batchNo,
+        mpStd: Number(formData.mpStd) || undefined,
+        mpAct: Number(formData.mpAct) || undefined,
+        cycleTimeStd: Number(formData.ctStd) || undefined,
+        cycleTimeAct: Number(formData.ctAct) || undefined,
+        cavityStd: Number(formData.cavStd) || undefined,
+        cavityAct: Number(formData.cavAct) || undefined,
+        
+        inputMaterialQty: Number(formData.inputMaterial) || undefined,
+        materialRunnerQty: Number(formData.materialRunner) || undefined,
+        materialPurgeQty: Number(formData.materialPurge) || undefined,
+        
+        qtyGood: Number(formData.qtyGood) || 0,
+        qtyPassOn: Number(formData.qtyPassOn) || 0,
+        qtyHold: Number(formData.qtyHold) || 0,
+        qtyWip: Number(formData.qtyWip) || 0,
+        qtyReject: totalReject,
+        
+        // Convert "10" (string) to 10 (number) for backend records
+        rejectBreakdown: Object.fromEntries(
+            Object.entries(formData.rejects)
+            .filter(([_, v]) => Number(v) > 0)
+            .map(([k, v]) => [k, Number(v)])
+            .concat(
+                 Number(formData.rejectSetup) > 0 ? [["Reject Setup", Number(formData.rejectSetup)]] : [],
+                 Number(formData.rejectProcess) > 0 ? [["Reject Process", Number(formData.rejectProcess)]] : []
+            )
+        ),
+        downtimeBreakdown: Object.fromEntries(
+             Object.entries(formData.downtimes)
+             .filter(([_, v]) => Number(v) > 0)
+             .map(([k, v]) => [k, Number(v)])
+        ),
+        totalDowntime: totalDowntime,
+        notes: formData.notes
     });
-
-    setTimeout(() => {
-      alert("Laporan tersimpan (Mock)!");
-      if (draftKey) localStorage.removeItem(draftKey);
-      setLoading(false);
-      onOpenChange(false);
-    }, 800);
   };
 
   const handleRejectChange = (key: string, val: string) => {
@@ -585,16 +649,24 @@ export function ProductionReportModal({
                         Nama Operator
                       </Label>
                       <Input
-                        value={session?.user?.name || ""}
-                        readOnly
-                        className="border-slate-800 bg-slate-950 text-slate-400"
+                        value={formData.operatorName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, operatorName: e.target.value })
+                        }
+                        className="border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
+                        placeholder="Nama Operator..."
                       />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-slate-400">Shift</Label>
                       <Input
-                        value={task.shift}
-                        readOnly
+                        type="number"
+                        min={1}
+                        max={3}
+                        value={formData.shift}
+                        onChange={(e) =>
+                          setFormData({ ...formData, shift: e.target.value })
+                        }
                         className="w-16 border-slate-800 bg-slate-950 text-center font-bold text-slate-400"
                       />
                     </div>
@@ -1086,37 +1158,68 @@ export function ProductionReportModal({
                     Produksi (Output)
                   </h3>
                   <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-                    <div className="col-span-2 space-y-1.5">
-                      <Label className="text-xs font-bold text-emerald-500">
-                        GOOD / FINISH GOOD
-                      </Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0"
-                        className="h-14 border-emerald-900/50 bg-emerald-950/30 text-2xl font-black text-emerald-500 placeholder:text-emerald-900/50"
-                        value={formData.qtyGood}
-                        onChange={(e) =>
-                          setFormData({ ...formData, qtyGood: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-slate-400">PASS ON</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0"
-                        className="border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
-                        value={formData.qtyPassOn}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            qtyPassOn: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
+                    {/* IF PAPER: Pass On is the New Finish Good (Prominent) */}
+                    {!isRigid ? (
+                      <div className="col-span-2 space-y-1.5">
+                        <Label className="text-xs font-bold text-emerald-500">
+                          FINISH GOOD (PASS ON)
+                        </Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0"
+                          className="h-14 border-emerald-900/50 bg-emerald-950/30 text-2xl font-black text-emerald-500 placeholder:text-emerald-900/50"
+                          value={formData.qtyPassOn}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              qtyPassOn: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    ) : (
+                      // IF RIGID: Keep Original (Good + Pass On separated)
+                      <>
+                        <div className="col-span-2 space-y-1.5">
+                          <Label className="text-xs font-bold text-emerald-500">
+                            GOOD / FINISH GOOD
+                          </Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0"
+                            className="h-14 border-emerald-900/50 bg-emerald-950/30 text-2xl font-black text-emerald-500 placeholder:text-emerald-900/50"
+                            value={formData.qtyGood}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                qtyGood: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-slate-400">
+                            PASS ON
+                          </Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0"
+                            className="border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
+                            value={formData.qtyPassOn}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                qtyPassOn: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      </>
+                    )}
+
                     <div className="space-y-1.5">
                       <Label className="text-xs text-slate-400">
                         WIP (Work In Progress)
@@ -1169,36 +1272,14 @@ export function ProductionReportModal({
                 <div className="rounded-xl border border-blue-800 bg-blue-950/20 p-4 shadow-sm">
                   <h3 className="mb-4 flex items-center justify-between gap-2 text-sm font-bold text-blue-400">
                     <div className="flex items-center gap-2">
-                      <History className="h-4 w-4" /> Quick Report (Estimasi)
+                       <History className="h-4 w-4" /> Quick Report (Estimasi)
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowRumus(!showRumus)}
-                      className="flex items-center gap-1 rounded-full bg-blue-900/50 px-2.5 py-1 text-[10px] text-blue-300 transition-colors hover:bg-blue-800"
-                    >
-                      <span className="mr-1 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-slate-500 font-mono text-[9px]">
-                        ?
-                      </span>
-                      {showRumus ? "Tutup Rumus" : "Lihat Rumus"}
-                    </button>
+                    {/* Formula button removed */}
                   </h3>
 
-                  {showRumus && (
-                    <div className="mb-4 space-y-1 rounded-lg border border-blue-900/50 bg-blue-950/40 p-3 font-mono text-[10px] text-blue-200">
-                      <p>
-                        • Availability = (Operating Time / Total Time) × 100
-                      </p>
-                      <p>
-                        • Performance = ((Pass On + Hold + WIP) / (Speed × Total
-                        Waktu)) × 100
-                      </p>
-                      <p>• Quality = (Pass On / Total Output) × 100</p>
-                      <p>• OEE = Availability × Performance × Quality</p>
-                      <p className="mt-1 border-t border-blue-900/50 pt-1 text-slate-400">
-                        *(Speed × Total Waktu) = Kapasitas Standar
-                      </p>
-                    </div>
-                  )}
+                  {/* Formula text removed */}
+
+
                   <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                     <div className="space-y-1 rounded-lg bg-slate-950 p-3">
                       <Label className="text-[10px] text-slate-500 uppercase">

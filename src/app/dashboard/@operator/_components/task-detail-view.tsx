@@ -4,6 +4,8 @@ import * as React from "react";
 import { Button } from "~/components/ui/button";
 import { ChevronLeft, Info, History } from "lucide-react";
 import { ProductionReportModal } from "./production-report-modal";
+import { api } from "~/trpc/react";
+import { format } from "date-fns";
 
 interface TaskDetailViewProps {
   task: any;
@@ -13,25 +15,16 @@ interface TaskDetailViewProps {
 export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
   const [showAddModal, setShowAddModal] = React.useState(false);
 
-  // Mock data for existing reports
-  const [reports, setReports] = React.useState([
-    {
-      id: 1,
-      time: "08:30",
-      good: 500,
-      reject: 2,
-      notes: "Aman",
-      operator: "Budi",
-    },
-    {
-      id: 2,
-      time: "10:15",
-      good: 450,
-      reject: 5,
-      notes: "Setting ulang",
-      operator: "Ahmad",
-    },
-  ]);
+  // Fetch real reports for this step
+  const { data: reports } = api.production.getHistory.useQuery({ 
+      proStepId: task.step.id,
+      limit: 50
+  });
+
+  const totalGood = React.useMemo(() => {
+     if (!reports) return 0;
+     return reports.reduce((acc, curr) => acc + Number(curr.qtyGood) + Number(curr.qtyPassOn), 0);
+  }, [reports]);
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20 dark:bg-slate-950/50">
@@ -76,16 +69,14 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
                 {task.pro.qtyPoPcs.toLocaleString("id-ID")}
               </div>
             </div>
-            <div className="rounded-2xl bg-blue-50 p-3 dark:bg-blue-900/20">
-              <div className="mb-1 text-[9px] font-bold tracking-widest text-blue-600 uppercase dark:text-blue-400">
-                Total Good
+              <div className="rounded-2xl bg-blue-50 p-3 dark:bg-blue-900/20">
+                <div className="mb-1 text-[9px] font-bold tracking-widest text-blue-600 uppercase dark:text-blue-400">
+                  Total Good
+                </div>
+                <div className="text-lg font-black text-blue-700 dark:text-blue-300">
+                   {totalGood.toLocaleString("id-ID")}
+                </div>
               </div>
-              <div className="text-lg font-black text-blue-700 dark:text-blue-300">
-                {reports
-                  .reduce((a, b) => a + b.good, 0)
-                  .toLocaleString("id-ID")}
-              </div>
-            </div>
           </div>
         </div>
 
@@ -104,24 +95,24 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
           </h3>
 
           <div className="space-y-3">
-            {reports.map((rpt, idx) => (
+            {reports?.map((rpt) => (
               <div
-                key={idx}
+                key={rpt.id}
                 className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
               >
                 <div>
                   <div className="text-muted-foreground mb-1 flex items-center gap-1 text-[10px] font-bold uppercase">
-                    <span>{rpt.operator}</span>
+                    <span>{rpt.operatorName}</span>
                     <span className="opacity-50">•</span>
-                    <span>{rpt.time}</span>
+                    <span>{format(rpt.reportDate, "HH:mm") !== "00:00" ? format(rpt.reportDate, "HH:mm") : "Shift " + rpt.shift}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="rounded bg-green-100 px-2 py-0.5 text-xs font-black text-green-700">
-                      Good: {rpt.good}
+                      Good: {(Number(rpt.qtyGood) + Number(rpt.qtyPassOn)).toLocaleString()}
                     </div>
-                    {rpt.reject > 0 && (
+                    {Number(rpt.qtyReject) > 0 && (
                       <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-black text-red-700">
-                        Reject: {rpt.reject}
+                        Reject: {Number(rpt.qtyReject)}
                       </div>
                     )}
                   </div>
@@ -134,7 +125,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
               </div>
             ))}
 
-            {reports.length === 0 && (
+            {reports?.length === 0 && (
               <div className="text-muted-foreground py-8 text-center text-sm italic">
                 Belum ada laporan masuk.
               </div>
