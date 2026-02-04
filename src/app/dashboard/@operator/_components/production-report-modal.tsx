@@ -197,6 +197,7 @@ interface ProductionReportModalProps {
     shift: number;
   } | null;
   onDraftChange?: () => void;
+  editReport?: any; // Pass the report object to edit (from history)
 }
 
 export function ProductionReportModal({
@@ -204,6 +205,7 @@ export function ProductionReportModal({
   onOpenChange,
   task,
   onDraftChange,
+  editReport,
 }: ProductionReportModalProps) {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = React.useState("info");
@@ -532,6 +534,96 @@ export function ProductionReportModal({
     },
   });
 
+  const updateReportMutation = api.production.updateReport.useMutation({
+    onSuccess: () => {
+      utils.production.getHistory.invalidate();
+      alert("Laporan berhasil diperbarui!");
+      window.dispatchEvent(new Event("draft-update"));
+      onDraftChange?.();
+      setLoading(false);
+      onOpenChange(false);
+    },
+    onError: (err) => {
+      console.error(err);
+      alert("Gagal memperbarui laporan: " + err.message);
+      setLoading(false);
+    },
+  });
+
+  // Populate Form from Edit Report
+  React.useEffect(() => {
+    if (open && editReport) {
+      // Helper to format Date to HH:mm
+      const formatTime = (d?: string | Date) => {
+        if (!d) return "";
+        const date = new Date(d);
+        return date.toLocaleTimeString("id", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+      };
+
+      const breakdown =
+        (editReport.rejectBreakdown as Record<string, number>) || {};
+      const downtimeDown =
+        (editReport.downtimeBreakdown as Record<string, number>) || {};
+
+      // Filter out setup/process from general breakdown map if stored there
+      // But typically we stored them separately in logic? NO, we stored them in the same JSON object
+      // So we need to extract them.
+
+      const newFormData: any = {
+        shift: String(editReport.shift),
+        operatorName: editReport.operatorName,
+        startDate: new Date(editReport.reportDate).toISOString().split("T")[0], // YYYY-MM-DD
+        // endDate... not really used in submit?
+        startTime: formatTime(editReport.startTime),
+        endTime: formatTime(editReport.endTime),
+
+        batchNo: editReport.batchNo || "",
+        mpStd: String(editReport.manPowerStd || ""),
+        mpAct: String(editReport.manPowerAct || ""),
+        ctStd: String(editReport.cycleTimeStd || ""),
+        ctAct: String(editReport.cycleTimeAct || ""),
+        cavStd: String(editReport.cavityStd || ""),
+        cavAct: String(editReport.cavityAct || ""),
+
+        inputMaterial: String(editReport.inputMaterialQty || ""),
+        materialRunner: String(editReport.materialRunnerQty || ""),
+        materialPurge: String(editReport.materialPurgeQty || ""),
+
+        qtyGood: String(editReport.qtyGood || ""),
+        qtyPassOn: String(editReport.qtyPassOn || ""),
+        qtyHold: String(editReport.qtyHold || ""),
+        qtyWip: String(editReport.qtyWip || ""),
+
+        notes: editReport.notes || "",
+
+        rejectSetup: String(breakdown["Reject Setup"] || ""),
+        rejectProcess: String(breakdown["Reject Process"] || ""),
+        rejects: {},
+        downtimes: {},
+      };
+
+      // Populate dynamic rejects
+      Object.entries(breakdown).forEach(([k, v]) => {
+        if (k !== "Reject Setup" && k !== "Reject Process") {
+          newFormData.rejects[k] = String(v);
+        }
+      });
+
+      // Populate downtimes
+      Object.entries(downtimeDown).forEach(([k, v]) => {
+        newFormData.downtimes[k] = String(v);
+      });
+
+      setFormData((prev) => ({ ...prev, ...newFormData }));
+      setLphType(editReport.reportType);
+      setIsLoaded(true);
+    }
+  }, [open, editReport]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -542,56 +634,106 @@ export function ProductionReportModal({
       return;
     }
 
-    createReportMutation.mutate({
-      proStepId: task.step.id,
-      shift: Number(formData.shift) || task.shift,
-      reportDate: new Date(formData.startDate), // Basic date
-      operatorName: formData.operatorName,
-      reportType: lphType as any,
-
-      startTime: formData.startTime,
-      endTime: formData.endTime, // These are HH:mm strings, handled by backend
-
-      batchNo: formData.batchNo,
-      mpStd: Number(formData.mpStd) || undefined,
-      mpAct: Number(formData.mpAct) || undefined,
-      cycleTimeStd: Number(formData.ctStd) || undefined,
-      cycleTimeAct: Number(formData.ctAct) || undefined,
-      cavityStd: Number(formData.cavStd) || undefined,
-      cavityAct: Number(formData.cavAct) || undefined,
-
-      inputMaterialQty: Number(formData.inputMaterial) || undefined,
-      materialRunnerQty: Number(formData.materialRunner) || undefined,
-      materialPurgeQty: Number(formData.materialPurge) || undefined,
-
-      qtyGood: Number(formData.qtyGood) || 0,
-      qtyPassOn: Number(formData.qtyPassOn) || 0,
-      qtyHold: Number(formData.qtyHold) || 0,
-      qtyWip: Number(formData.qtyWip) || 0,
-      qtyReject: totalReject,
-
-      // Convert "10" (string) to 10 (number) for backend records
-      rejectBreakdown: Object.fromEntries(
-        Object.entries(formData.rejects)
-          .filter(([_, v]) => Number(v) > 0)
-          .map(([k, v]) => [k, Number(v)])
-          .concat(
-            Number(formData.rejectSetup) > 0
-              ? [["Reject Setup", Number(formData.rejectSetup)]]
-              : [],
-            Number(formData.rejectProcess) > 0
-              ? [["Reject Process", Number(formData.rejectProcess)]]
-              : [],
+    if (editReport) {
+      updateReportMutation.mutate({
+        id: editReport.id,
+        data: {
+          proStepId: task.step.id,
+          shift: Number(formData.shift) || task.shift,
+          reportDate: new Date(formData.startDate),
+          operatorName: formData.operatorName,
+          reportType: lphType as any,
+          startTime: formData.startTime,
+          endTime: formData.endTime,
+          batchNo: formData.batchNo,
+          mpStd: Number(formData.mpStd) || undefined,
+          mpAct: Number(formData.mpAct) || undefined,
+          cycleTimeStd: Number(formData.ctStd) || undefined,
+          cycleTimeAct: Number(formData.ctAct) || undefined,
+          cavityStd: Number(formData.cavStd) || undefined,
+          cavityAct: Number(formData.cavAct) || undefined,
+          inputMaterialQty: Number(formData.inputMaterial) || undefined,
+          materialRunnerQty: Number(formData.materialRunner) || undefined,
+          materialPurgeQty: Number(formData.materialPurge) || undefined,
+          qtyGood: Number(formData.qtyGood) || 0,
+          qtyPassOn: Number(formData.qtyPassOn) || 0,
+          qtyHold: Number(formData.qtyHold) || 0,
+          qtyWip: Number(formData.qtyWip) || 0,
+          qtyReject: totalReject,
+          rejectBreakdown: Object.fromEntries(
+            Object.entries(formData.rejects)
+              .filter(([_, v]) => Number(v) > 0)
+              .map(([k, v]) => [k, Number(v)])
+              .concat(
+                Number(formData.rejectSetup) > 0
+                  ? [["Reject Setup", Number(formData.rejectSetup)]]
+                  : [],
+                Number(formData.rejectProcess) > 0
+                  ? [["Reject Process", Number(formData.rejectProcess)]]
+                  : [],
+              ),
           ),
-      ),
-      downtimeBreakdown: Object.fromEntries(
-        Object.entries(formData.downtimes)
-          .filter(([_, v]) => Number(v) > 0)
-          .map(([k, v]) => [k, Number(v)]),
-      ),
-      totalDowntime: totalDowntimeObj.total,
-      notes: formData.notes,
-    });
+          downtimeBreakdown: Object.fromEntries(
+            Object.entries(formData.downtimes)
+              .filter(([_, v]) => Number(v) > 0)
+              .map(([k, v]) => [k, Number(v)]),
+          ),
+          totalDowntime: totalDowntimeObj.total,
+          notes: formData.notes,
+        },
+      });
+    } else {
+      createReportMutation.mutate({
+        proStepId: task.step.id,
+        shift: Number(formData.shift) || task.shift,
+        reportDate: new Date(formData.startDate), // Basic date
+        operatorName: formData.operatorName,
+        reportType: lphType as any,
+
+        startTime: formData.startTime,
+        endTime: formData.endTime, // These are HH:mm strings, handled by backend
+
+        batchNo: formData.batchNo,
+        mpStd: Number(formData.mpStd) || undefined,
+        mpAct: Number(formData.mpAct) || undefined,
+        cycleTimeStd: Number(formData.ctStd) || undefined,
+        cycleTimeAct: Number(formData.ctAct) || undefined,
+        cavityStd: Number(formData.cavStd) || undefined,
+        cavityAct: Number(formData.cavAct) || undefined,
+
+        inputMaterialQty: Number(formData.inputMaterial) || undefined,
+        materialRunnerQty: Number(formData.materialRunner) || undefined,
+        materialPurgeQty: Number(formData.materialPurge) || undefined,
+
+        qtyGood: Number(formData.qtyGood) || 0,
+        qtyPassOn: Number(formData.qtyPassOn) || 0,
+        qtyHold: Number(formData.qtyHold) || 0,
+        qtyWip: Number(formData.qtyWip) || 0,
+        qtyReject: totalReject,
+
+        // Convert "10" (string) to 10 (number) for backend records
+        rejectBreakdown: Object.fromEntries(
+          Object.entries(formData.rejects)
+            .filter(([_, v]) => Number(v) > 0)
+            .map(([k, v]) => [k, Number(v)])
+            .concat(
+              Number(formData.rejectSetup) > 0
+                ? [["Reject Setup", Number(formData.rejectSetup)]]
+                : [],
+              Number(formData.rejectProcess) > 0
+                ? [["Reject Process", Number(formData.rejectProcess)]]
+                : [],
+            ),
+        ),
+        downtimeBreakdown: Object.fromEntries(
+          Object.entries(formData.downtimes)
+            .filter(([_, v]) => Number(v) > 0)
+            .map(([k, v]) => [k, Number(v)]),
+        ),
+        totalDowntime: totalDowntimeObj.total,
+        notes: formData.notes,
+      });
+    }
   };
 
   const handleRejectChange = (key: string, val: string) => {
@@ -656,14 +798,16 @@ export function ProductionReportModal({
                   value="info"
                   className="min-w-fit flex-1 px-3 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-slate-800 data-[state=active]:text-blue-400 data-[state=active]:shadow-sm sm:text-sm"
                 >
-                  Info & Params
+                  Info
                 </TabsTrigger>
-                <TabsTrigger
-                  value="material"
-                  className="min-w-fit flex-1 px-3 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-slate-800 data-[state=active]:text-blue-400 data-[state=active]:shadow-sm sm:text-sm"
-                >
-                  Material
-                </TabsTrigger>
+                {isRigid && (
+                  <TabsTrigger
+                    value="material"
+                    className="min-w-fit flex-1 px-3 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-slate-800 data-[state=active]:text-blue-400 data-[state=active]:shadow-sm sm:text-sm"
+                  >
+                    Material
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
                   value="reject"
                   className="min-w-fit flex-1 px-3 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-slate-800 data-[state=active]:text-blue-400 data-[state=active]:shadow-sm sm:text-sm"
@@ -916,11 +1060,13 @@ export function ProductionReportModal({
                 <div className="text-right">
                   <Button
                     type="button"
-                    onClick={() => setActiveTab("material")}
+                    onClick={() =>
+                      setActiveTab(isRigid ? "material" : "reject")
+                    }
                     variant="outline"
                     className="border-slate-700 bg-transparent text-slate-300 hover:bg-slate-800 hover:text-white"
                   >
-                    Lanjut: Material &rarr;
+                    Lanjut: {isRigid ? "Material" : "Reject & Down"} &rarr;
                   </Button>
                 </div>
               </TabsContent>
@@ -1207,66 +1353,24 @@ export function ProductionReportModal({
                   </h3>
                   <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
                     {/* IF PAPER: Pass On is the New Finish Good (Prominent) */}
-                    {!isRigid ? (
-                      <div className="col-span-2 space-y-1.5">
-                        <Label className="text-xs font-bold text-emerald-500">
-                          FINISH GOOD (PASS ON)
-                        </Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="0"
-                          className="h-14 border-emerald-900/50 bg-emerald-950/30 text-2xl font-black text-emerald-500 placeholder:text-emerald-900/50"
-                          value={formData.qtyPassOn}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              qtyPassOn: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                    ) : (
-                      // IF RIGID: Keep Original (Good + Pass On separated)
-                      <>
-                        <div className="col-span-2 space-y-1.5">
-                          <Label className="text-xs font-bold text-emerald-500">
-                            GOOD / FINISH GOOD
-                          </Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0"
-                            className="h-14 border-emerald-900/50 bg-emerald-950/30 text-2xl font-black text-emerald-500 placeholder:text-emerald-900/50"
-                            value={formData.qtyGood}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                qtyGood: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs text-slate-400">
-                            PASS ON
-                          </Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0"
-                            className="border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
-                            value={formData.qtyPassOn}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                qtyPassOn: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
-                      </>
-                    )}
+                    <div className="col-span-2 space-y-1.5">
+                      <Label className="text-xs font-bold text-emerald-500">
+                        PASS ON / GOOD
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0"
+                        className="h-14 border-emerald-900/50 bg-emerald-950/30 text-2xl font-black text-emerald-500 placeholder:text-emerald-900/50"
+                        value={formData.qtyPassOn}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            qtyPassOn: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
 
                     <div className="space-y-1.5">
                       <Label className="text-xs text-slate-400">
@@ -1317,105 +1421,109 @@ export function ProductionReportModal({
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-blue-800 bg-blue-950/20 p-4 shadow-sm">
-                  <h3 className="mb-4 flex items-center justify-between gap-2 text-sm font-bold text-blue-400">
-                    <div className="flex items-center gap-2">
-                      <History className="h-4 w-4" /> Quick Report (Estimasi)
-                    </div>
-                    {/* Formula button removed */}
-                  </h3>
+                {isRigid && (
+                  <div className="rounded-xl border border-blue-800 bg-blue-950/20 p-4 shadow-sm">
+                    <h3 className="mb-4 flex items-center justify-between gap-2 text-sm font-bold text-blue-400">
+                      <div className="flex items-center gap-2">
+                        <History className="h-4 w-4" /> Quick Report (Estimasi)
+                      </div>
+                      {/* Formula button removed */}
+                    </h3>
 
-                  {/* Formula text removed */}
+                    {/* Formula text removed */}
 
-                  <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-                    <div className="space-y-1 rounded-lg bg-slate-950 p-3">
-                      <Label className="text-[10px] text-slate-500 uppercase">
-                        Total Waktu
-                      </Label>
-                      <div className="text-xl font-bold text-slate-200">
-                        {totalTimeMinutes.toFixed(0)}{" "}
-                        <span className="text-sm font-normal text-slate-500">
-                          mnt
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-1 rounded-lg bg-slate-950 p-3">
-                      <Label className="text-[10px] text-slate-500 uppercase">
-                        Operating Time
-                      </Label>
-                      <div className="text-xl font-bold text-slate-200">
-                        {(totalTimeMinutes - totalDowntimeObj.total).toFixed(0)}{" "}
-                        <span className="text-sm font-normal text-slate-500">
-                          mnt
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-1 rounded-lg bg-slate-950 p-3">
-                      <Label className="text-[10px] text-slate-500 uppercase">
-                        Availability
-                      </Label>
-                      <div
-                        className={`text-xl font-bold ${availability >= 90 ? "text-emerald-400" : "text-amber-400"}`}
-                      >
-                        {availability.toFixed(1)}%
-                        <p className="mt-1 text-[10px] font-normal text-slate-500">
-                          • Availability = (Operating Time / (Total Time -
-                          Planned Downtime)) × 100
-                        </p>
-                      </div>
-                    </div>
-                    <div className="space-y-1 rounded-lg bg-slate-950 p-3">
-                      <Label className="text-[10px] text-slate-500 uppercase">
-                        Performance
-                      </Label>
-                      <div
-                        className={`text-xl font-bold ${performance >= 90 ? "text-emerald-400" : "text-amber-400"}`}
-                      >
-                        {valStd > 0 ? (
-                          <>
-                            {performance.toFixed(1)}%
-                            <div className="mt-1 space-y-0.5 text-[10px] font-normal text-slate-500">
-                              <div>
-                                Kapasitas: {targetOutput.toLocaleString()}
-                              </div>
-                              <div
-                                className="text-slate-600"
-                                title="Speed Mesin"
-                              >
-                                Spd: {speedPerMin.toFixed(0)}/m |{" "}
-                                {speedPerHour.toLocaleString()}/h
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <span className="text-xs font-medium text-red-400">
-                            Isi {lphType === "PAPER" ? "Speed" : "CT"} Std
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+                      <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                        <Label className="text-[10px] text-slate-500 uppercase">
+                          Total Waktu
+                        </Label>
+                        <div className="text-xl font-bold text-slate-200">
+                          {totalTimeMinutes.toFixed(0)}{" "}
+                          <span className="text-sm font-normal text-slate-500">
+                            mnt
                           </span>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-1 rounded-lg bg-slate-950 p-3">
-                      <Label className="text-[10px] text-slate-500 uppercase">
-                        Quality
-                      </Label>
-                      <div
-                        className={`text-xl font-bold ${quality >= 90 ? "text-emerald-400" : "text-amber-400"}`}
-                      >
-                        {quality.toFixed(1)}%
+                      <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                        <Label className="text-[10px] text-slate-500 uppercase">
+                          Operating Time
+                        </Label>
+                        <div className="text-xl font-bold text-slate-200">
+                          {(totalTimeMinutes - totalDowntimeObj.total).toFixed(
+                            0,
+                          )}{" "}
+                          <span className="text-sm font-normal text-slate-500">
+                            mnt
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="col-span-2 flex items-center justify-between rounded-lg border border-blue-800/50 bg-blue-900/20 p-3 md:col-span-5">
-                      <Label className="text-xs font-bold text-blue-300 uppercase">
-                        OEE Score
-                      </Label>
-                      <div
-                        className={`text-2xl font-black ${oee >= 85 ? "text-emerald-400" : oee >= 60 ? "text-amber-400" : "text-red-400"}`}
-                      >
-                        {oee.toFixed(2)}%
+                      <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                        <Label className="text-[10px] text-slate-500 uppercase">
+                          Availability
+                        </Label>
+                        <div
+                          className={`text-xl font-bold ${availability >= 90 ? "text-emerald-400" : "text-amber-400"}`}
+                        >
+                          {availability.toFixed(1)}%
+                          <p className="mt-1 text-[10px] font-normal text-slate-500">
+                            • Availability = (Operating Time / (Total Time -
+                            Planned Downtime)) × 100
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                        <Label className="text-[10px] text-slate-500 uppercase">
+                          Performance
+                        </Label>
+                        <div
+                          className={`text-xl font-bold ${performance >= 90 ? "text-emerald-400" : "text-amber-400"}`}
+                        >
+                          {valStd > 0 ? (
+                            <>
+                              {performance.toFixed(1)}%
+                              <div className="mt-1 space-y-0.5 text-[10px] font-normal text-slate-500">
+                                <div>
+                                  Kapasitas: {targetOutput.toLocaleString()}
+                                </div>
+                                <div
+                                  className="text-slate-600"
+                                  title="Speed Mesin"
+                                >
+                                  Spd: {speedPerMin.toFixed(0)}/m |{" "}
+                                  {speedPerHour.toLocaleString()}/h
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-xs font-medium text-red-400">
+                              Isi CT Std
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                        <Label className="text-[10px] text-slate-500 uppercase">
+                          Quality
+                        </Label>
+                        <div
+                          className={`text-xl font-bold ${quality >= 90 ? "text-emerald-400" : "text-amber-400"}`}
+                        >
+                          {quality.toFixed(1)}%
+                        </div>
+                      </div>
+                      <div className="col-span-2 flex items-center justify-between rounded-lg border border-blue-800/50 bg-blue-900/20 p-3 md:col-span-5">
+                        <Label className="text-xs font-bold text-blue-300 uppercase">
+                          OEE Score
+                        </Label>
+                        <div
+                          className={`text-2xl font-black ${oee >= 85 ? "text-emerald-400" : oee >= 60 ? "text-amber-400" : "text-red-400"}`}
+                        >
+                          {oee.toFixed(2)}%
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </TabsContent>
             </Tabs>
           </form>

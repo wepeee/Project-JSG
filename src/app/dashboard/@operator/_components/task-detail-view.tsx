@@ -15,6 +15,7 @@ interface TaskDetailViewProps {
 export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [hasDraft, setHasDraft] = React.useState(false);
+  const [editReport, setEditReport] = React.useState<any>(null);
 
   // Check for draft
   const draftKey = `pro_report_v2_${task.step.id}`;
@@ -107,7 +108,10 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
 
         {/* Action Button */}
         <Button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => {
+            setEditReport(null);
+            setShowAddModal(true);
+          }}
           className="h-14 w-full rounded-2xl bg-blue-600 text-base font-black text-white shadow-lg shadow-blue-200/50 hover:bg-blue-700 dark:shadow-none"
         >
           + Tambah Laporan Baru
@@ -123,7 +127,10 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
             {/* DRAFT CARD */}
             {hasDraft && (
               <div
-                onClick={() => setShowAddModal(true)}
+                onClick={() => {
+                  setEditReport(null);
+                  setShowAddModal(true);
+                }}
                 className="group cursor-pointer rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:hover:bg-amber-900/40"
               >
                 <div className="flex items-center justify-between">
@@ -154,37 +161,90 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
             {reports?.map((rpt) => (
               <div
                 key={rpt.id}
-                className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
+                className={`flex flex-col gap-3 rounded-2xl border bg-white p-4 dark:bg-slate-900 ${
+                  rpt.status === "REJECTED"
+                    ? "border-red-200 bg-red-50/50 dark:border-red-900/50 dark:bg-red-950/10"
+                    : "border-slate-100 dark:border-slate-800"
+                }`}
               >
-                <div>
-                  <div className="text-muted-foreground mb-1 flex items-center gap-1 text-[10px] font-bold uppercase">
-                    <span>{rpt.operatorName}</span>
-                    <span className="opacity-50">•</span>
-                    <span>
-                      {format(rpt.reportDate, "HH:mm") !== "00:00"
-                        ? format(rpt.reportDate, "HH:mm")
-                        : "Shift " + rpt.shift}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="rounded bg-green-100 px-2 py-0.5 text-xs font-black text-green-700">
-                      Good:{" "}
-                      {(
-                        Number(rpt.qtyGood) + Number(rpt.qtyPassOn)
-                      ).toLocaleString()}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-muted-foreground mb-1 flex items-center gap-1 text-[10px] font-bold uppercase">
+                      <span>{rpt.operatorName}</span>
+                      <span className="opacity-50">•</span>
+                      <span>
+                        {format(rpt.reportDate, "HH:mm") !== "00:00"
+                          ? format(rpt.reportDate, "HH:mm")
+                          : "Shift " + rpt.shift}
+                      </span>
                     </div>
-                    {Number(rpt.qtyReject) > 0 && (
-                      <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-black text-red-700">
-                        Reject: {Number(rpt.qtyReject)}
+                    <div className="flex items-center gap-3">
+                      <div className="rounded bg-green-100 px-2 py-0.5 text-xs font-black text-green-700">
+                        Good:{" "}
+                        {(
+                          Number(rpt.qtyGood) + Number(rpt.qtyPassOn)
+                        ).toLocaleString()}
+                      </div>
+                      {Number(rpt.qtyReject) > 0 && (
+                        <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-black text-red-700">
+                          Reject: {Number(rpt.qtyReject)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className="flex flex-col items-end gap-2">
+                    {rpt.status === "APPROVED" && (
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                        Disetujui
+                      </span>
+                    )}
+                    {rpt.status === "PENDING" && (
+                      <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-bold text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                        Menunggu
+                      </span>
+                    )}
+                    {rpt.status === "REJECTED" && (
+                      <div className="text-right">
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                          Ditolak
+                        </span>
                       </div>
                     )}
                   </div>
-                  {rpt.notes && (
-                    <div className="text-muted-foreground mt-1 text-xs italic">
-                      "{rpt.notes}"
-                    </div>
-                  )}
                 </div>
+
+                {rpt.notes && (
+                  <div className="text-muted-foreground text-xs italic">
+                    "{rpt.notes}"
+                  </div>
+                )}
+
+                {/* Rejection Details & Action */}
+                {rpt.status === "REJECTED" && (
+                  <div className="mt-2 rounded-xl border border-red-200 bg-red-100/50 p-3 dark:border-red-900/30 dark:bg-red-950/20">
+                    <p className="mb-2 text-xs font-bold text-red-600 dark:text-red-400">
+                      Catatan Revisi:
+                    </p>
+                    <p className="mb-3 text-sm text-red-800 dark:text-red-300">
+                      "
+                      {rpt.rejectionNote ||
+                        "Mohon perbaiki data sesuai arahan."}
+                      "
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setEditReport(rpt);
+                        setShowAddModal(true);
+                      }}
+                      className="w-full bg-red-600 font-bold text-white hover:bg-red-700"
+                    >
+                      Revisi Laporan
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
 
@@ -202,6 +262,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
         onOpenChange={setShowAddModal}
         task={task}
         onDraftChange={checkDraft}
+        editReport={editReport}
       />
     </div>
   );

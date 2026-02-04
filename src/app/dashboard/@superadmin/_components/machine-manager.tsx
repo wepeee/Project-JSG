@@ -45,14 +45,10 @@ const schema = z.object({
   remark: z.string().optional(),
 
   // Rigid specific
-  partNumber: z.string().optional(),
-  productName: z.string().optional(),
   cycleTimeSec: z.number().optional(),
   cavity: z.number().int().optional(),
   manPower: z.number().int().optional(),
   workCenter: z.string().optional(),
-  shortDesc: z.string().optional(),
-  phase: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -89,8 +85,6 @@ export default function MachineManager({
         return (
           basic ||
           // @ts-ignore
-          m.partNumber?.toLowerCase().includes(needle) ||
-          // @ts-ignore
           m.workCenter?.toLowerCase().includes(needle)
         );
       }
@@ -105,15 +99,11 @@ export default function MachineManager({
       stdOutputPerShift: 0,
       uom: "pcs" as Uom,
       remark: "",
-      
-      partNumber: "",
-      productName: "",
+
       cycleTimeSec: 0,
       cavity: 1,
       manPower: 1,
       workCenter: "",
-      shortDesc: "",
-      phase: "",
     } as FormValues,
     validators: { onSubmit: schema },
     onSubmit: async ({ value }) => {
@@ -175,14 +165,18 @@ export default function MachineManager({
                 children={(field) => (
                   <Field>
                     <FieldLabel htmlFor={field.name}>
-                      {machineType === "PAPER" ? "Nama Mesin" : "Nama Product (Product)"}
+                      {machineType === "PAPER" ? "Nama Mesin" : "Nama Item"}
                     </FieldLabel>
                     <Input
                       id={field.name}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder={machineType === "PAPER" ? "ex: GOWEI" : "ex: PRINTING PUV - COVER..."}
+                      placeholder={
+                        machineType === "PAPER"
+                          ? "ex: GOWEI"
+                          : "ex: Item/Product Name"
+                      }
                     />
                     <FieldError errors={field.state.meta.errors} />
                   </Field>
@@ -192,35 +186,7 @@ export default function MachineManager({
               {/* Rigid Specific Fields */}
               {machineType === "RIGID" && (
                 <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <form.Field
-                      name="partNumber"
-                      children={(field) => (
-                        <Field>
-                          <FieldLabel>Part No</FieldLabel>
-                          <Input
-                            value={field.state.value ?? ""}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                          />
-                        </Field>
-                      )}
-                    />
-                    <form.Field
-                      name="workCenter"
-                      children={(field) => (
-                        <Field>
-                          <FieldLabel>Work Center</FieldLabel>
-                          <Input
-                            value={field.state.value ?? ""}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder="ex: PUV / SK MANUAL"
-                          />
-                        </Field>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-4 gap-4">
                     <form.Field
                       name="cycleTimeSec"
                       children={(field) => (
@@ -233,19 +199,22 @@ export default function MachineManager({
                             onChange={(e) => {
                               const val = Number(e.target.value);
                               field.handleChange(val);
-                              
+
                               // Auto calc outputs
                               // need cavity
                               const cav = form.getFieldValue("cavity") || 1;
                               const outHr = calculateRigidOutput(val, cav);
                               form.setFieldValue("stdOutputPerHour", outHr);
-                              form.setFieldValue("stdOutputPerShift", outHr * SHIFT_HOURS);
+                              form.setFieldValue(
+                                "stdOutputPerShift",
+                                outHr * SHIFT_HOURS,
+                              );
                             }}
                           />
                         </Field>
                       )}
                     />
-                     <form.Field
+                    <form.Field
                       name="cavity"
                       children={(field) => (
                         <Field>
@@ -256,11 +225,15 @@ export default function MachineManager({
                             onChange={(e) => {
                               const val = Number(e.target.value);
                               field.handleChange(val);
-                              
-                              const ct = form.getFieldValue("cycleTimeSec") || 0;
+
+                              const ct =
+                                form.getFieldValue("cycleTimeSec") || 0;
                               const outHr = calculateRigidOutput(ct, val);
                               form.setFieldValue("stdOutputPerHour", outHr);
-                              form.setFieldValue("stdOutputPerShift", outHr * SHIFT_HOURS);
+                              form.setFieldValue(
+                                "stdOutputPerShift",
+                                outHr * SHIFT_HOURS,
+                              );
                             }}
                           />
                         </Field>
@@ -274,34 +247,22 @@ export default function MachineManager({
                           <Input
                             type="number"
                             value={field.state.value ?? 1}
-                            onChange={(e) => field.handleChange(Number(e.target.value))}
+                            onChange={(e) =>
+                              field.handleChange(Number(e.target.value))
+                            }
                           />
                         </Field>
                       )}
                     />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
                     <form.Field
-                      name="shortDesc"
+                      name="workCenter"
                       children={(field) => (
                         <Field>
-                          <FieldLabel>Short Description</FieldLabel>
+                          <FieldLabel>Work Center</FieldLabel>
                           <Input
                             value={field.state.value ?? ""}
                             onChange={(e) => field.handleChange(e.target.value)}
-                          />
-                        </Field>
-                      )}
-                    />
-                     <form.Field
-                      name="phase"
-                      children={(field) => (
-                        <Field>
-                          <FieldLabel>Phase</FieldLabel>
-                          <Input
-                            value={field.state.value ?? ""}
-                            onChange={(e) => field.handleChange(e.target.value)}
+                            placeholder="ex: PUV / SK MANUAL"
                           />
                         </Field>
                       )}
@@ -328,7 +289,10 @@ export default function MachineManager({
                           const perHour = Number(e.target.value);
                           field.handleChange(perHour);
                           if (machineType === "PAPER") {
-                             form.setFieldValue("stdOutputPerShift", Math.round(perHour * PAPER_SHIFT_HOURS));
+                            form.setFieldValue(
+                              "stdOutputPerShift",
+                              Math.round(perHour * PAPER_SHIFT_HOURS),
+                            );
                           }
                         }}
                       />
@@ -352,14 +316,16 @@ export default function MachineManager({
                 />
               </div>
 
-               <form.Field
+              <form.Field
                 name="uom"
                 children={(field) => (
                   <Field>
                     <FieldLabel>UoM</FieldLabel>
                     <select
                       value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value as Uom)}
+                      onChange={(e) =>
+                        field.handleChange(e.target.value as Uom)
+                      }
                       className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
                     >
                       {UOM_OPTIONS.map((opt) => (
@@ -434,12 +400,13 @@ export default function MachineManager({
           ) : machines.error ? (
             <p className="text-destructive text-sm">{machines.error.message}</p>
           ) : (
-            <div className="rounded-md border overflow-x-auto">
+            <div className="overflow-x-auto rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                     {machineType === "RIGID" && <TableHead>Part No</TableHead>}
-                    <TableHead>{machineType === "RIGID" ? "Product" : "Nama Mesin"}</TableHead>
+                    <TableHead>
+                      {machineType === "RIGID" ? "Nama Item" : "Nama Mesin"}
+                    </TableHead>
                     {machineType === "RIGID" && (
                       <>
                         <TableHead className="text-right">CT(s)</TableHead>
@@ -450,21 +417,20 @@ export default function MachineManager({
                     <TableHead className="text-right">Out/Hr</TableHead>
                     <TableHead className="text-right">Out/Shift</TableHead>
                     {machineType === "RIGID" && (
-                         <>
-                         <TableHead className="text-right">Out/Day</TableHead>
-                         <TableHead>Work Ctr</TableHead>
-                         <TableHead>Phase</TableHead>
-                         </>
+                      <>
+                        <TableHead className="text-right">Out/Day</TableHead>
+                        <TableHead>Work Ctr</TableHead>
+                      </>
                     )}
                     <TableHead>UoM</TableHead>
-                     {machineType === "PAPER" && <TableHead>Remark</TableHead>}
+                    {machineType === "PAPER" && <TableHead>Remark</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={machineType === "RIGID" ? 12 : 5}
+                        colSpan={machineType === "RIGID" ? 8 : 5}
                         className="text-center text-sm opacity-70"
                       >
                         Tidak ada data
@@ -473,22 +439,32 @@ export default function MachineManager({
                   ) : (
                     filtered.map((m) => (
                       <TableRow key={m.id}>
-                        {machineType === "RIGID" && (
-                           // @ts-ignore
-                          <TableCell className="font-mono text-xs">{m.partNumber}</TableCell>
-                        )}
-                        <TableCell className={machineType === "RIGID" ? "max-w-[200px] truncate" : ""}>
+                        <TableCell
+                          className={
+                            machineType === "RIGID"
+                              ? "max-w-[200px] truncate"
+                              : ""
+                          }
+                        >
                           {m.name}
                         </TableCell>
-                        
-                         {machineType === "RIGID" && (
+
+                        {machineType === "RIGID" && (
                           <>
-                           {/* @ts-ignore */}
-                            <TableCell className="text-right">{m.cycleTimeSec ? Number(m.cycleTimeSec).toFixed(1) : "-"}</TableCell>
-                             {/* @ts-ignore */}
-                            <TableCell className="text-right">{m.cavity}</TableCell>
-                             {/* @ts-ignore */}
-                            <TableCell className="text-right">{m.manPower}</TableCell>
+                            {/* @ts-ignore */}
+                            <TableCell className="text-right">
+                              {m.cycleTimeSec
+                                ? Number(m.cycleTimeSec).toFixed(1)
+                                : "-"}
+                            </TableCell>
+                            {/* @ts-ignore */}
+                            <TableCell className="text-right">
+                              {m.cavity}
+                            </TableCell>
+                            {/* @ts-ignore */}
+                            <TableCell className="text-right">
+                              {m.manPower}
+                            </TableCell>
                           </>
                         )}
 
@@ -498,15 +474,17 @@ export default function MachineManager({
                         <TableCell className="text-right">
                           {m.stdOutputPerShift.toLocaleString()}
                         </TableCell>
-                        
-                         {machineType === "RIGID" && (
+
+                        {machineType === "RIGID" && (
                           <>
-                             {/* @ts-ignore */}
-                            <TableCell className="text-right">{(m.stdOutputPerShift * 3).toLocaleString()}</TableCell>
-                             {/* @ts-ignore */}
-                            <TableCell className="text-xs">{m.workCenter}</TableCell>
-                             {/* @ts-ignore */}
-                            <TableCell className="text-xs">{m.phase}</TableCell>
+                            {/* @ts-ignore */}
+                            <TableCell className="text-right">
+                              {(m.stdOutputPerShift * 3).toLocaleString()}
+                            </TableCell>
+                            {/* @ts-ignore */}
+                            <TableCell className="text-xs">
+                              {m.workCenter ?? "-"}
+                            </TableCell>
                           </>
                         )}
 
@@ -525,10 +503,11 @@ export default function MachineManager({
           )}
         </CardContent>
       </Card>
-      
+
       {machineType === "RIGID" && (
-        <p className="text-xs text-muted-foreground px-2">
-            Catatan: Output/Day dihitung otomatis sebagai Output/Shift × 3. Shift = {SHIFT_HOURS} Jam.
+        <p className="text-muted-foreground px-2 text-xs">
+          Catatan: Output/Day dihitung otomatis sebagai Output/Shift × 3. Shift
+          = {SHIFT_HOURS} Jam.
         </p>
       )}
     </div>

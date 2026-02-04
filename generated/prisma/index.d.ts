@@ -111,6 +111,15 @@ export const ProType: {
 export type ProType = (typeof ProType)[keyof typeof ProType]
 
 
+export const ReportStatus: {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+};
+
+export type ReportStatus = (typeof ReportStatus)[keyof typeof ReportStatus]
+
+
 export const LphType: {
   PAPER: 'PAPER',
   PRINTING: 'PRINTING',
@@ -142,6 +151,10 @@ export const ProStatus: typeof $Enums.ProStatus
 export type ProType = $Enums.ProType
 
 export const ProType: typeof $Enums.ProType
+
+export type ReportStatus = $Enums.ReportStatus
+
+export const ReportStatus: typeof $Enums.ReportStatus
 
 export type LphType = $Enums.LphType
 
@@ -1606,10 +1619,12 @@ export namespace Prisma {
 
   export type UserCountOutputType = {
     productionReports: number
+    checkedProductionReports: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     productionReports?: boolean | UserCountOutputTypeCountProductionReportsArgs
+    checkedProductionReports?: boolean | UserCountOutputTypeCountCheckedProductionReportsArgs
   }
 
   // Custom InputTypes
@@ -1627,6 +1642,13 @@ export namespace Prisma {
    * UserCountOutputType without action
    */
   export type UserCountOutputTypeCountProductionReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProductionReportWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCheckedProductionReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProductionReportWhereInput
   }
 
@@ -1972,6 +1994,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     productionReports?: boolean | User$productionReportsArgs<ExtArgs>
+    checkedProductionReports?: boolean | User$checkedProductionReportsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1989,6 +2012,7 @@ export namespace Prisma {
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "passwordHash" | "role" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     productionReports?: boolean | User$productionReportsArgs<ExtArgs>
+    checkedProductionReports?: boolean | User$checkedProductionReportsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -1996,6 +2020,7 @@ export namespace Prisma {
     name: "User"
     objects: {
       productionReports: Prisma.$ProductionReportPayload<ExtArgs>[]
+      checkedProductionReports: Prisma.$ProductionReportPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2345,6 +2370,7 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     productionReports<T extends User$productionReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$productionReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    checkedProductionReports<T extends User$checkedProductionReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$checkedProductionReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2747,6 +2773,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.checkedProductionReports
+   */
+  export type User$checkedProductionReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    where?: ProductionReportWhereInput
+    orderBy?: ProductionReportOrderByWithRelationInput | ProductionReportOrderByWithRelationInput[]
+    cursor?: ProductionReportWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProductionReportScalarFieldEnum | ProductionReportScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2807,15 +2857,12 @@ export namespace Prisma {
     uom: $Enums.Uom | null
     type: $Enums.MachineType | null
     remark: string | null
-    partNumber: string | null
     cycleTimeSec: Decimal | null
     cycleTimeMin: Decimal | null
     cavity: number | null
     manPower: number | null
     stdOutputPerDay: number | null
     workCenter: string | null
-    shortDesc: string | null
-    phase: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2828,15 +2875,12 @@ export namespace Prisma {
     uom: $Enums.Uom | null
     type: $Enums.MachineType | null
     remark: string | null
-    partNumber: string | null
     cycleTimeSec: Decimal | null
     cycleTimeMin: Decimal | null
     cavity: number | null
     manPower: number | null
     stdOutputPerDay: number | null
     workCenter: string | null
-    shortDesc: string | null
-    phase: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2849,15 +2893,12 @@ export namespace Prisma {
     uom: number
     type: number
     remark: number
-    partNumber: number
     cycleTimeSec: number
     cycleTimeMin: number
     cavity: number
     manPower: number
     stdOutputPerDay: number
     workCenter: number
-    shortDesc: number
-    phase: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -2894,15 +2935,12 @@ export namespace Prisma {
     uom?: true
     type?: true
     remark?: true
-    partNumber?: true
     cycleTimeSec?: true
     cycleTimeMin?: true
     cavity?: true
     manPower?: true
     stdOutputPerDay?: true
     workCenter?: true
-    shortDesc?: true
-    phase?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2915,15 +2953,12 @@ export namespace Prisma {
     uom?: true
     type?: true
     remark?: true
-    partNumber?: true
     cycleTimeSec?: true
     cycleTimeMin?: true
     cavity?: true
     manPower?: true
     stdOutputPerDay?: true
     workCenter?: true
-    shortDesc?: true
-    phase?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2936,15 +2971,12 @@ export namespace Prisma {
     uom?: true
     type?: true
     remark?: true
-    partNumber?: true
     cycleTimeSec?: true
     cycleTimeMin?: true
     cavity?: true
     manPower?: true
     stdOutputPerDay?: true
     workCenter?: true
-    shortDesc?: true
-    phase?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -3044,15 +3076,12 @@ export namespace Prisma {
     uom: $Enums.Uom
     type: $Enums.MachineType
     remark: string | null
-    partNumber: string | null
     cycleTimeSec: Decimal | null
     cycleTimeMin: Decimal | null
     cavity: number | null
     manPower: number | null
     stdOutputPerDay: number | null
     workCenter: string | null
-    shortDesc: string | null
-    phase: string | null
     createdAt: Date
     updatedAt: Date
     _count: MachineCountAggregateOutputType | null
@@ -3084,15 +3113,12 @@ export namespace Prisma {
     uom?: boolean
     type?: boolean
     remark?: boolean
-    partNumber?: boolean
     cycleTimeSec?: boolean
     cycleTimeMin?: boolean
     cavity?: boolean
     manPower?: boolean
     stdOutputPerDay?: boolean
     workCenter?: boolean
-    shortDesc?: boolean
-    phase?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     proSteps?: boolean | Machine$proStepsArgs<ExtArgs>
@@ -3109,20 +3135,17 @@ export namespace Prisma {
     uom?: boolean
     type?: boolean
     remark?: boolean
-    partNumber?: boolean
     cycleTimeSec?: boolean
     cycleTimeMin?: boolean
     cavity?: boolean
     manPower?: boolean
     stdOutputPerDay?: boolean
     workCenter?: boolean
-    shortDesc?: boolean
-    phase?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type MachineOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "stdOutputPerHour" | "stdOutputPerShift" | "uom" | "type" | "remark" | "partNumber" | "cycleTimeSec" | "cycleTimeMin" | "cavity" | "manPower" | "stdOutputPerDay" | "workCenter" | "shortDesc" | "phase" | "createdAt" | "updatedAt", ExtArgs["result"]["machine"]>
+  export type MachineOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "stdOutputPerHour" | "stdOutputPerShift" | "uom" | "type" | "remark" | "cycleTimeSec" | "cycleTimeMin" | "cavity" | "manPower" | "stdOutputPerDay" | "workCenter" | "createdAt" | "updatedAt", ExtArgs["result"]["machine"]>
   export type MachineInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     proSteps?: boolean | Machine$proStepsArgs<ExtArgs>
     _count?: boolean | MachineCountOutputTypeDefaultArgs<ExtArgs>
@@ -3141,15 +3164,12 @@ export namespace Prisma {
       uom: $Enums.Uom
       type: $Enums.MachineType
       remark: string | null
-      partNumber: string | null
       cycleTimeSec: Prisma.Decimal | null
       cycleTimeMin: Prisma.Decimal | null
       cavity: number | null
       manPower: number | null
       stdOutputPerDay: number | null
       workCenter: string | null
-      shortDesc: string | null
-      phase: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["machine"]>
@@ -3529,15 +3549,12 @@ export namespace Prisma {
     readonly uom: FieldRef<"Machine", 'Uom'>
     readonly type: FieldRef<"Machine", 'MachineType'>
     readonly remark: FieldRef<"Machine", 'String'>
-    readonly partNumber: FieldRef<"Machine", 'String'>
     readonly cycleTimeSec: FieldRef<"Machine", 'Decimal'>
     readonly cycleTimeMin: FieldRef<"Machine", 'Decimal'>
     readonly cavity: FieldRef<"Machine", 'Int'>
     readonly manPower: FieldRef<"Machine", 'Int'>
     readonly stdOutputPerDay: FieldRef<"Machine", 'Int'>
     readonly workCenter: FieldRef<"Machine", 'String'>
-    readonly shortDesc: FieldRef<"Machine", 'String'>
-    readonly phase: FieldRef<"Machine", 'String'>
     readonly createdAt: FieldRef<"Machine", 'DateTime'>
     readonly updatedAt: FieldRef<"Machine", 'DateTime'>
   }
@@ -10007,6 +10024,10 @@ export namespace Prisma {
     createdById: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    status: $Enums.ReportStatus | null
+    rejectionNote: string | null
+    checkedById: string | null
+    checkedAt: Date | null
   }
 
   export type ProductionReportMaxAggregateOutputType = {
@@ -10038,6 +10059,10 @@ export namespace Prisma {
     createdById: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    status: $Enums.ReportStatus | null
+    rejectionNote: string | null
+    checkedById: string | null
+    checkedAt: Date | null
   }
 
   export type ProductionReportCountAggregateOutputType = {
@@ -10072,6 +10097,10 @@ export namespace Prisma {
     createdById: number
     createdAt: number
     updatedAt: number
+    status: number
+    rejectionNote: number
+    checkedById: number
+    checkedAt: number
     _all: number
   }
 
@@ -10145,6 +10174,10 @@ export namespace Prisma {
     createdById?: true
     createdAt?: true
     updatedAt?: true
+    status?: true
+    rejectionNote?: true
+    checkedById?: true
+    checkedAt?: true
   }
 
   export type ProductionReportMaxAggregateInputType = {
@@ -10176,6 +10209,10 @@ export namespace Prisma {
     createdById?: true
     createdAt?: true
     updatedAt?: true
+    status?: true
+    rejectionNote?: true
+    checkedById?: true
+    checkedAt?: true
   }
 
   export type ProductionReportCountAggregateInputType = {
@@ -10210,6 +10247,10 @@ export namespace Prisma {
     createdById?: true
     createdAt?: true
     updatedAt?: true
+    status?: true
+    rejectionNote?: true
+    checkedById?: true
+    checkedAt?: true
     _all?: true
   }
 
@@ -10331,6 +10372,10 @@ export namespace Prisma {
     createdById: string | null
     createdAt: Date
     updatedAt: Date
+    status: $Enums.ReportStatus
+    rejectionNote: string | null
+    checkedById: string | null
+    checkedAt: Date | null
     _count: ProductionReportCountAggregateOutputType | null
     _avg: ProductionReportAvgAggregateOutputType | null
     _sum: ProductionReportSumAggregateOutputType | null
@@ -10384,8 +10429,13 @@ export namespace Prisma {
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    status?: boolean
+    rejectionNote?: boolean
+    checkedById?: boolean
+    checkedAt?: boolean
     step?: boolean | ProStepDefaultArgs<ExtArgs>
     createdBy?: boolean | ProductionReport$createdByArgs<ExtArgs>
+    checkedBy?: boolean | ProductionReport$checkedByArgs<ExtArgs>
   }, ExtArgs["result"]["productionReport"]>
 
 
@@ -10422,12 +10472,17 @@ export namespace Prisma {
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    status?: boolean
+    rejectionNote?: boolean
+    checkedById?: boolean
+    checkedAt?: boolean
   }
 
-  export type ProductionReportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proStepId" | "reportDate" | "shift" | "operatorName" | "reportType" | "startTime" | "endTime" | "batchNo" | "manPowerStd" | "manPowerAct" | "cycleTimeStd" | "cycleTimeAct" | "cavityStd" | "cavityAct" | "inputMaterialQty" | "materialRunnerQty" | "materialPurgeQty" | "qtyPassOn" | "qtyHold" | "qtyWip" | "qtyGood" | "qtyReject" | "rejectBreakdown" | "downtimeBreakdown" | "totalDowntime" | "notes" | "metaData" | "createdById" | "createdAt" | "updatedAt", ExtArgs["result"]["productionReport"]>
+  export type ProductionReportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proStepId" | "reportDate" | "shift" | "operatorName" | "reportType" | "startTime" | "endTime" | "batchNo" | "manPowerStd" | "manPowerAct" | "cycleTimeStd" | "cycleTimeAct" | "cavityStd" | "cavityAct" | "inputMaterialQty" | "materialRunnerQty" | "materialPurgeQty" | "qtyPassOn" | "qtyHold" | "qtyWip" | "qtyGood" | "qtyReject" | "rejectBreakdown" | "downtimeBreakdown" | "totalDowntime" | "notes" | "metaData" | "createdById" | "createdAt" | "updatedAt" | "status" | "rejectionNote" | "checkedById" | "checkedAt", ExtArgs["result"]["productionReport"]>
   export type ProductionReportInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     step?: boolean | ProStepDefaultArgs<ExtArgs>
     createdBy?: boolean | ProductionReport$createdByArgs<ExtArgs>
+    checkedBy?: boolean | ProductionReport$checkedByArgs<ExtArgs>
   }
 
   export type $ProductionReportPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -10435,6 +10490,7 @@ export namespace Prisma {
     objects: {
       step: Prisma.$ProStepPayload<ExtArgs>
       createdBy: Prisma.$UserPayload<ExtArgs> | null
+      checkedBy: Prisma.$UserPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -10468,6 +10524,10 @@ export namespace Prisma {
       createdById: string | null
       createdAt: Date
       updatedAt: Date
+      status: $Enums.ReportStatus
+      rejectionNote: string | null
+      checkedById: string | null
+      checkedAt: Date | null
     }, ExtArgs["result"]["productionReport"]>
     composites: {}
   }
@@ -10810,6 +10870,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     step<T extends ProStepDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProStepDefaultArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     createdBy<T extends ProductionReport$createdByArgs<ExtArgs> = {}>(args?: Subset<T, ProductionReport$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    checkedBy<T extends ProductionReport$checkedByArgs<ExtArgs> = {}>(args?: Subset<T, ProductionReport$checkedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10870,6 +10931,10 @@ export namespace Prisma {
     readonly createdById: FieldRef<"ProductionReport", 'String'>
     readonly createdAt: FieldRef<"ProductionReport", 'DateTime'>
     readonly updatedAt: FieldRef<"ProductionReport", 'DateTime'>
+    readonly status: FieldRef<"ProductionReport", 'ReportStatus'>
+    readonly rejectionNote: FieldRef<"ProductionReport", 'String'>
+    readonly checkedById: FieldRef<"ProductionReport", 'String'>
+    readonly checkedAt: FieldRef<"ProductionReport", 'DateTime'>
   }
     
 
@@ -11232,6 +11297,25 @@ export namespace Prisma {
   }
 
   /**
+   * ProductionReport.checkedBy
+   */
+  export type ProductionReport$checkedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
    * ProductionReport without action
    */
   export type ProductionReportDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11284,15 +11368,12 @@ export namespace Prisma {
     uom: 'uom',
     type: 'type',
     remark: 'remark',
-    partNumber: 'partNumber',
     cycleTimeSec: 'cycleTimeSec',
     cycleTimeMin: 'cycleTimeMin',
     cavity: 'cavity',
     manPower: 'manPower',
     stdOutputPerDay: 'stdOutputPerDay',
     workCenter: 'workCenter',
-    shortDesc: 'shortDesc',
-    phase: 'phase',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -11401,7 +11482,11 @@ export namespace Prisma {
     metaData: 'metaData',
     createdById: 'createdById',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    status: 'status',
+    rejectionNote: 'rejectionNote',
+    checkedById: 'checkedById',
+    checkedAt: 'checkedAt'
   };
 
   export type ProductionReportScalarFieldEnum = (typeof ProductionReportScalarFieldEnum)[keyof typeof ProductionReportScalarFieldEnum]
@@ -11443,10 +11528,7 @@ export namespace Prisma {
   export const MachineOrderByRelevanceFieldEnum: {
     name: 'name',
     remark: 'remark',
-    partNumber: 'partNumber',
-    workCenter: 'workCenter',
-    shortDesc: 'shortDesc',
-    phase: 'phase'
+    workCenter: 'workCenter'
   };
 
   export type MachineOrderByRelevanceFieldEnum = (typeof MachineOrderByRelevanceFieldEnum)[keyof typeof MachineOrderByRelevanceFieldEnum]
@@ -11512,7 +11594,9 @@ export namespace Prisma {
     operatorName: 'operatorName',
     batchNo: 'batchNo',
     notes: 'notes',
-    createdById: 'createdById'
+    createdById: 'createdById',
+    rejectionNote: 'rejectionNote',
+    checkedById: 'checkedById'
   };
 
   export type ProductionReportOrderByRelevanceFieldEnum = (typeof ProductionReportOrderByRelevanceFieldEnum)[keyof typeof ProductionReportOrderByRelevanceFieldEnum]
@@ -11615,6 +11699,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'ReportStatus'
+   */
+  export type EnumReportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportStatus'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -11635,6 +11726,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     productionReports?: ProductionReportListRelationFilter
+    checkedProductionReports?: ProductionReportListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -11645,6 +11737,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     productionReports?: ProductionReportOrderByRelationAggregateInput
+    checkedProductionReports?: ProductionReportOrderByRelationAggregateInput
     _relevance?: UserOrderByRelevanceInput
   }
 
@@ -11659,6 +11752,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     productionReports?: ProductionReportListRelationFilter
+    checkedProductionReports?: ProductionReportListRelationFilter
   }, "id" | "username">
 
   export type UserOrderByWithAggregationInput = {
@@ -11696,15 +11790,12 @@ export namespace Prisma {
     uom?: EnumUomFilter<"Machine"> | $Enums.Uom
     type?: EnumMachineTypeFilter<"Machine"> | $Enums.MachineType
     remark?: StringNullableFilter<"Machine"> | string | null
-    partNumber?: StringNullableFilter<"Machine"> | string | null
     cycleTimeSec?: DecimalNullableFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: DecimalNullableFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
     cavity?: IntNullableFilter<"Machine"> | number | null
     manPower?: IntNullableFilter<"Machine"> | number | null
     stdOutputPerDay?: IntNullableFilter<"Machine"> | number | null
     workCenter?: StringNullableFilter<"Machine"> | string | null
-    shortDesc?: StringNullableFilter<"Machine"> | string | null
-    phase?: StringNullableFilter<"Machine"> | string | null
     createdAt?: DateTimeFilter<"Machine"> | Date | string
     updatedAt?: DateTimeFilter<"Machine"> | Date | string
     proSteps?: ProStepListRelationFilter
@@ -11718,15 +11809,12 @@ export namespace Prisma {
     uom?: SortOrder
     type?: SortOrder
     remark?: SortOrderInput | SortOrder
-    partNumber?: SortOrderInput | SortOrder
     cycleTimeSec?: SortOrderInput | SortOrder
     cycleTimeMin?: SortOrderInput | SortOrder
     cavity?: SortOrderInput | SortOrder
     manPower?: SortOrderInput | SortOrder
     stdOutputPerDay?: SortOrderInput | SortOrder
     workCenter?: SortOrderInput | SortOrder
-    shortDesc?: SortOrderInput | SortOrder
-    phase?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     proSteps?: ProStepOrderByRelationAggregateInput
@@ -11744,15 +11832,12 @@ export namespace Prisma {
     uom?: EnumUomFilter<"Machine"> | $Enums.Uom
     type?: EnumMachineTypeFilter<"Machine"> | $Enums.MachineType
     remark?: StringNullableFilter<"Machine"> | string | null
-    partNumber?: StringNullableFilter<"Machine"> | string | null
     cycleTimeSec?: DecimalNullableFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: DecimalNullableFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
     cavity?: IntNullableFilter<"Machine"> | number | null
     manPower?: IntNullableFilter<"Machine"> | number | null
     stdOutputPerDay?: IntNullableFilter<"Machine"> | number | null
     workCenter?: StringNullableFilter<"Machine"> | string | null
-    shortDesc?: StringNullableFilter<"Machine"> | string | null
-    phase?: StringNullableFilter<"Machine"> | string | null
     createdAt?: DateTimeFilter<"Machine"> | Date | string
     updatedAt?: DateTimeFilter<"Machine"> | Date | string
     proSteps?: ProStepListRelationFilter
@@ -11766,15 +11851,12 @@ export namespace Prisma {
     uom?: SortOrder
     type?: SortOrder
     remark?: SortOrderInput | SortOrder
-    partNumber?: SortOrderInput | SortOrder
     cycleTimeSec?: SortOrderInput | SortOrder
     cycleTimeMin?: SortOrderInput | SortOrder
     cavity?: SortOrderInput | SortOrder
     manPower?: SortOrderInput | SortOrder
     stdOutputPerDay?: SortOrderInput | SortOrder
     workCenter?: SortOrderInput | SortOrder
-    shortDesc?: SortOrderInput | SortOrder
-    phase?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: MachineCountOrderByAggregateInput
@@ -11795,15 +11877,12 @@ export namespace Prisma {
     uom?: EnumUomWithAggregatesFilter<"Machine"> | $Enums.Uom
     type?: EnumMachineTypeWithAggregatesFilter<"Machine"> | $Enums.MachineType
     remark?: StringNullableWithAggregatesFilter<"Machine"> | string | null
-    partNumber?: StringNullableWithAggregatesFilter<"Machine"> | string | null
     cycleTimeSec?: DecimalNullableWithAggregatesFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: DecimalNullableWithAggregatesFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
     cavity?: IntNullableWithAggregatesFilter<"Machine"> | number | null
     manPower?: IntNullableWithAggregatesFilter<"Machine"> | number | null
     stdOutputPerDay?: IntNullableWithAggregatesFilter<"Machine"> | number | null
     workCenter?: StringNullableWithAggregatesFilter<"Machine"> | string | null
-    shortDesc?: StringNullableWithAggregatesFilter<"Machine"> | string | null
-    phase?: StringNullableWithAggregatesFilter<"Machine"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Machine"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Machine"> | Date | string
   }
@@ -12224,8 +12303,13 @@ export namespace Prisma {
     createdById?: StringNullableFilter<"ProductionReport"> | string | null
     createdAt?: DateTimeFilter<"ProductionReport"> | Date | string
     updatedAt?: DateTimeFilter<"ProductionReport"> | Date | string
+    status?: EnumReportStatusFilter<"ProductionReport"> | $Enums.ReportStatus
+    rejectionNote?: StringNullableFilter<"ProductionReport"> | string | null
+    checkedById?: StringNullableFilter<"ProductionReport"> | string | null
+    checkedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
     step?: XOR<ProStepScalarRelationFilter, ProStepWhereInput>
     createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    checkedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }
 
   export type ProductionReportOrderByWithRelationInput = {
@@ -12260,8 +12344,13 @@ export namespace Prisma {
     createdById?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    status?: SortOrder
+    rejectionNote?: SortOrderInput | SortOrder
+    checkedById?: SortOrderInput | SortOrder
+    checkedAt?: SortOrderInput | SortOrder
     step?: ProStepOrderByWithRelationInput
     createdBy?: UserOrderByWithRelationInput
+    checkedBy?: UserOrderByWithRelationInput
     _relevance?: ProductionReportOrderByRelevanceInput
   }
 
@@ -12300,8 +12389,13 @@ export namespace Prisma {
     createdById?: StringNullableFilter<"ProductionReport"> | string | null
     createdAt?: DateTimeFilter<"ProductionReport"> | Date | string
     updatedAt?: DateTimeFilter<"ProductionReport"> | Date | string
+    status?: EnumReportStatusFilter<"ProductionReport"> | $Enums.ReportStatus
+    rejectionNote?: StringNullableFilter<"ProductionReport"> | string | null
+    checkedById?: StringNullableFilter<"ProductionReport"> | string | null
+    checkedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
     step?: XOR<ProStepScalarRelationFilter, ProStepWhereInput>
     createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    checkedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }, "id">
 
   export type ProductionReportOrderByWithAggregationInput = {
@@ -12336,6 +12430,10 @@ export namespace Prisma {
     createdById?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    status?: SortOrder
+    rejectionNote?: SortOrderInput | SortOrder
+    checkedById?: SortOrderInput | SortOrder
+    checkedAt?: SortOrderInput | SortOrder
     _count?: ProductionReportCountOrderByAggregateInput
     _avg?: ProductionReportAvgOrderByAggregateInput
     _max?: ProductionReportMaxOrderByAggregateInput
@@ -12378,6 +12476,10 @@ export namespace Prisma {
     createdById?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"ProductionReport"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ProductionReport"> | Date | string
+    status?: EnumReportStatusWithAggregatesFilter<"ProductionReport"> | $Enums.ReportStatus
+    rejectionNote?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
+    checkedById?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
+    checkedAt?: DateTimeNullableWithAggregatesFilter<"ProductionReport"> | Date | string | null
   }
 
   export type UserCreateInput = {
@@ -12388,6 +12490,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
+    checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -12398,6 +12501,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
+    checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
   }
 
   export type UserUpdateInput = {
@@ -12408,6 +12512,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
+    checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -12418,6 +12523,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -12454,15 +12560,12 @@ export namespace Prisma {
     uom: $Enums.Uom
     type?: $Enums.MachineType
     remark?: string | null
-    partNumber?: string | null
     cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
     cavity?: number | null
     manPower?: number | null
     stdOutputPerDay?: number | null
     workCenter?: string | null
-    shortDesc?: string | null
-    phase?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     proSteps?: ProStepCreateNestedManyWithoutMachineInput
@@ -12476,15 +12579,12 @@ export namespace Prisma {
     uom: $Enums.Uom
     type?: $Enums.MachineType
     remark?: string | null
-    partNumber?: string | null
     cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
     cavity?: number | null
     manPower?: number | null
     stdOutputPerDay?: number | null
     workCenter?: string | null
-    shortDesc?: string | null
-    phase?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     proSteps?: ProStepUncheckedCreateNestedManyWithoutMachineInput
@@ -12497,15 +12597,12 @@ export namespace Prisma {
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
     type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cavity?: NullableIntFieldUpdateOperationsInput | number | null
     manPower?: NullableIntFieldUpdateOperationsInput | number | null
     stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
-    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
-    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proSteps?: ProStepUpdateManyWithoutMachineNestedInput
@@ -12519,15 +12616,12 @@ export namespace Prisma {
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
     type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cavity?: NullableIntFieldUpdateOperationsInput | number | null
     manPower?: NullableIntFieldUpdateOperationsInput | number | null
     stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
-    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
-    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proSteps?: ProStepUncheckedUpdateManyWithoutMachineNestedInput
@@ -12541,15 +12635,12 @@ export namespace Prisma {
     uom: $Enums.Uom
     type?: $Enums.MachineType
     remark?: string | null
-    partNumber?: string | null
     cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
     cavity?: number | null
     manPower?: number | null
     stdOutputPerDay?: number | null
     workCenter?: string | null
-    shortDesc?: string | null
-    phase?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12561,15 +12652,12 @@ export namespace Prisma {
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
     type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cavity?: NullableIntFieldUpdateOperationsInput | number | null
     manPower?: NullableIntFieldUpdateOperationsInput | number | null
     stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
-    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
-    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12582,15 +12670,12 @@ export namespace Prisma {
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
     type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cavity?: NullableIntFieldUpdateOperationsInput | number | null
     manPower?: NullableIntFieldUpdateOperationsInput | number | null
     stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
-    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
-    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12989,8 +13074,12 @@ export namespace Prisma {
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedAt?: Date | string | null
     step: ProStepCreateNestedOneWithoutProductionReportsInput
     createdBy?: UserCreateNestedOneWithoutProductionReportsInput
+    checkedBy?: UserCreateNestedOneWithoutCheckedProductionReportsInput
   }
 
   export type ProductionReportUncheckedCreateInput = {
@@ -13025,6 +13114,10 @@ export namespace Prisma {
     createdById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedById?: string | null
+    checkedAt?: Date | string | null
   }
 
   export type ProductionReportUpdateInput = {
@@ -13057,8 +13150,12 @@ export namespace Prisma {
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     step?: ProStepUpdateOneRequiredWithoutProductionReportsNestedInput
     createdBy?: UserUpdateOneWithoutProductionReportsNestedInput
+    checkedBy?: UserUpdateOneWithoutCheckedProductionReportsNestedInput
   }
 
   export type ProductionReportUncheckedUpdateInput = {
@@ -13093,6 +13190,10 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedById?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ProductionReportCreateManyInput = {
@@ -13127,6 +13228,10 @@ export namespace Prisma {
     createdById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedById?: string | null
+    checkedAt?: Date | string | null
   }
 
   export type ProductionReportUpdateManyMutationInput = {
@@ -13159,6 +13264,9 @@ export namespace Prisma {
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ProductionReportUncheckedUpdateManyInput = {
@@ -13193,6 +13301,10 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedById?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -13404,15 +13516,12 @@ export namespace Prisma {
     uom?: SortOrder
     type?: SortOrder
     remark?: SortOrder
-    partNumber?: SortOrder
     cycleTimeSec?: SortOrder
     cycleTimeMin?: SortOrder
     cavity?: SortOrder
     manPower?: SortOrder
     stdOutputPerDay?: SortOrder
     workCenter?: SortOrder
-    shortDesc?: SortOrder
-    phase?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13436,15 +13545,12 @@ export namespace Prisma {
     uom?: SortOrder
     type?: SortOrder
     remark?: SortOrder
-    partNumber?: SortOrder
     cycleTimeSec?: SortOrder
     cycleTimeMin?: SortOrder
     cavity?: SortOrder
     manPower?: SortOrder
     stdOutputPerDay?: SortOrder
     workCenter?: SortOrder
-    shortDesc?: SortOrder
-    phase?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13457,15 +13563,12 @@ export namespace Prisma {
     uom?: SortOrder
     type?: SortOrder
     remark?: SortOrder
-    partNumber?: SortOrder
     cycleTimeSec?: SortOrder
     cycleTimeMin?: SortOrder
     cavity?: SortOrder
     manPower?: SortOrder
     stdOutputPerDay?: SortOrder
     workCenter?: SortOrder
-    shortDesc?: SortOrder
-    phase?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -14005,6 +14108,13 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
+  export type EnumReportStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportStatus | EnumReportStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportStatus[]
+    notIn?: $Enums.ReportStatus[]
+    not?: NestedEnumReportStatusFilter<$PrismaModel> | $Enums.ReportStatus
+  }
+
   export type UserNullableScalarRelationFilter = {
     is?: UserWhereInput | null
     isNot?: UserWhereInput | null
@@ -14048,6 +14158,10 @@ export namespace Prisma {
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    status?: SortOrder
+    rejectionNote?: SortOrder
+    checkedById?: SortOrder
+    checkedAt?: SortOrder
   }
 
   export type ProductionReportAvgOrderByAggregateInput = {
@@ -14099,6 +14213,10 @@ export namespace Prisma {
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    status?: SortOrder
+    rejectionNote?: SortOrder
+    checkedById?: SortOrder
+    checkedAt?: SortOrder
   }
 
   export type ProductionReportMinOrderByAggregateInput = {
@@ -14130,6 +14248,10 @@ export namespace Prisma {
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    status?: SortOrder
+    rejectionNote?: SortOrder
+    checkedById?: SortOrder
+    checkedAt?: SortOrder
   }
 
   export type ProductionReportSumOrderByAggregateInput = {
@@ -14188,6 +14310,16 @@ export namespace Prisma {
     _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
+  export type EnumReportStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportStatus | EnumReportStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportStatus[]
+    notIn?: $Enums.ReportStatus[]
+    not?: NestedEnumReportStatusWithAggregatesFilter<$PrismaModel> | $Enums.ReportStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumReportStatusFilter<$PrismaModel>
+    _max?: NestedEnumReportStatusFilter<$PrismaModel>
+  }
+
   export type ProductionReportCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<ProductionReportCreateWithoutCreatedByInput, ProductionReportUncheckedCreateWithoutCreatedByInput> | ProductionReportCreateWithoutCreatedByInput[] | ProductionReportUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: ProductionReportCreateOrConnectWithoutCreatedByInput | ProductionReportCreateOrConnectWithoutCreatedByInput[]
@@ -14195,10 +14327,24 @@ export namespace Prisma {
     connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
   }
 
+  export type ProductionReportCreateNestedManyWithoutCheckedByInput = {
+    create?: XOR<ProductionReportCreateWithoutCheckedByInput, ProductionReportUncheckedCreateWithoutCheckedByInput> | ProductionReportCreateWithoutCheckedByInput[] | ProductionReportUncheckedCreateWithoutCheckedByInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutCheckedByInput | ProductionReportCreateOrConnectWithoutCheckedByInput[]
+    createMany?: ProductionReportCreateManyCheckedByInputEnvelope
+    connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+  }
+
   export type ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<ProductionReportCreateWithoutCreatedByInput, ProductionReportUncheckedCreateWithoutCreatedByInput> | ProductionReportCreateWithoutCreatedByInput[] | ProductionReportUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: ProductionReportCreateOrConnectWithoutCreatedByInput | ProductionReportCreateOrConnectWithoutCreatedByInput[]
     createMany?: ProductionReportCreateManyCreatedByInputEnvelope
+    connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+  }
+
+  export type ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput = {
+    create?: XOR<ProductionReportCreateWithoutCheckedByInput, ProductionReportUncheckedCreateWithoutCheckedByInput> | ProductionReportCreateWithoutCheckedByInput[] | ProductionReportUncheckedCreateWithoutCheckedByInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutCheckedByInput | ProductionReportCreateOrConnectWithoutCheckedByInput[]
+    createMany?: ProductionReportCreateManyCheckedByInputEnvelope
     connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
   }
 
@@ -14228,6 +14374,20 @@ export namespace Prisma {
     deleteMany?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
   }
 
+  export type ProductionReportUpdateManyWithoutCheckedByNestedInput = {
+    create?: XOR<ProductionReportCreateWithoutCheckedByInput, ProductionReportUncheckedCreateWithoutCheckedByInput> | ProductionReportCreateWithoutCheckedByInput[] | ProductionReportUncheckedCreateWithoutCheckedByInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutCheckedByInput | ProductionReportCreateOrConnectWithoutCheckedByInput[]
+    upsert?: ProductionReportUpsertWithWhereUniqueWithoutCheckedByInput | ProductionReportUpsertWithWhereUniqueWithoutCheckedByInput[]
+    createMany?: ProductionReportCreateManyCheckedByInputEnvelope
+    set?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    disconnect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    delete?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    update?: ProductionReportUpdateWithWhereUniqueWithoutCheckedByInput | ProductionReportUpdateWithWhereUniqueWithoutCheckedByInput[]
+    updateMany?: ProductionReportUpdateManyWithWhereWithoutCheckedByInput | ProductionReportUpdateManyWithWhereWithoutCheckedByInput[]
+    deleteMany?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
+  }
+
   export type ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<ProductionReportCreateWithoutCreatedByInput, ProductionReportUncheckedCreateWithoutCreatedByInput> | ProductionReportCreateWithoutCreatedByInput[] | ProductionReportUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: ProductionReportCreateOrConnectWithoutCreatedByInput | ProductionReportCreateOrConnectWithoutCreatedByInput[]
@@ -14239,6 +14399,20 @@ export namespace Prisma {
     connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
     update?: ProductionReportUpdateWithWhereUniqueWithoutCreatedByInput | ProductionReportUpdateWithWhereUniqueWithoutCreatedByInput[]
     updateMany?: ProductionReportUpdateManyWithWhereWithoutCreatedByInput | ProductionReportUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
+  }
+
+  export type ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput = {
+    create?: XOR<ProductionReportCreateWithoutCheckedByInput, ProductionReportUncheckedCreateWithoutCheckedByInput> | ProductionReportCreateWithoutCheckedByInput[] | ProductionReportUncheckedCreateWithoutCheckedByInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutCheckedByInput | ProductionReportCreateOrConnectWithoutCheckedByInput[]
+    upsert?: ProductionReportUpsertWithWhereUniqueWithoutCheckedByInput | ProductionReportUpsertWithWhereUniqueWithoutCheckedByInput[]
+    createMany?: ProductionReportCreateManyCheckedByInputEnvelope
+    set?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    disconnect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    delete?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
+    update?: ProductionReportUpdateWithWhereUniqueWithoutCheckedByInput | ProductionReportUpdateWithWhereUniqueWithoutCheckedByInput[]
+    updateMany?: ProductionReportUpdateManyWithWhereWithoutCheckedByInput | ProductionReportUpdateManyWithWhereWithoutCheckedByInput[]
     deleteMany?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
   }
 
@@ -14640,8 +14814,18 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutCheckedProductionReportsInput = {
+    create?: XOR<UserCreateWithoutCheckedProductionReportsInput, UserUncheckedCreateWithoutCheckedProductionReportsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCheckedProductionReportsInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type EnumLphTypeFieldUpdateOperationsInput = {
     set?: $Enums.LphType
+  }
+
+  export type EnumReportStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ReportStatus
   }
 
   export type ProStepUpdateOneRequiredWithoutProductionReportsNestedInput = {
@@ -14660,6 +14844,16 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutProductionReportsInput, UserUpdateWithoutProductionReportsInput>, UserUncheckedUpdateWithoutProductionReportsInput>
+  }
+
+  export type UserUpdateOneWithoutCheckedProductionReportsNestedInput = {
+    create?: XOR<UserCreateWithoutCheckedProductionReportsInput, UserUncheckedCreateWithoutCheckedProductionReportsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCheckedProductionReportsInput
+    upsert?: UserUpsertWithoutCheckedProductionReportsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCheckedProductionReportsInput, UserUpdateWithoutCheckedProductionReportsInput>, UserUncheckedUpdateWithoutCheckedProductionReportsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -15013,6 +15207,13 @@ export namespace Prisma {
     not?: NestedEnumLphTypeFilter<$PrismaModel> | $Enums.LphType
   }
 
+  export type NestedEnumReportStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportStatus | EnumReportStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportStatus[]
+    notIn?: $Enums.ReportStatus[]
+    not?: NestedEnumReportStatusFilter<$PrismaModel> | $Enums.ReportStatus
+  }
+
   export type NestedEnumLphTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.LphType | EnumLphTypeFieldRefInput<$PrismaModel>
     in?: $Enums.LphType[]
@@ -15046,6 +15247,16 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
+  export type NestedEnumReportStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ReportStatus | EnumReportStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ReportStatus[]
+    notIn?: $Enums.ReportStatus[]
+    not?: NestedEnumReportStatusWithAggregatesFilter<$PrismaModel> | $Enums.ReportStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumReportStatusFilter<$PrismaModel>
+    _max?: NestedEnumReportStatusFilter<$PrismaModel>
+  }
+
   export type ProductionReportCreateWithoutCreatedByInput = {
     id?: string
     reportDate: Date | string
@@ -15076,7 +15287,11 @@ export namespace Prisma {
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedAt?: Date | string | null
     step: ProStepCreateNestedOneWithoutProductionReportsInput
+    checkedBy?: UserCreateNestedOneWithoutCheckedProductionReportsInput
   }
 
   export type ProductionReportUncheckedCreateWithoutCreatedByInput = {
@@ -15110,6 +15325,10 @@ export namespace Prisma {
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedById?: string | null
+    checkedAt?: Date | string | null
   }
 
   export type ProductionReportCreateOrConnectWithoutCreatedByInput = {
@@ -15119,6 +15338,90 @@ export namespace Prisma {
 
   export type ProductionReportCreateManyCreatedByInputEnvelope = {
     data: ProductionReportCreateManyCreatedByInput | ProductionReportCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ProductionReportCreateWithoutCheckedByInput = {
+    id?: string
+    reportDate: Date | string
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    batchNo?: string | null
+    manPowerStd?: number | null
+    manPowerAct?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    cavityAct?: number | null
+    inputMaterialQty?: Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: Decimal | DecimalJsLike | number | string | null
+    qtyHold?: Decimal | DecimalJsLike | number | string | null
+    qtyWip?: Decimal | DecimalJsLike | number | string | null
+    qtyGood?: Decimal | DecimalJsLike | number | string
+    qtyReject?: Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: number
+    notes?: string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedAt?: Date | string | null
+    step: ProStepCreateNestedOneWithoutProductionReportsInput
+    createdBy?: UserCreateNestedOneWithoutProductionReportsInput
+  }
+
+  export type ProductionReportUncheckedCreateWithoutCheckedByInput = {
+    id?: string
+    proStepId: number
+    reportDate: Date | string
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    batchNo?: string | null
+    manPowerStd?: number | null
+    manPowerAct?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    cavityAct?: number | null
+    inputMaterialQty?: Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: Decimal | DecimalJsLike | number | string | null
+    qtyHold?: Decimal | DecimalJsLike | number | string | null
+    qtyWip?: Decimal | DecimalJsLike | number | string | null
+    qtyGood?: Decimal | DecimalJsLike | number | string
+    qtyReject?: Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: number
+    notes?: string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedAt?: Date | string | null
+  }
+
+  export type ProductionReportCreateOrConnectWithoutCheckedByInput = {
+    where: ProductionReportWhereUniqueInput
+    create: XOR<ProductionReportCreateWithoutCheckedByInput, ProductionReportUncheckedCreateWithoutCheckedByInput>
+  }
+
+  export type ProductionReportCreateManyCheckedByInputEnvelope = {
+    data: ProductionReportCreateManyCheckedByInput | ProductionReportCreateManyCheckedByInput[]
     skipDuplicates?: boolean
   }
 
@@ -15173,6 +15476,26 @@ export namespace Prisma {
     createdById?: StringNullableFilter<"ProductionReport"> | string | null
     createdAt?: DateTimeFilter<"ProductionReport"> | Date | string
     updatedAt?: DateTimeFilter<"ProductionReport"> | Date | string
+    status?: EnumReportStatusFilter<"ProductionReport"> | $Enums.ReportStatus
+    rejectionNote?: StringNullableFilter<"ProductionReport"> | string | null
+    checkedById?: StringNullableFilter<"ProductionReport"> | string | null
+    checkedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+  }
+
+  export type ProductionReportUpsertWithWhereUniqueWithoutCheckedByInput = {
+    where: ProductionReportWhereUniqueInput
+    update: XOR<ProductionReportUpdateWithoutCheckedByInput, ProductionReportUncheckedUpdateWithoutCheckedByInput>
+    create: XOR<ProductionReportCreateWithoutCheckedByInput, ProductionReportUncheckedCreateWithoutCheckedByInput>
+  }
+
+  export type ProductionReportUpdateWithWhereUniqueWithoutCheckedByInput = {
+    where: ProductionReportWhereUniqueInput
+    data: XOR<ProductionReportUpdateWithoutCheckedByInput, ProductionReportUncheckedUpdateWithoutCheckedByInput>
+  }
+
+  export type ProductionReportUpdateManyWithWhereWithoutCheckedByInput = {
+    where: ProductionReportScalarWhereInput
+    data: XOR<ProductionReportUpdateManyMutationInput, ProductionReportUncheckedUpdateManyWithoutCheckedByInput>
   }
 
   export type ProStepCreateWithoutMachineInput = {
@@ -15485,15 +15808,12 @@ export namespace Prisma {
     uom: $Enums.Uom
     type?: $Enums.MachineType
     remark?: string | null
-    partNumber?: string | null
     cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
     cavity?: number | null
     manPower?: number | null
     stdOutputPerDay?: number | null
     workCenter?: string | null
-    shortDesc?: string | null
-    phase?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -15506,15 +15826,12 @@ export namespace Prisma {
     uom: $Enums.Uom
     type?: $Enums.MachineType
     remark?: string | null
-    partNumber?: string | null
     cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
     cavity?: number | null
     manPower?: number | null
     stdOutputPerDay?: number | null
     workCenter?: string | null
-    shortDesc?: string | null
-    phase?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -15575,7 +15892,11 @@ export namespace Prisma {
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedAt?: Date | string | null
     createdBy?: UserCreateNestedOneWithoutProductionReportsInput
+    checkedBy?: UserCreateNestedOneWithoutCheckedProductionReportsInput
   }
 
   export type ProductionReportUncheckedCreateWithoutStepInput = {
@@ -15609,6 +15930,10 @@ export namespace Prisma {
     createdById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedById?: string | null
+    checkedAt?: Date | string | null
   }
 
   export type ProductionReportCreateOrConnectWithoutStepInput = {
@@ -15677,15 +16002,12 @@ export namespace Prisma {
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
     type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cavity?: NullableIntFieldUpdateOperationsInput | number | null
     manPower?: NullableIntFieldUpdateOperationsInput | number | null
     stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
-    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
-    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15698,15 +16020,12 @@ export namespace Prisma {
     uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
     type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
     remark?: NullableStringFieldUpdateOperationsInput | string | null
-    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     cavity?: NullableIntFieldUpdateOperationsInput | number | null
     manPower?: NullableIntFieldUpdateOperationsInput | number | null
     stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
-    shortDesc?: NullableStringFieldUpdateOperationsInput | string | null
-    phase?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15886,6 +16205,7 @@ export namespace Prisma {
     role?: $Enums.Role
     createdAt?: Date | string
     updatedAt?: Date | string
+    checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
   }
 
   export type UserUncheckedCreateWithoutProductionReportsInput = {
@@ -15895,11 +16215,37 @@ export namespace Prisma {
     role?: $Enums.Role
     createdAt?: Date | string
     updatedAt?: Date | string
+    checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
   }
 
   export type UserCreateOrConnectWithoutProductionReportsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutProductionReportsInput, UserUncheckedCreateWithoutProductionReportsInput>
+  }
+
+  export type UserCreateWithoutCheckedProductionReportsInput = {
+    id?: string
+    username: string
+    passwordHash: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutCheckedProductionReportsInput = {
+    id?: string
+    username: string
+    passwordHash: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutCheckedProductionReportsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCheckedProductionReportsInput, UserUncheckedCreateWithoutCheckedProductionReportsInput>
   }
 
   export type ProStepUpsertWithoutProductionReportsInput = {
@@ -15954,6 +16300,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProductionReportsInput = {
@@ -15963,6 +16310,38 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
+  }
+
+  export type UserUpsertWithoutCheckedProductionReportsInput = {
+    update: XOR<UserUpdateWithoutCheckedProductionReportsInput, UserUncheckedUpdateWithoutCheckedProductionReportsInput>
+    create: XOR<UserCreateWithoutCheckedProductionReportsInput, UserUncheckedCreateWithoutCheckedProductionReportsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCheckedProductionReportsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCheckedProductionReportsInput, UserUncheckedUpdateWithoutCheckedProductionReportsInput>
+  }
+
+  export type UserUpdateWithoutCheckedProductionReportsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCheckedProductionReportsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type ProductionReportCreateManyCreatedByInput = {
@@ -15996,6 +16375,47 @@ export namespace Prisma {
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedById?: string | null
+    checkedAt?: Date | string | null
+  }
+
+  export type ProductionReportCreateManyCheckedByInput = {
+    id?: string
+    proStepId: number
+    reportDate: Date | string
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    batchNo?: string | null
+    manPowerStd?: number | null
+    manPowerAct?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    cavityAct?: number | null
+    inputMaterialQty?: Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: Decimal | DecimalJsLike | number | string | null
+    qtyHold?: Decimal | DecimalJsLike | number | string | null
+    qtyWip?: Decimal | DecimalJsLike | number | string | null
+    qtyGood?: Decimal | DecimalJsLike | number | string
+    qtyReject?: Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: number
+    notes?: string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedAt?: Date | string | null
   }
 
   export type ProductionReportUpdateWithoutCreatedByInput = {
@@ -16028,7 +16448,11 @@ export namespace Prisma {
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     step?: ProStepUpdateOneRequiredWithoutProductionReportsNestedInput
+    checkedBy?: UserUpdateOneWithoutCheckedProductionReportsNestedInput
   }
 
   export type ProductionReportUncheckedUpdateWithoutCreatedByInput = {
@@ -16062,6 +16486,10 @@ export namespace Prisma {
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedById?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ProductionReportUncheckedUpdateManyWithoutCreatedByInput = {
@@ -16095,6 +16523,121 @@ export namespace Prisma {
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedById?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ProductionReportUpdateWithoutCheckedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    step?: ProStepUpdateOneRequiredWithoutProductionReportsNestedInput
+    createdBy?: UserUpdateOneWithoutProductionReportsNestedInput
+  }
+
+  export type ProductionReportUncheckedUpdateWithoutCheckedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    proStepId?: IntFieldUpdateOperationsInput | number
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ProductionReportUncheckedUpdateManyWithoutCheckedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    proStepId?: IntFieldUpdateOperationsInput | number
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ProStepCreateManyMachineInput = {
@@ -16296,6 +16839,10 @@ export namespace Prisma {
     createdById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedById?: string | null
+    checkedAt?: Date | string | null
   }
 
   export type ProStepMaterialUpdateWithoutStepInput = {
@@ -16345,7 +16892,11 @@ export namespace Prisma {
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdBy?: UserUpdateOneWithoutProductionReportsNestedInput
+    checkedBy?: UserUpdateOneWithoutCheckedProductionReportsNestedInput
   }
 
   export type ProductionReportUncheckedUpdateWithoutStepInput = {
@@ -16379,6 +16930,10 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedById?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ProductionReportUncheckedUpdateManyWithoutStepInput = {
@@ -16412,6 +16967,10 @@ export namespace Prisma {
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedById?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
 

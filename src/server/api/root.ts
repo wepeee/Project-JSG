@@ -3,6 +3,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { authRouter } from "./routers/auth";
 import { adminUsersRouter } from "./routers/superadmin/users";
 import { machinesRouter } from "./routers/superadmin/machines";
+import { verificationRouter } from "./routers/superadmin/verification";
 import { materialsRouter } from "./routers/ppic/materials";
 import { processesRouter } from "./routers/ppic/processes";
 import { prosRouter } from "./routers/ppic/pros";
@@ -22,6 +23,7 @@ export const appRouter = createTRPCRouter({
   processes: processesRouter,
   pros: prosRouter,
   production: productionRouter,
+  verification: verificationRouter,
 });
 
 // export type definition of API

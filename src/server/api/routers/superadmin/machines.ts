@@ -39,17 +39,14 @@ export const machinesRouter = createTRPCRouter({
         uom: z.nativeEnum(Uom),
         type: z.nativeEnum(MachineType).default("PAPER"),
         remark: z.string().optional(),
-        
+
         // Rigid Fields
-        partNumber: z.string().optional(),
-        cycleTimeSec: z.number().optional(), 
+        cycleTimeSec: z.number().optional(),
         cycleTimeMin: z.number().optional(),
         cavity: z.number().int().optional(),
         manPower: z.number().int().optional(),
         stdOutputPerDay: z.number().int().optional(),
         workCenter: z.string().optional(),
-        shortDesc: z.string().optional(),
-        phase: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -64,15 +61,12 @@ export const machinesRouter = createTRPCRouter({
           type: input.type,
           remark: input.remark,
 
-          partNumber: input.partNumber,
           cycleTimeSec: input.cycleTimeSec,
           cycleTimeMin: input.cycleTimeMin,
           cavity: input.cavity,
           manPower: input.manPower,
           stdOutputPerDay: input.stdOutputPerDay,
           workCenter: input.workCenter,
-          shortDesc: input.shortDesc,
-          phase: input.phase,
         },
       });
     }),

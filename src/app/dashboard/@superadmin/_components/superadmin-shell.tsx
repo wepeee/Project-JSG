@@ -4,12 +4,12 @@ import * as React from "react";
 import { signOut } from "next-auth/react";
 
 import { Button } from "~/components/ui/button";
-
 import { ThemeToggle } from "~/components/theme-toggle";
 
-// ganti path kalau CreateUserForm kamu ada di folder lain
 import CreateUserForm from "./create-users-form";
 import MachineManager from "./machine-manager";
+import VerificationList from "./verification-list";
+import ProductionArchive from "./production-archive";
 
 type Props = {
   user: {
@@ -18,7 +18,14 @@ type Props = {
   };
 };
 
-type NavKey = "users" | "machines_paper" | "machines_rigid" | "settings" | "audit";
+type NavKey =
+  | "users"
+  | "machines_paper"
+  | "machines_rigid"
+  | "settings"
+  | "audit"
+  | "verification"
+  | "report_archive";
 
 export default function SuperadminShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("users");
@@ -33,7 +40,11 @@ export default function SuperadminShell({ user }: Props) {
           ? "Kelola Mesin Rigid"
           : active === "settings"
             ? "Pengaturan"
-            : "Audit Log";
+            : active === "audit"
+              ? "Audit Log"
+              : active === "verification"
+                ? "Verifikasi Laporan"
+                : "Daftar Laporan";
 
   return (
     <div className="bg-background min-h-screen w-full">
@@ -84,7 +95,18 @@ export default function SuperadminShell({ user }: Props) {
               active={active === "settings"}
               onClick={() => setActive("settings")}
             />
-            <div className="pt-2 pb-1 text-xs font-semibold opacity-50 px-3">
+            <div className="my-2 border-t border-dashed" />
+            <SidebarItem
+              label="Verifikasi Laporan"
+              active={active === "verification"}
+              onClick={() => setActive("verification")}
+            />
+            <SidebarItem
+              label="Daftar Laporan"
+              active={active === "report_archive"}
+              onClick={() => setActive("report_archive")}
+            />
+            <div className="px-3 pt-2 pb-1 text-xs font-semibold opacity-50">
               MESIN
             </div>
             <SidebarItem
@@ -169,7 +191,24 @@ export default function SuperadminShell({ user }: Props) {
                     setOpen(false);
                   }}
                 />
-                 <div className="pt-2 pb-1 text-xs font-semibold opacity-50 px-3">
+                <div className="my-2 border-t border-dashed" />
+                <SidebarItem
+                  label="Verifikasi Laporan"
+                  active={active === "verification"}
+                  onClick={() => {
+                    setActive("verification");
+                    setOpen(false);
+                  }}
+                />
+                <SidebarItem
+                  label="Daftar Laporan"
+                  active={active === "report_archive"}
+                  onClick={() => {
+                    setActive("report_archive");
+                    setOpen(false);
+                  }}
+                />
+                <div className="px-3 pt-2 pb-1 text-xs font-semibold opacity-50">
                   MESIN
                 </div>
                 <SidebarItem
@@ -206,7 +245,7 @@ export default function SuperadminShell({ user }: Props) {
         ) : null}
 
         {/* Main */}
-        <main className="w-full px-4 py-6 lg:px-6">
+        <main className="min-w-0 flex-1 px-4 py-6 lg:px-6">
           {/* Desktop header */}
           <div className="mb-6 hidden items-center justify-between lg:flex">
             <div>
@@ -229,8 +268,12 @@ export default function SuperadminShell({ user }: Props) {
             </div>
           ) : active === "machines_paper" ? (
             <MachineManager machineType="PAPER" />
-          ) : (
+          ) : active === "machines_rigid" ? (
             <MachineManager machineType="RIGID" />
+          ) : active === "report_archive" ? (
+            <ProductionArchive />
+          ) : (
+            <VerificationList />
           )}
         </main>
       </div>

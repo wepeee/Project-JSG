@@ -30,6 +30,9 @@ model User {
   role         Role     @default(ADMIN)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  productionReports        ProductionReport[]
+  checkedProductionReports ProductionReport[] @relation("ReportChecker")
 }
 
 // Mesin
@@ -56,15 +59,12 @@ model Machine {
   remark            String?
 
   // Rigid Specific Fields
-  partNumber      String?
   cycleTimeSec    Decimal? @db.Decimal(10, 3)
   cycleTimeMin    Decimal? @db.Decimal(10, 3)
   cavity          Int?
   manPower        Int?
   stdOutputPerDay Int?
   workCenter      String?
-  shortDesc       String?
-  phase           String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -151,6 +151,12 @@ model Pro {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum ReportStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model ProStep {
@@ -266,8 +272,18 @@ model ProductionReport {
   // Meta data for calculated fields snapshots if needed (OEE, %, etc) or extra columns
   metaData Json?
 
+  createdById String?
+  createdBy   User?   @relation(fields: [createdById], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Verification Workflow
+  status        ReportStatus @default(PENDING)
+  rejectionNote String?      @db.Text
+  checkedBy     User?        @relation("ReportChecker", fields: [checkedById], references: [id])
+  checkedById   String?
+  checkedAt     DateTime?
 
   @@index([proStepId])
   @@index([reportDate])

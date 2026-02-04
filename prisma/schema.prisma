@@ -31,7 +31,8 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   
-  productionReports ProductionReport[]
+  productionReports        ProductionReport[]
+  checkedProductionReports ProductionReport[] @relation("ReportChecker")
 }
 
 // Mesin
@@ -42,8 +43,6 @@ enum Uom {
   meter
   cm
 }
-
-
 
 enum MachineType {
   PAPER
@@ -60,15 +59,12 @@ model Machine {
   remark            String?
 
   // Rigid Specific Fields
-  partNumber       String?
   cycleTimeSec     Decimal?  @db.Decimal(10, 3)
   cycleTimeMin     Decimal?  @db.Decimal(10, 3)
   cavity           Int?
   manPower         Int?
   stdOutputPerDay  Int?
   workCenter       String?
-  shortDesc        String?
-  phase            String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -155,7 +151,16 @@ model Pro {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+
 }
+
+enum ReportStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 
 model ProStep {
   id    Int @id @default(autoincrement())
@@ -276,6 +281,13 @@ model ProductionReport {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Verification Workflow
+  status        ReportStatus @default(PENDING)
+  rejectionNote String?      @db.Text
+  checkedBy     User?        @relation("ReportChecker", fields: [checkedById], references: [id])
+  checkedById   String?
+  checkedAt     DateTime?
 
   @@index([proStepId])
   @@index([reportDate])

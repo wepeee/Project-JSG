@@ -138,15 +138,12 @@ exports.Prisma.MachineScalarFieldEnum = {
   uom: 'uom',
   type: 'type',
   remark: 'remark',
-  partNumber: 'partNumber',
   cycleTimeSec: 'cycleTimeSec',
   cycleTimeMin: 'cycleTimeMin',
   cavity: 'cavity',
   manPower: 'manPower',
   stdOutputPerDay: 'stdOutputPerDay',
   workCenter: 'workCenter',
-  shortDesc: 'shortDesc',
-  phase: 'phase',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -234,7 +231,11 @@ exports.Prisma.ProductionReportScalarFieldEnum = {
   metaData: 'metaData',
   createdById: 'createdById',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  status: 'status',
+  rejectionNote: 'rejectionNote',
+  checkedById: 'checkedById',
+  checkedAt: 'checkedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -261,10 +262,7 @@ exports.Prisma.NullsOrder = {
 exports.Prisma.MachineOrderByRelevanceFieldEnum = {
   name: 'name',
   remark: 'remark',
-  partNumber: 'partNumber',
-  workCenter: 'workCenter',
-  shortDesc: 'shortDesc',
-  phase: 'phase'
+  workCenter: 'workCenter'
 };
 
 exports.Prisma.MaterialOrderByRelevanceFieldEnum = {
@@ -306,7 +304,9 @@ exports.Prisma.ProductionReportOrderByRelevanceFieldEnum = {
   operatorName: 'operatorName',
   batchNo: 'batchNo',
   notes: 'notes',
-  createdById: 'createdById'
+  createdById: 'createdById',
+  rejectionNote: 'rejectionNote',
+  checkedById: 'checkedById'
 };
 exports.Role = exports.$Enums.Role = {
   SUPERADMIN: 'SUPERADMIN',
@@ -347,6 +347,12 @@ exports.LphType = exports.$Enums.LphType = {
   PACKING_ASSEMBLY: 'PACKING_ASSEMBLY',
   BLOW_MOULDING: 'BLOW_MOULDING',
   INJECTION: 'INJECTION'
+};
+
+exports.ReportStatus = exports.$Enums.ReportStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
 };
 
 exports.Prisma.ModelName = {
