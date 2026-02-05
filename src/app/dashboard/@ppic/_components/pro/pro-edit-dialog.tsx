@@ -46,13 +46,18 @@ function uid() {
 export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
   const utils = api.useUtils();
 
-  const processes = api.processes.list.useQuery({});
   const machines = api.machines.list.useQuery();
   const materials = api.materials.list.useQuery();
 
   const pro = api.pros.getById.useQuery(
     { id: proId ?? 0 },
     { enabled: !!proId },
+  );
+
+  // Filter processes by PRO type from server side
+  const processes = api.processes.list.useQuery(
+    { type: pro.data?.type as "PAPER" | "RIGID" | "OTHER" | undefined },
+    { enabled: !!pro.data?.type },
   );
 
   const update = api.pros.update.useMutation({
@@ -88,7 +93,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
         return {
           key: uid(),
           orderNo: s.orderNo,
-          processId: s.processId,
+          processId: pro.data.processId, // Use PRO process ID as default for steps (since it matches)
           up: String(s.up ?? ""),
           machineId: s.machineId ?? null,
           materialId: mat0?.materialId ?? null,
@@ -247,12 +252,13 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
                                 const v = e.target.value
                                   ? Number(e.target.value)
                                   : null;
+
+                                // Update header state juga karena processId itu milik PRO
+                                if (v) setProcessId(v);
+
+                                // Update visual semua step agar sinkron (optional tapi bagus UX nya)
                                 setSteps((prev) =>
-                                  prev.map((x) =>
-                                    x.key === s.key
-                                      ? { ...x, processId: v }
-                                      : x,
-                                  ),
+                                  prev.map((x) => ({ ...x, processId: v })),
                                 );
                               }}
                               className={control}

@@ -309,6 +309,7 @@ export const prosRouter = createTRPCRouter({
           qtyPoPcs: true,
           startDate: true,
           status: true,
+          type: true, // Added
           createdAt: true,
           updatedAt: true,
           autoShiftExpansion: true, // Added flag
@@ -393,6 +394,8 @@ export const prosRouter = createTRPCRouter({
         const oldPro = await tx.pro.findUnique({
           where: { id: input.id },
           select: {
+            proNumber: true,
+            processId: true,
             qtyPoPcs: true,
             startDate: true,
           },
@@ -405,10 +408,35 @@ export const prosRouter = createTRPCRouter({
           });
         }
 
+        // Calculate new PRO Number if process changed
+        let newProNumber: string | undefined;
+        if (input.processId !== oldPro.processId) {
+          const newProc = await tx.process.findUnique({
+            where: { id: input.processId },
+            select: { code: true },
+          });
+
+          if (newProc && oldPro.proNumber.length >= 2) {
+            newProNumber = newProc.code + oldPro.proNumber.slice(2);
+
+            // Check conflict
+            const conflict = await tx.pro.findUnique({
+              where: { proNumber: newProNumber },
+            });
+            if (conflict) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: `Nomor PRO baru '${newProNumber}' sudah digunakan oleh PRO lain. Tidak bisa mengganti proses.`,
+              });
+            }
+          }
+        }
+
         // 2. Update header
         await tx.pro.update({
           where: { id: input.id },
           data: {
+            ...(newProNumber ? { proNumber: newProNumber } : {}),
             processId: input.processId,
             productName: input.productName,
             ...(input.partNumber !== undefined

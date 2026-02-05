@@ -3,6 +3,7 @@
 import * as React from "react";
 import { api } from "~/trpc/react";
 
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -866,7 +867,19 @@ export default function ProList({
 
           <CardContent className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Info label="No. PRO" value={p.proNumber} />
+              <Info
+                label="No. PRO"
+                value={
+                  <div className="flex items-center gap-2">
+                    <span>{p.proNumber}</span>
+                    <Badge
+                      variant={p.type === "RIGID" ? "destructive" : "secondary"}
+                    >
+                      {p.type}
+                    </Badge>
+                  </div>
+                }
+              />
 
               {!editing ? (
                 <Info label="Status" value={p.status} />
@@ -914,11 +927,16 @@ export default function ProList({
                     }
                   >
                     <option value="">Pilih proses</option>
-                    {(processes.data ?? []).map((proc: any) => (
-                      <option key={proc.id} value={proc.id}>
-                        {proc.code} - {proc.name}
-                      </option>
-                    ))}
+                    {(processes.data ?? [])
+                      .filter(
+                        (proc: any) =>
+                          !proTypeDraft || proc.type === proTypeDraft,
+                      )
+                      .map((proc: any) => (
+                        <option key={proc.id} value={proc.id}>
+                          {proc.code} - {proc.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
               )}
@@ -1845,7 +1863,7 @@ export default function ProList({
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="space-y-1">
       <div className="text-xs opacity-70">{label}</div>
