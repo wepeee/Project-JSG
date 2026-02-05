@@ -800,7 +800,7 @@ export function ProductionReportModal({
                 >
                   Info
                 </TabsTrigger>
-                {isRigid && (
+                {isRigid && lphType !== "INJECTION" && (
                   <TabsTrigger
                     value="material"
                     className="min-w-fit flex-1 px-3 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-slate-800 data-[state=active]:text-blue-400 data-[state=active]:shadow-sm sm:text-sm"
@@ -952,19 +952,21 @@ export function ProductionReportModal({
                         />
                       </div>
 
-                      {/* MP */}
-                      <div className="space-y-1">
-                        <Label className="text-xs text-slate-400">MP Std</Label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          className="border-slate-800 bg-slate-950 text-slate-100"
-                          value={formData.mpStd}
-                          onChange={(e) =>
-                            setFormData({ ...formData, mpStd: e.target.value })
-                          }
-                        />
-                      </div>
+                      {/* MP - Hide Std for Injection */}
+                      {lphType !== "INJECTION" && (
+                        <div className="space-y-1">
+                          <Label className="text-xs text-slate-400">MP Std</Label>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            className="border-slate-800 bg-slate-950 text-slate-100"
+                            value={formData.mpStd}
+                            onChange={(e) =>
+                              setFormData({ ...formData, mpStd: e.target.value })
+                            }
+                          />
+                        </div>
+                      )}
                       <div className="space-y-1">
                         <Label className="text-xs text-slate-300">
                           MP Aktual
@@ -981,23 +983,28 @@ export function ProductionReportModal({
                       </div>
 
                       {/* CT / SPEED */}
-                      <div className="space-y-1">
-                        <Label className="text-xs text-slate-400">
-                          {isRigid
-                            ? "Cycle Time Std (detik)"
-                            : "Speed Std (Sheet/Jam)"}
-                        </Label>
-                        <Input
-                          type="number"
-                          step={isRigid ? "0.1" : "1"}
-                          placeholder="0"
-                          className="border-slate-800 bg-slate-950 text-slate-100"
-                          value={formData.ctStd}
-                          onChange={(e) =>
-                            setFormData({ ...formData, ctStd: e.target.value })
-                          }
-                        />
-                      </div>
+                      {lphType !== "INJECTION" && (
+                        <div className="space-y-1">
+                          <Label className="text-xs text-slate-400">
+                            {isRigid
+                              ? "Cycle Time Std (detik)"
+                              : "Speed Std (Sheet/Jam)"}
+                          </Label>
+                          <Input
+                            type="number"
+                            step={isRigid ? "0.1" : "1"}
+                            placeholder="0"
+                            className="border-slate-800 bg-slate-950 text-slate-100"
+                            value={formData.ctStd}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                ctStd: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      )}
                       <div className="space-y-1">
                         <Label className="text-xs text-slate-300">
                           {isRigid ? "Cycle Time Act" : "Speed Act"}
@@ -1014,26 +1021,28 @@ export function ProductionReportModal({
                         />
                       </div>
 
-                      {/* Cavities (Moulding) */}
+                      {/* Cavities (Moulding) - Hide Std for Injection */}
                       {isMoulding && (
                         <>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-400">
-                              Cavity Std
-                            </Label>
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              className="border-slate-800 bg-slate-950 text-slate-100"
-                              value={formData.cavStd}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  cavStd: e.target.value,
-                                })
-                              }
-                            />
-                          </div>
+                          {lphType !== "INJECTION" && (
+                            <div className="space-y-1">
+                              <Label className="text-xs text-slate-400">
+                                Cavity Std
+                              </Label>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                className="border-slate-800 bg-slate-950 text-slate-100"
+                                value={formData.cavStd}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    cavStd: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                          )}
                           <div className="space-y-1">
                             <Label className="text-xs text-slate-300">
                               Cavity Act
@@ -1061,12 +1070,20 @@ export function ProductionReportModal({
                   <Button
                     type="button"
                     onClick={() =>
-                      setActiveTab(isRigid ? "material" : "reject")
+                      setActiveTab(
+                        isRigid && lphType !== "INJECTION"
+                          ? "material"
+                          : "reject",
+                      )
                     }
                     variant="outline"
                     className="border-slate-700 bg-transparent text-slate-300 hover:bg-slate-800 hover:text-white"
                   >
-                    Lanjut: {isRigid ? "Material" : "Reject & Down"} &rarr;
+                    Lanjut:{" "}
+                    {isRigid && lphType !== "INJECTION"
+                      ? "Material"
+                      : "Reject & Down"}{" "}
+                    &rarr;
                   </Button>
                 </div>
               </TabsContent>
@@ -1421,7 +1438,7 @@ export function ProductionReportModal({
                   </div>
                 </div>
 
-                {isRigid && (
+                {isRigid && lphType !== "INJECTION" && (
                   <div className="rounded-xl border border-blue-800 bg-blue-950/20 p-4 shadow-sm">
                     <h3 className="mb-4 flex items-center justify-between gap-2 text-sm font-bold text-blue-400">
                       <div className="flex items-center gap-2">
