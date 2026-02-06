@@ -112,9 +112,27 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
             setEditReport(null);
             setShowAddModal(true);
           }}
-          className="h-14 w-full rounded-2xl bg-blue-600 text-base font-black text-white shadow-lg shadow-blue-200/50 hover:bg-blue-700 dark:shadow-none"
+          className={`h-14 w-full rounded-2xl text-base font-black shadow-lg transition-all active:scale-95 ${
+            hasDraft
+              ? "bg-amber-400 text-amber-950 shadow-amber-200/50 hover:bg-amber-500 dark:bg-amber-500 dark:text-amber-950"
+              : "bg-blue-600 text-white shadow-blue-200/50 hover:bg-blue-700 dark:shadow-none"
+          }`}
         >
-          + Tambah Laporan Baru
+          {hasDraft ? (
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-950/10">
+                <History className="h-4 w-4" />
+              </div>
+              <div className="flex flex-col items-start leading-none">
+                <span>Lanjutkan Draft Laporan</span>
+                <span className="text-[10px] font-bold tracking-wide uppercase opacity-70">
+                  Ada Laporan Belum Disimpan
+                </span>
+              </div>
+            </div>
+          ) : (
+            "+ Tambah Laporan Baru"
+          )}
         </Button>
 
         {/* Reports List */}
@@ -124,40 +142,6 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
           </h3>
 
           <div className="space-y-3">
-            {/* DRAFT CARD */}
-            {hasDraft && (
-              <div
-                onClick={() => {
-                  setEditReport(null);
-                  setShowAddModal(true);
-                }}
-                className="group cursor-pointer rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:hover:bg-amber-900/40"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400">
-                      <span className="text-xs font-black">!</span>
-                    </div>
-                    <div>
-                      <div className="font-bold text-amber-700 dark:text-amber-400">
-                        Draft Belum Disimpan
-                      </div>
-                      <div className="text-[10px] text-amber-600/70">
-                        Klik untuk melanjutkan pengisian...
-                      </div>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-amber-600 hover:bg-amber-200 hover:text-amber-800"
-                  >
-                    Lanjut &rarr;
-                  </Button>
-                </div>
-              </div>
-            )}
-
             {reports?.map((rpt) => (
               <div
                 key={rpt.id}
@@ -248,7 +232,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
               </div>
             ))}
 
-            {!hasDraft && reports?.length === 0 && (
+            {reports?.length === 0 && (
               <div className="text-muted-foreground py-8 text-center text-sm italic">
                 Belum ada laporan masuk.
               </div>

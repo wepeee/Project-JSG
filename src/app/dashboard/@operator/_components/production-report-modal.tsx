@@ -114,6 +114,70 @@ const REJECT_LISTS: Record<LphType, string[]> = {
   ],
 };
 
+// Injection Split Lists
+const REJECT_INJECTION_BB = ["Bintik Hitam", "Kotor Fet", "Lain-lain BB"];
+
+const REJECT_INJECTION_PRODUCT = [
+  "Bintik Hitam",
+  "P/S Deformasi",
+  "Warna # Std",
+  "Appearance # Std",
+  "Dimensi # Std",
+  "Kotor Fet",
+  "Proses",
+  "Baret",
+];
+
+const REJECT_PACKING_ASSEMBLY_SPLIT = [
+  [
+    "B. Spot",
+    "Cekung",
+    "Baret",
+    "Buble",
+    "Print Pethal",
+    "Print Miring",
+    "Print Blobor",
+    "Pecah",
+    "Acrylic Mix Up",
+    "Lengket",
+    "Botol Bertekstur",
+    "Tertempel Sticker",
+    "Konstaminasi",
+    "Warna Tidak Standart",
+    "Buram",
+    "Kotor Fat",
+  ],
+  [
+    "B. Spot 3",
+    "Pecah 2",
+    "Warna # Std",
+    "Short Shoot",
+    "Menempel Pada Botol",
+    "Kotor Fat 2",
+  ],
+  [
+    "B. Spot 5",
+    "Print Pethal",
+    "Pecah 6",
+    "Warna # Std 7",
+    "Baret 8",
+    "Kotor Fat 9",
+  ],
+  ["B. Spot 10", "Warna # Std 11", "Kotor Fat 12"],
+  ["B. Spot 13", "Warna # Std 14", "Kotor Fat 15"],
+  [
+    "Stiker Halal",
+    "Stiker BB & Derma",
+    "Stiker BB & WCD",
+    "Sticker BB",
+    "Stiker Barcode",
+    "Stiker Toner",
+    "Sticker Bottom",
+    "Stiker Bottom Baru",
+    "Other",
+  ],
+];
+
 const DOWNTIME_LISTS: Record<
   "PAPER" | "RIGID",
   { PLANNED: string[]; UNPLANNED: string[] }
@@ -163,6 +227,82 @@ const DOWNTIME_LISTS: Record<
     ],
   },
 };
+
+const LOSS_HOUR_INJECTION = [
+  "No Order",
+  "Istirahat",
+  "Cil / Clean",
+  "Trial",
+  "Preventive",
+];
+
+const LOSS_HOUR_PRINTING = [
+  "CLEAN",
+  "NO ORDER",
+  "ISTIRAHAT",
+  "TRIAL",
+  "PREVEN MESIN",
+];
+
+const LOSS_HOUR_PACKING_ASSEMBLY = [
+  "CLEAN",
+  "NO ORDER",
+  "ISTIRAHAT",
+  "TRIAL",
+  "PREVEN MESIN",
+];
+
+const DOWNTIME_INJECTION_LIST = [
+  "Material",
+  "Electrik",
+  "Mesin",
+  "Hydraulic",
+  "Robot",
+  "Utility",
+  "Start Mesin",
+  "Set Up",
+  "Approve",
+  "Mold/Tools",
+  "Proses",
+  "Material Habis",
+  "Material Telat",
+  "Man Power",
+  "Others",
+];
+
+const DOWNTIME_PRINTING_LIST = [
+  "ELECTRIC",
+  "MACHINE",
+  "PNUMATIC",
+  "UTILITY",
+  "START MESIN",
+  "SET UP",
+  "APPROVAL",
+  "SCREEN",
+  "PROSES",
+  "MATERIAL",
+  "WARNA TIDAK STANDART",
+  "TOOLS",
+  "MAN",
+  "OTHER",
+];
+
+const DOWNTIME_PACKING_ASSEMBLY_LIST = [
+  "ELECTRIC",
+  "MACHINE",
+  "PNUMATIC",
+  "UTILITY",
+  "START MESIN",
+  "SET UP",
+  "APPROVAL",
+  "SCREEN",
+  "PROSES",
+  "MATERIAL",
+  "WARNA TIDAK STANDART",
+  "TOOLS",
+  "MAN",
+  "OTHER",
+];
 
 // --- HELPER ---
 
@@ -241,6 +381,7 @@ export function ProductionReportModal({
     inputMaterial: "", // Paper: input, Rigid: material tuang
     materialRunner: "", // Rigid only
     materialPurge: "", // Rigid only
+    productWeight: "", // Injection only
 
     // Output
     qtyGood: "",
@@ -480,6 +621,7 @@ export function ProductionReportModal({
             inputMaterial: "",
             materialRunner: "",
             materialPurge: "",
+            productWeight: "",
             qtyGood: "",
             qtyPassOn: "",
             qtyWip: "",
@@ -752,6 +894,8 @@ export function ProductionReportModal({
 
   const isRigid = lphType !== "PAPER";
   const isMoulding = lphType === "BLOW_MOULDING" || lphType === "INJECTION";
+  const isSplitTabs =
+    isMoulding || lphType === "PRINTING" || lphType === "PACKING_ASSEMBLY";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -800,20 +944,31 @@ export function ProductionReportModal({
                 >
                   Info
                 </TabsTrigger>
-                {isRigid && lphType !== "INJECTION" && (
-                  <TabsTrigger
-                    value="material"
-                    className="min-w-fit flex-1 px-3 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-slate-800 data-[state=active]:text-blue-400 data-[state=active]:shadow-sm sm:text-sm"
-                  >
-                    Material
-                  </TabsTrigger>
-                )}
+                {isRigid &&
+                  !isMoulding &&
+                  lphType !== "PRINTING" &&
+                  lphType !== "PACKING_ASSEMBLY" && (
+                    <TabsTrigger
+                      value="material"
+                      className="min-w-fit flex-1 px-3 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-slate-800 data-[state=active]:text-blue-400 data-[state=active]:shadow-sm sm:text-sm"
+                    >
+                      Material
+                    </TabsTrigger>
+                  )}
                 <TabsTrigger
                   value="reject"
                   className="min-w-fit flex-1 px-3 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-slate-800 data-[state=active]:text-blue-400 data-[state=active]:shadow-sm sm:text-sm"
                 >
-                  Reject & Down
+                  {isSplitTabs ? "Reject" : "Reject & Down"}
                 </TabsTrigger>
+                {isSplitTabs && (
+                  <TabsTrigger
+                    value="downtime"
+                    className="min-w-fit flex-1 px-3 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-slate-800 data-[state=active]:text-blue-400 data-[state=active]:shadow-sm sm:text-sm"
+                  >
+                    Downtime
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
                   value="result"
                   className="min-w-fit flex-1 px-3 py-2 text-xs font-bold text-slate-400 data-[state=active]:bg-slate-800 data-[state=active]:text-blue-400 data-[state=active]:shadow-sm sm:text-sm"
@@ -952,21 +1107,28 @@ export function ProductionReportModal({
                         />
                       </div>
 
-                      {/* MP - Hide Std for Injection */}
-                      {lphType !== "INJECTION" && (
-                        <div className="space-y-1">
-                          <Label className="text-xs text-slate-400">MP Std</Label>
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            className="border-slate-800 bg-slate-950 text-slate-100"
-                            value={formData.mpStd}
-                            onChange={(e) =>
-                              setFormData({ ...formData, mpStd: e.target.value })
-                            }
-                          />
-                        </div>
-                      )}
+                      {/* MP - Hide Std for Injection/BM (Moulding) AND Printing AND Packing Assembly */}
+                      {!isMoulding &&
+                        lphType !== "PRINTING" &&
+                        lphType !== "PACKING_ASSEMBLY" && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-400">
+                              MP Std
+                            </Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              className="border-slate-800 bg-slate-950 text-slate-100"
+                              value={formData.mpStd}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  mpStd: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                        )}
                       <div className="space-y-1">
                         <Label className="text-xs text-slate-300">
                           MP Aktual
@@ -982,29 +1144,31 @@ export function ProductionReportModal({
                         />
                       </div>
 
-                      {/* CT / SPEED */}
-                      {lphType !== "INJECTION" && (
-                        <div className="space-y-1">
-                          <Label className="text-xs text-slate-400">
-                            {isRigid
-                              ? "Cycle Time Std (detik)"
-                              : "Speed Std (Sheet/Jam)"}
-                          </Label>
-                          <Input
-                            type="number"
-                            step={isRigid ? "0.1" : "1"}
-                            placeholder="0"
-                            className="border-slate-800 bg-slate-950 text-slate-100"
-                            value={formData.ctStd}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                ctStd: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
-                      )}
+                      {/* CT / SPEED - Hide Std for Injection/BM/Printing/Packing */}
+                      {!isMoulding &&
+                        lphType !== "PRINTING" &&
+                        lphType !== "PACKING_ASSEMBLY" && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-400">
+                              {isRigid
+                                ? "Cycle Time Std (detik)"
+                                : "Speed Std (Sheet/Jam)"}
+                            </Label>
+                            <Input
+                              type="number"
+                              step={isRigid ? "0.1" : "1"}
+                              placeholder="0"
+                              className="border-slate-800 bg-slate-950 text-slate-100"
+                              value={formData.ctStd}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  ctStd: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                        )}
                       <div className="space-y-1">
                         <Label className="text-xs text-slate-300">
                           {isRigid ? "Cycle Time Act" : "Speed Act"}
@@ -1024,7 +1188,7 @@ export function ProductionReportModal({
                       {/* Cavities (Moulding) - Hide Std for Injection */}
                       {isMoulding && (
                         <>
-                          {lphType !== "INJECTION" && (
+                          {!isMoulding && (
                             <div className="space-y-1">
                               <Label className="text-xs text-slate-400">
                                 Cavity Std
@@ -1071,7 +1235,10 @@ export function ProductionReportModal({
                     type="button"
                     onClick={() =>
                       setActiveTab(
-                        isRigid && lphType !== "INJECTION"
+                        isRigid &&
+                          !isMoulding &&
+                          lphType !== "PRINTING" &&
+                          lphType !== "PACKING_ASSEMBLY"
                           ? "material"
                           : "reject",
                       )
@@ -1080,7 +1247,10 @@ export function ProductionReportModal({
                     className="border-slate-700 bg-transparent text-slate-300 hover:bg-slate-800 hover:text-white"
                   >
                     Lanjut:{" "}
-                    {isRigid && lphType !== "INJECTION"
+                    {isRigid &&
+                    !isMoulding &&
+                    lphType !== "PRINTING" &&
+                    lphType !== "PACKING_ASSEMBLY"
                       ? "Material"
                       : "Reject & Down"}{" "}
                     &rarr;
@@ -1117,7 +1287,8 @@ export function ProductionReportModal({
                       />
                     </div>
 
-                    {isRigid && (
+                    {/* Rigid Material - Hide Purge/Runner if Injection/BM (moved to Reject Tab) */}
+                    {isRigid && !isMoulding && (
                       <>
                         <div className="space-y-1.5">
                           <Label className="text-xs text-slate-400">
@@ -1182,72 +1353,382 @@ export function ProductionReportModal({
                   </h3>
 
                   {/* Standalone Rejects */}
-                  <div className="mb-6 grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label className="truncate text-[10px] text-slate-500 uppercase">
-                        Reject Set Up
-                      </Label>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
-                        value={formData.rejectSetup}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            rejectSetup: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="truncate text-[10px] text-slate-500 uppercase">
-                        Reject Process
-                      </Label>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
-                        value={formData.rejectProcess}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            rejectProcess: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
+                  {/* Standalone Rejects - Hide for Injection/BM AND Printing */}
+                  {/* Standalone Rejects - Hide for Injection/BM AND Printing AND Packing Assembly */}
+                  {!isMoulding &&
+                    lphType !== "PRINTING" &&
+                    lphType !== "PACKING_ASSEMBLY" && (
+                      <>
+                        <div className="mb-6 grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <Label className="truncate text-[10px] text-slate-500 uppercase">
+                              Reject Set Up
+                            </Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
+                              value={formData.rejectSetup}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  rejectSetup: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="truncate text-[10px] text-slate-500 uppercase">
+                              Reject Process
+                            </Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
+                              value={formData.rejectProcess}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  rejectProcess: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
 
-                  <Separator className="my-4 bg-slate-800" />
+                        <Separator className="my-4 bg-slate-800" />
+                      </>
+                    )}
 
-                  <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
-                    Reject Assembly
-                  </h4>
+                  {!isMoulding &&
+                    lphType !== "PRINTING" &&
+                    lphType !== "PACKING_ASSEMBLY" && (
+                      <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
+                        Reject Assembly
+                      </h4>
+                    )}
                   <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
-                    {REJECT_LISTS[lphType].map((label) => (
-                      <div key={label} className="space-y-1">
-                        <Label
-                          className="truncate text-[10px] text-slate-500 uppercase"
-                          title={label}
-                        >
-                          {label}
-                        </Label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
-                          value={formData.rejects[label] || ""}
-                          onChange={(e) =>
-                            handleRejectChange(label, e.target.value)
-                          }
-                        />
+                    {isMoulding ? (
+                      // Injection/BM Split View
+                      <>
+                        <div className="col-span-2 md:col-span-4">
+                          <div className="mb-4 flex items-center gap-4">
+                            <Separator className="flex-1 bg-slate-800" />
+                            <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+                              Reject Bahan Baku
+                            </span>
+                            <Separator className="flex-1 bg-slate-800" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                            <div className="space-y-1">
+                              <Label className="truncate text-[10px] font-bold text-slate-500 uppercase">
+                                Gilingan Cucian (Gram)
+                              </Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
+                                value={formData.materialPurge}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    materialPurge: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="truncate text-[10px] font-bold text-slate-500 uppercase">
+                                PT / Runner (Gram)
+                              </Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
+                                value={formData.materialRunner}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    materialRunner: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                            <div className="col-span-2 flex items-center justify-end md:col-span-2">
+                              <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-1">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase">
+                                  Total Material Reject:
+                                </span>
+                                <span className="font-mono font-bold text-red-400">
+                                  {(
+                                    (Number(formData.materialPurge) || 0) +
+                                    (Number(formData.materialRunner) || 0)
+                                  ).toLocaleString("id-ID", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}{" "}
+                                  Gram
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="col-span-2 mt-2 md:col-span-4">
+                          <div className="mb-4 flex items-center gap-4">
+                            <Separator className="flex-1 bg-slate-800" />
+                            <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+                              Reject Product
+                            </span>
+                            <Separator className="flex-1 bg-slate-800" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                            {REJECT_INJECTION_PRODUCT.map((label) => (
+                              <div key={label} className="space-y-1">
+                                <Label
+                                  className="truncate text-[10px] text-slate-500 uppercase"
+                                  title={label}
+                                >
+                                  {label}
+                                </Label>
+                                <Input
+                                  type="number"
+                                  placeholder="0"
+                                  className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
+                                  value={formData.rejects[label] || ""}
+                                  onChange={(e) =>
+                                    handleRejectChange(label, e.target.value)
+                                  }
+                                />
+                              </div>
+                            ))}
+                            <div className="col-span-2 flex items-center justify-end md:col-span-4">
+                              <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-1">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase">
+                                  Total Product Reject:
+                                </span>
+                                <span className="font-mono font-bold text-red-400">
+                                  {REJECT_INJECTION_PRODUCT.reduce(
+                                    (acc, key) =>
+                                      acc +
+                                      (Number(formData.rejects[key]) || 0),
+                                    0,
+                                  ).toLocaleString("id-ID")}{" "}
+                                  Gram
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="col-span-2 mt-4 md:col-span-4">
+                              <div className="mb-4 flex items-center gap-4">
+                                <Separator className="flex-1 bg-slate-800" />
+                                <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+                                  Berat Produk (Pcs/Gram)
+                                </span>
+                                <Separator className="flex-1 bg-slate-800" />
+                              </div>
+                              <div className="w-full">
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  placeholder="0.00"
+                                  className="h-12 w-full border-slate-800 bg-slate-950 text-center font-mono text-lg text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
+                                  value={formData.productWeight}
+                                  onChange={(e) =>
+                                    setFormData({
+                                      ...formData,
+                                      productWeight: e.target.value,
+                                    })
+                                  }
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : lphType === "PACKING_ASSEMBLY" ? (
+                      // PACKING ASSEMBLY - 6 Split Sections
+                      <div className="col-span-2 md:col-span-4">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                          {REJECT_PACKING_ASSEMBLY_SPLIT.map((group, idx) => (
+                            <div key={idx} className="space-y-3">
+                              <h4 className="border-b border-slate-800 pb-2 text-xs font-bold text-slate-500 uppercase">
+                                Bagian {idx + 1}
+                              </h4>
+                              <div className="grid grid-cols-2 gap-4">
+                                {group.map((label) => (
+                                  <div key={label} className="space-y-1">
+                                    <Label
+                                      className="truncate text-[10px] text-slate-500 uppercase"
+                                      title={label}
+                                    >
+                                      {label}
+                                    </Label>
+                                    <Input
+                                      type="number"
+                                      placeholder="0"
+                                      className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
+                                      value={formData.rejects[label] || ""}
+                                      onChange={(e) =>
+                                        handleRejectChange(
+                                          label,
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
+                    ) : (
+                      // Standard View for Others
+                      REJECT_LISTS[lphType].map((label) => (
+                        <div key={label} className="space-y-1">
+                          <Label
+                            className="truncate text-[10px] text-slate-500 uppercase"
+                            title={label}
+                          >
+                            {label}
+                          </Label>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
+                            value={formData.rejects[label] || ""}
+                            onChange={(e) =>
+                              handleRejectChange(label, e.target.value)
+                            }
+                          />
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 
-                {/* DOWNTIME GRID */}
+                {/* DOWNTIME GRID - Only show here if NOT Split Tabs */}
+                {!isSplitTabs && (
+                  <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="flex items-center gap-2 text-sm font-bold tracking-wider text-amber-500 uppercase">
+                        <Zap className="h-4 w-4" /> Downtime (Menit)
+                      </h3>
+                      <div>Total: {totalDowntimeObj.total} mnt</div>
+                    </div>
+
+                    <div className="space-y-6">
+                      {/* Unplanned */}
+                      <div>
+                        <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
+                          Unplanned / Breakdown
+                        </h4>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
+                          {(isRigid
+                            ? DOWNTIME_LISTS.RIGID.UNPLANNED
+                            : DOWNTIME_LISTS.PAPER.UNPLANNED
+                          ).map((label) => (
+                            <div key={label} className="space-y-1">
+                              <Label
+                                className="truncate text-[10px] text-slate-500 uppercase"
+                                title={label}
+                              >
+                                {label}
+                              </Label>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-amber-500"
+                                value={
+                                  formData.downtimes[`UNPLANNED:${label}`] || ""
+                                }
+                                onChange={(e) =>
+                                  handleDowntimeChange(
+                                    `UNPLANNED:${label}`,
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <Separator className="bg-slate-800" />
+
+                      {/* Planned */}
+                      <div>
+                        <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
+                          Planned Downtime
+                        </h4>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
+                          {(isRigid
+                            ? DOWNTIME_LISTS.RIGID.PLANNED
+                            : DOWNTIME_LISTS.PAPER.PLANNED
+                          ).map((label) => (
+                            <div key={label} className="space-y-1">
+                              <Label
+                                className="truncate text-[10px] text-slate-500 uppercase"
+                                title={label}
+                              >
+                                {label}
+                              </Label>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-blue-500"
+                                value={
+                                  formData.downtimes[`PLANNED:${label}`] || ""
+                                }
+                                onChange={(e) =>
+                                  handleDowntimeChange(
+                                    `PLANNED:${label}`,
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 space-y-1.5">
+                      <Label className="text-xs font-bold text-slate-300">
+                        Catatan / Keterangan Masalah
+                      </Label>
+                      <Textarea
+                        placeholder="Tulis detail masalah atau catatan lainnya..."
+                        className="resize-none border-slate-800 bg-slate-900 text-slate-100 placeholder:text-slate-600"
+                        value={formData.notes}
+                        onChange={(e) =>
+                          setFormData({ ...formData, notes: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-right">
+                  <Button
+                    type="button"
+                    onClick={() =>
+                      setActiveTab(isSplitTabs ? "downtime" : "result")
+                    }
+                    variant="outline"
+                    className="border-slate-700 bg-transparent text-slate-300 hover:bg-slate-800 hover:text-white"
+                  >
+                    Lanjut: {isSplitTabs ? "Downtime" : "Output"} &rarr;
+                  </Button>
+                </div>
+              </TabsContent>
+
+              {/* --- TAB 4: REJECT & DOWNTIME --- */}
+              {/* --- TAB 3.5: DOWNTIME (Standalone for Injection) --- */}
+              <TabsContent value="downtime" className="space-y-6">
                 <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="flex items-center gap-2 text-sm font-bold tracking-wider text-amber-500 uppercase">
@@ -1258,78 +1739,168 @@ export function ProductionReportModal({
 
                   <div className="space-y-6">
                     {/* Unplanned */}
-                    <div>
-                      <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
-                        Unplanned / Breakdown
-                      </h4>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
-                        {(isRigid
-                          ? DOWNTIME_LISTS.RIGID.UNPLANNED
-                          : DOWNTIME_LISTS.PAPER.UNPLANNED
-                        ).map((label) => (
-                          <div key={label} className="space-y-1">
-                            <Label
-                              className="truncate text-[10px] text-slate-500 uppercase"
-                              title={label}
-                            >
-                              {label}
-                            </Label>
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-amber-500"
-                              value={
-                                formData.downtimes[`UNPLANNED:${label}`] || ""
-                              }
-                              onChange={(e) =>
-                                handleDowntimeChange(
-                                  `UNPLANNED:${label}`,
-                                  e.target.value,
-                                )
-                              }
-                            />
+                    {isMoulding ||
+                    lphType === "PRINTING" ||
+                    lphType === "PACKING_ASSEMBLY" ? (
+                      // Injection split
+                      <div className="space-y-6">
+                        {/* 1. Loss Hour (Planned) */}
+                        <div>
+                          <div className="mb-4 flex items-center gap-4">
+                            <Separator className="flex-1 bg-slate-800" />
+                            <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+                              Loss Hour
+                            </span>
+                            <Separator className="flex-1 bg-slate-800" />
                           </div>
-                        ))}
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
+                            {(lphType === "PRINTING"
+                              ? LOSS_HOUR_PRINTING
+                              : lphType === "PACKING_ASSEMBLY"
+                                ? LOSS_HOUR_PACKING_ASSEMBLY
+                                : LOSS_HOUR_INJECTION
+                            ).map((label) => (
+                              <div key={label} className="space-y-1">
+                                <Label
+                                  className="truncate text-[10px] text-slate-500 uppercase"
+                                  title={label}
+                                >
+                                  {label}
+                                </Label>
+                                <Input
+                                  type="number"
+                                  placeholder="0"
+                                  className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-blue-500"
+                                  value={
+                                    formData.downtimes[`PLANNED:${label}`] || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleDowntimeChange(
+                                      `PLANNED:${label}`,
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 2. Downtime (Unplanned) */}
+                        <div>
+                          <div className="mb-4 flex items-center gap-4">
+                            <Separator className="flex-1 bg-slate-800" />
+                            <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+                              Downtime
+                            </span>
+                            <Separator className="flex-1 bg-slate-800" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
+                            {(lphType === "PRINTING"
+                              ? DOWNTIME_PRINTING_LIST
+                              : lphType === "PACKING_ASSEMBLY"
+                                ? DOWNTIME_PACKING_ASSEMBLY_LIST
+                                : DOWNTIME_INJECTION_LIST
+                            ).map((label) => (
+                              <div key={label} className="space-y-1">
+                                <Label
+                                  className="truncate text-[10px] text-slate-500 uppercase"
+                                  title={label}
+                                >
+                                  {label}
+                                </Label>
+                                <Input
+                                  type="number"
+                                  placeholder="0"
+                                  className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-amber-500"
+                                  value={formData.downtimes[label] || ""}
+                                  onChange={(e) =>
+                                    handleDowntimeChange(label, e.target.value)
+                                  }
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      // STANDARD VIEW (Printing / Split Others)
+                      <div>
+                        <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
+                          Unplanned / Breakdown
+                        </h4>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
+                          {(isRigid
+                            ? DOWNTIME_LISTS.RIGID.UNPLANNED
+                            : DOWNTIME_LISTS.PAPER.UNPLANNED
+                          ).map((label) => (
+                            <div key={label} className="space-y-1">
+                              <Label
+                                className="truncate text-[10px] text-slate-500 uppercase"
+                                title={label}
+                              >
+                                {label}
+                              </Label>
+                              <Input
+                                type="number"
+                                placeholder="0"
+                                className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-amber-500"
+                                value={
+                                  formData.downtimes[`UNPLANNED:${label}`] || ""
+                                }
+                                onChange={(e) =>
+                                  handleDowntimeChange(
+                                    `UNPLANNED:${label}`,
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <Separator className="bg-slate-800" />
 
-                    {/* Planned */}
-                    <div>
-                      <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
-                        Planned Downtime
-                      </h4>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
-                        {(isRigid
-                          ? DOWNTIME_LISTS.RIGID.PLANNED
-                          : DOWNTIME_LISTS.PAPER.PLANNED
-                        ).map((label) => (
-                          <div key={label} className="space-y-1">
-                            <Label
-                              className="truncate text-[10px] text-slate-500 uppercase"
-                              title={label}
-                            >
-                              {label}
-                            </Label>
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-blue-500"
-                              value={
-                                formData.downtimes[`PLANNED:${label}`] || ""
-                              }
-                              onChange={(e) =>
-                                handleDowntimeChange(
-                                  `PLANNED:${label}`,
-                                  e.target.value,
-                                )
-                              }
-                            />
+                    {/* Planned - Hide for PRINTING & PACKING_ASSEMBLY */}
+                    {lphType !== "PRINTING" &&
+                      lphType !== "PACKING_ASSEMBLY" && (
+                        <div>
+                          <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
+                            Planned Downtime
+                          </h4>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
+                            {(isRigid
+                              ? DOWNTIME_LISTS.RIGID.PLANNED
+                              : DOWNTIME_LISTS.PAPER.PLANNED
+                            ).map((label) => (
+                              <div key={label} className="space-y-1">
+                                <Label
+                                  className="truncate text-[10px] text-slate-500 uppercase"
+                                  title={label}
+                                >
+                                  {label}
+                                </Label>
+                                <Input
+                                  type="number"
+                                  placeholder="0"
+                                  className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-blue-500"
+                                  value={
+                                    formData.downtimes[`PLANNED:${label}`] || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleDowntimeChange(
+                                      `PLANNED:${label}`,
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        </div>
+                      )}
                   </div>
 
                   <div className="mt-6 space-y-1.5">
@@ -1359,9 +1930,6 @@ export function ProductionReportModal({
                 </div>
               </TabsContent>
 
-              {/* --- TAB 4: REJECT & DOWNTIME --- */}
-              {/* --- TAB 3: REJECT & DOWNTIME --- */}
-              {/* --- TAB 4: RESULT (OUTPUT) --- */}
               <TabsContent value="result" className="space-y-6">
                 <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
                   <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-300">
@@ -1372,7 +1940,7 @@ export function ProductionReportModal({
                     {/* IF PAPER: Pass On is the New Finish Good (Prominent) */}
                     <div className="col-span-2 space-y-1.5">
                       <Label className="text-xs font-bold text-emerald-500">
-                        PASS ON / GOOD
+                        PASS ON
                       </Label>
                       <Input
                         type="number"
@@ -1390,9 +1958,7 @@ export function ProductionReportModal({
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-slate-400">
-                        WIP (Work In Progress)
-                      </Label>
+                      <Label className="text-xs text-slate-400">WIP</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -1405,9 +1971,7 @@ export function ProductionReportModal({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-slate-400">
-                        HOLD / QC
-                      </Label>
+                      <Label className="text-xs text-slate-400">HOLD</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -1438,109 +2002,113 @@ export function ProductionReportModal({
                   </div>
                 </div>
 
-                {isRigid && lphType !== "INJECTION" && (
-                  <div className="rounded-xl border border-blue-800 bg-blue-950/20 p-4 shadow-sm">
-                    <h3 className="mb-4 flex items-center justify-between gap-2 text-sm font-bold text-blue-400">
-                      <div className="flex items-center gap-2">
-                        <History className="h-4 w-4" /> Quick Report (Estimasi)
-                      </div>
-                      {/* Formula button removed */}
-                    </h3>
+                {isRigid &&
+                  !isMoulding &&
+                  lphType !== "PRINTING" &&
+                  lphType !== "PACKING_ASSEMBLY" && (
+                    <div className="rounded-xl border border-blue-800 bg-blue-950/20 p-4 shadow-sm">
+                      <h3 className="mb-4 flex items-center justify-between gap-2 text-sm font-bold text-blue-400">
+                        <div className="flex items-center gap-2">
+                          <History className="h-4 w-4" /> Quick Report
+                          (Estimasi)
+                        </div>
+                        {/* Formula button removed */}
+                      </h3>
 
-                    {/* Formula text removed */}
+                      {/* Formula text removed */}
 
-                    <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-                      <div className="space-y-1 rounded-lg bg-slate-950 p-3">
-                        <Label className="text-[10px] text-slate-500 uppercase">
-                          Total Waktu
-                        </Label>
-                        <div className="text-xl font-bold text-slate-200">
-                          {totalTimeMinutes.toFixed(0)}{" "}
-                          <span className="text-sm font-normal text-slate-500">
-                            mnt
-                          </span>
-                        </div>
-                      </div>
-                      <div className="space-y-1 rounded-lg bg-slate-950 p-3">
-                        <Label className="text-[10px] text-slate-500 uppercase">
-                          Operating Time
-                        </Label>
-                        <div className="text-xl font-bold text-slate-200">
-                          {(totalTimeMinutes - totalDowntimeObj.total).toFixed(
-                            0,
-                          )}{" "}
-                          <span className="text-sm font-normal text-slate-500">
-                            mnt
-                          </span>
-                        </div>
-                      </div>
-                      <div className="space-y-1 rounded-lg bg-slate-950 p-3">
-                        <Label className="text-[10px] text-slate-500 uppercase">
-                          Availability
-                        </Label>
-                        <div
-                          className={`text-xl font-bold ${availability >= 90 ? "text-emerald-400" : "text-amber-400"}`}
-                        >
-                          {availability.toFixed(1)}%
-                          <p className="mt-1 text-[10px] font-normal text-slate-500">
-                            • Availability = (Operating Time / (Total Time -
-                            Planned Downtime)) × 100
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-1 rounded-lg bg-slate-950 p-3">
-                        <Label className="text-[10px] text-slate-500 uppercase">
-                          Performance
-                        </Label>
-                        <div
-                          className={`text-xl font-bold ${performance >= 90 ? "text-emerald-400" : "text-amber-400"}`}
-                        >
-                          {valStd > 0 ? (
-                            <>
-                              {performance.toFixed(1)}%
-                              <div className="mt-1 space-y-0.5 text-[10px] font-normal text-slate-500">
-                                <div>
-                                  Kapasitas: {targetOutput.toLocaleString()}
-                                </div>
-                                <div
-                                  className="text-slate-600"
-                                  title="Speed Mesin"
-                                >
-                                  Spd: {speedPerMin.toFixed(0)}/m |{" "}
-                                  {speedPerHour.toLocaleString()}/h
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <span className="text-xs font-medium text-red-400">
-                              Isi CT Std
+                      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+                        <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                          <Label className="text-[10px] text-slate-500 uppercase">
+                            Total Waktu
+                          </Label>
+                          <div className="text-xl font-bold text-slate-200">
+                            {totalTimeMinutes.toFixed(0)}{" "}
+                            <span className="text-sm font-normal text-slate-500">
+                              mnt
                             </span>
-                          )}
+                          </div>
                         </div>
-                      </div>
-                      <div className="space-y-1 rounded-lg bg-slate-950 p-3">
-                        <Label className="text-[10px] text-slate-500 uppercase">
-                          Quality
-                        </Label>
-                        <div
-                          className={`text-xl font-bold ${quality >= 90 ? "text-emerald-400" : "text-amber-400"}`}
-                        >
-                          {quality.toFixed(1)}%
+                        <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                          <Label className="text-[10px] text-slate-500 uppercase">
+                            Operating Time
+                          </Label>
+                          <div className="text-xl font-bold text-slate-200">
+                            {(
+                              totalTimeMinutes - totalDowntimeObj.total
+                            ).toFixed(0)}{" "}
+                            <span className="text-sm font-normal text-slate-500">
+                              mnt
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="col-span-2 flex items-center justify-between rounded-lg border border-blue-800/50 bg-blue-900/20 p-3 md:col-span-5">
-                        <Label className="text-xs font-bold text-blue-300 uppercase">
-                          OEE Score
-                        </Label>
-                        <div
-                          className={`text-2xl font-black ${oee >= 85 ? "text-emerald-400" : oee >= 60 ? "text-amber-400" : "text-red-400"}`}
-                        >
-                          {oee.toFixed(2)}%
+                        <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                          <Label className="text-[10px] text-slate-500 uppercase">
+                            Availability
+                          </Label>
+                          <div
+                            className={`text-xl font-bold ${availability >= 90 ? "text-emerald-400" : "text-amber-400"}`}
+                          >
+                            {availability.toFixed(1)}%
+                            <p className="mt-1 text-[10px] font-normal text-slate-500">
+                              • Availability = (Operating Time / (Total Time -
+                              Planned Downtime)) × 100
+                            </p>
+                          </div>
+                        </div>
+                        <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                          <Label className="text-[10px] text-slate-500 uppercase">
+                            Performance
+                          </Label>
+                          <div
+                            className={`text-xl font-bold ${performance >= 90 ? "text-emerald-400" : "text-amber-400"}`}
+                          >
+                            {valStd > 0 ? (
+                              <>
+                                {performance.toFixed(1)}%
+                                <div className="mt-1 space-y-0.5 text-[10px] font-normal text-slate-500">
+                                  <div>
+                                    Kapasitas: {targetOutput.toLocaleString()}
+                                  </div>
+                                  <div
+                                    className="text-slate-600"
+                                    title="Speed Mesin"
+                                  >
+                                    Spd: {speedPerMin.toFixed(0)}/m |{" "}
+                                    {speedPerHour.toLocaleString()}/h
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <span className="text-xs font-medium text-red-400">
+                                Isi CT Std
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-1 rounded-lg bg-slate-950 p-3">
+                          <Label className="text-[10px] text-slate-500 uppercase">
+                            Quality
+                          </Label>
+                          <div
+                            className={`text-xl font-bold ${quality >= 90 ? "text-emerald-400" : "text-amber-400"}`}
+                          >
+                            {quality.toFixed(1)}%
+                          </div>
+                        </div>
+                        <div className="col-span-2 flex items-center justify-between rounded-lg border border-blue-800/50 bg-blue-900/20 p-3 md:col-span-5">
+                          <Label className="text-xs font-bold text-blue-300 uppercase">
+                            OEE Score
+                          </Label>
+                          <div
+                            className={`text-2xl font-black ${oee >= 85 ? "text-emerald-400" : oee >= 60 ? "text-amber-400" : "text-red-400"}`}
+                          >
+                            {oee.toFixed(2)}%
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </TabsContent>
             </Tabs>
           </form>
@@ -1584,6 +2152,7 @@ export function ProductionReportModal({
                     inputMaterial: "",
                     materialRunner: "",
                     materialPurge: "",
+                    productWeight: "",
                     qtyGood: "",
                     qtyPassOn: "",
                     qtyWip: "",

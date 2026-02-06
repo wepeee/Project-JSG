@@ -660,6 +660,8 @@ export default function ProList({
       }
     },
     onSuccess: async (_data: any, vars: any) => {
+      setSelectedId(null);
+      setEditing(false);
       await utils.pros.list.invalidate();
       await utils.pros.getById.invalidate({ id: vars.id });
       await utils.pros.getSchedule.invalidate();
@@ -683,8 +685,6 @@ export default function ProList({
 
     try {
       await del.mutateAsync({ id });
-      setSelectedId(null);
-      setEditing(false);
     } catch (e: any) {
       setErr(e?.message ?? "Gagal menghapus PRO");
     }
