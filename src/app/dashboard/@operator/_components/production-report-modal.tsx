@@ -170,6 +170,7 @@ const REJECT_PACKING_ASSEMBLY_SPLIT = [
     "Stiker BB & Derma",
     "Stiker BB & WCD",
     "Sticker BB",
+    "STICKER WCD",
     "Stiker Barcode",
     "Stiker Toner",
     "Sticker Bottom",
@@ -249,7 +250,6 @@ const LOSS_HOUR_PACKING_ASSEMBLY = [
   "NO ORDER",
   "ISTIRAHAT",
   "TRIAL",
-  "PREVEN MESIN",
 ];
 
 const DOWNTIME_INJECTION_LIST = [
@@ -288,20 +288,14 @@ const DOWNTIME_PRINTING_LIST = [
 ];
 
 const DOWNTIME_PACKING_ASSEMBLY_LIST = [
-  "ELECTRIC",
-  "MACHINE",
-  "PNUMATIC",
-  "UTILITY",
-  "START MESIN",
-  "SET UP",
-  "APPROVAL",
-  "SCREEN",
-  "PROSES",
-  "MATERIAL",
-  "WARNA TIDAK STANDART",
-  "TOOLS",
-  "MAN",
-  "OTHER",
+  "Material",
+  "WARNA TIDAK STD",
+  "Approve",
+  "Set Up",
+  "Airblow",
+  "Proses",
+  "Man",
+  "Other",
 ];
 
 // --- HELPER ---

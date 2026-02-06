@@ -10,7 +10,15 @@ export const verificationRouter = createTRPCRouter({
       z
         .object({
           status: z.nativeEnum(ReportStatus).optional(),
-          category: z.enum(["PAPER", "RIGID"]).optional(),
+          category: z
+            .enum([
+              "PAPER",
+              "INJECTION",
+              "BLOW_MOULDING",
+              "PRINTING",
+              "PACKING_ASSEMBLY",
+            ])
+            .optional(),
           limit: z.number().default(50),
         })
         .optional(),
@@ -22,10 +30,8 @@ export const verificationRouter = createTRPCRouter({
         where.status = input.status;
       }
 
-      if (input?.category === "RIGID") {
-        where.reportType = { in: ["BLOW_MOULDING", "INJECTION"] };
-      } else if (input?.category === "PAPER") {
-        where.reportType = { in: ["PAPER", "PRINTING", "PACKING_ASSEMBLY"] };
+      if (input?.category) {
+        where.reportType = input.category;
       }
 
       const reports = await ctx.db.productionReport.findMany({

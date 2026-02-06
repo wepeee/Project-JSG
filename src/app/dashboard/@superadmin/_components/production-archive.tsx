@@ -57,22 +57,41 @@ const PAPER_DOWNTIME_COLUMNS = [
 ];
 
 export default function ProductionArchive() {
-  const [activeCategory, setActiveCategory] = React.useState<"PAPER" | "RIGID">(
-    "PAPER",
-  );
+  const [activeCategory, setActiveCategory] = React.useState<
+    "PAPER" | "INJECTION" | "BLOW_MOULDING" | "PRINTING" | "PACKING_ASSEMBLY"
+  >("PAPER");
   const [showRejectDetails, setShowRejectDetails] = React.useState(false);
   const [showDowntimeDetails, setShowDowntimeDetails] = React.useState(false);
 
   // Fetch APPROVED reports
+  // Auto-recover from "RIGID" state (HMR legacy)
+  React.useEffect(() => {
+    if (activeCategory === ("RIGID" as any)) {
+      setActiveCategory("INJECTION");
+    }
+  }, [activeCategory]);
+
+  const safeCategory =
+    activeCategory === ("RIGID" as any) ? "INJECTION" : activeCategory;
+
   const { data: reports, isLoading } = api.verification.getReports.useQuery({
     status: "APPROVED",
-    category: activeCategory,
-    limit: 100, // Higher limit for list view, maybe implement pagination later
+    category: safeCategory,
+    limit: 100,
   });
+
+  const rigidSubCategories = [
+    { id: "INJECTION", label: "INJECTION" },
+    { id: "BLOW_MOULDING", label: "BLOW MOLD" },
+    { id: "PRINTING", label: "PRINTING" },
+    { id: "PACKING_ASSEMBLY", label: "PACKING" },
+  ] as const;
+
+  const isRigidActive = activeCategory !== "PAPER";
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h2 className="text-xl font-bold tracking-tight">
             Daftar Laporan Produksi
@@ -83,19 +102,51 @@ export default function ProductionArchive() {
         </div>
 
         {/* Category Switcher */}
-        <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
-          <button
-            onClick={() => setActiveCategory("PAPER")}
-            className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${activeCategory === "PAPER" ? "bg-white shadow dark:bg-slate-700" : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"}`}
-          >
-            PAPER
-          </button>
-          <button
-            onClick={() => setActiveCategory("RIGID")}
-            className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${activeCategory === "RIGID" ? "bg-white shadow dark:bg-slate-700" : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"}`}
-          >
-            RIGID
-          </button>
+        <div className="flex flex-col items-end gap-2">
+          {/* Main Level */}
+          <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+            <button
+              onClick={() => setActiveCategory("PAPER")}
+              className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
+                !isRigidActive
+                  ? "bg-white shadow dark:bg-slate-700"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
+            >
+              PAPER
+            </button>
+            <button
+              onClick={() => {
+                if (!isRigidActive) setActiveCategory("INJECTION");
+              }}
+              className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
+                isRigidActive
+                  ? "bg-white shadow dark:bg-slate-700"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
+            >
+              RIGID
+            </button>
+          </div>
+
+          {/* Sub Level for Rigid */}
+          {isRigidActive && (
+            <div className="no-scrollbar flex overflow-x-auto rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+              {rigidSubCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`whitespace-nowrap rounded-md px-3 py-1 text-xs font-bold transition-all ${
+                    activeCategory === cat.id
+                      ? "bg-white shadow dark:bg-slate-700"
+                      : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -106,7 +157,7 @@ export default function ProductionArchive() {
           </div>
         ) : reports?.length === 0 ? (
           <div className="py-12 text-center text-sm text-slate-500">
-            Belum ada laporan {activeCategory} yang disetujui.
+            Belum ada laporan {activeCategory.replace("_", " ")} yang disetujui.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -206,7 +257,7 @@ export default function ProductionArchive() {
                         {col}
                       </TableHead>
                     ))}
-                  {activeCategory === "RIGID" && (
+                  {activeCategory !== "PAPER" && (
                     <>
                       <TableHead className="text-right text-slate-300">
                         MP
@@ -357,7 +408,7 @@ export default function ProductionArchive() {
                           </TableCell>
                         );
                       })}
-                    {activeCategory === "RIGID" && (
+                    {activeCategory !== "PAPER" && (
                       <>
                         <TableCell className="text-right text-xs">
                           {rpt.manPowerAct ?? "-"}

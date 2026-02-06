@@ -18,9 +18,9 @@ import { Textarea } from "~/components/ui/textarea";
 type ReportStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export default function VerificationList() {
-  const [activeCategory, setActiveCategory] = React.useState<"PAPER" | "RIGID">(
-    "PAPER",
-  );
+  const [activeCategory, setActiveCategory] = React.useState<
+    "PAPER" | "INJECTION" | "BLOW_MOULDING" | "PRINTING" | "PACKING_ASSEMBLY"
+  >("PAPER");
   const [activeTab, setActiveTab] = React.useState<ReportStatus>("PENDING");
   const [rejectId, setRejectId] = React.useState<string | null>(null);
   const [rejectNote, setRejectNote] = React.useState("");
@@ -28,11 +28,30 @@ export default function VerificationList() {
 
   const utils = api.useUtils();
 
+  // Auto-recover from "RIGID" state (HMR legacy)
+  React.useEffect(() => {
+    if (activeCategory === ("RIGID" as any)) {
+      setActiveCategory("INJECTION");
+    }
+  }, [activeCategory]);
+
+  const safeCategory =
+    activeCategory === ("RIGID" as any) ? "INJECTION" : activeCategory;
+
   const { data: reports, isLoading } = api.verification.getReports.useQuery({
     status: activeTab,
-    category: activeCategory,
+    category: safeCategory,
     limit: 50,
   });
+
+  const rigidSubCategories = [
+    { id: "INJECTION", label: "INJECTION" },
+    { id: "BLOW_MOULDING", label: "BLOW MOLD" },
+    { id: "PRINTING", label: "PRINTING" },
+    { id: "PACKING_ASSEMBLY", label: "PACKING" },
+  ] as const;
+
+  const isRigidActive = activeCategory !== "PAPER";
 
   const approveMutation = api.verification.approveReport.useMutation({
     onSuccess: () => {
@@ -61,23 +80,55 @@ export default function VerificationList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <h2 className="text-xl font-bold tracking-tight">Verifikasi Laporan</h2>
 
         {/* Category Switcher */}
-        <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
-          <button
-            onClick={() => setActiveCategory("PAPER")}
-            className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${activeCategory === "PAPER" ? "bg-white shadow dark:bg-slate-700" : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"}`}
-          >
-            PAPER
-          </button>
-          <button
-            onClick={() => setActiveCategory("RIGID")}
-            className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${activeCategory === "RIGID" ? "bg-white shadow dark:bg-slate-700" : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"}`}
-          >
-            RIGID
-          </button>
+        <div className="flex flex-col items-end gap-2">
+          {/* Main Level */}
+          <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+            <button
+              onClick={() => setActiveCategory("PAPER")}
+              className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
+                !isRigidActive
+                  ? "bg-white shadow dark:bg-slate-700"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
+            >
+              PAPER
+            </button>
+            <button
+              onClick={() => {
+                if (!isRigidActive) setActiveCategory("INJECTION");
+              }}
+              className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
+                isRigidActive
+                  ? "bg-white shadow dark:bg-slate-700"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
+            >
+              RIGID
+            </button>
+          </div>
+
+          {/* Sub Level for Rigid */}
+          {isRigidActive && (
+            <div className="no-scrollbar flex overflow-x-auto rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+              {rigidSubCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`whitespace-nowrap rounded-md px-3 py-1 text-xs font-bold transition-all ${
+                    activeCategory === cat.id
+                      ? "bg-white shadow dark:bg-slate-700"
+                      : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -266,7 +317,7 @@ export default function VerificationList() {
                     </div>
                   </div>
 
-                  {activeCategory === "RIGID" && (
+                  {activeCategory !== "PAPER" && (
                     <div className="space-y-1">
                       <div className="font-bold text-slate-700 dark:text-slate-300">
                         Resources
@@ -286,7 +337,7 @@ export default function VerificationList() {
                     </div>
                   )}
 
-                  {activeCategory === "RIGID" && (
+                  {activeCategory !== "PAPER" && (
                     <div className="space-y-1">
                       <div className="font-bold text-slate-700 dark:text-slate-300">
                         Material
