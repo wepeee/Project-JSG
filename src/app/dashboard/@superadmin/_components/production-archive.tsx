@@ -40,11 +40,14 @@ const PAPER_REJECT_COLUMNS = [
   "Lain-lain",
 ];
 
-const PAPER_DOWNTIME_COLUMNS = [
+const PAPER_PLANNED_DT = [
   "Trouble PLN",
   "Trial",
   "Preventive Maintenance",
   "Istirahat",
+];
+
+const PAPER_UNPLANNED_DT = [
   "Tunggu Approval",
   "Tunggu Material",
   "Set Up & Change Over",
@@ -136,7 +139,7 @@ export default function ProductionArchive() {
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`whitespace-nowrap rounded-md px-3 py-1 text-xs font-bold transition-all ${
+                  className={`rounded-md px-3 py-1 text-xs font-bold whitespace-nowrap transition-all ${
                     activeCategory === cat.id
                       ? "bg-white shadow dark:bg-slate-700"
                       : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
@@ -164,39 +167,98 @@ export default function ProductionArchive() {
             <Table>
               <TableHeader className="border-b border-slate-800 bg-slate-950">
                 <TableRow className="hover:bg-slate-900/50">
-                  <TableHead className="w-[120px] text-slate-300">
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="w-[120px] text-slate-300"
+                  >
                     Tanggal
                   </TableHead>
-                  <TableHead className="text-slate-300">No. PRO</TableHead>
-                  <TableHead className="text-slate-300">Part Number</TableHead>
-                  <TableHead className="min-w-[200px] text-slate-300">
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-slate-300"
+                  >
+                    No. PRO
+                  </TableHead>
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-slate-300"
+                  >
+                    Part Number
+                  </TableHead>
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="min-w-[200px] text-slate-300"
+                  >
                     Produk
                   </TableHead>
-                  <TableHead className="text-slate-300">Mesin</TableHead>
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-slate-300"
+                  >
+                    Mesin
+                  </TableHead>
                   {activeCategory === "PAPER" && (
                     <>
-                      <TableHead className="text-right text-slate-300">
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
                         Speed
                       </TableHead>
-                      <TableHead className="text-right text-slate-300">
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
                         Std Speed
                       </TableHead>
                     </>
                   )}
-                  <TableHead className="text-slate-300">Shift</TableHead>
-                  <TableHead className="text-slate-300">Operator</TableHead>
-                  <TableHead className="text-slate-300">Mulai</TableHead>
-                  <TableHead className="text-slate-300">Selesai</TableHead>
-                  <TableHead className="text-right text-slate-300">
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-slate-300"
+                  >
+                    Shift
+                  </TableHead>
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-slate-300"
+                  >
+                    Operator
+                  </TableHead>
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-slate-300"
+                  >
+                    Mulai
+                  </TableHead>
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-slate-300"
+                  >
+                    Selesai
+                  </TableHead>
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-right text-slate-300"
+                  >
                     Pass On
                   </TableHead>
-                  <TableHead className="text-right text-slate-300">
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-right text-slate-300"
+                  >
                     Hold
                   </TableHead>
-                  <TableHead className="text-right text-slate-300">
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-right text-slate-300"
+                  >
                     WIP
                   </TableHead>
-                  <TableHead className="text-right text-slate-300">
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-right text-slate-300"
+                  >
                     <div className="flex items-center justify-end gap-1">
                       <span>Reject</span>
                       {activeCategory === "PAPER" && (
@@ -220,15 +282,22 @@ export default function ProductionArchive() {
                     PAPER_REJECT_COLUMNS.map((col) => (
                       <TableHead
                         key={col}
+                        rowSpan={2}
                         className="text-right text-xs whitespace-nowrap text-slate-300"
                       >
                         {col}
                       </TableHead>
                     ))}
-                  <TableHead className="text-right text-slate-300">
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-right text-slate-300"
+                  >
                     Total Output
                   </TableHead>
-                  <TableHead className="text-right text-slate-300">
+                  <TableHead
+                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    className="text-right text-slate-300"
+                  >
                     <div className="flex items-center justify-end gap-1">
                       <span>Downtime</span>
                       {activeCategory === "PAPER" && (
@@ -247,16 +316,53 @@ export default function ProductionArchive() {
                       )}
                     </div>
                   </TableHead>
-                  {activeCategory === "PAPER" &&
-                    showDowntimeDetails &&
-                    PAPER_DOWNTIME_COLUMNS.map((col) => (
+
+                  {/* GROUPED DOWNTIME HEADERS (ROW 1 - PAPER ONLY) */}
+                  {activeCategory === "PAPER" && showDowntimeDetails && (
+                    <>
                       <TableHead
-                        key={col}
-                        className="text-right text-xs whitespace-nowrap text-slate-300"
+                        colSpan={PAPER_PLANNED_DT.length}
+                        className="bg-emerald-900/20 text-center text-xs font-bold text-emerald-400 uppercase"
                       >
-                        {col}
+                        PLANNED DOWNTIME
                       </TableHead>
-                    ))}
+                      <TableHead
+                        colSpan={PAPER_UNPLANNED_DT.length}
+                        className="bg-amber-900/20 text-center text-xs font-bold text-amber-400 uppercase"
+                      >
+                        UNPLANNED DOWNTIME
+                      </TableHead>
+                    </>
+                  )}
+
+                  {activeCategory === "PAPER" && (
+                    <>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Availability
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Performance
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Quality
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        OEE %
+                      </TableHead>
+                    </>
+                  )}
                   {activeCategory !== "PAPER" && (
                     <>
                       <TableHead className="text-right text-slate-300">
@@ -268,6 +374,27 @@ export default function ProductionArchive() {
                     </>
                   )}
                 </TableRow>
+                {/* SUB-HEADERS FOR DOWNTIME (ROW 2 - PAPER ONLY) */}
+                {activeCategory === "PAPER" && showDowntimeDetails && (
+                  <TableRow className="hover:bg-slate-900/50">
+                    {PAPER_PLANNED_DT.map((col) => (
+                      <TableHead
+                        key={col}
+                        className="bg-emerald-900/10 text-right text-[10px] whitespace-nowrap text-emerald-300"
+                      >
+                        {col}
+                      </TableHead>
+                    ))}
+                    {PAPER_UNPLANNED_DT.map((col) => (
+                      <TableHead
+                        key={col}
+                        className="bg-amber-900/10 text-right text-[10px] whitespace-nowrap text-amber-300"
+                      >
+                        {col}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                )}
               </TableHeader>
               <TableBody>
                 {reports?.map((rpt) => (
@@ -388,26 +515,254 @@ export default function ProductionArchive() {
                         Number(rpt.qtyGood) +
                         Number(rpt.qtyPassOn) +
                         Number(rpt.qtyHold) +
-                        Number(rpt.qtyWip)
+                        Number(rpt.qtyWip) +
+                        Number(rpt.qtyReject)
                       ).toLocaleString()}
                     </TableCell>
                     <TableCell className="text-right text-xs font-bold text-amber-600">
                       {rpt.totalDowntime > 0 ? `${rpt.totalDowntime}m` : "-"}
                     </TableCell>
-                    {activeCategory === "PAPER" &&
-                      showDowntimeDetails &&
-                      PAPER_DOWNTIME_COLUMNS.map((col) => {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                        const val = (rpt.downtimeBreakdown as any)?.[col];
-                        return (
-                          <TableCell
-                            key={col}
-                            className="text-right text-xs text-slate-500"
-                          >
-                            {val ? `${val}m` : "-"}
-                          </TableCell>
-                        );
-                      })}
+                    {activeCategory === "PAPER" && showDowntimeDetails && (
+                      <>
+                        {PAPER_PLANNED_DT.map((col) => {
+                          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                          const val = (rpt.downtimeBreakdown as any)?.[col];
+                          return (
+                            <TableCell
+                              key={col}
+                              className="text-right text-xs text-blue-500/70"
+                            >
+                              {val ? `${val}m` : "-"}
+                            </TableCell>
+                          );
+                        })}
+                        {PAPER_UNPLANNED_DT.map((col) => {
+                          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                          const val = (rpt.downtimeBreakdown as any)?.[col];
+                          return (
+                            <TableCell
+                              key={col}
+                              className="text-right text-xs text-orange-500/70"
+                            >
+                              {val ? `${val}m` : "-"}
+                            </TableCell>
+                          );
+                        })}
+                      </>
+                    )}
+                    {activeCategory === "PAPER" && (
+                      <>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            if (!rpt.startTime || !rpt.endTime) return "-";
+                            const start = new Date(rpt.startTime).getTime();
+                            const end = new Date(rpt.endTime).getTime();
+                            const totalTimeDiff = (end - start) / (1000 * 60); // Total Minutes
+
+                            if (totalTimeDiff <= 0) return "-";
+
+                            // Calculate Planned Downtime
+                            const plannedItems = [
+                              "Trouble PLN",
+                              "Trial",
+                              "Preventive Maintenance",
+                              "Istirahat",
+                            ];
+                            let totalPlannedDt = 0;
+                            if (rpt.downtimeBreakdown) {
+                              plannedItems.forEach((key) => {
+                                const val = (rpt.downtimeBreakdown as any)[key];
+                                if (val) totalPlannedDt += Number(val);
+                              });
+                            }
+
+                            const plannedProductionTime =
+                              totalTimeDiff - totalPlannedDt;
+                            const operatingTime =
+                              totalTimeDiff - rpt.totalDowntime;
+
+                            if (plannedProductionTime <= 0) return "0%";
+
+                            const avail =
+                              (operatingTime / plannedProductionTime) * 100;
+                            return (
+                              <span
+                                className={
+                                  avail >= 90
+                                    ? "font-bold text-emerald-600"
+                                    : avail >= 80
+                                      ? "font-bold text-amber-600"
+                                      : "font-bold text-red-600"
+                                }
+                              >
+                                {avail.toFixed(1)}%
+                              </span>
+                            );
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            if (
+                              !rpt.startTime ||
+                              !rpt.endTime ||
+                              !(rpt as any).stdSpeed
+                            )
+                              return "-";
+
+                            const start = new Date(rpt.startTime).getTime();
+                            const end = new Date(rpt.endTime).getTime();
+                            const totalTimeDiff = (end - start) / (1000 * 60); // Minutes
+
+                            if (totalTimeDiff <= 0) return "-";
+
+                            const operatingTime =
+                              totalTimeDiff - rpt.totalDowntime;
+                            if (operatingTime <= 0) return "0%";
+
+                            // Target = Std Speed (per min) * Operating Time
+                            const targetOutput =
+                              Number((rpt as any).stdSpeed) * operatingTime;
+
+                            if (targetOutput <= 0) return "0%";
+
+                            const totalOutput =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0) +
+                              Number(rpt.qtyReject || 0);
+
+                            const perf = (totalOutput / targetOutput) * 100;
+
+                            return (
+                              <span
+                                className={
+                                  perf >= 90
+                                    ? "font-bold text-emerald-600"
+                                    : perf >= 80
+                                      ? "font-bold text-amber-600"
+                                      : "font-bold text-red-600"
+                                }
+                              >
+                                {perf.toFixed(1)}%
+                              </span>
+                            );
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            const totalOutput =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0) +
+                              Number(rpt.qtyReject || 0);
+
+                            if (totalOutput <= 0) return "0%";
+
+                            const quality =
+                              (Number(rpt.qtyPassOn || 0) / totalOutput) * 100;
+
+                            return (
+                              <span
+                                className={
+                                  quality >= 90
+                                    ? "font-bold text-emerald-600"
+                                    : quality >= 80
+                                      ? "font-bold text-amber-600"
+                                      : "font-bold text-red-600"
+                                }
+                              >
+                                {quality.toFixed(1)}%
+                              </span>
+                            );
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            if (!rpt.startTime || !rpt.endTime) return "-";
+                            const start = new Date(rpt.startTime).getTime();
+                            const end = new Date(rpt.endTime).getTime();
+                            const totalTimeDiff = (end - start) / (1000 * 60); // Minutes
+
+                            if (totalTimeDiff <= 0) return "-";
+
+                            // 1. Availability
+                            // Planned Downtime
+                            const plannedItems = [
+                              "Trouble PLN",
+                              "Trial",
+                              "Preventive Maintenance",
+                              "Istirahat",
+                            ];
+                            let totalPlannedDt = 0;
+                            if (rpt.downtimeBreakdown) {
+                              plannedItems.forEach((key) => {
+                                const val = (rpt.downtimeBreakdown as any)[key];
+                                if (val) totalPlannedDt += Number(val);
+                              });
+                            }
+                            const plannedProductionTime =
+                              totalTimeDiff - totalPlannedDt;
+                            const operatingTime =
+                              totalTimeDiff - rpt.totalDowntime;
+
+                            let avail = 0;
+                            if (plannedProductionTime > 0) {
+                              avail = operatingTime / plannedProductionTime; // Ratio (0-1)
+                            }
+
+                            // 2. Performance
+                            let perf = 0;
+                            if ((rpt as any).stdSpeed && operatingTime > 0) {
+                              const targetOutput =
+                                Number((rpt as any).stdSpeed) * operatingTime;
+                              const totalOutput =
+                                Number(rpt.qtyGood || 0) +
+                                Number(rpt.qtyPassOn || 0) +
+                                Number(rpt.qtyHold || 0) +
+                                Number(rpt.qtyWip || 0) +
+                                Number(rpt.qtyReject || 0);
+                              if (targetOutput > 0) {
+                                perf = totalOutput / targetOutput; // Ratio (0-1)
+                              }
+                            }
+
+                            // 3. Quality
+                            let qual = 0;
+                            const totalOutput =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0) +
+                              Number(rpt.qtyReject || 0);
+
+                            if (totalOutput > 0) {
+                              qual = Number(rpt.qtyPassOn || 0) / totalOutput; // Ratio (0-1)
+                            }
+
+                            // OEE
+                            const oee = avail * perf * qual * 100;
+
+                            if (isNaN(oee) || oee < 0) return "0%";
+
+                            return (
+                              <span
+                                className={
+                                  oee >= 85
+                                    ? "font-black text-emerald-500"
+                                    : oee >= 60
+                                      ? "font-black text-amber-500"
+                                      : "font-black text-red-500"
+                                }
+                              >
+                                {oee.toFixed(2)}%
+                              </span>
+                            );
+                          })()}
+                        </TableCell>
+                      </>
+                    )}
                     {activeCategory !== "PAPER" && (
                       <>
                         <TableCell className="text-right text-xs">
