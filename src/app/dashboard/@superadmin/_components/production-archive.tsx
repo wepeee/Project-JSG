@@ -40,6 +40,19 @@ const PAPER_REJECT_COLUMNS = [
   "Lain-lain",
 ];
 
+const INJECTION_REJECT_BB = ["Gilingan / Purge", "PT / Runner"];
+
+const INJECTION_REJECT_PROD = [
+  "Bintik Hitam",
+  "P/S Deformasi",
+  "Warna # Std",
+  "Appearance # Std",
+  "Dimensi # Std",
+  "Kotor Fet",
+  "Proses",
+  "Baret",
+];
+
 const PAPER_PLANNED_DT = [
   "Trouble PLN",
   "Trial",
@@ -57,6 +70,136 @@ const PAPER_UNPLANNED_DT = [
   "Operator Issue",
   "Adjustment Process",
   "Lain-lain",
+];
+
+const INJECTION_PLANNED_DT = [
+  "No Order",
+  "Istirahat",
+  "Cil / Clean",
+  "Trial",
+  "Preventive",
+];
+
+const INJECTION_UNPLANNED_DT = [
+  "Material",
+  "Electrik",
+  "Mesin",
+  "Hydraulic",
+  "Robot",
+  "Utility",
+  "Start Mesin",
+  "Set Up",
+  "Approve",
+  "Mold/Tools",
+  "Proses",
+  "Material Habis",
+  "Material Telat",
+  "Man Power",
+  "Others",
+];
+
+const PRINTING_REJECT_COLUMNS = [
+  "B. Spot/Cekung",
+  "Kotor Vat",
+  "Blobor/Cembung",
+  "Print Pethal",
+  "Mbayang/Tebal Tipis",
+  "Print Geser",
+  "Warna # Std",
+  "Baret",
+  "Botol Bertekstur",
+  "Tidak Press",
+  "Pecah",
+  "Lain-lain",
+];
+
+const PRINTING_PLANNED_DT = [
+  "CLEAN",
+  "NO ORDER",
+  "ISTIRAHAT",
+  "TRIAL",
+  "PREVEN MESIN",
+];
+
+const PRINTING_UNPLANNED_DT = [
+  "ELECTRIC",
+  "MACHINE",
+  "PNUMATIC",
+  "UTILITY",
+  "START MESIN",
+  "SET UP",
+  "APPROVAL",
+  "SCREEN",
+  "PROSES",
+  "MATERIAL",
+  "WARNA TIDAK STANDART",
+  "TOOLS",
+  "MAN",
+  "OTHER",
+];
+
+const PACKING_REJECT_SPLIT = [
+  [
+    "B. Spot",
+    "Cekung",
+    "Baret",
+    "Buble",
+    "Print Pethal",
+    "Print Miring",
+    "Print Blobor",
+    "Pecah",
+    "Acrylic Mix Up",
+    "Lengket",
+    "Botol Bertekstur",
+    "Tertempel Sticker",
+    "Konstaminasi",
+    "Warna Tidak Standart",
+    "Buram",
+    "Kotor Fat",
+  ],
+  [
+    "B. Spot 3",
+    "Pecah 2",
+    "Warna # Std",
+    "Short Shoot",
+    "Menempel Pada Botol",
+    "Kotor Fat 2",
+  ],
+  [
+    "B. Spot 5",
+    "Print Pethal",
+    "Pecah 6",
+    "Warna # Std 7",
+    "Baret 8",
+    "Kotor Fat 9",
+  ],
+  ["B. Spot 10", "Warna # Std 11", "Kotor Fat 12"],
+  ["B. Spot 13", "Warna # Std 14", "Kotor Fat 15"],
+  [
+    "Stiker Halal",
+    "Stiker BB & Derma",
+    "Stiker BB & WCD",
+    "Sticker BB",
+    "STICKER WCD",
+    "Stiker Barcode",
+    "Stiker Toner",
+    "Sticker Bottom",
+    "Stiker Bottom Baru",
+    "Other",
+  ],
+];
+
+const PACKING_PLANNED_DT = ["CLEAN", "NO ORDER", "ISTIRAHAT", "TRIAL"];
+
+const PACKING_UNPLANNED_DT = [
+  "Material",
+  "WARNA TIDAK STD",
+  "Approve",
+  "Set Up",
+  "Airblow",
+  "Proses",
+  "Man",
+  "Other",
 ];
 
 export default function ProductionArchive() {
@@ -91,6 +234,8 @@ export default function ProductionArchive() {
   ] as const;
 
   const isRigidActive = activeCategory !== "PAPER";
+  const isMoulding =
+    activeCategory === "INJECTION" || activeCategory === "BLOW_MOULDING";
 
   return (
     <div className="space-y-4">
@@ -168,31 +313,66 @@ export default function ProductionArchive() {
               <TableHeader className="border-b border-slate-800 bg-slate-950">
                 <TableRow className="hover:bg-slate-900/50">
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="w-[120px] text-slate-300"
                   >
                     Tanggal
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-slate-300"
                   >
                     No. PRO
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-slate-300"
                   >
                     Part Number
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="min-w-[200px] text-slate-300"
                   >
                     Produk
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-slate-300"
                   >
                     Mesin
@@ -214,54 +394,113 @@ export default function ProductionArchive() {
                     </>
                   )}
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-slate-300"
                   >
                     Shift
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-slate-300"
                   >
                     Operator
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-slate-300"
                   >
                     Mulai
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-slate-300"
                   >
                     Selesai
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-right text-slate-300"
                   >
                     Pass On
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-right text-slate-300"
                   >
                     Hold
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-right text-slate-300"
                   >
                     WIP
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-right text-slate-300"
                   >
                     <div className="flex items-center justify-end gap-1">
                       <span>Reject</span>
-                      {activeCategory === "PAPER" && (
+                      {(activeCategory === "PAPER" ||
+                        activeCategory === "PRINTING" ||
+                        activeCategory === "PACKING_ASSEMBLY" ||
+                        isMoulding) && (
                         <button
                           onClick={() =>
                             setShowRejectDetails(!showRejectDetails)
@@ -288,19 +527,74 @@ export default function ProductionArchive() {
                         {col}
                       </TableHead>
                     ))}
+                  {activeCategory === "PRINTING" &&
+                    showRejectDetails &&
+                    PRINTING_REJECT_COLUMNS.map((col) => (
+                      <TableHead
+                        key={col}
+                        rowSpan={2}
+                        className="text-right text-xs whitespace-nowrap text-slate-300"
+                      >
+                        {col}
+                      </TableHead>
+                    ))}
+                  {activeCategory === "PACKING_ASSEMBLY" &&
+                    showRejectDetails &&
+                    PACKING_REJECT_SPLIT.map((group, idx) => (
+                      <TableHead
+                        key={`SECTION-${idx}`}
+                        colSpan={group.length}
+                        className="bg-slate-800 text-center text-xs font-bold text-slate-300 uppercase"
+                      >
+                        BAGIAN {idx + 1}
+                      </TableHead>
+                    ))}
+                  {isMoulding && showRejectDetails && (
+                    <>
+                      <TableHead
+                        colSpan={INJECTION_REJECT_BB.length}
+                        className="bg-purple-900/20 text-center text-xs font-bold text-purple-400 uppercase"
+                      >
+                        BAHAN BAKU
+                      </TableHead>
+                      <TableHead
+                        colSpan={INJECTION_REJECT_PROD.length}
+                        className="bg-cyan-900/20 text-center text-xs font-bold text-cyan-400 uppercase"
+                      >
+                        PRODUK
+                      </TableHead>
+                    </>
+                  )}
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-right text-slate-300"
                   >
                     Total Output
                   </TableHead>
                   <TableHead
-                    rowSpan={activeCategory === "PAPER" ? 2 : 1}
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-right text-slate-300"
                   >
                     <div className="flex items-center justify-end gap-1">
                       <span>Downtime</span>
-                      {activeCategory === "PAPER" && (
+                      {(activeCategory === "PAPER" ||
+                        activeCategory === "PRINTING" ||
+                        activeCategory === "PACKING_ASSEMBLY" ||
+                        isMoulding) && (
                         <button
                           onClick={() =>
                             setShowDowntimeDetails(!showDowntimeDetails)
@@ -334,6 +628,55 @@ export default function ProductionArchive() {
                       </TableHead>
                     </>
                   )}
+                  {activeCategory === "PRINTING" && showDowntimeDetails && (
+                    <>
+                      <TableHead
+                        colSpan={PRINTING_PLANNED_DT.length}
+                        className="bg-pink-900/20 text-center text-xs font-bold text-pink-400 uppercase"
+                      >
+                        LOSS HOUR
+                      </TableHead>
+                      <TableHead
+                        colSpan={PRINTING_UNPLANNED_DT.length}
+                        className="bg-rose-900/20 text-center text-xs font-bold text-rose-400 uppercase"
+                      >
+                        DOWNTIME
+                      </TableHead>
+                    </>
+                  )}
+                  {activeCategory === "PACKING_ASSEMBLY" &&
+                    showDowntimeDetails && (
+                      <>
+                        <TableHead
+                          colSpan={PACKING_PLANNED_DT.length}
+                          className="bg-purple-900/20 text-center text-xs font-bold text-purple-400 uppercase"
+                        >
+                          LOSS HOUR
+                        </TableHead>
+                        <TableHead
+                          colSpan={PACKING_UNPLANNED_DT.length}
+                          className="bg-pink-900/20 text-center text-xs font-bold text-pink-400 uppercase"
+                        >
+                          DOWNTIME
+                        </TableHead>
+                      </>
+                    )}
+                  {isMoulding && showDowntimeDetails && (
+                    <>
+                      <TableHead
+                        colSpan={INJECTION_PLANNED_DT.length}
+                        className="bg-emerald-900/20 text-center text-xs font-bold text-emerald-400 uppercase"
+                      >
+                        LOSS HOUR
+                      </TableHead>
+                      <TableHead
+                        colSpan={INJECTION_UNPLANNED_DT.length}
+                        className="bg-amber-900/20 text-center text-xs font-bold text-amber-400 uppercase"
+                      >
+                        DOWNTIME
+                      </TableHead>
+                    </>
+                  )}
 
                   {activeCategory === "PAPER" && (
                     <>
@@ -363,36 +706,153 @@ export default function ProductionArchive() {
                       </TableHead>
                     </>
                   )}
-                  {activeCategory !== "PAPER" && (
-                    <>
-                      <TableHead className="text-right text-slate-300">
-                        MP
-                      </TableHead>
-                      <TableHead className="text-right text-slate-300">
-                        CT
-                      </TableHead>
-                    </>
-                  )}
+                  {/* INJECTION ALSO DOESN'T HAVE OEE YET, or maybe later. For now just standard view columns for non-paper */}
+                  {activeCategory !== "PAPER" &&
+                    activeCategory !== "PRINTING" &&
+                    activeCategory !== "PACKING_ASSEMBLY" &&
+                    !isMoulding && (
+                      <>
+                        <TableHead className="text-right text-slate-300">
+                          MP
+                        </TableHead>
+                        <TableHead className="text-right text-slate-300">
+                          CT
+                        </TableHead>
+                      </>
+                    )}
                 </TableRow>
                 {/* SUB-HEADERS FOR DOWNTIME (ROW 2 - PAPER ONLY) */}
-                {activeCategory === "PAPER" && showDowntimeDetails && (
+                {/* SUB-HEADERS ROW (Merged) */}
+                {((activeCategory === "PAPER" && showDowntimeDetails) ||
+                  (activeCategory === "PRINTING" && showDowntimeDetails) ||
+                  (activeCategory === "PACKING_ASSEMBLY" &&
+                    (showRejectDetails || showDowntimeDetails)) ||
+                  (isMoulding &&
+                    (showRejectDetails || showDowntimeDetails))) && (
                   <TableRow className="hover:bg-slate-900/50">
-                    {PAPER_PLANNED_DT.map((col) => (
-                      <TableHead
-                        key={col}
-                        className="bg-emerald-900/10 text-right text-[10px] whitespace-nowrap text-emerald-300"
-                      >
-                        {col}
-                      </TableHead>
-                    ))}
-                    {PAPER_UNPLANNED_DT.map((col) => (
-                      <TableHead
-                        key={col}
-                        className="bg-amber-900/10 text-right text-[10px] whitespace-nowrap text-amber-300"
-                      >
-                        {col}
-                      </TableHead>
-                    ))}
+                    {/* PAPER: Downtime Sub-headers */}
+                    {activeCategory === "PAPER" &&
+                      showDowntimeDetails &&
+                      PAPER_PLANNED_DT.map((col) => (
+                        <TableHead
+                          key={col}
+                          className="bg-emerald-900/10 text-right text-[10px] whitespace-nowrap text-emerald-300"
+                        >
+                          {col}
+                        </TableHead>
+                      ))}
+                    {activeCategory === "PAPER" &&
+                      showDowntimeDetails &&
+                      PAPER_UNPLANNED_DT.map((col) => (
+                        <TableHead
+                          key={col}
+                          className="bg-amber-900/10 text-right text-[10px] whitespace-nowrap text-amber-300"
+                        >
+                          {col}
+                        </TableHead>
+                      ))}
+
+                    {/* PRINTING: Downtime Sub-headers */}
+                    {activeCategory === "PRINTING" && showDowntimeDetails && (
+                      <>
+                        {PRINTING_PLANNED_DT.map((col) => (
+                          <TableHead
+                            key={`P_DT_PLAN_${col}`}
+                            className="bg-pink-900/10 text-right text-[10px] whitespace-nowrap text-pink-300"
+                          >
+                            {col}
+                          </TableHead>
+                        ))}
+                        {PRINTING_UNPLANNED_DT.map((col) => (
+                          <TableHead
+                            key={`P_DT_UNPLAN_${col}`}
+                            className="bg-rose-900/10 text-right text-[10px] whitespace-nowrap text-rose-300"
+                          >
+                            {col}
+                          </TableHead>
+                        ))}
+                      </>
+                    )}
+
+                    {/* PACKING ASSEMBLY: Reject Sub-headers */}
+                    {activeCategory === "PACKING_ASSEMBLY" &&
+                      showRejectDetails &&
+                      PACKING_REJECT_SPLIT.map((group, groupIdx) =>
+                        group.map((col) => (
+                          <TableHead
+                            key={`PK_REJ_${groupIdx}_${col}`}
+                            className="bg-slate-900/10 text-right text-[10px] whitespace-nowrap text-slate-400"
+                          >
+                            {col}
+                          </TableHead>
+                        )),
+                      )}
+                    {/* PACKING ASSEMBLY: Downtime Sub-headers */}
+                    {activeCategory === "PACKING_ASSEMBLY" &&
+                      showDowntimeDetails && (
+                        <>
+                          {PACKING_PLANNED_DT.map((col) => (
+                            <TableHead
+                              key={`PK_DT_PLAN_${col}`}
+                              className="bg-purple-900/10 text-right text-[10px] whitespace-nowrap text-purple-300"
+                            >
+                              {col}
+                            </TableHead>
+                          ))}
+                          {PACKING_UNPLANNED_DT.map((col) => (
+                            <TableHead
+                              key={`PK_DT_UNPLAN_${col}`}
+                              className="bg-pink-900/10 text-right text-[10px] whitespace-nowrap text-pink-300"
+                            >
+                              {col}
+                            </TableHead>
+                          ))}
+                        </>
+                      )}
+
+                    {/* INJECTION / MOULDING: Reject Sub-headers */}
+                    {isMoulding &&
+                      showRejectDetails &&
+                      INJECTION_REJECT_BB.map((col) => (
+                        <TableHead
+                          key={`BB-${col}`}
+                          className="bg-purple-900/10 text-right text-[10px] whitespace-nowrap text-purple-300"
+                        >
+                          {col}
+                        </TableHead>
+                      ))}
+                    {isMoulding &&
+                      showRejectDetails &&
+                      INJECTION_REJECT_PROD.map((col) => (
+                        <TableHead
+                          key={`PROD-${col}`}
+                          className="bg-cyan-900/10 text-right text-[10px] whitespace-nowrap text-cyan-300"
+                        >
+                          {col}
+                        </TableHead>
+                      ))}
+
+                    {/* INJECTION / MOULDING: Downtime Sub-headers */}
+                    {isMoulding &&
+                      showDowntimeDetails &&
+                      INJECTION_PLANNED_DT.map((col) => (
+                        <TableHead
+                          key={col}
+                          className="bg-emerald-900/10 text-right text-[10px] whitespace-nowrap text-emerald-300"
+                        >
+                          {col}
+                        </TableHead>
+                      ))}
+                    {isMoulding &&
+                      showDowntimeDetails &&
+                      INJECTION_UNPLANNED_DT.map((col) => (
+                        <TableHead
+                          key={col}
+                          className="bg-amber-900/10 text-right text-[10px] whitespace-nowrap text-amber-300"
+                        >
+                          {col}
+                        </TableHead>
+                      ))}
                   </TableRow>
                 )}
               </TableHeader>
@@ -510,6 +970,85 @@ export default function ProductionArchive() {
                           </TableCell>
                         );
                       })}
+                    {activeCategory === "PRINTING" &&
+                      showRejectDetails &&
+                      PRINTING_REJECT_COLUMNS.map((col) => {
+                        const breakdown = rpt.rejectBreakdown as any;
+                        const val = breakdown?.[col];
+                        return (
+                          <TableCell
+                            key={col}
+                            className="text-right text-xs text-slate-500"
+                          >
+                            {val ? Number(val).toLocaleString() : "-"}
+                          </TableCell>
+                        );
+                      })}
+                    {activeCategory === "PACKING_ASSEMBLY" &&
+                      showRejectDetails &&
+                      PACKING_REJECT_SPLIT.map((group, groupIdx) =>
+                        group.map((col) => {
+                          const breakdown = rpt.rejectBreakdown as any;
+                          const val = breakdown?.[col];
+                          return (
+                            <TableCell
+                              key={`PK_REJ_VAL_${groupIdx}_${col}`}
+                              className="text-right text-xs text-slate-500"
+                            >
+                              {val ? Number(val).toLocaleString() : "-"}
+                            </TableCell>
+                          );
+                        }),
+                      )}
+                    {isMoulding && showRejectDetails && (
+                      <>
+                        {INJECTION_REJECT_BB.map((col) => {
+                          let valBB: string | number | undefined | null;
+
+                          if (col === "Gilingan / Purge") {
+                            valBB = rpt.materialPurgeQty
+                              ? Number(rpt.materialPurgeQty)
+                              : "-";
+                          } else if (col === "PT / Runner") {
+                            valBB = rpt.materialRunnerQty
+                              ? Number(rpt.materialRunnerQty)
+                              : "-";
+                          } else {
+                            // Fallback
+                            const breakdown = rpt.rejectBreakdown as any;
+                            valBB =
+                              breakdown?.[`REJECT:BAHAN_BAKU:${col}`] ||
+                              breakdown?.[col];
+                          }
+
+                          return (
+                            <TableCell
+                              key={`BB-${col}`}
+                              className="text-right text-xs text-purple-500/70"
+                            >
+                              {valBB && valBB !== "-"
+                                ? Number(valBB).toLocaleString()
+                                : "-"}
+                            </TableCell>
+                          );
+                        })}
+                        {INJECTION_REJECT_PROD.map((col) => {
+                          const breakdown = rpt.rejectBreakdown as any;
+                          const valProd =
+                            breakdown?.[`REJECT:PRODUK:${col}`] ||
+                            breakdown?.[col];
+
+                          return (
+                            <TableCell
+                              key={`PROD-${col}`}
+                              className="text-right text-xs text-cyan-500/70"
+                            >
+                              {valProd ? Number(valProd).toLocaleString() : "-"}
+                            </TableCell>
+                          );
+                        })}
+                      </>
+                    )}
                     <TableCell className="text-right text-xs font-black text-slate-800 dark:text-slate-100">
                       {(
                         Number(rpt.qtyGood) +
@@ -538,6 +1077,93 @@ export default function ProductionArchive() {
                         })}
                         {PAPER_UNPLANNED_DT.map((col) => {
                           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                          const val = (rpt.downtimeBreakdown as any)?.[col];
+                          return (
+                            <TableCell
+                              key={col}
+                              className="text-right text-xs text-orange-500/70"
+                            >
+                              {val ? `${val}m` : "-"}
+                            </TableCell>
+                          );
+                        })}
+                      </>
+                    )}
+                    {activeCategory === "PRINTING" && showDowntimeDetails && (
+                      <>
+                        {PRINTING_PLANNED_DT.map((col) => {
+                          const val =
+                            (rpt.downtimeBreakdown as any)?.[
+                              `PLANNED:${col}`
+                            ] || (rpt.downtimeBreakdown as any)?.[col];
+                          return (
+                            <TableCell
+                              key={col}
+                              className="text-right text-xs text-pink-500/70"
+                            >
+                              {val ? `${val}m` : "-"}
+                            </TableCell>
+                          );
+                        })}
+                        {PRINTING_UNPLANNED_DT.map((col) => {
+                          const val = (rpt.downtimeBreakdown as any)?.[col];
+                          return (
+                            <TableCell
+                              key={col}
+                              className="text-right text-xs text-rose-500/70"
+                            >
+                              {val ? `${val}m` : "-"}
+                            </TableCell>
+                          );
+                        })}
+                      </>
+                    )}
+
+                    {activeCategory === "PACKING_ASSEMBLY" &&
+                      showDowntimeDetails && (
+                        <>
+                          {PACKING_PLANNED_DT.map((col) => {
+                            const val =
+                              (rpt.downtimeBreakdown as any)?.[
+                                `PLANNED:${col}`
+                              ] || (rpt.downtimeBreakdown as any)?.[col];
+                            return (
+                              <TableCell
+                                key={`PK_DT_PLAN_${col}`}
+                                className="text-right text-xs text-purple-500/70"
+                              >
+                                {val ? `${val}m` : "-"}
+                              </TableCell>
+                            );
+                          })}
+                          {PACKING_UNPLANNED_DT.map((col) => {
+                            const val = (rpt.downtimeBreakdown as any)?.[col];
+                            return (
+                              <TableCell
+                                key={`PK_DT_UNPLAN_${col}`}
+                                className="text-right text-xs text-pink-500/70"
+                              >
+                                {val ? `${val}m` : "-"}
+                              </TableCell>
+                            );
+                          })}
+                        </>
+                      )}
+
+                    {isMoulding && showDowntimeDetails && (
+                      <>
+                        {INJECTION_PLANNED_DT.map((col) => {
+                          const val = (rpt.downtimeBreakdown as any)?.[col];
+                          return (
+                            <TableCell
+                              key={col}
+                              className="text-right text-xs text-blue-500/70"
+                            >
+                              {val ? `${val}m` : "-"}
+                            </TableCell>
+                          );
+                        })}
+                        {INJECTION_UNPLANNED_DT.map((col) => {
                           const val = (rpt.downtimeBreakdown as any)?.[col];
                           return (
                             <TableCell
@@ -763,16 +1389,19 @@ export default function ProductionArchive() {
                         </TableCell>
                       </>
                     )}
-                    {activeCategory !== "PAPER" && (
-                      <>
-                        <TableCell className="text-right text-xs">
-                          {rpt.manPowerAct ?? "-"}
-                        </TableCell>
-                        <TableCell className="text-right text-xs">
-                          {rpt.cycleTimeAct?.toString() ?? "-"}
-                        </TableCell>
-                      </>
-                    )}
+                    {activeCategory !== "PAPER" &&
+                      activeCategory !== "PRINTING" &&
+                      activeCategory !== "PACKING_ASSEMBLY" &&
+                      !isMoulding && (
+                        <>
+                          <TableCell className="text-right text-xs">
+                            {rpt.manPowerAct ?? "-"}
+                          </TableCell>
+                          <TableCell className="text-right text-xs">
+                            {rpt.cycleTimeAct?.toString() ?? "-"}
+                          </TableCell>
+                        </>
+                      )}
                   </TableRow>
                 ))}
               </TableBody>

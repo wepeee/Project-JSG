@@ -1854,7 +1854,8 @@ export function ProductionReportModal({
 
                     {/* Planned - Hide for PRINTING & PACKING_ASSEMBLY */}
                     {lphType !== "PRINTING" &&
-                      lphType !== "PACKING_ASSEMBLY" && (
+                      lphType !== "PACKING_ASSEMBLY" &&
+                      !isMoulding && (
                         <div>
                           <h4 className="mb-3 text-xs font-bold text-slate-500 uppercase">
                             Planned Downtime
