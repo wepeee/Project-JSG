@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { Prisma } from "generated/prisma";
+import { Prisma, ProStatus } from "generated/prisma";
 import {
   createTRPCRouter,
   ppicProcedure,
@@ -138,6 +138,7 @@ export const prosRouter = createTRPCRouter({
                 .default([]),
               startDate: z.coerce.date().optional(),
               partNumber: z.string().optional(), // Added to step input
+              batchNo: z.string().optional(), // Added for Rigid CSV
             }),
           )
           .min(1),
@@ -271,6 +272,7 @@ export const prosRouter = createTRPCRouter({
                 machineId: inputStep.machineId ?? null,
                 startDate: getShiftDate(currentDay, currentShift),
                 partNumber: inputStep.partNumber, // Added
+                batchNo: inputStep.batchNo, // Added for Rigid
                 materials: {
                   create: (inputStep.materials ?? []).map((m) => ({
                     materialId: m.materialId,
@@ -359,16 +361,16 @@ export const prosRouter = createTRPCRouter({
       z.object({
         id: z.number().int().positive(),
         productName: z.string().min(1),
-        partNumber: z.string().optional(), // Added
-        processId: z.number().int().positive(), // Allow changing process
+        partNumber: z.string().optional(),
+        processId: z.number().int().positive(),
         qtyPoPcs: z.number().int().positive(),
         startDate: z.coerce.date().optional(),
-        expand: z.boolean().default(false).optional(),
-        status: z.enum(["OPEN", "IN_PROGRESS", "DONE", "CANCELLED"]).optional(),
-        type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(), // Added
+        status: z.enum(["OPEN", "IN_PROGRESS", "CLOSED", "CANCELLED"]).optional(),
+        type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(),
         steps: z
           .array(
             z.object({
+              id: z.number().optional(), // Added ID to track existing steps
               orderNo: z.number().int().positive(),
               up: z.number().int().min(0),
               machineId: z.number().int().positive().nullable().optional(),
@@ -381,7 +383,7 @@ export const prosRouter = createTRPCRouter({
                 )
                 .optional(),
               startDate: z.coerce.date().optional(),
-              partNumber: z.string().optional(), // Added to step input
+              partNumber: z.string().optional(),
             }),
           )
           .min(1),
@@ -441,100 +443,119 @@ export const prosRouter = createTRPCRouter({
             productName: input.productName,
             ...(input.partNumber !== undefined
               ? { partNumber: input.partNumber }
-              : {}), // Update if provided
+              : {}),
             qtyPoPcs: input.qtyPoPcs,
             startDate: input.startDate,
             ...(input.status ? { status: input.status } : {}),
-            ...(input.type ? { type: input.type } : {}), // Added
+            ...(input.type ? { type: input.type } : {}),
           },
         });
 
-        // 3. Delete old steps
-        await tx.proStep.deleteMany({ where: { proId: input.id } });
+        // 3. Diff Steps (Update, Create, Delete)
+        // Fetch existing steps to compare
+        const existingSteps = await tx.proStep.findMany({
+          where: { proId: input.id },
+          select: { id: true },
+        });
 
-        // 4. Recreate steps (EXPANDED)
-        let currentDay = startOfDay(
-          input.startDate ?? oldPro.startDate ?? new Date(),
+        const inputIds = new Set(
+          input.steps.map((s) => s.id).filter((id): id is number => !!id),
         );
-        let currentShift = getShiftFromTime(
-          input.startDate ?? oldPro.startDate ?? new Date(),
-        );
+        const existingIds = new Set(existingSteps.map((s) => s.id));
 
+        // DELETE: Steps in DB but not in Input
+        const toDelete = existingSteps.filter((s) => !inputIds.has(s.id));
+        for (const step of toDelete) {
+          try {
+            await tx.proStep.delete({ where: { id: step.id } });
+          } catch (e: any) {
+            // Check for Prisma FK violation error (P2003)
+            if (e.code === "P2003") {
+              throw new TRPCError({
+                code: "PRECONDITION_FAILED",
+                message: `Tidak dapat menghapus step (ID: ${step.id}) karena sudah memiliki histori laporan produksi.`,
+              });
+            }
+            throw e;
+          }
+        }
+
+        // UPSERT (Update existing, Create new)
+        let baseDate = input.startDate ?? oldPro.startDate ?? new Date();
+        let currentDay = startOfDay(baseDate);
+        let currentShift = getShiftFromTime(baseDate);
+        
         let globalOrderNo = 1;
 
-        for (const inputStep of input.steps) {
-          const std = 1000;
-          const firstMatQty = inputStep.materials?.[0]?.qtyReq;
-          const qty =
-            firstMatQty !== undefined ? Number(firstMatQty) : input.qtyPoPcs;
-          const up = firstMatQty !== undefined ? 1 : inputStep.up || 1;
+        for (const s of input.steps) {
+          const matMaterials = s.materials ?? [];
 
-          let machineStd = std;
-          let isSheet = false;
-          if (inputStep.machineId) {
-            const m = await tx.machine.findUnique({
-              where: { id: inputStep.machineId },
-              select: { stdOutputPerShift: true, uom: true },
+          // Respect input Start Date if provided (Manual Scheduling)
+          if (s.startDate) {
+            currentDay = startOfDay(new Date(s.startDate));
+            currentShift = getShiftFromTime(new Date(s.startDate));
+          }
+
+          const stepDate = getShiftDate(currentDay, currentShift);
+          const needs = 1; // Default to 1 shift per step in this explicit list mode
+
+          // Helper to recreate material relations
+          const recreateMaterials = async (stepId: number) => {
+             // Delete old materials for this step
+             await tx.proStepMaterial.deleteMany({ where: { stepId } });
+             // Create new
+             if (matMaterials.length > 0) {
+               await tx.proStepMaterial.createMany({
+                 data: matMaterials.map((m) => ({
+                   stepId,
+                   materialId: m.materialId,
+                   qtyReq: new Prisma.Decimal(m.qtyReq),
+                 })),
+               });
+             }
+          };
+
+          if (s.id && existingIds.has(s.id)) {
+            // --- UPDATE EXISTING ---
+            await tx.proStep.update({
+              where: { id: s.id },
+              data: {
+                orderNo: globalOrderNo++, // Enforce sequential order
+                up: s.up,
+                machineId: s.machineId ?? null,
+                partNumber: s.partNumber,
+                startDate: stepDate, // <--- Correct date from input or sequence
+                estimatedShifts: needs,
+              },
             });
-            if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
-            if (m?.uom === "sheet") isSheet = true;
-          }
-
-          const need =
-            input.expand && isSheet
-              ? Math.max(1, Math.ceil(qty / (up * machineStd)))
-              : 1;
-
-          if (inputStep.startDate) {
-            currentDay = startOfDay(new Date(inputStep.startDate));
-            currentShift = getShiftFromTime(new Date(inputStep.startDate));
-          }
-
-          const totalSheets = up > 0 ? qty / up : qty;
-
-          for (let i = 0; i < need; i++) {
-            const sheetsInThisShift = Math.max(
-              0,
-              Math.min(totalSheets - i * machineStd, machineStd),
-            );
-            const portion =
-              totalSheets > 0 ? sheetsInThisShift / totalSheets : 1;
-
-            if (sheetsInThisShift > 0 && inputStep.machineId) {
-              await checkCapacity(
-                tx,
-                inputStep.machineId,
-                getShiftDate(currentDay, currentShift),
-                sheetsInThisShift,
-              );
-            }
-
+            await recreateMaterials(s.id);
+          } else {
+            // --- CREATE NEW ---
             await tx.proStep.create({
               data: {
                 proId: input.id,
                 orderNo: globalOrderNo++,
-                up: inputStep.up,
-                machineId: inputStep.machineId ?? null,
-                startDate: getShiftDate(currentDay, currentShift),
-                partNumber: inputStep.partNumber, // Added
-                estimatedShifts: need,
+                up: s.up,
+                machineId: s.machineId ?? null,
+                startDate: stepDate,
+                partNumber: s.partNumber,
+                estimatedShifts: needs,
                 materials: {
-                  create:
-                    inputStep.materials?.map((m) => ({
-                      materialId: m.materialId,
-                      qtyReq: new Prisma.Decimal(m.qtyReq * portion),
-                    })) ?? [],
+                  create: matMaterials.map((m) => ({
+                    materialId: m.materialId,
+                    qtyReq: new Prisma.Decimal(m.qtyReq),
+                  })),
                 },
               },
             });
+          }
 
-            if (input.expand) {
-              if (currentShift < 2) currentShift++;
-              else {
-                currentShift = 0;
-                currentDay.setDate(currentDay.getDate() + 1);
-              }
-            }
+          // Advance Cursor (1 step = 1 shift logic)
+          if (currentShift < 2) {
+             currentShift++;
+          } else {
+             currentShift = 0;
+             currentDay.setDate(currentDay.getDate() + 1);
           }
         }
 
@@ -592,6 +613,7 @@ export const prosRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const items = await ctx.db.pro.findMany({
         where: {
+          status: { not: ProStatus.CANCELLED }, // Don't show cancelled PROs
           OR: [
             // PRO startDate in range
             {
@@ -674,8 +696,7 @@ async function checkCapacity(
   const existingSteps = await tx.proStep.findMany({
     where: {
       machineId,
-      startDate: slotDate,
-      pro: { status: { notIn: ["DONE", "CANCELLED"] } },
+      pro: { status: { notIn: [ProStatus.CLOSED, ProStatus.CANCELLED] } },
     },
     include: {
       materials: { include: { material: true } },

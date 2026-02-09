@@ -66,7 +66,7 @@ export function ScheduleList() {
         <div className="px-5 pb-4">
           <div className="mb-2 flex items-center justify-between">
             <h1 className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-2xl font-black tracking-tight text-transparent">
-              gatau diisi apa
+              Jadwal Produksi
             </h1>
             <div className="flex items-center gap-2">
               {!isSameDay(date, new Date()) && (

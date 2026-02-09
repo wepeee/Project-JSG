@@ -277,12 +277,12 @@ function buildShiftSlots(items: ScheduleItem[], range: { start: Date; end: Date 
 export default function PPICSchedule({ onSelectPro }: Props) {
   const [tab, setTab] = React.useState<"shift" | "month">("shift");
 
-  // Machine data
-  const machines = api.machines.list.useQuery();
-
   // View mode
   const [viewMode, setViewMode] = React.useState<"shift" | "machine">("shift");
   const [proType, setProType] = React.useState<"PAPER" | "RIGID">("PAPER");
+
+  // Machine data
+  const machines = api.machines.list.useQuery({ type: proType });
 
   // Search state
   const [searchQuery, setSearchQuery] = React.useState("");

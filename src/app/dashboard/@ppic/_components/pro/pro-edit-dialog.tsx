@@ -29,6 +29,7 @@ type Props = {
 
 type StepDraft = {
   key: string;
+  id?: number; // Add ID to track existing steps
   orderNo: number;
   processId: number | null;
   up: string;
@@ -92,6 +93,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
         const mat0 = s.materials?.[0];
         return {
           key: uid(),
+          id: s.id, // Keep the ID
           orderNo: s.orderNo,
           processId: pro.data.processId, // Use PRO process ID as default for steps (since it matches)
           up: String(s.up ?? ""),
@@ -156,26 +158,34 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
       }
     }
 
-    await update.mutateAsync({
-      id: proId,
-      productName: prod,
-      qtyPoPcs: qty,
-      processId: processId!,
-      startDate: startDate ? new Date(`${startDate}T00:00:00`) : undefined,
-      steps: steps
-        .slice()
-        .sort((a, b) => a.orderNo - b.orderNo)
-        .map((s) => ({
-          orderNo: s.orderNo,
-          processId: s.processId!,
-          up: Number(s.up),
-          machineId: s.machineId ?? null,
-          materialId: s.materialId ?? null,
-          qtyReq: s.materialId ? Number(s.qtyReq) : undefined,
-        })),
-    });
+    if (!processId) return setErr("Proses belum dipilih");
 
-    onOpenChange(false);
+    try {
+      await update.mutateAsync({
+        id: proId,
+        productName: prod,
+        qtyPoPcs: qty,
+        processId: processId,
+        startDate: startDate ? new Date(`${startDate}T00:00:00`) : undefined,
+        steps: steps
+          .slice()
+          .sort((a, b) => a.orderNo - b.orderNo)
+          .map((s) => ({
+            id: s.id, // Pass ID to backend logic
+            orderNo: s.orderNo,
+            processId: s.processId!,
+            up: Number(s.up),
+            machineId: s.machineId ?? null,
+            materials: s.materialId
+              ? [{ materialId: s.materialId, qtyReq: Number(s.qtyReq) }]
+              : [],
+          })),
+      });
+
+      onOpenChange(false);
+    } catch (e: any) {
+      setErr(e.message || "Gagal menyimpan perubahan.");
+    }
   };
 
   return (

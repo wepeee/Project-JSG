@@ -105,7 +105,7 @@ model Material {
 enum ProStatus {
   OPEN
   IN_PROGRESS
-  DONE
+  CLOSED
   CANCELLED
 }
 
@@ -178,6 +178,7 @@ model ProStep {
   machine   Machine? @relation(fields: [machineId], references: [id])
 
   partNumber String?
+  batchNo    String?
 
   // --- Target / Standards (for Reporting) ---
 

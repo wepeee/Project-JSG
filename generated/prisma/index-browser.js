@@ -190,7 +190,8 @@ exports.Prisma.ProStepScalarFieldEnum = {
   estimatedShifts: 'estimatedShifts',
   startDate: 'startDate',
   machineId: 'machineId',
-  partNumber: 'partNumber'
+  partNumber: 'partNumber',
+  batchNo: 'batchNo'
 };
 
 exports.Prisma.ProStepMaterialScalarFieldEnum = {
@@ -285,7 +286,8 @@ exports.Prisma.ProOrderByRelevanceFieldEnum = {
 };
 
 exports.Prisma.ProStepOrderByRelevanceFieldEnum = {
-  partNumber: 'partNumber'
+  partNumber: 'partNumber',
+  batchNo: 'batchNo'
 };
 
 exports.Prisma.JsonNullValueFilter = {
@@ -337,7 +339,7 @@ exports.ProType = exports.$Enums.ProType = {
 exports.ProStatus = exports.$Enums.ProStatus = {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
-  DONE: 'DONE',
+  CLOSED: 'CLOSED',
   CANCELLED: 'CANCELLED'
 };
 

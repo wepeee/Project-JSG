@@ -232,6 +232,7 @@ function fmtSchedule(
 
 type StepDraft = {
   key: string;
+  id?: number; // Added ID
   orderNo: number;
   up: string;
   machineId: number | null;
@@ -698,6 +699,7 @@ export default function ProList({
       const dt = s.startDate ? new Date(s.startDate) : null;
       return {
         key: String(s.id),
+        id: s.id,
         orderNo: s.orderNo,
         up: String(s.up ?? 1),
         machineId: s.machineId ?? null,
@@ -768,16 +770,25 @@ export default function ProList({
       }
     }
 
+    // Determine PRO Start Date from the first step
+    const sortedSteps = drafts.slice().sort((a, b) => a.orderNo - b.orderNo);
+    const firstStep = sortedSteps[0];
+    const newStartDate = firstStep
+      ? combineDateShift(firstStep.startDate, firstStep.shift)
+      : undefined;
+
     await update.mutateAsync({
       id: selectedId,
       productName: prod,
       qtyPoPcs: qty,
+      startDate: newStartDate, // Sync PRO start date with first step
       status: statusDraft,
       processId: processDraftId,
       steps: drafts
         .slice()
         .sort((a, b) => a.orderNo - b.orderNo)
         .map((s) => ({
+          id: s.id,
           orderNo: s.orderNo,
           up: Number(s.up),
           machineId: s.machineId ?? null,
@@ -788,7 +799,7 @@ export default function ProList({
           startDate: combineDateShift(s.startDate, s.shift),
           partNumber: s.partNumber,
         })),
-      expand: expandDraft,
+      // expand: expandDraft, // Removed as per backend change
       type: proTypeDraft, // Added
     });
   };
@@ -1820,7 +1831,13 @@ export default function ProList({
                       <TableCell className="text-right">
                         {p.qtyPoPcs.toLocaleString("id-ID")}
                       </TableCell>
-                      <TableCell>{fmtDate(p.startDate)}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const firstStep = p.steps?.[0];
+                          const d = firstStep?.startDate ?? p.startDate;
+                          return fmtDate(d);
+                        })()}
+                      </TableCell>
                       <TableCell>{p.status}</TableCell>
                       <TableCell className="text-right">
                         {p.steps?.length ?? 0}

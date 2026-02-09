@@ -56,6 +56,7 @@ type StepDraft = {
   materials: StepDraftMaterial[];
   startDate: string;
   partNumber?: string;
+  batchNo?: string;
 };
 
 function uid() {
@@ -72,6 +73,7 @@ function newStep(): StepDraft {
     materials: [{ key: uid(), materialId: null, qtyReq: "" }],
     startDate: "",
     partNumber: "",
+    batchNo: "",
   };
 }
 
@@ -216,168 +218,285 @@ export default function ProPlanner() {
 
       const newSteps: StepDraft[] = [];
       let foundHeaderInfo = false;
-      let detectedUp = "";
 
       // Helper for loose matching
       const normalize = (s: string) =>
         s.replace(/\s+/g, " ").trim().toLowerCase();
 
-      for (let i = 1; i < rows.length; i++) {
-        const cols = rows[i];
-        if (!cols || cols.length < 2) continue;
+      // RIGID CSV FORMAT
+      if (proType === "RIGID") {
+        // Rigid CSV columns:
+        // 0: BATCH, 1: PART NUMBER, 2: MACHINE, 3: Production Order, 4: Name,
+        // 5: Total Lpr Lembar, 6: Qty Order, 7: Schedule in PCS, 8: Start End, 9: Material, 10: Qty
 
-        // machine
-        const machineName = cols[1]?.trim() ?? "";
-        if (!machineName) continue; // Skip empty rows
+        for (let i = 1; i < rows.length; i++) {
+          const cols = rows[i];
+          if (!cols || cols.length < 3) continue;
 
-        // Check for header info row (has Qty Order)
-        const qtyOrderStr = cols[5]?.trim();
-        const totalUpStr = cols[4]?.trim();
-        const proNumCsv = cols[2]?.trim(); // Production Order
+          const batchNo = cols[0]?.trim() ?? "";
+          const partNum = cols[1]?.trim() ?? "";
+          const machineName = cols[2]?.trim() ?? "";
+          const proNumCsv = cols[3]?.trim() ?? "";
+          const productNameCsv = cols[4]?.trim() ?? "";
+          const totalLpr = cols[5]?.trim() ?? "";
+          const qtyOrderStr = cols[6]?.trim() ?? "";
+          const schedulePcs = cols[7]?.trim() ?? "";
+          const dateStr = cols[8]?.trim() ?? "";
+          const materialName = cols[9]?.trim() ?? "";
+          const qtyStr = cols[10]?.trim() ?? "";
 
-        // If this row has Qty Order, treat it as Header info source
-        if (qtyOrderStr && !foundHeaderInfo) {
-          const cleanedQty = qtyOrderStr.replace(/\./g, "").replace(/,/g, ""); // Remove dots/commas
-          if (!isNaN(Number(cleanedQty))) {
-            setQtyPoPcs(cleanedQty);
-            foundHeaderInfo = true;
-          }
+          if (!machineName) continue; // Skip empty rows
 
-          // Product Name from Name column (col 3) if available
-          const nameVal = cols[3]?.trim();
-          if (nameVal) setProductName(nameVal);
+          // Set header info from first valid row
+          if (!foundHeaderInfo && qtyOrderStr) {
+            const cleanedQty = qtyOrderStr.replace(/\./g, "").replace(/,/g, "");
+            if (!isNaN(Number(cleanedQty))) {
+              setQtyPoPcs(cleanedQty);
+              foundHeaderInfo = true;
+            }
 
-          // Global UP
-          if (totalUpStr) {
-            detectedUp = totalUpStr;
-          }
+            if (productNameCsv) setProductName(productNameCsv);
 
-          if (proNumCsv) {
-            setManualProNumber(proNumCsv);
+            if (proNumCsv) {
+              setManualProNumber(proNumCsv);
 
-            // Auto-detect process from first 2 chars
-            const prefix = proNumCsv.substring(0, 2).toUpperCase();
-            const foundProc = processList.find((p) => p.code === prefix);
-            if (foundProc) {
-              setProcessId(foundProc.id);
+              // Auto-detect process from first 2 chars
+              const prefix = proNumCsv.substring(0, 2).toUpperCase();
+              const foundProc = processList.find((p) => p.code === prefix);
+              if (foundProc) {
+                setProcessId(foundProc.id);
+              }
             }
           }
-        }
 
-        const partNum = cols[0]?.trim(); // Use col 0 (header R) as Part Number? Or is it R for row no? Usually R is row no. But earlier I saw comments.
-        // Wait, user didn't clarify Part Number col. I will leave it blank? Or use col 0 if it looks like part num?
-        // Let's stick to simple logic for now, Part Num manual or if previously was mapped.
-        // Actually the previous code mapped `partNum = cols[0]` which is usually Row Number.
-        // I should ignore it unless confirmed. Leaving it as is for now not to regress,
-        // but user only asked about UoM and matching.
-
-        // --- Create Step ---
-        // 1. Machine Match (Normalized)
-        const mach = machineList.find(
-          (m) => normalize(m.name) === normalize(machineName),
-        );
-
-        // 2. Start Date (M/D/YYYY or D/M/YYYY -> assuming M/D/YYYY)
-        // 2. Start Date (Try parsing DD/MM/YYYY, DD-MM-YYYY, or standard)
-        const dateStr = cols[6]?.trim();
-        let formattedDate = "";
-
-        if (dateStr) {
-          // Check for DD/MM/YYYY or DD-MM-YYYY
-          const dmy = dateStr.match(
-            /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/,
+          // Machine Match
+          const mach = machineList.find(
+            (m) => normalize(m.name) === normalize(machineName),
           );
-          if (dmy) {
-            const day = dmy[1]!.padStart(2, "0");
-            const month = dmy[2]!.padStart(2, "0");
-            const year = dmy[3];
-            formattedDate = `${year}-${month}-${day}`;
-          } else {
-            const d = new Date(dateStr);
-            if (!isNaN(d.getTime())) {
-              formattedDate = d.toISOString().split("T")[0]!;
+
+          // Parse Date (DD/MM/YYYY or DD-MM-YYYY)
+          let formattedDate = "";
+          if (dateStr) {
+            // Try to parse date range "DD/MM/YYYY,DD/MM/YYYY" - take first date
+            const dateParts = dateStr.split(",");
+            const firstDate = dateParts[0]?.trim() ?? "";
+
+            const dmy = firstDate.match(
+              /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/,
+            );
+            if (dmy) {
+              const day = dmy[1]!.padStart(2, "0");
+              const month = dmy[2]!.padStart(2, "0");
+              const year = dmy[3];
+              formattedDate = `${year}-${month}-${day}`;
+            } else {
+              const d = new Date(firstDate);
+              if (!isNaN(d.getTime())) {
+                formattedDate = d.toISOString().split("T")[0]!;
+              }
             }
           }
-        }
 
-        // 3. Materials
-        // Split by '+'
-        // Format: ..., 8:Material, 9:Qty (Shifted due to removed UoM)
-        const matNames = (cols[8]?.trim() ?? "").split("+");
-        // Qty Logic: Try Col 9, Fallback Col 10
-        let qtyColVal = cols[9]?.trim();
-        if (!qtyColVal) {
-          const c10 = cols[10]?.trim();
-          if (c10 && /[0-9]/.test(c10)) qtyColVal = c10;
-        }
-        const matQties = (qtyColVal ?? "").split("+");
+          // Materials
+          const stepMats: StepDraftMaterial[] = [];
 
-        const stepMats: StepDraftMaterial[] = [];
+          if (materialName) {
+            // Parse quantity
+            let mQty = "";
+            if (qtyStr) {
+              const parseVal = (s: string) => {
+                if (s.includes(","))
+                  return s.replace(/\./g, "").replace(",", ".");
+                const parts = s.split(".");
+                if (parts.length > 2) return s.replace(/\./g, "");
+                if (parts.length === 2 && parts[1]?.length === 3)
+                  return s.replace(/\./g, "");
+                return s;
+              };
+              mQty = parseVal(qtyStr.trim());
+            }
 
-        for (let k = 0; k < matNames.length; k++) {
-          const mNameRaw = matNames[k]?.trim();
-          if (!mNameRaw) continue;
+            // Match material (Normalized)
+            const nSearch = normalize(materialName);
+            let foundMat = materialList.find(
+              (m) => normalize(m.name) === nSearch,
+            );
 
-          const mQtyRaw = matQties[k]?.trim();
+            // Fallback: Partial Match
+            if (!foundMat) {
+              const candidates = materialList.filter((m) => {
+                const nDb = normalize(m.name);
+                return nDb.includes(nSearch) || nSearch.includes(nDb);
+              });
 
-          // Robust Qty Parse
-          let mQty = "";
-          const parseVal = (s: string) => {
-            if (s.includes(",")) return s.replace(/\./g, "").replace(",", ".");
-            const parts = s.split(".");
-            if (parts.length > 2) return s.replace(/\./g, "");
-            if (parts.length === 2 && parts[1]?.length === 3)
-              return s.replace(/\./g, "");
-            return s;
-          };
+              if (candidates.length === 1) {
+                foundMat = candidates[0];
+              }
+            }
 
-          if (mQtyRaw) {
-            mQty = parseVal(mQtyRaw.trim());
-          }
-
-          // Match name (Normalized)
-          const nSearch = normalize(mNameRaw);
-          let foundMat = materialList.find(
-            (m) => normalize(m.name) === nSearch,
-          );
-
-          // Fallback: Partial Match (if unique)
-          if (!foundMat) {
-            // Try finding if DB name contains CSV name OR CSV name contains DB name (sometimes CSV is more descriptive or less)
-            // User case: "IVORY VA RDD  300 GSM 79 X 109 CM" in CSV.
-            // DB might correspond to "IVORY VA RDD 300 GSM"
-            // normalize() handles spaces.
-            // nSearch might be "ivory va rdd 300 gsm 79 x 109 cm"
-            // db might be "ivory va rdd 300 gsm"
-
-            const candidates = materialList.filter((m) => {
-              const nDb = normalize(m.name);
-              return nDb.includes(nSearch) || nSearch.includes(nDb);
+            stepMats.push({
+              key: uid(),
+              materialId: foundMat ? foundMat.id : null,
+              qtyReq: mQty,
             });
-
-            if (candidates.length === 1) {
-              foundMat = candidates[0];
-            }
           }
 
-          stepMats.push({
+          newSteps.push({
             key: uid(),
-            materialId: foundMat ? foundMat.id : null,
-            qtyReq: mQty, // Allow qty even if material not found
+            up: totalLpr || "1",
+            machineId: mach ? mach.id : null,
+            startDate: formattedDate,
+            partNumber: partNum || "",
+            batchNo: batchNo || "",
+            materials: stepMats,
           });
         }
+      } 
+      // PAPER CSV FORMAT (existing logic)
+      else {
+        let detectedUp = "";
 
-        // REMOVED: if (stepMats.length === 0) stepMats.push({ key: uid(), materialId: null, qtyReq: "" });
-        // User request: empty cell = no material. So we allow empty array.
+        for (let i = 1; i < rows.length; i++) {
+          const cols = rows[i];
+          if (!cols || cols.length < 2) continue;
 
-        newSteps.push({
-          key: uid(),
-          up: totalUpStr || "1", // Use row specific up or default 1
-          machineId: mach ? mach.id : null,
-          startDate: formattedDate,
-          partNumber: partNum || "",
-          materials: stepMats,
-        });
+          // machine
+          const machineName = cols[1]?.trim() ?? "";
+          if (!machineName) continue; // Skip empty rows
+
+          // Check for header info row (has Qty Order)
+          const qtyOrderStr = cols[5]?.trim();
+          const totalUpStr = cols[4]?.trim();
+          const proNumCsv = cols[2]?.trim(); // Production Order
+
+          // If this row has Qty Order, treat it as Header info source
+          if (qtyOrderStr && !foundHeaderInfo) {
+            const cleanedQty = qtyOrderStr.replace(/\./g, "").replace(/,/g, ""); // Remove dots/commas
+            if (!isNaN(Number(cleanedQty))) {
+              setQtyPoPcs(cleanedQty);
+              foundHeaderInfo = true;
+            }
+
+            // Product Name from Name column (col 3) if available
+            const nameVal = cols[3]?.trim();
+            if (nameVal) setProductName(nameVal);
+
+            // Global UP
+            if (totalUpStr) {
+              detectedUp = totalUpStr;
+            }
+
+            if (proNumCsv) {
+              setManualProNumber(proNumCsv);
+
+              // Auto-detect process from first 2 chars
+              const prefix = proNumCsv.substring(0, 2).toUpperCase();
+              const foundProc = processList.find((p) => p.code === prefix);
+              if (foundProc) {
+                setProcessId(foundProc.id);
+              }
+            }
+          }
+
+          const partNum = cols[0]?.trim();
+
+          // --- Create Step ---
+          // 1. Machine Match (Normalized)
+          const mach = machineList.find(
+            (m) => normalize(m.name) === normalize(machineName),
+          );
+
+          // 2. Start Date (Try parsing DD/MM/YYYY, DD-MM-YYYY, or standard)
+          const dateStr = cols[6]?.trim();
+          let formattedDate = "";
+
+          if (dateStr) {
+            // Check for DD/MM/YYYY or DD-MM-YYYY
+            const dmy = dateStr.match(
+              /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/,
+            );
+            if (dmy) {
+              const day = dmy[1]!.padStart(2, "0");
+              const month = dmy[2]!.padStart(2, "0");
+              const year = dmy[3];
+              formattedDate = `${year}-${month}-${day}`;
+            } else {
+              const d = new Date(dateStr);
+              if (!isNaN(d.getTime())) {
+                formattedDate = d.toISOString().split("T")[0]!;
+              }
+            }
+          }
+
+          // 3. Materials
+          // Split by '+'
+          // Format: ..., 8:Material, 9:Qty (Shifted due to removed UoM)
+          const matNames = (cols[8]?.trim() ?? "").split("+");
+          // Qty Logic: Try Col 9, Fallback Col 10
+          let qtyColVal = cols[9]?.trim();
+          if (!qtyColVal) {
+            const c10 = cols[10]?.trim();
+            if (c10 && /[0-9]/.test(c10)) qtyColVal = c10;
+          }
+          const matQties = (qtyColVal ?? "").split("+");
+
+          const stepMats: StepDraftMaterial[] = [];
+
+          for (let k = 0; k < matNames.length; k++) {
+            const mNameRaw = matNames[k]?.trim();
+            if (!mNameRaw) continue;
+
+            const mQtyRaw = matQties[k]?.trim();
+
+            // Robust Qty Parse
+            let mQty = "";
+            const parseVal = (s: string) => {
+              if (s.includes(",")) return s.replace(/\./g, "").replace(",", ".");
+              const parts = s.split(".");
+              if (parts.length > 2) return s.replace(/\./g, "");
+              if (parts.length === 2 && parts[1]?.length === 3)
+                return s.replace(/\./g, "");
+              return s;
+            };
+
+            if (mQtyRaw) {
+              mQty = parseVal(mQtyRaw.trim());
+            }
+
+            // Match name (Normalized)
+            const nSearch = normalize(mNameRaw);
+            let foundMat = materialList.find(
+              (m) => normalize(m.name) === nSearch,
+            );
+
+            // Fallback: Partial Match (if unique)
+            if (!foundMat) {
+              const candidates = materialList.filter((m) => {
+                const nDb = normalize(m.name);
+                return nDb.includes(nSearch) || nSearch.includes(nDb);
+              });
+
+              if (candidates.length === 1) {
+                foundMat = candidates[0];
+              }
+            }
+
+            stepMats.push({
+              key: uid(),
+              materialId: foundMat ? foundMat.id : null,
+              qtyReq: mQty, // Allow qty even if material not found
+            });
+          }
+
+          newSteps.push({
+            key: uid(),
+            up: totalUpStr || "1", // Use row specific up or default 1
+            machineId: mach ? mach.id : null,
+            startDate: formattedDate,
+            partNumber: partNum || "",
+            materials: stepMats,
+          });
+        }
       }
 
       setSteps((prev) => [...prev, ...newSteps]);
@@ -482,6 +601,7 @@ export default function ProPlanner() {
         machineId: s.machineId ?? null,
         startDate: s.startDate ? new Date(s.startDate) : undefined,
         partNumber: s.partNumber?.trim() || undefined,
+        batchNo: s.batchNo?.trim() || undefined,
         materials: s.materials
           .filter((m) => m.materialId)
           .map((m) => ({
@@ -670,6 +790,9 @@ export default function ProPlanner() {
                       <TableHead className="w-10"></TableHead>
                       <TableHead className="w-16">No.</TableHead>
 
+                      {proType === "RIGID" && (
+                        <TableHead className="w-28">Batch No.</TableHead>
+                      )}
                       <TableHead className="w-32">Part No.</TableHead>
                       <TableHead>Machine</TableHead>
                       <TableHead className="w-24">Tanggal</TableHead>
@@ -687,7 +810,7 @@ export default function ProPlanner() {
                     {steps.length === 0 ? (
                       <TableRow>
                         <TableCell
-                          colSpan={10}
+                          colSpan={11}
                           className="text-muted-foreground py-12 text-center"
                         >
                           <div className="flex flex-col items-center gap-1">
@@ -714,6 +837,7 @@ export default function ProPlanner() {
                             qtyPo={Number(qtyPoPcs) || 0}
                             onEdit={openEdit}
                             onRemove={removeStep}
+                            isRigid={proType === "RIGID"}
                           />
                         ))}
                       </SortableContext>
@@ -789,6 +913,22 @@ export default function ProPlanner() {
                   placeholder="Part Number for this step"
                 />
               </div>
+
+              {proType === "RIGID" && (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Batch No. (Rigid)</div>
+                  <Input
+                    value={draft.batchNo || ""}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setDraft((d: StepDraft) => ({
+                        ...d,
+                        batchNo: e.target.value,
+                      }))
+                    }
+                    placeholder="Batch number (optional)"
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <div className="text-sm font-medium">Machine (optional)</div>
@@ -991,6 +1131,7 @@ function SortableRow({
   qtyPo,
   onEdit,
   onRemove,
+  isRigid,
 }: {
   step: StepDraft;
   idx: number;
@@ -999,6 +1140,7 @@ function SortableRow({
   qtyPo: number;
   onEdit: (s: StepDraft) => void;
   onRemove: (k: string) => void;
+  isRigid: boolean;
 }) {
   const {
     attributes,
@@ -1047,6 +1189,7 @@ function SortableRow({
         </button>
       </TableCell>
       <TableCell>{idx + 1}</TableCell>
+      {isRigid && <TableCell>{step.batchNo || "-"}</TableCell>}
       <TableCell>{step.partNumber || "-"}</TableCell>
       <TableCell>
         <div className="flex flex-col">

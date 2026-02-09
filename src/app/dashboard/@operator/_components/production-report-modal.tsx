@@ -567,7 +567,61 @@ export function ProductionReportModal({
         }
       }
 
-      // 2. Load Draft
+      // 2. If editing a rejected report, load its data
+      if (editReport) {
+        const formatTime = (d?: string | Date) => {
+          if (!d) return "";
+          const date = new Date(d);
+          return date.toTimeString().slice(0, 5);
+        };
+
+        const formatDate = (d?: string | Date) => {
+          if (!d) return "";
+          const date = new Date(d);
+          return date.toISOString().slice(0, 10);
+        };
+
+        setFormData({
+          startTime: formatTime(editReport.startTime),
+          endTime: formatTime(editReport.endTime),
+          startDate: formatDate(editReport.reportDate),
+          endDate: formatDate(editReport.reportDate),
+          shift: String(editReport.shift),
+          operatorName: editReport.operatorName || "",
+          batchNo: editReport.batchNo || "",
+          mpStd: editReport.manPowerStd?.toString() || "",
+          mpAct: editReport.manPowerAct?.toString() || "",
+          ctStd: editReport.cycleTimeStd?.toString() || prefilledCtStd,
+          ctAct: editReport.cycleTimeAct?.toString() || "",
+          cavStd: editReport.cavityStd?.toString() || "",
+          cavAct: editReport.cavityAct?.toString() || "",
+          inputMaterial: editReport.inputMaterialQty?.toString() || "",
+          materialRunner: editReport.materialRunnerQty?.toString() || "",
+          materialPurge: editReport.materialPurgeQty?.toString() || "",
+          productWeight: "", // Not in schema yet
+          qtyGood: editReport.qtyGood?.toString() || "",
+          qtyPassOn: editReport.qtyPassOn?.toString() || "",
+          qtyWip: editReport.qtyWip?.toString() || "",
+          qtyHold: editReport.qtyHold?.toString() || "",
+          rejectSetup: "",
+          rejectProcess: "",
+          rejects: (editReport.rejectBreakdown as Record<string, number> | null) 
+            ? Object.fromEntries(
+                Object.entries(editReport.rejectBreakdown).map(([k, v]) => [k, String(v)])
+              )
+            : {},
+          downtimes: (editReport.downtimeBreakdown as Record<string, number> | null)
+            ? Object.fromEntries(
+                Object.entries(editReport.downtimeBreakdown).map(([k, v]) => [k, String(v)])
+              )
+            : {},
+          notes: editReport.notes || "",
+        });
+        setIsLoaded(true);
+        return; // Skip draft loading
+      }
+
+      // 3. Load Draft (only if not editing)
       if (draftKey) {
         const saved = localStorage.getItem(draftKey);
         if (saved) {
@@ -627,7 +681,7 @@ export function ProductionReportModal({
     } else {
       setIsLoaded(false); // Reset when closed
     }
-  }, [open, task, draftKey, session]);
+  }, [open, task, draftKey, session, editReport]);
 
   // Auto Save
   React.useEffect(() => {
@@ -651,6 +705,9 @@ export function ProductionReportModal({
   const createReportMutation = api.production.createReport.useMutation({
     onSuccess: () => {
       utils.production.getHistory.invalidate(); // Refresh history
+      utils.pros.getSchedule.invalidate(); // Refresh schedule status
+      utils.pros.list.invalidate(); // Refresh PRO list status
+      utils.pros.getById.invalidate(); // Refresh PRO details
       alert("Laporan berhasil disimpan!");
       if (draftKey) localStorage.removeItem(draftKey);
       window.dispatchEvent(new Event("draft-update"));
@@ -668,6 +725,9 @@ export function ProductionReportModal({
   const updateReportMutation = api.production.updateReport.useMutation({
     onSuccess: () => {
       utils.production.getHistory.invalidate();
+      utils.pros.getSchedule.invalidate();
+      utils.pros.list.invalidate();
+      utils.pros.getById.invalidate();
       alert("Laporan berhasil diperbarui!");
       window.dispatchEvent(new Event("draft-update"));
       onDraftChange?.();
@@ -757,6 +817,15 @@ export function ProductionReportModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Confirmation dialog
+    const confirmed = window.confirm(
+      "Apakah Anda yakin data sudah benar dan siap dikirim untuk verifikasi?"
+    );
+    if (!confirmed) {
+      return;
+    }
+
     setLoading(true);
 
     if (!formData.operatorName.trim()) {
@@ -2179,7 +2248,7 @@ export function ProductionReportModal({
               disabled={loading}
               className="flex-1 bg-blue-600 px-8 font-bold shadow-lg shadow-blue-900/20 hover:bg-blue-700 sm:flex-none"
             >
-              {loading ? "Menyimpan..." : "Simpan Laporan"}
+              {loading ? "Mengirim..." : "Kirim Laporan"}
             </Button>
           </div>
         </DialogFooter>

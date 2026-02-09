@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { LphType, ReportStatus } from "../../../../../generated/prisma";
+import { LphType, ReportStatus, ProStatus } from "../../../../../generated/prisma";
 
 const productionReportInput = z.object({
   proStepId: z.number(),
@@ -53,7 +53,7 @@ export const productionRouter = createTRPCRouter({
         return newDate;
       };
 
-      return ctx.db.productionReport.create({
+      const report = await ctx.db.productionReport.create({
         data: {
           proStepId: input.proStepId,
           shift: input.shift,
@@ -92,6 +92,80 @@ export const productionRouter = createTRPCRouter({
           // createdById: ctx.session.user.id, // Save the user ID (Account Owner)
         },
       });
+
+      // --- Auto-Update PRO Status ---
+      // Requirement:
+      // 1. Belum ada laporan = OPEN (handled initially)
+      // 2. Satu aja laporan masuk = IN_PROGRESS
+      // 3. Semua laporan masuk (tiap step ada report) = DONE
+      try {
+        const step = await ctx.db.proStep.findUnique({
+          where: { id: input.proStepId },
+          select: {
+            pro: {
+              select: {
+                id: true,
+                status: true,
+                steps: {
+                  select: {
+                    id: true,
+                    productionReports: {
+                      select: {
+                        id: true,
+                        status: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        if (step?.pro) {
+          const pro = step.pro;
+          const totalSteps = pro.steps.length;
+          let stepsWithApprovedReport = 0;
+          let stepsWithAnyReport = 0;
+
+          for (const s of pro.steps) {
+            const hasAnyReport = s.productionReports.length > 0;
+            const hasApprovedReport = s.productionReports.some(
+              (r) => r.status === ReportStatus.APPROVED
+            );
+
+            if (hasAnyReport) stepsWithAnyReport++;
+            if (hasApprovedReport) stepsWithApprovedReport++;
+          }
+
+          let newStatus = pro.status;
+
+          // If all steps have at least one APPROVED report -> CLOSED
+          if (totalSteps > 0 && stepsWithApprovedReport >= totalSteps) {
+            newStatus = ProStatus.CLOSED;
+          }
+          // If at least one step has any report but not all approved -> IN_PROGRESS
+          else if (stepsWithAnyReport > 0) {
+            newStatus = ProStatus.IN_PROGRESS;
+          }
+          // If no reports at all -> OPEN
+          else {
+            newStatus = ProStatus.OPEN;
+          }
+
+          if (newStatus !== pro.status && pro.status !== ProStatus.CANCELLED) {
+             await ctx.db.pro.update({
+               where: { id: pro.id },
+               data: { status: newStatus }
+             });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to auto-update PRO status", err);
+        // Do not fail the report creation just because status update failed
+      }
+
+      return report;
     }),
 
   updateReport: protectedProcedure
@@ -147,7 +221,7 @@ export const productionRouter = createTRPCRouter({
           notes: input.data.notes,
 
           // IMPORTANT: Reset status to PENDING so Admin can re-verify
-          status: "PENDING",
+          status: ReportStatus.PENDING,
         },
       });
     }),

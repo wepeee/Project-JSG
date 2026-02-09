@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -68,6 +67,51 @@ export const machinesRouter = createTRPCRouter({
           stdOutputPerDay: input.stdOutputPerDay,
           workCenter: input.workCenter,
         },
+      });
+    }),
+
+  update: superAdminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        name: z.string().min(1).optional(),
+        stdOutputPerHour: z.number().int().positive().optional(),
+        uom: z.nativeEnum(Uom).optional(),
+        remark: z.string().optional(),
+        // Rigid Fields
+        cycleTimeSec: z.number().optional(),
+        cycleTimeMin: z.number().optional(),
+        cavity: z.number().int().optional(),
+        manPower: z.number().int().optional(),
+        stdOutputPerDay: z.number().int().optional(),
+        workCenter: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+
+      // Calculate derived fields if necessary
+      let computedShift = undefined;
+      if (data.stdOutputPerHour) {
+        computedShift = Math.round(data.stdOutputPerHour * SHIFT_HOURS);
+      }
+
+      return ctx.db.machine.update({
+        where: { id },
+        data: {
+          ...data,
+          ...(computedShift !== undefined && {
+            stdOutputPerShift: computedShift,
+          }),
+        },
+      });
+    }),
+
+  delete: superAdminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.machine.delete({
+        where: { id: input.id },
       });
     }),
 });
