@@ -38,6 +38,7 @@ const productionReportInput = z.object({
   downtimeBreakdown: z.record(z.string(), z.number()).optional(),
   totalDowntime: z.number().default(0),
   notes: z.string().optional(),
+  othersNote: z.string().optional(),
 });
 
 export const productionRouter = createTRPCRouter({
@@ -87,6 +88,7 @@ export const productionRouter = createTRPCRouter({
           totalDowntime: input.totalDowntime,
 
           notes: input.notes,
+          othersNote: input.othersNote,
 
           // @ts-ignore: Prisma types not updated yet (requires restart)
           // createdById: ctx.session.user.id, // Save the user ID (Account Owner)
@@ -219,6 +221,7 @@ export const productionRouter = createTRPCRouter({
           totalDowntime: input.data.totalDowntime,
 
           notes: input.data.notes,
+          othersNote: input.data.othersNote,
 
           // IMPORTANT: Reset status to PENDING so Admin can re-verify
           status: ReportStatus.PENDING,
@@ -277,6 +280,7 @@ export const productionRouter = createTRPCRouter({
           qtyHold: true,
           qtyWip: true,
           notes: true,
+          othersNote: true,
           createdAt: true,
           status: true,
           rejectionNote: true,

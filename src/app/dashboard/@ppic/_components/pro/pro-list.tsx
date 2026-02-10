@@ -33,7 +33,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 
-type Status = "OPEN" | "IN_PROGRESS" | "DONE" | "CANCELLED";
+type Status = "OPEN" | "IN_PROGRESS" | "CLOSED" | "CANCELLED";
 
 function fmtDate(d?: Date | string | null) {
   if (!d) return "-";
@@ -904,7 +904,7 @@ export default function ProList({
                   >
                     <option value="OPEN">OPEN</option>
                     <option value="IN_PROGRESS">IN_PROGRESS</option>
-                    <option value="DONE">DONE</option>
+                    <option value="CLOSED">CLOSED</option>
                     <option value="CANCELLED">CANCELLED</option>
                   </select>
                 </div>
@@ -1765,7 +1765,7 @@ export default function ProList({
               <option value="ALL">Semua Status</option>
               <option value="OPEN">OPEN</option>
               <option value="IN_PROGRESS">IN_PROGRESS</option>
-              <option value="DONE">DONE</option>
+              <option value="CLOSED">CLOSED</option>
               <option value="CANCELLED">CANCELLED</option>
             </select>
           </div>

@@ -297,4 +297,13 @@ export const verificationRouter = createTRPCRouter({
 
       return report;
     }),
+
+  updateAdminNote: superAdminProcedure
+    .input(z.object({ id: z.string(), note: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.productionReport.update({
+        where: { id: input.id },
+        data: { adminNote: input.note },
+      });
+    }),
 });

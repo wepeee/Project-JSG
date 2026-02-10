@@ -272,7 +272,9 @@ model ProductionReport {
   totalDowntime Int @default(0) // Total menit downtime
 
   // --- Notes ---
-  notes String? @db.Text
+  notes     String? @db.Text // Catatan Operator
+  othersNote String? @db.Text // Keterangan Lain-lain (Reject)
+  adminNote String? @db.Text // Catatan Admin/Superadmin
 
   // Meta data for calculated fields snapshots if needed (OEE, %, etc) or extra columns
   metaData Json?

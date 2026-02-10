@@ -387,6 +387,7 @@ export function ProductionReportModal({
     downtimes: {} as Record<string, string>,
 
     notes: "",
+    othersNote: "",
   });
 
   // Calculate Totals
@@ -616,6 +617,7 @@ export function ProductionReportModal({
               )
             : {},
           notes: editReport.notes || "",
+          othersNote: editReport.othersNote || "",
         });
         setIsLoaded(true);
         return; // Skip draft loading
@@ -674,6 +676,7 @@ export function ProductionReportModal({
             rejects: {},
             downtimes: {},
             notes: "",
+            othersNote: "",
           });
         }
       }
@@ -880,6 +883,7 @@ export function ProductionReportModal({
           ),
           totalDowntime: totalDowntimeObj.total,
           notes: formData.notes,
+          othersNote: formData.othersNote,
         },
       });
     } else {
@@ -932,6 +936,7 @@ export function ProductionReportModal({
         ),
         totalDowntime: totalDowntimeObj.total,
         notes: formData.notes,
+        othersNote: formData.othersNote,
       });
     }
   };
@@ -1187,6 +1192,8 @@ export function ProductionReportModal({
                             />
                           </div>
                         )}
+                      
+                      {/* MP Actual - ALWAYS SHOW */}
                       <div className="space-y-1">
                         <Label className="text-xs text-slate-300">
                           MP Aktual
@@ -1202,19 +1209,16 @@ export function ProductionReportModal({
                         />
                       </div>
 
-                      {/* CT / SPEED - Hide Std for Injection/BM/Printing/Packing */}
-                      {!isMoulding &&
-                        lphType !== "PRINTING" &&
-                        lphType !== "PACKING_ASSEMBLY" && (
+                      {/* CT / SPEED - Only Show for PAPER (Hide for Rigid completely) */}
+                      {!isRigid && (
+                        <>
                           <div className="space-y-1">
                             <Label className="text-xs text-slate-400">
-                              {isRigid
-                                ? "Cycle Time Std (detik)"
-                                : "Speed Std (Sheet/Jam)"}
+                              Speed Std (Sheet/Jam)
                             </Label>
                             <Input
                               type="number"
-                              step={isRigid ? "0.1" : "1"}
+                              step="1"
                               placeholder="0"
                               className="border-slate-800 bg-slate-950 text-slate-100"
                               value={formData.ctStd}
@@ -1226,64 +1230,25 @@ export function ProductionReportModal({
                               }
                             />
                           </div>
-                        )}
-                      <div className="space-y-1">
-                        <Label className="text-xs text-slate-300">
-                          {isRigid ? "Cycle Time Act" : "Speed Act"}
-                        </Label>
-                        <Input
-                          type="number"
-                          step={isRigid ? "0.1" : "1"}
-                          placeholder="0"
-                          className="border-blue-900/50 bg-blue-950/20 text-blue-100"
-                          value={formData.ctAct}
-                          onChange={(e) =>
-                            setFormData({ ...formData, ctAct: e.target.value })
-                          }
-                        />
-                      </div>
-
-                      {/* Cavities (Moulding) - Hide Std for Injection */}
-                      {isMoulding && (
-                        <>
-                          {!isMoulding && (
-                            <div className="space-y-1">
-                              <Label className="text-xs text-slate-400">
-                                Cavity Std
-                              </Label>
-                              <Input
-                                type="number"
-                                placeholder="0"
-                                className="border-slate-800 bg-slate-950 text-slate-100"
-                                value={formData.cavStd}
-                                onChange={(e) =>
-                                  setFormData({
-                                    ...formData,
-                                    cavStd: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                          )}
                           <div className="space-y-1">
                             <Label className="text-xs text-slate-300">
-                              Cavity Act
+                              Speed Act
                             </Label>
                             <Input
                               type="number"
+                              step="1"
                               placeholder="0"
                               className="border-blue-900/50 bg-blue-950/20 text-blue-100"
-                              value={formData.cavAct}
+                              value={formData.ctAct}
                               onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  cavAct: e.target.value,
-                                })
+                                setFormData({ ...formData, ctAct: e.target.value })
                               }
                             />
                           </div>
                         </>
                       )}
+
+                      {/* Cavities - COMPLETELY HIDDEN FOR RIGID (Request: "std aktual semua ilangin kecuali MP aktual") */}
                     </div>
                   </div>
                 )}
@@ -1666,6 +1631,23 @@ export function ProductionReportModal({
                       ))
                     )}
                   </div>
+
+                  {/* Others Note for Rigid */}
+                  {isRigid && (
+                    <div className="mt-4">
+                      <Label className="text-xs font-bold text-slate-300">
+                        Keterangan Lain-lain (Optional)
+                      </Label>
+                      <Input
+                        placeholder="Detail reject lain-lain..."
+                        className="mt-1 border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
+                        value={formData.othersNote}
+                        onChange={(e) =>
+                          setFormData({ ...formData, othersNote: e.target.value })
+                        }
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* DOWNTIME GRID - Only show here if NOT Split Tabs */}
@@ -2221,6 +2203,7 @@ export function ProductionReportModal({
                     rejects: {},
                     downtimes: {},
                     notes: "",
+                    othersNote: "",
                   });
                   if (draftKey) localStorage.removeItem(draftKey);
                   window.dispatchEvent(new Event("draft-update")); // Trigger update for other components

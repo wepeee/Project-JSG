@@ -240,9 +240,12 @@ export default function ProPlanner() {
           const productNameCsv = cols[4]?.trim() ?? "";
           const totalLpr = cols[5]?.trim() ?? "";
           const qtyOrderStr = cols[6]?.trim() ?? "";
-          const schedulePcs = cols[7]?.trim() ?? "";
-          const dateStr = cols[8]?.trim() ?? "";
+          // Col 7 is Start Date in screenshot (H)
+          const dateStr = cols[7]?.trim() ?? "";
+          // Col 8 is End Date (I)
+          // Col 9 is Material (J)
           const materialName = cols[9]?.trim() ?? "";
+          // Col 10 is Qty (K)
           const qtyStr = cols[10]?.trim() ?? "";
 
           if (!machineName) continue; // Skip empty rows
@@ -261,7 +264,9 @@ export default function ProPlanner() {
               setManualProNumber(proNumCsv);
 
               // Auto-detect process from first 2 chars
-              const prefix = proNumCsv.substring(0, 2).toUpperCase();
+              // User reported issue with PRO read, ensure we trim
+              const safePro = proNumCsv.trim();
+              const prefix = safePro.substring(0, 2).toUpperCase();
               const foundProc = processList.find((p) => p.code === prefix);
               if (foundProc) {
                 setProcessId(foundProc.id);
@@ -274,50 +279,67 @@ export default function ProPlanner() {
             (m) => normalize(m.name) === normalize(machineName),
           );
 
-          // Parse Date (DD/MM/YYYY or DD-MM-YYYY)
-          let formattedDate = "";
-          if (dateStr) {
-            // Try to parse date range "DD/MM/YYYY,DD/MM/YYYY" - take first date
-            const dateParts = dateStr.split(",");
-            const firstDate = dateParts[0]?.trim() ?? "";
-
-            const dmy = firstDate.match(
-              /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/,
-            );
+          // Date Parsing: Check Col 7 (Start?) and Col 8 (End?)
+          // We want the earlier date as Start Date.
+          const dateStrA = cols[7]?.trim() ?? "";
+          const dateStrB = cols[8]?.trim() ?? "";
+          
+          const parseDate = (s: string) => {
+            if (!s) return null;
+            // Check for DD/MM/YYYY or DD-MM-YYYY
+            const dmy = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/);
             if (dmy) {
               const day = dmy[1]!.padStart(2, "0");
               const month = dmy[2]!.padStart(2, "0");
               const year = dmy[3];
-              formattedDate = `${year}-${month}-${day}`;
-            } else {
-              const d = new Date(firstDate);
-              if (!isNaN(d.getTime())) {
-                formattedDate = d.toISOString().split("T")[0]!;
-              }
+              return new Date(`${year}-${month}-${day}`);
             }
+            const d = new Date(s);
+            return !isNaN(d.getTime()) ? d : null;
+          };
+
+          const dA = parseDate(dateStrA);
+          const dB = parseDate(dateStrB);
+          
+          let formattedDate = "";
+          if (dA && dB) {
+            // Pick earlier
+            formattedDate = (dA < dB ? dA : dB).toISOString().split("T")[0]!;
+          } else if (dA) {
+            formattedDate = dA.toISOString().split("T")[0]!;
+          } else if (dB) {
+            formattedDate = dB.toISOString().split("T")[0]!;
           }
 
-          // Materials
+          // Materials (Support "MatA+MatB" and "QtyA+QtyB")
           const stepMats: StepDraftMaterial[] = [];
+          
+          const matNames = materialName.split("+");
+          const matQties = qtyStr.split("+");
 
-          if (materialName) {
-            // Parse quantity
+          // Helper to parse numeric string (1.000,5 -> 1000.5)
+          const parseVal = (s: string) => {
+             if (!s) return "";
+             if (s.includes(",")) return s.replace(/\./g, "").replace(",", ".");
+             // If dots exist
+             const parts = s.split(".");
+             if (parts.length > 2) return s.replace(/\./g, ""); // 1.000.000 -> 1000000
+             if (parts.length === 2 && parts[1]?.length === 3) return s.replace(/\./g, ""); // 1.000 -> 1000
+             return s;
+          };
+
+          for (let k = 0; k < matNames.length; k++) {
+            const mNameRaw = matNames[k]?.trim();
+            if (!mNameRaw) continue;
+
+            const mQtyRaw = matQties[k]?.trim();
             let mQty = "";
-            if (qtyStr) {
-              const parseVal = (s: string) => {
-                if (s.includes(","))
-                  return s.replace(/\./g, "").replace(",", ".");
-                const parts = s.split(".");
-                if (parts.length > 2) return s.replace(/\./g, "");
-                if (parts.length === 2 && parts[1]?.length === 3)
-                  return s.replace(/\./g, "");
-                return s;
-              };
-              mQty = parseVal(qtyStr.trim());
+            if (mQtyRaw) {
+               mQty = parseVal(mQtyRaw);
             }
 
             // Match material (Normalized)
-            const nSearch = normalize(materialName);
+            const nSearch = normalize(mNameRaw);
             let foundMat = materialList.find(
               (m) => normalize(m.name) === nSearch,
             );

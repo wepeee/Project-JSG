@@ -22,6 +22,67 @@ import {
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
 
+function AdminNoteInput({
+  id,
+  initialValue,
+}: {
+  id: string;
+  initialValue: string | null;
+}) {
+  const [value, setValue] = React.useState(initialValue ?? "");
+  const [isSaved, setIsSaved] = React.useState(true);
+  
+  const utils = api.useUtils();
+  
+  const mutation = api.verification.updateAdminNote.useMutation({
+    onSuccess: () => {
+      setIsSaved(true);
+      void utils.verification.getReports.invalidate();
+    },
+  });
+
+  const handleBlur = () => {
+    if (value !== (initialValue ?? "")) {
+      setIsSaved(false);
+      mutation.mutate({ id, note: value });
+    }
+  };
+
+  // Update local state if prop changes (e.g. re-fetch)
+  React.useEffect(() => {
+    setValue(initialValue ?? "");
+  }, [initialValue]);
+
+  return (
+    <div className="relative">
+      <Input
+        className={`h-8 w-[200px] text-xs ${
+          !isSaved
+            ? "border-amber-400 bg-amber-50"
+            : "border-transparent bg-transparent px-0 hover:bg-slate-50 dark:hover:bg-slate-800"
+        }`}
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setIsSaved(false);
+        }}
+        onBlur={handleBlur}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.currentTarget.blur();
+          }
+        }}
+        placeholder="Isi catatan..."
+      />
+      {!isSaved && mutation.isPending && (
+        <div className="absolute right-2 top-2">
+          <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 const PAPER_REJECT_COLUMNS = [
   "Bintik",
   "Warna",
@@ -720,6 +781,19 @@ export default function ProductionArchive() {
                         </TableHead>
                       </>
                     )}
+                  <TableHead
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
+                    className="text-slate-300"
+                  >
+                    Catatan
+                  </TableHead>
                 </TableRow>
                 {/* SUB-HEADERS FOR DOWNTIME (ROW 2 - PAPER ONLY) */}
                 {/* SUB-HEADERS ROW (Merged) */}
@@ -1402,6 +1476,18 @@ export default function ProductionArchive() {
                           </TableCell>
                         </>
                       )}
+                    <TableCell className="p-2">
+                      <AdminNoteInput
+                        id={rpt.id}
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                        initialValue={(rpt as any).adminNote as string | null}
+                      />
+                      {rpt.notes && (
+                        <div className="mt-1 max-w-[200px] truncate text-[10px] text-slate-400" title={rpt.notes}>
+                          Op: {rpt.notes}
+                        </div>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

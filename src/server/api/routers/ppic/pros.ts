@@ -38,7 +38,7 @@ export const prosRouter = createTRPCRouter({
     .input(
       z.object({
         q: z.string().optional(), // search proNumber / productName
-        status: z.enum(["OPEN", "IN_PROGRESS", "DONE", "CANCELLED"]).optional(),
+        status: z.enum(["OPEN", "IN_PROGRESS", "CLOSED", "CANCELLED"]).optional(),
         type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(), // Added
         take: z.number().min(5).max(50).default(20),
         cursor: z.number().int().positive().optional(), // pakai Pro.id

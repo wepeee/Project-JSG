@@ -10032,6 +10032,8 @@ export namespace Prisma {
     qtyReject: Decimal | null
     totalDowntime: number | null
     notes: string | null
+    othersNote: string | null
+    adminNote: string | null
     createdById: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -10067,6 +10069,8 @@ export namespace Prisma {
     qtyReject: Decimal | null
     totalDowntime: number | null
     notes: string | null
+    othersNote: string | null
+    adminNote: string | null
     createdById: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -10104,6 +10108,8 @@ export namespace Prisma {
     downtimeBreakdown: number
     totalDowntime: number
     notes: number
+    othersNote: number
+    adminNote: number
     metaData: number
     createdById: number
     createdAt: number
@@ -10182,6 +10188,8 @@ export namespace Prisma {
     qtyReject?: true
     totalDowntime?: true
     notes?: true
+    othersNote?: true
+    adminNote?: true
     createdById?: true
     createdAt?: true
     updatedAt?: true
@@ -10217,6 +10225,8 @@ export namespace Prisma {
     qtyReject?: true
     totalDowntime?: true
     notes?: true
+    othersNote?: true
+    adminNote?: true
     createdById?: true
     createdAt?: true
     updatedAt?: true
@@ -10254,6 +10264,8 @@ export namespace Prisma {
     downtimeBreakdown?: true
     totalDowntime?: true
     notes?: true
+    othersNote?: true
+    adminNote?: true
     metaData?: true
     createdById?: true
     createdAt?: true
@@ -10379,6 +10391,8 @@ export namespace Prisma {
     downtimeBreakdown: JsonValue | null
     totalDowntime: number
     notes: string | null
+    othersNote: string | null
+    adminNote: string | null
     metaData: JsonValue | null
     createdById: string | null
     createdAt: Date
@@ -10436,6 +10450,8 @@ export namespace Prisma {
     downtimeBreakdown?: boolean
     totalDowntime?: boolean
     notes?: boolean
+    othersNote?: boolean
+    adminNote?: boolean
     metaData?: boolean
     createdById?: boolean
     createdAt?: boolean
@@ -10479,6 +10495,8 @@ export namespace Prisma {
     downtimeBreakdown?: boolean
     totalDowntime?: boolean
     notes?: boolean
+    othersNote?: boolean
+    adminNote?: boolean
     metaData?: boolean
     createdById?: boolean
     createdAt?: boolean
@@ -10489,7 +10507,7 @@ export namespace Prisma {
     checkedAt?: boolean
   }
 
-  export type ProductionReportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proStepId" | "reportDate" | "shift" | "operatorName" | "reportType" | "startTime" | "endTime" | "batchNo" | "manPowerStd" | "manPowerAct" | "cycleTimeStd" | "cycleTimeAct" | "cavityStd" | "cavityAct" | "inputMaterialQty" | "materialRunnerQty" | "materialPurgeQty" | "qtyPassOn" | "qtyHold" | "qtyWip" | "qtyGood" | "qtyReject" | "rejectBreakdown" | "downtimeBreakdown" | "totalDowntime" | "notes" | "metaData" | "createdById" | "createdAt" | "updatedAt" | "status" | "rejectionNote" | "checkedById" | "checkedAt", ExtArgs["result"]["productionReport"]>
+  export type ProductionReportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proStepId" | "reportDate" | "shift" | "operatorName" | "reportType" | "startTime" | "endTime" | "batchNo" | "manPowerStd" | "manPowerAct" | "cycleTimeStd" | "cycleTimeAct" | "cavityStd" | "cavityAct" | "inputMaterialQty" | "materialRunnerQty" | "materialPurgeQty" | "qtyPassOn" | "qtyHold" | "qtyWip" | "qtyGood" | "qtyReject" | "rejectBreakdown" | "downtimeBreakdown" | "totalDowntime" | "notes" | "othersNote" | "adminNote" | "metaData" | "createdById" | "createdAt" | "updatedAt" | "status" | "rejectionNote" | "checkedById" | "checkedAt", ExtArgs["result"]["productionReport"]>
   export type ProductionReportInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     step?: boolean | ProStepDefaultArgs<ExtArgs>
     createdBy?: boolean | ProductionReport$createdByArgs<ExtArgs>
@@ -10531,6 +10549,8 @@ export namespace Prisma {
       downtimeBreakdown: Prisma.JsonValue | null
       totalDowntime: number
       notes: string | null
+      othersNote: string | null
+      adminNote: string | null
       metaData: Prisma.JsonValue | null
       createdById: string | null
       createdAt: Date
@@ -10938,6 +10958,8 @@ export namespace Prisma {
     readonly downtimeBreakdown: FieldRef<"ProductionReport", 'Json'>
     readonly totalDowntime: FieldRef<"ProductionReport", 'Int'>
     readonly notes: FieldRef<"ProductionReport", 'String'>
+    readonly othersNote: FieldRef<"ProductionReport", 'String'>
+    readonly adminNote: FieldRef<"ProductionReport", 'String'>
     readonly metaData: FieldRef<"ProductionReport", 'Json'>
     readonly createdById: FieldRef<"ProductionReport", 'String'>
     readonly createdAt: FieldRef<"ProductionReport", 'DateTime'>
@@ -11491,6 +11513,8 @@ export namespace Prisma {
     downtimeBreakdown: 'downtimeBreakdown',
     totalDowntime: 'totalDowntime',
     notes: 'notes',
+    othersNote: 'othersNote',
+    adminNote: 'adminNote',
     metaData: 'metaData',
     createdById: 'createdById',
     createdAt: 'createdAt',
@@ -11607,6 +11631,8 @@ export namespace Prisma {
     operatorName: 'operatorName',
     batchNo: 'batchNo',
     notes: 'notes',
+    othersNote: 'othersNote',
+    adminNote: 'adminNote',
     createdById: 'createdById',
     rejectionNote: 'rejectionNote',
     checkedById: 'checkedById'
@@ -12317,6 +12343,8 @@ export namespace Prisma {
     downtimeBreakdown?: JsonNullableFilter<"ProductionReport">
     totalDowntime?: IntFilter<"ProductionReport"> | number
     notes?: StringNullableFilter<"ProductionReport"> | string | null
+    othersNote?: StringNullableFilter<"ProductionReport"> | string | null
+    adminNote?: StringNullableFilter<"ProductionReport"> | string | null
     metaData?: JsonNullableFilter<"ProductionReport">
     createdById?: StringNullableFilter<"ProductionReport"> | string | null
     createdAt?: DateTimeFilter<"ProductionReport"> | Date | string
@@ -12358,6 +12386,8 @@ export namespace Prisma {
     downtimeBreakdown?: SortOrderInput | SortOrder
     totalDowntime?: SortOrder
     notes?: SortOrderInput | SortOrder
+    othersNote?: SortOrderInput | SortOrder
+    adminNote?: SortOrderInput | SortOrder
     metaData?: SortOrderInput | SortOrder
     createdById?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -12403,6 +12433,8 @@ export namespace Prisma {
     downtimeBreakdown?: JsonNullableFilter<"ProductionReport">
     totalDowntime?: IntFilter<"ProductionReport"> | number
     notes?: StringNullableFilter<"ProductionReport"> | string | null
+    othersNote?: StringNullableFilter<"ProductionReport"> | string | null
+    adminNote?: StringNullableFilter<"ProductionReport"> | string | null
     metaData?: JsonNullableFilter<"ProductionReport">
     createdById?: StringNullableFilter<"ProductionReport"> | string | null
     createdAt?: DateTimeFilter<"ProductionReport"> | Date | string
@@ -12444,6 +12476,8 @@ export namespace Prisma {
     downtimeBreakdown?: SortOrderInput | SortOrder
     totalDowntime?: SortOrder
     notes?: SortOrderInput | SortOrder
+    othersNote?: SortOrderInput | SortOrder
+    adminNote?: SortOrderInput | SortOrder
     metaData?: SortOrderInput | SortOrder
     createdById?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -12490,6 +12524,8 @@ export namespace Prisma {
     downtimeBreakdown?: JsonNullableWithAggregatesFilter<"ProductionReport">
     totalDowntime?: IntWithAggregatesFilter<"ProductionReport"> | number
     notes?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
+    othersNote?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
+    adminNote?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
     metaData?: JsonNullableWithAggregatesFilter<"ProductionReport">
     createdById?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"ProductionReport"> | Date | string
@@ -13096,6 +13132,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13135,6 +13173,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: string | null
     createdAt?: Date | string
@@ -13172,6 +13212,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13211,6 +13253,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13249,6 +13293,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: string | null
     createdAt?: Date | string
@@ -13286,6 +13332,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13322,6 +13370,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14182,6 +14232,8 @@ export namespace Prisma {
     downtimeBreakdown?: SortOrder
     totalDowntime?: SortOrder
     notes?: SortOrder
+    othersNote?: SortOrder
+    adminNote?: SortOrder
     metaData?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
@@ -14238,6 +14290,8 @@ export namespace Prisma {
     qtyReject?: SortOrder
     totalDowntime?: SortOrder
     notes?: SortOrder
+    othersNote?: SortOrder
+    adminNote?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -14273,6 +14327,8 @@ export namespace Prisma {
     qtyReject?: SortOrder
     totalDowntime?: SortOrder
     notes?: SortOrder
+    othersNote?: SortOrder
+    adminNote?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -15312,6 +15368,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15350,6 +15408,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15396,6 +15456,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15434,6 +15496,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: string | null
     createdAt?: Date | string
@@ -15500,6 +15564,8 @@ export namespace Prisma {
     downtimeBreakdown?: JsonNullableFilter<"ProductionReport">
     totalDowntime?: IntFilter<"ProductionReport"> | number
     notes?: StringNullableFilter<"ProductionReport"> | string | null
+    othersNote?: StringNullableFilter<"ProductionReport"> | string | null
+    adminNote?: StringNullableFilter<"ProductionReport"> | string | null
     metaData?: JsonNullableFilter<"ProductionReport">
     createdById?: StringNullableFilter<"ProductionReport"> | string | null
     createdAt?: DateTimeFilter<"ProductionReport"> | Date | string
@@ -15922,6 +15988,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15959,6 +16027,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: string | null
     createdAt?: Date | string
@@ -16413,6 +16483,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -16450,6 +16522,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: string | null
     createdAt?: Date | string
@@ -16486,6 +16560,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16524,6 +16600,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16561,6 +16639,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16597,6 +16677,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16635,6 +16717,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16672,6 +16756,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16884,6 +16970,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: number
     notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: string | null
     createdAt?: Date | string
@@ -16938,6 +17026,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16975,6 +17065,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -17012,6 +17104,8 @@ export namespace Prisma {
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
     totalDowntime?: IntFieldUpdateOperationsInput | number
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
     metaData?: NullableJsonNullValueInput | InputJsonValue
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

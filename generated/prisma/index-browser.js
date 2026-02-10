@@ -229,6 +229,8 @@ exports.Prisma.ProductionReportScalarFieldEnum = {
   downtimeBreakdown: 'downtimeBreakdown',
   totalDowntime: 'totalDowntime',
   notes: 'notes',
+  othersNote: 'othersNote',
+  adminNote: 'adminNote',
   metaData: 'metaData',
   createdById: 'createdById',
   createdAt: 'createdAt',
@@ -306,6 +308,8 @@ exports.Prisma.ProductionReportOrderByRelevanceFieldEnum = {
   operatorName: 'operatorName',
   batchNo: 'batchNo',
   notes: 'notes',
+  othersNote: 'othersNote',
+  adminNote: 'adminNote',
   createdById: 'createdById',
   rejectionNote: 'rejectionNote',
   checkedById: 'checkedById'
