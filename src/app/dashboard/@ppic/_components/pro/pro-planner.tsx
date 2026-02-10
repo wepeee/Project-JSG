@@ -817,7 +817,7 @@ export default function ProPlanner() {
                       )}
                       <TableHead className="w-32">Part No.</TableHead>
                       <TableHead>Machine</TableHead>
-                      <TableHead className="w-24">Tanggal</TableHead>
+                      <TableHead className="w-28">Tanggal</TableHead>
                       <TableHead className="w-24">UP</TableHead>
                       <TableHead>Material</TableHead>
                       <TableHead className="w-24 text-right">Qty</TableHead>
@@ -1223,7 +1223,12 @@ function SortableRow({
         </div>
       </TableCell>
       <TableCell className="text-center text-xs">
-        {step.startDate || "-"}
+        {(() => {
+          if (!step.startDate) return "-";
+          const d = new Date(step.startDate);
+          if (isNaN(d.getTime())) return step.startDate;
+          return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+        })()}
       </TableCell>
       <TableCell className="text-center">{step.up || "-"}</TableCell>
       <TableCell>
