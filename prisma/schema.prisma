@@ -28,9 +28,10 @@ model User {
   username     String   @unique
   passwordHash String   @db.VarChar(255)
   role         Role     @default(ADMIN)
+  department   String?  // New dynamic optional field
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  
+
   productionReports        ProductionReport[]
   checkedProductionReports ProductionReport[] @relation("ReportChecker")
 }

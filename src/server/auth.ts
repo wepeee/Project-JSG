@@ -40,6 +40,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             username: true,
             role: true,
             passwordHash: true,
+            department: true,
           },
         });
 
@@ -53,6 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           name: user.username,
           role: user.role,
+          department: user.department,
         };
       },
     }),
@@ -64,6 +66,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = (user as { role: Role }).role;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        token.department = (user as any).department;
       }
       return token;
     },
@@ -72,6 +76,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // session.user pasti ada di NextAuth
       session.user.id = token.id as string;
       session.user.role = (token.role as Role) ?? Role.ADMIN;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (session.user as any).department = token.department;
       return session;
     },
   },

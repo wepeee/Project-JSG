@@ -11,7 +11,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+
 import {
   Table,
   TableBody,
@@ -21,67 +21,6 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
-
-function AdminNoteInput({
-  id,
-  initialValue,
-}: {
-  id: string;
-  initialValue: string | null;
-}) {
-  const [value, setValue] = React.useState(initialValue ?? "");
-  const [isSaved, setIsSaved] = React.useState(true);
-  
-  const utils = api.useUtils();
-  
-  const mutation = api.verification.updateAdminNote.useMutation({
-    onSuccess: () => {
-      setIsSaved(true);
-      void utils.verification.getReports.invalidate();
-    },
-  });
-
-  const handleBlur = () => {
-    if (value !== (initialValue ?? "")) {
-      setIsSaved(false);
-      mutation.mutate({ id, note: value });
-    }
-  };
-
-  // Update local state if prop changes (e.g. re-fetch)
-  React.useEffect(() => {
-    setValue(initialValue ?? "");
-  }, [initialValue]);
-
-  return (
-    <div className="relative">
-      <Input
-        className={`h-8 w-[200px] text-xs ${
-          !isSaved
-            ? "border-amber-400 bg-amber-50"
-            : "border-transparent bg-transparent px-0 hover:bg-slate-50 dark:hover:bg-slate-800"
-        }`}
-        value={value}
-        onChange={(e) => {
-          setValue(e.target.value);
-          setIsSaved(false);
-        }}
-        onBlur={handleBlur}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.currentTarget.blur();
-          }
-        }}
-        placeholder="Isi catatan..."
-      />
-      {!isSaved && mutation.isPending && (
-        <div className="absolute right-2 top-2">
-          <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-        </div>
-      )}
-    </div>
-  );
-}
 
 const PAPER_REJECT_COLUMNS = [
   "Bintik",
@@ -263,10 +202,17 @@ const PACKING_UNPLANNED_DT = [
   "Other",
 ];
 
-export default function ProductionArchive() {
+export default function ProductionArchive({
+  userDepartment,
+}: {
+  userDepartment?: string;
+}) {
   const [activeCategory, setActiveCategory] = React.useState<
     "PAPER" | "INJECTION" | "BLOW_MOULDING" | "PRINTING" | "PACKING_ASSEMBLY"
-  >("PAPER");
+  >(() => {
+    if (userDepartment === "RIGID") return "INJECTION";
+    return "PAPER";
+  });
   const [showRejectDetails, setShowRejectDetails] = React.useState(false);
   const [showDowntimeDetails, setShowDowntimeDetails] = React.useState(false);
 
@@ -314,28 +260,32 @@ export default function ProductionArchive() {
         <div className="flex flex-col items-end gap-2">
           {/* Main Level */}
           <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
-            <button
-              onClick={() => setActiveCategory("PAPER")}
-              className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
-                !isRigidActive
-                  ? "bg-white shadow dark:bg-slate-700"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-            >
-              PAPER
-            </button>
-            <button
-              onClick={() => {
-                if (!isRigidActive) setActiveCategory("INJECTION");
-              }}
-              className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
-                isRigidActive
-                  ? "bg-white shadow dark:bg-slate-700"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-            >
-              RIGID
-            </button>
+            {(!userDepartment || userDepartment === "PAPER") && (
+              <button
+                onClick={() => setActiveCategory("PAPER")}
+                className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
+                  !isRigidActive
+                    ? "bg-white shadow dark:bg-slate-700"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                PAPER
+              </button>
+            )}
+            {(!userDepartment || userDepartment === "RIGID") && (
+              <button
+                onClick={() => {
+                  if (!isRigidActive) setActiveCategory("INJECTION");
+                }}
+                className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
+                  isRigidActive
+                    ? "bg-white shadow dark:bg-slate-700"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                RIGID
+              </button>
+            )}
           </div>
 
           {/* Sub Level for Rigid */}
@@ -438,6 +388,20 @@ export default function ProductionArchive() {
                   >
                     Mesin
                   </TableHead>
+                  {activeCategory !== "PAPER" && (
+                    <TableHead
+                      rowSpan={
+                        activeCategory === "PRINTING" ||
+                        activeCategory === "PACKING_ASSEMBLY" ||
+                        isMoulding
+                          ? 2
+                          : 1
+                      }
+                      className="text-slate-300"
+                    >
+                      Batch No
+                    </TableHead>
+                  )}
                   {activeCategory === "PAPER" && (
                     <>
                       <TableHead
@@ -958,6 +922,11 @@ export default function ProductionArchive() {
                     <TableCell className="text-xs">
                       {rpt.step.machine?.name}
                     </TableCell>
+                    {activeCategory !== "PAPER" && (
+                      <TableCell className="font-mono text-xs">
+                        {rpt.batchNo || "-"}
+                      </TableCell>
+                    )}
                     {activeCategory === "PAPER" && (
                       <TableCell className="text-right font-mono text-xs text-slate-500">
                         {(() => {
@@ -1476,21 +1445,14 @@ export default function ProductionArchive() {
                           </TableCell>
                         </>
                       )}
-                    <TableCell className="p-2">
+                    <TableCell className="p-2 align-top">
                       {rpt.notes ? (
-                        <div className="max-w-[200px] text-xs text-slate-700 dark:text-slate-200" title={rpt.notes}>
+                        <div className="min-w-[150px] text-xs whitespace-pre-wrap text-slate-700 dark:text-slate-200">
                           {rpt.notes}
                         </div>
                       ) : (
                         <div className="text-xs text-slate-400 italic">-</div>
                       )}
-                      <div className="mt-1">
-                        <AdminNoteInput
-                          id={rpt.id}
-                          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                          initialValue={(rpt as any).adminNote as string | null}
-                        />
-                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

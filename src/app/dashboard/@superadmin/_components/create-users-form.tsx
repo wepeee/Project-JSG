@@ -34,6 +34,7 @@ const schema = z.object({
   username: z.string().min(1, "Username wajib diisi"),
   password: z.string().min(8, "Password minimal 8 karakter"),
   role: z.enum(["ADMIN", "SUPERADMIN", "PPIC", "OPERATOR", "MASTER"]),
+  department: z.string(),
 });
 
 export default function CreateUserForm() {
@@ -55,6 +56,7 @@ export default function CreateUserForm() {
       username: "",
       password: "",
       role: "ADMIN" as "ADMIN" | "PPIC" | "OPERATOR" | "MASTER" | "SUPERADMIN",
+      department: "",
     },
     validators: { onSubmit: schema },
     onSubmit: async ({ value }) => {
@@ -82,7 +84,10 @@ export default function CreateUserForm() {
     return data.filter((u) => {
       const uname = u.username.toLowerCase();
       const role = String(u.role).toLowerCase();
-      return uname.includes(needle) || role.includes(needle);
+      const dept = String(u.department || "").toLowerCase();
+      return (
+        uname.includes(needle) || role.includes(needle) || dept.includes(needle)
+      );
     });
   }, [q, users.data]);
 
@@ -189,6 +194,60 @@ export default function CreateUserForm() {
                   );
                 }}
               />
+
+              <form.Subscribe
+                selector={(state) => state.values.role}
+                children={(role) => (
+                  <form.Field
+                    name="department"
+                    children={(field) => {
+                      return (
+                        <Field>
+                          <FieldLabel htmlFor={field.name}>
+                            Bagian (Department)
+                          </FieldLabel>
+                          {role === "SUPERADMIN" ? (
+                            <select
+                              id={field.name}
+                              name={field.name}
+                              value={field.state.value} // ensure this is tied to state
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                            >
+                              <option value="" disabled>
+                                Pilih Department...
+                              </option>
+                              <option value="PAPER">PAPER</option>
+                              <option value="RIGID">RIGID</option>
+                            </select>
+                          ) : (
+                            <Input
+                              id={field.name}
+                              name={field.name}
+                              value={field.state.value || ""}
+                              onBlur={field.handleBlur}
+                              onChange={
+                                (e) => field.handleChange(e.target.value)
+                                // If PPIC, we could force empty, but let's leave it flexible
+                              }
+                              placeholder={
+                                role === "PPIC"
+                                  ? "Tidak perlu diisi"
+                                  : "Contoh: A / B / C"
+                              }
+                              disabled={role === "PPIC"}
+                              autoComplete="off"
+                            />
+                          )}
+                        </Field>
+                      );
+                    }}
+                  />
+                )}
+              />
             </FieldGroup>
 
             {serverError ? (
@@ -244,6 +303,7 @@ export default function CreateUserForm() {
                   <TableRow>
                     <TableHead>Username</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Bagian</TableHead>
                     <TableHead>Dibuat</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -252,7 +312,7 @@ export default function CreateUserForm() {
                   {filteredUsers.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={3}
+                        colSpan={4}
                         className="text-center text-sm opacity-70"
                       >
                         Tidak ada hasil
@@ -265,6 +325,7 @@ export default function CreateUserForm() {
                           {u.username}
                         </TableCell>
                         <TableCell>{u.role}</TableCell>
+                        <TableCell>{u.department || "-"}</TableCell>
                         <TableCell>
                           {new Date(u.createdAt).toLocaleString("id-ID")}
                         </TableCell>

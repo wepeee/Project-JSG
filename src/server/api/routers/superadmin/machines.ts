@@ -19,10 +19,25 @@ export const machinesRouter = createTRPCRouter({
         .optional(),
     )
     .query(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const userDept = (ctx.session.user as any).department as
+        | string
+        | undefined;
+      const where: any = {};
+
+      if (userDept === "PAPER") {
+        if (input?.type && input.type !== "PAPER") return [];
+        where.type = "PAPER";
+      } else if (userDept === "RIGID") {
+        if (input?.type && input.type !== "RIGID") return [];
+        where.type = "RIGID";
+      } else {
+        // Global
+        if (input?.type) where.type = input.type;
+      }
+
       return ctx.db.machine.findMany({
-        where: {
-          type: input?.type,
-        },
+        where,
         orderBy: { name: "asc" },
         take: 200,
       });

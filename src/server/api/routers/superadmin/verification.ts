@@ -26,12 +26,40 @@ export const verificationRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const where: any = {};
 
+      // 1. Status Filter
       if (input?.status) {
         where.status = input.status;
       }
 
-      if (input?.category) {
-        where.reportType = input.category;
+      // 2. Department Restriction (Security)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const userDept = (ctx.session.user as any).department as
+        | string
+        | undefined;
+
+      if (userDept === "PAPER") {
+        // If user is PAPER and requests something else, return empty
+        if (input?.category && input.category !== "PAPER") {
+          return [];
+        }
+        where.reportType = "PAPER";
+      } else if (userDept === "RIGID") {
+        // If user is RIGID and requests PAPER, return empty
+        if (input?.category === "PAPER") {
+          return [];
+        }
+        // If specific rigid category requested, use it
+        if (input?.category) {
+          where.reportType = input.category;
+        } else {
+          // Otherwise show all rigid (non-PAPER)
+          where.reportType = { not: "PAPER" };
+        }
+      } else {
+        // No department restriction (Superadmin Global)
+        if (input?.category) {
+          where.reportType = input.category;
+        }
       }
 
       const reports = await ctx.db.productionReport.findMany({
@@ -190,7 +218,7 @@ export const verificationRouter = createTRPCRouter({
         for (const s of pro.steps) {
           const hasAnyReport = s.productionReports.length > 0;
           const hasApprovedReport = s.productionReports.some(
-            (r) => r.status === ReportStatus.APPROVED
+            (r) => r.status === ReportStatus.APPROVED,
           );
 
           if (hasAnyReport) stepsWithAnyReport++;
@@ -270,7 +298,7 @@ export const verificationRouter = createTRPCRouter({
         for (const s of pro.steps) {
           const hasAnyReport = s.productionReports.length > 0;
           const hasApprovedReport = s.productionReports.some(
-            (r) => r.status === ReportStatus.APPROVED
+            (r) => r.status === ReportStatus.APPROVED,
           );
 
           if (hasAnyReport) stepsWithAnyReport++;

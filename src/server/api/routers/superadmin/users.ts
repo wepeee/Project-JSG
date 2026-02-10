@@ -11,6 +11,7 @@ export const adminUsersRouter = createTRPCRouter({
         username: z.string().min(1),
         password: z.string().min(8),
         role: z.nativeEnum(Role),
+        department: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -33,14 +34,27 @@ export const adminUsersRouter = createTRPCRouter({
           username: input.username,
           passwordHash,
           role: input.role as Role,
+          department: input.department,
         },
-        select: { id: true, username: true, role: true, createdAt: true },
+        select: {
+          id: true,
+          username: true,
+          role: true,
+          department: true,
+          createdAt: true,
+        },
       });
     }),
 
   getUsers: superAdminProcedure.query(async ({ ctx }) => {
     return ctx.db.user.findMany({
-      select: { id: true, username: true, role: true, createdAt: true },
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        department: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: "desc" },
       take: 100,
     });

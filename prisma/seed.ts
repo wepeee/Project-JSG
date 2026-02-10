@@ -22,6 +22,40 @@ async function main() {
     },
   });
 
+  // Create Superadmin Paper
+  const saPaper = "superadmin_paper";
+  await db.user.upsert({
+    where: { username: saPaper },
+    update: {
+      passwordHash,
+      role: "SUPERADMIN",
+      department: "PAPER",
+    },
+    create: {
+      username: saPaper,
+      passwordHash,
+      role: "SUPERADMIN",
+      department: "PAPER",
+    },
+  });
+
+  // Create Superadmin Rigid
+  const saRigid = "superadmin_rigid";
+  await db.user.upsert({
+    where: { username: saRigid },
+    update: {
+      passwordHash,
+      role: "SUPERADMIN",
+      department: "RIGID",
+    },
+    create: {
+      username: saRigid,
+      passwordHash,
+      role: "SUPERADMIN",
+      department: "RIGID",
+    },
+  });
+
   // Create PPIC User
   const ppicUser = "ppic";
   const ppicPass = "ppic";

@@ -240,6 +240,7 @@ type StepDraft = {
   startDate?: string | null;
   shift: number; // 1, 2, or 3
   partNumber?: string;
+  batchNo?: string;
 };
 
 export default function ProList({
@@ -295,6 +296,7 @@ export default function ProList({
   const [editing, setEditing] = React.useState(false);
   const [productName, setProductName] = React.useState("");
   const [qtyPoPcs, setQtyPoPcs] = React.useState("");
+  const [batchNo, setBatchNo] = React.useState(""); // Added for editing batch no
   const [statusDraft, setStatusDraft] = React.useState<Status>("OPEN");
   const [processDraftId, setProcessDraftId] = React.useState<number | null>(
     null,
@@ -673,6 +675,11 @@ export default function ProList({
     if (!detail.data || editing) return;
     setProductName(detail.data.productName ?? "");
     setQtyPoPcs(String(detail.data.qtyPoPcs ?? ""));
+    // Get batch no from first step if available (assuming all same for RIGID)
+    // Get batch no from first step if available (assuming all same for RIGID)
+    const firstStep = detail.data.steps.find((s) => (s as any).batchNo);
+    const firstBatch = firstStep ? (firstStep as any).batchNo : "";
+    setBatchNo(firstBatch ?? "");
   }, [detail.data]);
 
   const [err, setErr] = React.useState<string | null>(null);
@@ -713,6 +720,7 @@ export default function ProList({
           : null,
         shift: dt ? shiftFromDate(dt) : 1,
         partNumber: (s as any).partNumber ?? "",
+        batchNo: (s as any).batchNo ?? "",
       };
     });
   }, [detail.data]);
@@ -734,6 +742,10 @@ export default function ProList({
     if (!detail.data) return;
     setProductName(detail.data.productName ?? "");
     setQtyPoPcs(String(detail.data.qtyPoPcs ?? ""));
+    setQtyPoPcs(String(detail.data.qtyPoPcs ?? ""));
+    const firstStep = detail.data.steps.find((s) => (s as any).batchNo);
+    const firstBatch = firstStep ? (firstStep as any).batchNo : "";
+    setBatchNo(firstBatch ?? "");
   };
 
   const saveAll = async () => {
@@ -798,7 +810,9 @@ export default function ProList({
           })),
           startDate: combineDateShift(s.startDate, s.shift),
           partNumber: s.partNumber,
+          batchNo: batchNo, // Use header batch no for all steps
         })),
+
       // expand: expandDraft, // Removed as per backend change
       type: proTypeDraft, // Added
     });
@@ -954,6 +968,19 @@ export default function ProList({
 
               <Info label="Dibuat" value={fmtDateTime(p.createdAt)} />
 
+              {p.type === "RIGID" &&
+                (!editing ? (
+                  <Info label="Batch No" value={batchNo || "-"} />
+                ) : (
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium">Batch No</div>
+                    <Input
+                      value={batchNo}
+                      onChange={(e) => setBatchNo(e.target.value)}
+                    />
+                  </div>
+                ))}
+
               <div className="space-y-2 lg:col-span-2">
                 <div className="text-sm font-medium">Produk</div>
                 <Input
@@ -1012,7 +1039,9 @@ export default function ProList({
                   <TableHeader>
                     <TableRow>
                       <TableHead>Machine</TableHead>
-                      <TableHead className="w-24 text-right">UP</TableHead>
+                      <TableHead className="w-24 text-right">
+                        UP / CAV
+                      </TableHead>
                       <TableHead className="w-32">Part No.</TableHead>
                       <TableHead>Material</TableHead>
                       <TableHead className="w-24 text-right">Qty Mat</TableHead>

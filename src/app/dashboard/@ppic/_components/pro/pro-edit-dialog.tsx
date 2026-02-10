@@ -231,7 +231,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
                   <TableRow>
                     <TableHead className="w-16">No</TableHead>
                     <TableHead className="min-w-[260px]">Proses</TableHead>
-                    <TableHead className="w-24">UP</TableHead>
+                    <TableHead className="w-24">UP / CAV</TableHead>
                     <TableHead className="min-w-[220px]">Machine</TableHead>
                     <TableHead className="min-w-[260px]">Material</TableHead>
                     <TableHead className="w-28">Qty</TableHead>

@@ -15,6 +15,7 @@ type Props = {
   user: {
     name: string;
     role: string;
+    department?: string;
   };
 };
 
@@ -45,6 +46,10 @@ export default function SuperadminShell({ user }: Props) {
               : active === "verification"
                 ? "Verifikasi Laporan"
                 : "Daftar Laporan";
+
+  // Filter Logic
+  const showPaperMachines = !user.department || user.department === "PAPER";
+  const showRigidMachines = !user.department || user.department === "RIGID";
 
   return (
     <div className="bg-background min-h-screen w-full">
@@ -77,6 +82,11 @@ export default function SuperadminShell({ user }: Props) {
           <div className="px-4 py-4">
             <div className="text-lg font-semibold">Dashboard</div>
             <div className="text-xs opacity-70">SUPERADMIN</div>
+            {user.department && (
+              <div className="text-[10px] font-bold text-blue-500">
+                {user.department}
+              </div>
+            )}
           </div>
 
           <nav className="flex flex-1 flex-col gap-1 px-2">
@@ -109,22 +119,26 @@ export default function SuperadminShell({ user }: Props) {
             <div className="px-3 pt-2 pb-1 text-xs font-semibold opacity-50">
               MESIN
             </div>
-            <SidebarItem
-              label="Mesin Paper"
-              active={active === "machines_paper"}
-              onClick={() => {
-                setActive("machines_paper");
-                setOpen(false);
-              }}
-            />
-            <SidebarItem
-              label="Mesin Rigid"
-              active={active === "machines_rigid"}
-              onClick={() => {
-                setActive("machines_rigid");
-                setOpen(false);
-              }}
-            />
+            {showPaperMachines && (
+              <SidebarItem
+                label="Mesin Paper"
+                active={active === "machines_paper"}
+                onClick={() => {
+                  setActive("machines_paper");
+                  setOpen(false);
+                }}
+              />
+            )}
+            {showRigidMachines && (
+              <SidebarItem
+                label="Mesin Rigid"
+                active={active === "machines_rigid"}
+                onClick={() => {
+                  setActive("machines_rigid");
+                  setOpen(false);
+                }}
+              />
+            )}
           </nav>
 
           <div className="border-t px-4 py-4">
@@ -211,22 +225,26 @@ export default function SuperadminShell({ user }: Props) {
                 <div className="px-3 pt-2 pb-1 text-xs font-semibold opacity-50">
                   MESIN
                 </div>
-                <SidebarItem
-                  label="Mesin Paper"
-                  active={active === "machines_paper"}
-                  onClick={() => {
-                    setActive("machines_paper");
-                    setOpen(false);
-                  }}
-                />
-                <SidebarItem
-                  label="Mesin Rigid"
-                  active={active === "machines_rigid"}
-                  onClick={() => {
-                    setActive("machines_rigid");
-                    setOpen(false);
-                  }}
-                />
+                {showPaperMachines && (
+                  <SidebarItem
+                    label="Mesin Paper"
+                    active={active === "machines_paper"}
+                    onClick={() => {
+                      setActive("machines_paper");
+                      setOpen(false);
+                    }}
+                  />
+                )}
+                {showRigidMachines && (
+                  <SidebarItem
+                    label="Mesin Rigid"
+                    active={active === "machines_rigid"}
+                    onClick={() => {
+                      setActive("machines_rigid");
+                      setOpen(false);
+                    }}
+                  />
+                )}
               </nav>
 
               <div className="border-t px-4 py-4">
@@ -271,9 +289,9 @@ export default function SuperadminShell({ user }: Props) {
           ) : active === "machines_rigid" ? (
             <MachineManager machineType="RIGID" />
           ) : active === "report_archive" ? (
-            <ProductionArchive />
+            <ProductionArchive userDepartment={user.department} />
           ) : (
-            <VerificationList />
+            <VerificationList userDepartment={user.department} />
           )}
         </main>
       </div>

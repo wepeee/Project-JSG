@@ -130,6 +130,7 @@ export default function ProPlanner() {
     "PAPER",
   ); // Added
   const [manualProNumber, setManualProNumber] = React.useState("");
+  const [headerBatchNo, setHeaderBatchNo] = React.useState(""); // Added for RIGID batch
 
   const utils = api.useUtils();
   const processes = api.processes.list.useQuery({ type: proType });
@@ -149,6 +150,7 @@ export default function ProPlanner() {
       // setProType("PAPER"); // Keep selected type for convenience
       setQtyPoPcs("");
       setManualProNumber("");
+      setHeaderBatchNo("");
       setSteps([]);
     },
   });
@@ -218,6 +220,7 @@ export default function ProPlanner() {
 
       const newSteps: StepDraft[] = [];
       let foundHeaderInfo = false;
+      let lastProductName = "";
 
       // Helper for loose matching
       const normalize = (s: string) =>
@@ -248,6 +251,13 @@ export default function ProPlanner() {
           // Col 10 is Qty (K)
           const qtyStr = cols[10]?.trim() ?? "";
 
+          if (productNameCsv) lastProductName = productNameCsv;
+
+          // Capture Batch No from first valid row (if not yet found)
+          if (!foundHeaderInfo && batchNo) {
+            setHeaderBatchNo(batchNo);
+          }
+
           if (!machineName) continue; // Skip empty rows
 
           // Set header info from first valid row
@@ -257,8 +267,6 @@ export default function ProPlanner() {
               setQtyPoPcs(cleanedQty);
               foundHeaderInfo = true;
             }
-
-            if (productNameCsv) setProductName(productNameCsv);
 
             if (proNumCsv) {
               setManualProNumber(proNumCsv);
@@ -283,7 +291,7 @@ export default function ProPlanner() {
           // We want the earlier date as Start Date.
           const dateStrA = cols[7]?.trim() ?? "";
           const dateStrB = cols[8]?.trim() ?? "";
-          
+
           const parseDate = (s: string) => {
             if (!s) return null;
             // Check for DD/MM/YYYY or DD-MM-YYYY
@@ -300,7 +308,7 @@ export default function ProPlanner() {
 
           const dA = parseDate(dateStrA);
           const dB = parseDate(dateStrB);
-          
+
           let formattedDate = "";
           if (dA && dB) {
             // Pick earlier
@@ -313,19 +321,20 @@ export default function ProPlanner() {
 
           // Materials (Support "MatA+MatB" and "QtyA+QtyB")
           const stepMats: StepDraftMaterial[] = [];
-          
+
           const matNames = materialName.split("+");
           const matQties = qtyStr.split("+");
 
           // Helper to parse numeric string (1.000,5 -> 1000.5)
           const parseVal = (s: string) => {
-             if (!s) return "";
-             if (s.includes(",")) return s.replace(/\./g, "").replace(",", ".");
-             // If dots exist
-             const parts = s.split(".");
-             if (parts.length > 2) return s.replace(/\./g, ""); // 1.000.000 -> 1000000
-             if (parts.length === 2 && parts[1]?.length === 3) return s.replace(/\./g, ""); // 1.000 -> 1000
-             return s;
+            if (!s) return "";
+            if (s.includes(",")) return s.replace(/\./g, "").replace(",", ".");
+            // If dots exist
+            const parts = s.split(".");
+            if (parts.length > 2) return s.replace(/\./g, ""); // 1.000.000 -> 1000000
+            if (parts.length === 2 && parts[1]?.length === 3)
+              return s.replace(/\./g, ""); // 1.000 -> 1000
+            return s;
           };
 
           for (let k = 0; k < matNames.length; k++) {
@@ -335,7 +344,7 @@ export default function ProPlanner() {
             const mQtyRaw = matQties[k]?.trim();
             let mQty = "";
             if (mQtyRaw) {
-               mQty = parseVal(mQtyRaw);
+              mQty = parseVal(mQtyRaw);
             }
 
             // Match material (Normalized)
@@ -369,11 +378,11 @@ export default function ProPlanner() {
             machineId: mach ? mach.id : null,
             startDate: formattedDate,
             partNumber: partNum || "",
-            batchNo: batchNo || "",
+            // batchNo: batchNo || "", // Removed per request, use header
             materials: stepMats,
           });
         }
-      } 
+      }
       // PAPER CSV FORMAT (existing logic)
       else {
         let detectedUp = "";
@@ -384,6 +393,9 @@ export default function ProPlanner() {
 
           // machine
           const machineName = cols[1]?.trim() ?? "";
+          const nameVal = cols[3]?.trim();
+          if (nameVal) lastProductName = nameVal;
+
           if (!machineName) continue; // Skip empty rows
 
           // Check for header info row (has Qty Order)
@@ -398,10 +410,6 @@ export default function ProPlanner() {
               setQtyPoPcs(cleanedQty);
               foundHeaderInfo = true;
             }
-
-            // Product Name from Name column (col 3) if available
-            const nameVal = cols[3]?.trim();
-            if (nameVal) setProductName(nameVal);
 
             // Global UP
             if (totalUpStr) {
@@ -473,7 +481,8 @@ export default function ProPlanner() {
             // Robust Qty Parse
             let mQty = "";
             const parseVal = (s: string) => {
-              if (s.includes(",")) return s.replace(/\./g, "").replace(",", ".");
+              if (s.includes(","))
+                return s.replace(/\./g, "").replace(",", ".");
               const parts = s.split(".");
               if (parts.length > 2) return s.replace(/\./g, "");
               if (parts.length === 2 && parts[1]?.length === 3)
@@ -519,6 +528,10 @@ export default function ProPlanner() {
             materials: stepMats,
           });
         }
+      }
+
+      if (lastProductName) {
+        setProductName(lastProductName);
       }
 
       setSteps((prev) => [...prev, ...newSteps]);
@@ -623,7 +636,7 @@ export default function ProPlanner() {
         machineId: s.machineId ?? null,
         startDate: s.startDate ? new Date(s.startDate) : undefined,
         partNumber: s.partNumber?.trim() || undefined,
-        batchNo: s.batchNo?.trim() || undefined,
+        batchNo: headerBatchNo?.trim() || s.batchNo?.trim() || undefined, // Prioritize header
         materials: s.materials
           .filter((m) => m.materialId)
           .map((m) => ({
@@ -785,6 +798,20 @@ export default function ProPlanner() {
                 </Button>
               </div>
             </div>
+            {proType === "RIGID" && (
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+                <div className="space-y-2 lg:col-span-4">
+                  <div className="text-sm font-medium">Batch No (Header)</div>
+                  <Input
+                    value={headerBatchNo}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setHeaderBatchNo(e.target.value)
+                    }
+                    placeholder="Batch No (untuk semua step)"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {err && (
@@ -812,13 +839,10 @@ export default function ProPlanner() {
                       <TableHead className="w-10"></TableHead>
                       <TableHead className="w-16">No.</TableHead>
 
-                      {proType === "RIGID" && (
-                        <TableHead className="w-28">Batch No.</TableHead>
-                      )}
                       <TableHead className="w-32">Part No.</TableHead>
                       <TableHead>Machine</TableHead>
                       <TableHead className="w-28">Tanggal</TableHead>
-                      <TableHead className="w-24">UP</TableHead>
+                      <TableHead className="w-24">UP / CAV</TableHead>
                       <TableHead>Material</TableHead>
                       <TableHead className="w-24 text-right">Qty</TableHead>
                       <TableHead className="w-24 text-right">UoM</TableHead>
@@ -859,7 +883,6 @@ export default function ProPlanner() {
                             qtyPo={Number(qtyPoPcs) || 0}
                             onEdit={openEdit}
                             onRemove={removeStep}
-                            isRigid={proType === "RIGID"}
                           />
                         ))}
                       </SortableContext>
@@ -888,7 +911,7 @@ export default function ProPlanner() {
           <div className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
-                <div className="text-sm font-medium">UP</div>
+                <div className="text-sm font-medium">UP / CAV</div>
                 <Input
                   type="number"
                   value={draft.up}
@@ -1153,7 +1176,6 @@ function SortableRow({
   qtyPo,
   onEdit,
   onRemove,
-  isRigid,
 }: {
   step: StepDraft;
   idx: number;
@@ -1162,7 +1184,6 @@ function SortableRow({
   qtyPo: number;
   onEdit: (s: StepDraft) => void;
   onRemove: (k: string) => void;
-  isRigid: boolean;
 }) {
   const {
     attributes,
@@ -1211,7 +1232,6 @@ function SortableRow({
         </button>
       </TableCell>
       <TableCell>{idx + 1}</TableCell>
-      {isRigid && <TableCell>{step.batchNo || "-"}</TableCell>}
       <TableCell>{step.partNumber || "-"}</TableCell>
       <TableCell>
         <div className="flex flex-col">

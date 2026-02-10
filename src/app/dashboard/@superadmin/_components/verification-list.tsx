@@ -17,10 +17,17 @@ import { Textarea } from "~/components/ui/textarea";
 
 type ReportStatus = "PENDING" | "APPROVED" | "REJECTED";
 
-export default function VerificationList() {
+export default function VerificationList({
+  userDepartment,
+}: {
+  userDepartment?: string;
+}) {
   const [activeCategory, setActiveCategory] = React.useState<
     "PAPER" | "INJECTION" | "BLOW_MOULDING" | "PRINTING" | "PACKING_ASSEMBLY"
-  >("PAPER");
+  >(() => {
+    if (userDepartment === "RIGID") return "INJECTION";
+    return "PAPER";
+  });
   const [activeTab, setActiveTab] = React.useState<ReportStatus>("PENDING");
   const [rejectId, setRejectId] = React.useState<string | null>(null);
   const [rejectNote, setRejectNote] = React.useState("");
@@ -87,28 +94,32 @@ export default function VerificationList() {
         <div className="flex flex-col items-end gap-2">
           {/* Main Level */}
           <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
-            <button
-              onClick={() => setActiveCategory("PAPER")}
-              className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
-                !isRigidActive
-                  ? "bg-white shadow dark:bg-slate-700"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-            >
-              PAPER
-            </button>
-            <button
-              onClick={() => {
-                if (!isRigidActive) setActiveCategory("INJECTION");
-              }}
-              className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
-                isRigidActive
-                  ? "bg-white shadow dark:bg-slate-700"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-            >
-              RIGID
-            </button>
+            {(!userDepartment || userDepartment === "PAPER") && (
+              <button
+                onClick={() => setActiveCategory("PAPER")}
+                className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
+                  !isRigidActive
+                    ? "bg-white shadow dark:bg-slate-700"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                PAPER
+              </button>
+            )}
+            {(!userDepartment || userDepartment === "RIGID") && (
+              <button
+                onClick={() => {
+                  if (!isRigidActive) setActiveCategory("INJECTION");
+                }}
+                className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
+                  isRigidActive
+                    ? "bg-white shadow dark:bg-slate-700"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                RIGID
+              </button>
+            )}
           </div>
 
           {/* Sub Level for Rigid */}
@@ -118,7 +129,7 @@ export default function VerificationList() {
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`whitespace-nowrap rounded-md px-3 py-1 text-xs font-bold transition-all ${
+                  className={`rounded-md px-3 py-1 text-xs font-bold whitespace-nowrap transition-all ${
                     activeCategory === cat.id
                       ? "bg-white shadow dark:bg-slate-700"
                       : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"

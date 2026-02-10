@@ -38,7 +38,9 @@ export const prosRouter = createTRPCRouter({
     .input(
       z.object({
         q: z.string().optional(), // search proNumber / productName
-        status: z.enum(["OPEN", "IN_PROGRESS", "CLOSED", "CANCELLED"]).optional(),
+        status: z
+          .enum(["OPEN", "IN_PROGRESS", "CLOSED", "CANCELLED"])
+          .optional(),
         type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(), // Added
         take: z.number().min(5).max(50).default(20),
         cursor: z.number().int().positive().optional(), // pakai Pro.id
@@ -326,6 +328,7 @@ export const prosRouter = createTRPCRouter({
               machineId: true,
               startDate: true,
               partNumber: true, // Added
+              batchNo: true, // Added
               estimatedShifts: true,
               machine: {
                 select: {
@@ -365,7 +368,9 @@ export const prosRouter = createTRPCRouter({
         processId: z.number().int().positive(),
         qtyPoPcs: z.number().int().positive(),
         startDate: z.coerce.date().optional(),
-        status: z.enum(["OPEN", "IN_PROGRESS", "CLOSED", "CANCELLED"]).optional(),
+        status: z
+          .enum(["OPEN", "IN_PROGRESS", "CLOSED", "CANCELLED"])
+          .optional(),
         type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(),
         steps: z
           .array(
@@ -384,6 +389,7 @@ export const prosRouter = createTRPCRouter({
                 .optional(),
               startDate: z.coerce.date().optional(),
               partNumber: z.string().optional(),
+              batchNo: z.string().optional(),
             }),
           )
           .min(1),
@@ -484,7 +490,7 @@ export const prosRouter = createTRPCRouter({
         let baseDate = input.startDate ?? oldPro.startDate ?? new Date();
         let currentDay = startOfDay(baseDate);
         let currentShift = getShiftFromTime(baseDate);
-        
+
         let globalOrderNo = 1;
 
         for (const s of input.steps) {
@@ -501,18 +507,18 @@ export const prosRouter = createTRPCRouter({
 
           // Helper to recreate material relations
           const recreateMaterials = async (stepId: number) => {
-             // Delete old materials for this step
-             await tx.proStepMaterial.deleteMany({ where: { stepId } });
-             // Create new
-             if (matMaterials.length > 0) {
-               await tx.proStepMaterial.createMany({
-                 data: matMaterials.map((m) => ({
-                   stepId,
-                   materialId: m.materialId,
-                   qtyReq: new Prisma.Decimal(m.qtyReq),
-                 })),
-               });
-             }
+            // Delete old materials for this step
+            await tx.proStepMaterial.deleteMany({ where: { stepId } });
+            // Create new
+            if (matMaterials.length > 0) {
+              await tx.proStepMaterial.createMany({
+                data: matMaterials.map((m) => ({
+                  stepId,
+                  materialId: m.materialId,
+                  qtyReq: new Prisma.Decimal(m.qtyReq),
+                })),
+              });
+            }
           };
 
           if (s.id && existingIds.has(s.id)) {
@@ -523,7 +529,9 @@ export const prosRouter = createTRPCRouter({
                 orderNo: globalOrderNo++, // Enforce sequential order
                 up: s.up,
                 machineId: s.machineId ?? null,
+
                 partNumber: s.partNumber,
+                batchNo: s.batchNo,
                 startDate: stepDate, // <--- Correct date from input or sequence
                 estimatedShifts: needs,
               },
@@ -539,6 +547,7 @@ export const prosRouter = createTRPCRouter({
                 machineId: s.machineId ?? null,
                 startDate: stepDate,
                 partNumber: s.partNumber,
+                batchNo: s.batchNo,
                 estimatedShifts: needs,
                 materials: {
                   create: matMaterials.map((m) => ({
@@ -552,10 +561,10 @@ export const prosRouter = createTRPCRouter({
 
           // Advance Cursor (1 step = 1 shift logic)
           if (currentShift < 2) {
-             currentShift++;
+            currentShift++;
           } else {
-             currentShift = 0;
-             currentDay.setDate(currentDay.getDate() + 1);
+            currentShift = 0;
+            currentDay.setDate(currentDay.getDate() + 1);
           }
         }
 
@@ -662,6 +671,7 @@ export const prosRouter = createTRPCRouter({
               },
               startDate: true, // add this
               partNumber: true, // Added
+              batchNo: true, // Added
               estimatedShifts: true,
               materials: {
                 select: {

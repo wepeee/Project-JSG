@@ -299,20 +299,37 @@ const getLphType = (pro: any, machineName: string): LphType => {
   // 1. PAPER Strategy: One size fits all (mostly)
   if (pro.type === "PAPER") return "PAPER";
 
-  // 2. RIGID Strategy: Depend on PRO Process Code
+  // 2. RIGID Strategy: Based strictly on MACHINE NAME prefixes as per request
+  const m = machineName.toUpperCase().trim();
+
+  // INJECTION: IMM1-15
+  if (m.startsWith("IMM")) return "INJECTION";
+
+  // BLOW MOULDING: EBM1-3
+  if (m.startsWith("EBM")) return "BLOW_MOULDING";
+
+  // PRINTING: PUV, CA102, PAD PRINT, SK PRINT, LINE
+  if (
+    m.startsWith("PUV") ||
+    m.startsWith("CA") ||
+    m.startsWith("PAD") ||
+    m.startsWith("SK") ||
+    m.startsWith("LINE")
+  ) {
+    return "PRINTING";
+  }
+
+  // PACKING: ASSEMBLY, PACKING
+  if (m.startsWith("ASSEMBLY") || m.startsWith("PACKING")) {
+    return "PACKING_ASSEMBLY";
+  }
+
+  // 3. Fallback to Process Code if Machine Name is ambiguous (Safety)
   const pCode = pro.process?.code;
   if (pCode === "11") return "INJECTION";
   if (pCode === "12") return "BLOW_MOULDING";
-  if (pCode === "14") return "PRINTING"; // Screen Printing
-  if (pCode === "29") return "PACKING_ASSEMBLY"; // FG
-  // Add other Rigid codes if needed (e.g. 13 Assembly if used for Rigid)
-
-  // 3. Fallback: Machine Name Parsing (Legacy/Safety)
-  const m = machineName.toUpperCase();
-  if (m.includes("IMM") || m.includes("INJECTION")) return "INJECTION";
-  if (m.includes("EBM") || m.includes("BLOW")) return "BLOW_MOULDING";
-  if (m.includes("PRINT")) return "PRINTING";
-  if (m.includes("PACK") || m.includes("ASSEMBLY")) return "PACKING_ASSEMBLY";
+  if (pCode === "14") return "PRINTING";
+  if (pCode === "29") return "PACKING_ASSEMBLY";
 
   return "INJECTION"; // Default Rigid fallback
 };
@@ -606,14 +623,23 @@ export function ProductionReportModal({
           qtyHold: editReport.qtyHold?.toString() || "",
           rejectSetup: "",
           rejectProcess: "",
-          rejects: (editReport.rejectBreakdown as Record<string, number> | null) 
+          rejects: (editReport.rejectBreakdown as Record<string, number> | null)
             ? Object.fromEntries(
-                Object.entries(editReport.rejectBreakdown).map(([k, v]) => [k, String(v)])
+                Object.entries(editReport.rejectBreakdown).map(([k, v]) => [
+                  k,
+                  String(v),
+                ]),
               )
             : {},
-          downtimes: (editReport.downtimeBreakdown as Record<string, number> | null)
+          downtimes: (editReport.downtimeBreakdown as Record<
+            string,
+            number
+          > | null)
             ? Object.fromEntries(
-                Object.entries(editReport.downtimeBreakdown).map(([k, v]) => [k, String(v)])
+                Object.entries(editReport.downtimeBreakdown).map(([k, v]) => [
+                  k,
+                  String(v),
+                ]),
               )
             : {},
           notes: editReport.notes || "",
@@ -656,7 +682,7 @@ export function ProductionReportModal({
             endDate: new Date().toISOString().slice(0, 10),
             shift: String(task.shift), // Initial from task
             operatorName: session?.user?.name || "",
-            batchNo: "",
+            batchNo: task.step.batchNo || "",
             mpStd: "",
             mpAct: "",
             ctStd: prefilledCtStd,
@@ -823,7 +849,7 @@ export function ProductionReportModal({
 
     // Confirmation dialog
     const confirmed = window.confirm(
-      "Apakah Anda yakin data sudah benar dan siap dikirim untuk verifikasi?"
+      "Apakah Anda yakin data sudah benar dan siap dikirim untuk verifikasi?",
     );
     if (!confirmed) {
       return;
@@ -973,6 +999,14 @@ export function ProductionReportModal({
                 <span className="font-bold text-blue-400">
                   {task.pro.proNumber}
                 </span>
+                {lphType !== "PAPER" && task.step.batchNo && (
+                  <>
+                    <span className="mx-1 text-slate-600">|</span>
+                    <span className="font-bold text-amber-500">
+                      Batch {task.step.batchNo}
+                    </span>
+                  </>
+                )}
                 <span className="mx-1 text-slate-600">|</span>
                 {task.pro.productName}
               </DialogDescription>
@@ -1153,23 +1187,6 @@ export function ProductionReportModal({
                       Params
                     </h3>
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                      <div className="col-span-2 space-y-1 md:col-span-1">
-                        <Label className="text-xs font-bold text-blue-400">
-                          Batch No
-                        </Label>
-                        <Input
-                          placeholder="Lot/Batch..."
-                          className="border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
-                          value={formData.batchNo}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              batchNo: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-
                       {/* MP - Hide Std for Injection/BM (Moulding) AND Printing AND Packing Assembly */}
                       {!isMoulding &&
                         lphType !== "PRINTING" &&
@@ -1192,7 +1209,7 @@ export function ProductionReportModal({
                             />
                           </div>
                         )}
-                      
+
                       {/* MP Actual - ALWAYS SHOW */}
                       <div className="space-y-1">
                         <Label className="text-xs text-slate-300">
@@ -1241,7 +1258,10 @@ export function ProductionReportModal({
                               className="border-blue-900/50 bg-blue-950/20 text-blue-100"
                               value={formData.ctAct}
                               onChange={(e) =>
-                                setFormData({ ...formData, ctAct: e.target.value })
+                                setFormData({
+                                  ...formData,
+                                  ctAct: e.target.value,
+                                })
                               }
                             />
                           </div>
@@ -1643,7 +1663,10 @@ export function ProductionReportModal({
                         className="mt-1 border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
                         value={formData.othersNote}
                         onChange={(e) =>
-                          setFormData({ ...formData, othersNote: e.target.value })
+                          setFormData({
+                            ...formData,
+                            othersNote: e.target.value,
+                          })
                         }
                       />
                     </div>
