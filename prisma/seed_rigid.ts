@@ -35,18 +35,40 @@ export async function seedRigid(prisma: PrismaClient) {
   }
 
   // 2. Delete RIGID machines that are NOT in the valid list
-  console.log("Cleaning up old RIGID machines...");
+  console.log("Cleaning up old/invalid RIGID machines...");
+
+  // Collect prefixes to catch junk data regardless of type (e.g. EBM-88 might be PAPER but should be deleted)
+  const prefixes = RIGID_MACHINES_CONFIG.map((c) => c.prefix).filter(
+    (p): p is string => !!p
+  );
+
+  // Also catch exact names like CA102
+  const exactNames = RIGID_MACHINES_CONFIG.map((c) => c.name).filter(
+    (n): n is string => !!n
+  );
 
   const deleteResult = await prisma.machine.deleteMany({
     where: {
-      type: "RIGID",
-      name: {
-        notIn: validNames,
-      },
+      AND: [
+        {
+          name: {
+            notIn: validNames,
+          },
+        },
+        {
+          OR: [
+            { type: "RIGID" }, // Delete any machine marked as RIGID but not in valid list
+            ...prefixes.map((p) => ({ name: { startsWith: p } })), // Delete by prefix match (e.g. EBM-88)
+            ...exactNames.map((n) => ({ name: n })), // Delete by exact name match if somehow duplicated/wrong type
+          ],
+        },
+      ],
     },
   });
 
-  console.log(`Deleted ${deleteResult.count} old/invalid RIGID machines.`);
+  console.log(
+    `Deleted ${deleteResult.count} old/invalid machines (matching RIGID type or prefixes ${prefixes.join(", ")}).`
+  );
 
   // 3. Upsert valid machines (ensure they exist)
   for (const name of validNames) {

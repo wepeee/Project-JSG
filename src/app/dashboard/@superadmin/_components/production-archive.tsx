@@ -1477,16 +1477,20 @@ export default function ProductionArchive() {
                         </>
                       )}
                     <TableCell className="p-2">
-                      <AdminNoteInput
-                        id={rpt.id}
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                        initialValue={(rpt as any).adminNote as string | null}
-                      />
-                      {rpt.notes && (
-                        <div className="mt-1 max-w-[200px] truncate text-[10px] text-slate-400" title={rpt.notes}>
-                          Op: {rpt.notes}
+                      {rpt.notes ? (
+                        <div className="max-w-[200px] text-xs text-slate-700 dark:text-slate-200" title={rpt.notes}>
+                          {rpt.notes}
                         </div>
+                      ) : (
+                        <div className="text-xs text-slate-400 italic">-</div>
                       )}
+                      <div className="mt-1">
+                        <AdminNoteInput
+                          id={rpt.id}
+                          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                          initialValue={(rpt as any).adminNote as string | null}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
