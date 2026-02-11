@@ -1358,7 +1358,9 @@ export default function ProductionArchive({
                       })()}
                     </TableCell>
                     <TableCell className="text-right text-xs font-bold text-amber-600">
-                      {rpt.totalDowntime > 0 ? `${rpt.totalDowntime}m` : "-"}
+                      {rpt.totalDowntime > 0
+                        ? `${Number(rpt.totalDowntime).toFixed(1)}${isMoulding ? " Jam" : "m"}`
+                        : "-"}
                     </TableCell>
                     {activeCategory === "PAPER" && showDowntimeDetails && (
                       <>
@@ -2232,19 +2234,17 @@ export default function ProductionArchive({
 
                             let rejectPcs = Number(rpt.qtyReject || 0);
 
-                            // Convert reject grams to pcs if needed (Rigid)
+                            // Convert reject grams to pcs if needed (Rigid) -> Moulding logic
+                            // But activeCategory !== PAPER check handles this usually.
+                            // Here we are inside specific cell.
                             const pw = Number(
                               (rpt.metaData as any)?.productWeight,
                             );
-                            // Logic from lines 1858-1860: if pw > 0, convert
                             if (pw > 0) {
                               rejectPcs = Math.round((rejectPcs * 1000) / pw);
                             }
 
-                            // Total Output includes rejects? Or is it just Good+PassOn+Hold+Wip?
-                            // Based on line 1862/1962: totalOutput += rejectPcs;
-                            // So Total Output = Good + PassOn + Hold + Wip + RejectPcs
-
+                            // Total Output includes rejects
                             totalOutput += rejectPcs;
 
                             if (totalOutput <= 0) return "-";

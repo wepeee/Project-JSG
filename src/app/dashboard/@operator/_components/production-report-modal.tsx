@@ -2144,7 +2144,7 @@ export function ProductionReportModal({
                 </div>
 
                 {/* Material Output Section (Moved from Material Tab) */}
-                {lphType === "INJECTION" && (
+                {(lphType === "INJECTION" || lphType === "BLOW_MOULDING") && (
                   <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
                     <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-300">
                       <Layers className="h-4 w-4 text-emerald-500" /> Bahan Baku
