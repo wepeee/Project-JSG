@@ -9,8 +9,6 @@ import {
   Search,
   ChevronRight,
   ChevronLeft,
-  Check,
-  X,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
@@ -204,6 +202,50 @@ const PACKING_UNPLANNED_DT = [
   "Other",
 ];
 
+const EditableStandardInput = ({
+  value,
+  onSave,
+  ...props
+}: Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onSave"> & {
+  value: number | null | undefined;
+  onSave: (val: number | null) => void;
+}) => {
+  const [localValue, setLocalValue] = React.useState<string>(
+    value?.toString() ?? "",
+  );
+
+  React.useEffect(() => {
+    setLocalValue(value?.toString() ?? "");
+  }, [value]);
+
+  const handleBlur = () => {
+    const numericVal = localValue === "" ? null : Number(localValue);
+    // Simple check: if different from prop value, save.
+    // Use loosely equal to allow string/number comparison if needed, but Number() handles it.
+    if (numericVal !== (value ?? null)) {
+      onSave(numericVal);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.currentTarget.blur();
+    }
+  };
+
+  return (
+    <input
+      type="number"
+      value={localValue}
+      onChange={(e) => setLocalValue(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      className="w-full rounded border border-slate-300 px-1 py-0.5 text-right text-xs focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800"
+      {...props}
+    />
+  );
+};
+
 export default function ProductionArchive({
   userDepartment,
 }: {
@@ -217,18 +259,7 @@ export default function ProductionArchive({
   });
   const [showRejectDetails, setShowRejectDetails] = React.useState(false);
   const [showDowntimeDetails, setShowDowntimeDetails] = React.useState(false);
-  const [editingReportId, setEditingReportId] = React.useState<string | null>(
-    null,
-  );
-  const [editValues, setEditValues] = React.useState<{
-    cavityStd: number | null;
-    cycleTimeStd: number | null;
-  }>({
-    cavityStd: null,
-    cycleTimeStd: null,
-  });
 
-  // Fetch APPROVED reports
   // Auto-recover from "RIGID" state (HMR legacy)
   React.useEffect(() => {
     if (activeCategory === ("RIGID" as any)) {
@@ -249,34 +280,11 @@ export default function ProductionArchive({
   const updateStandards = api.verification.updateReportStandards.useMutation({
     onSuccess: () => {
       void utils.verification.getReports.invalidate();
-      setEditingReportId(null);
+    },
+    onError: (err) => {
+      console.error(`Failed to update: ${err.message}`);
     },
   });
-
-  const handleEditStart = (
-    reportId: string,
-    currentCavity: number | null,
-    currentCycleTime: number | null,
-  ) => {
-    setEditingReportId(reportId);
-    setEditValues({
-      cavityStd: currentCavity,
-      cycleTimeStd: currentCycleTime ? Number(currentCycleTime) : null,
-    });
-  };
-
-  const handleEditCancel = () => {
-    setEditingReportId(null);
-    setEditValues({ cavityStd: null, cycleTimeStd: null });
-  };
-
-  const handleEditSave = (reportId: string) => {
-    updateStandards.mutate({
-      id: reportId,
-      cavityStd: editValues.cavityStd ?? undefined,
-      cycleTimeStd: editValues.cycleTimeStd ?? undefined,
-    });
-  };
 
   const rigidSubCategories = [
     { id: "INJECTION", label: "INJECTION" },
@@ -828,7 +836,19 @@ export default function ProductionArchive({
                         rowSpan={2}
                         className="text-right text-slate-300"
                       >
+                        Total Loss Hour
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
                         Working Time
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Total Downtime
                       </TableHead>
                       <TableHead
                         rowSpan={2}
@@ -847,6 +867,48 @@ export default function ProductionArchive({
                         className="text-right text-slate-300"
                       >
                         Effective Hour
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        DT RATE C/B
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        SPEED RATE D/C
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        QUALITY RATE E/D
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        REE E/B %
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        OEE E/A %
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        DOWN TIME %
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        REJECT RATE
                       </TableHead>
                     </>
                   )}
@@ -1087,92 +1149,36 @@ export default function ProductionArchive({
                     {isMoulding && (
                       <>
                         <TableCell className="text-right text-xs">
-                          {editingReportId === rpt.id ? (
-                            <div className="flex items-center justify-end gap-1">
-                              <input
-                                type="number"
-                                min="1"
-                                step="1"
-                                value={editValues.cavityStd ?? ""}
-                                onChange={(e) =>
-                                  setEditValues((prev) => ({
-                                    ...prev,
-                                    cavityStd: e.target.value
-                                      ? parseInt(e.target.value)
-                                      : null,
-                                  }))
-                                }
-                                className="w-16 rounded border border-slate-300 px-1 py-0.5 text-right text-xs dark:border-slate-600 dark:bg-slate-800"
-                              />
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() =>
-                                handleEditStart(
-                                  rpt.id,
-                                  rpt.cavityStd,
-                                  rpt.cycleTimeStd
-                                    ? Number(rpt.cycleTimeStd)
-                                    : null,
-                                )
-                              }
-                              className="w-full text-right hover:text-blue-600 dark:hover:text-blue-400"
-                            >
-                              {rpt.cavityStd ?? "-"}
-                            </button>
-                          )}
+                          <EditableStandardInput
+                            value={rpt.cavityStd} // cavityStd is number | null
+                            step="1"
+                            min="1"
+                            onSave={(val) => {
+                              updateStandards.mutate({
+                                id: rpt.id,
+                                cavityStd: val ?? undefined,
+                                cycleTimeStd: rpt.cycleTimeStd
+                                  ? Number(rpt.cycleTimeStd)
+                                  : undefined,
+                              });
+                            }}
+                          />
                         </TableCell>
                         <TableCell className="text-right text-xs">
-                          {editingReportId === rpt.id ? (
-                            <div className="flex items-center justify-end gap-1">
-                              <input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={editValues.cycleTimeStd ?? ""}
-                                onChange={(e) =>
-                                  setEditValues((prev) => ({
-                                    ...prev,
-                                    cycleTimeStd: e.target.value
-                                      ? parseFloat(e.target.value)
-                                      : null,
-                                  }))
-                                }
-                                className="w-16 rounded border border-slate-300 px-1 py-0.5 text-right text-xs dark:border-slate-600 dark:bg-slate-800"
-                              />
-                              <button
-                                onClick={() => handleEditSave(rpt.id)}
-                                disabled={updateStandards.isPending}
-                                className="rounded p-0.5 text-green-600 hover:bg-green-100 disabled:opacity-50 dark:hover:bg-green-900"
-                              >
-                                <Check className="h-3 w-3" />
-                              </button>
-                              <button
-                                onClick={handleEditCancel}
-                                disabled={updateStandards.isPending}
-                                className="rounded p-0.5 text-red-600 hover:bg-red-100 disabled:opacity-50 dark:hover:bg-red-900"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() =>
-                                handleEditStart(
-                                  rpt.id,
-                                  rpt.cavityStd,
-                                  rpt.cycleTimeStd
-                                    ? Number(rpt.cycleTimeStd)
-                                    : null,
-                                )
-                              }
-                              className="w-full text-right hover:text-blue-600 dark:hover:text-blue-400"
-                            >
-                              {rpt.cycleTimeStd
-                                ? Number(rpt.cycleTimeStd).toFixed(2)
-                                : "-"}
-                            </button>
-                          )}
+                          <EditableStandardInput
+                            value={
+                              rpt.cycleTimeStd ? Number(rpt.cycleTimeStd) : null
+                            }
+                            step="0.01"
+                            min="0"
+                            onSave={(val) => {
+                              updateStandards.mutate({
+                                id: rpt.id,
+                                cavityStd: rpt.cavityStd ?? undefined,
+                                cycleTimeStd: val ?? undefined,
+                              });
+                            }}
+                          />
                         </TableCell>
                         <TableCell className="text-right text-xs font-semibold text-blue-600 dark:text-blue-400">
                           {(() => {
@@ -1183,7 +1189,9 @@ export default function ProductionArchive({
 
                             if (cavStd && ctStd && ctStd > 0) {
                               const stdOutputPerHour = (3600 / ctStd) * cavStd;
-                              return Math.round(stdOutputPerHour).toLocaleString();
+                              return Math.round(
+                                stdOutputPerHour,
+                              ).toLocaleString();
                             }
                             return "-";
                           })()}
@@ -1444,24 +1452,30 @@ export default function ProductionArchive({
                     {isMoulding && showDowntimeDetails && (
                       <>
                         {INJECTION_PLANNED_DT.map((col) => {
-                          const val = (rpt.downtimeBreakdown as any)?.[col];
+                          const val =
+                            (rpt.downtimeBreakdown as any)?.[col] ||
+                            (rpt.downtimeBreakdown as any)?.[`PLANNED:${col}`];
                           return (
                             <TableCell
                               key={col}
                               className="text-right text-xs text-blue-500/70"
                             >
-                              {val ? `${val}m` : "-"}
+                              {val ? `${Number(val).toFixed(1)} Jam` : "-"}
                             </TableCell>
                           );
                         })}
                         {INJECTION_UNPLANNED_DT.map((col) => {
-                          const val = (rpt.downtimeBreakdown as any)?.[col];
+                          const val =
+                            (rpt.downtimeBreakdown as any)?.[col] ||
+                            (rpt.downtimeBreakdown as any)?.[
+                              `UNPLANNED:${col}`
+                            ];
                           return (
                             <TableCell
                               key={col}
                               className="text-right text-xs text-orange-500/70"
                             >
-                              {val ? `${val}m` : "-"}
+                              {val ? `${Number(val).toFixed(1)} Jam` : "-"}
                             </TableCell>
                           );
                         })}
@@ -1700,7 +1714,32 @@ export default function ProductionArchive({
                         </TableCell>
                         <TableCell className="text-right text-xs">
                           {(() => {
-                            const totalMinutes = 480;
+                            let plannedDt = 0;
+                            const breakdown = rpt.downtimeBreakdown as any;
+                            let keys: readonly string[] = [];
+
+                            if (isMoulding) keys = INJECTION_PLANNED_DT;
+                            else if (activeCategory === "PRINTING")
+                              keys = PRINTING_PLANNED_DT;
+                            else if (activeCategory === "PACKING_ASSEMBLY")
+                              keys = PACKING_PLANNED_DT;
+
+                            if (breakdown) {
+                              keys.forEach((k) => {
+                                const val =
+                                  breakdown?.[k] || breakdown?.[`PLANNED:${k}`];
+                                if (val) plannedDt += Number(val);
+                              });
+                            }
+
+                            return plannedDt > 0
+                              ? `${plannedDt.toFixed(1)} Jam`
+                              : "-";
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            const totalHours = 8;
                             let plannedDt = 0;
                             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             const breakdown = rpt.downtimeBreakdown as any;
@@ -1722,16 +1761,43 @@ export default function ProductionArchive({
                               });
                             }
 
-                            const workingTime = totalMinutes - plannedDt;
-                            return `${(workingTime / 60).toFixed(1)} Jam`;
+                            const workingTime = totalHours - plannedDt;
+                            return `${workingTime.toFixed(1)} Jam`;
                           })()}
                         </TableCell>
                         <TableCell className="text-right text-xs">
                           {(() => {
-                            const totalMinutes = 480;
+                            let unplannedDt = 0;
+                            const breakdown = rpt.downtimeBreakdown as any;
+                            let unplanKeys: readonly string[] = [];
+
+                            if (isMoulding) {
+                              unplanKeys = INJECTION_UNPLANNED_DT;
+                            } else if (activeCategory === "PRINTING") {
+                              unplanKeys = PRINTING_UNPLANNED_DT;
+                            } else if (activeCategory === "PACKING_ASSEMBLY") {
+                              unplanKeys = PACKING_UNPLANNED_DT;
+                            }
+
+                            if (breakdown) {
+                              unplanKeys.forEach((k) => {
+                                const val =
+                                  breakdown?.[k] ||
+                                  breakdown?.[`UNPLANNED:${k}`];
+                                if (val) unplannedDt += Number(val);
+                              });
+                            }
+
+                            return unplannedDt > 0
+                              ? `${unplannedDt.toFixed(1)} Jam`
+                              : "-";
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            const totalHours = 8;
                             let plannedDt = 0;
                             let unplannedDt = 0;
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             const breakdown = rpt.downtimeBreakdown as any;
 
                             let planKeys: readonly string[] = [];
@@ -1750,22 +1816,21 @@ export default function ProductionArchive({
 
                             if (breakdown) {
                               planKeys.forEach((k) => {
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                                 const val =
                                   breakdown?.[k] || breakdown?.[`PLANNED:${k}`];
                                 if (val) plannedDt += Number(val);
                               });
                               unplanKeys.forEach((k) => {
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                                const val = breakdown?.[k]; // Unplanned usually doesn't have prefix here based on previous code reading, or maybe it does?
-                                // Check lines 1174, 1205, 1232: strictly `breakdown?.[k]`.
+                                const val =
+                                  breakdown?.[k] ||
+                                  breakdown?.[`UNPLANNED:${k}`];
                                 if (val) unplannedDt += Number(val);
                               });
                             }
 
-                            const workingTime = totalMinutes - plannedDt;
+                            const workingTime = totalHours - plannedDt;
                             const commercialTime = workingTime - unplannedDt;
-                            return `${(commercialTime / 60).toFixed(1)} Jam`;
+                            return `${commercialTime.toFixed(1)} Jam`;
                           })()}
                         </TableCell>
                         <TableCell className="text-right text-xs">
@@ -1828,6 +1893,363 @@ export default function ProductionArchive({
                             const effectiveHour = passOn / stdOutputPerHour;
 
                             return `${effectiveHour.toFixed(2)} Jam`;
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            // Calculate Working Time
+                            const totalHours = 8;
+                            let plannedDt = 0;
+                            const breakdown = rpt.downtimeBreakdown as any;
+                            let keys: readonly string[] = [];
+
+                            if (isMoulding) keys = INJECTION_PLANNED_DT;
+                            else if (activeCategory === "PRINTING")
+                              keys = PRINTING_PLANNED_DT;
+                            else if (activeCategory === "PACKING_ASSEMBLY")
+                              keys = PACKING_PLANNED_DT;
+
+                            if (breakdown) {
+                              keys.forEach((k) => {
+                                const val =
+                                  breakdown?.[k] || breakdown?.[`PLANNED:${k}`];
+                                if (val) plannedDt += Number(val);
+                              });
+                            }
+
+                            const workingTime = totalHours - plannedDt;
+
+                            // Calculate Commercial Time
+                            let unplannedDt = 0;
+                            let planKeys: readonly string[] = [];
+                            let unplanKeys: readonly string[] = [];
+
+                            if (isMoulding) {
+                              planKeys = INJECTION_PLANNED_DT;
+                              unplanKeys = INJECTION_UNPLANNED_DT;
+                            } else if (activeCategory === "PRINTING") {
+                              planKeys = PRINTING_PLANNED_DT;
+                              unplanKeys = PRINTING_UNPLANNED_DT;
+                            } else if (activeCategory === "PACKING_ASSEMBLY") {
+                              planKeys = PACKING_PLANNED_DT;
+                              unplanKeys = PACKING_UNPLANNED_DT;
+                            }
+
+                            if (breakdown) {
+                              unplanKeys.forEach((k) => {
+                                const val =
+                                  breakdown?.[k] ||
+                                  breakdown?.[`UNPLANNED:${k}`];
+                                if (val) unplannedDt += Number(val);
+                              });
+                            }
+
+                            const commercialTime = workingTime - unplannedDt;
+
+                            // DT RATE = Commercial Time / Working Time
+                            if (workingTime <= 0) return "-";
+                            const dtRate = commercialTime / workingTime;
+                            return `${(dtRate * 100).toFixed(1)}%`;
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            const cavStd = rpt.cavityStd;
+                            const ctStd = rpt.cycleTimeStd
+                              ? Number(rpt.cycleTimeStd)
+                              : null;
+
+                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+
+                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+                            if (stdOutputPerHour <= 0) return "-";
+
+                            // Calculate Total Output (Running Hour numerator)
+                            let totalOutput =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0);
+
+                            let rejectPcs = Number(rpt.qtyReject || 0);
+                            const pw = Number(
+                              (rpt.metaData as any)?.productWeight,
+                            );
+                            if (pw > 0) {
+                              rejectPcs = Math.round((rejectPcs * 1000) / pw);
+                            }
+                            totalOutput += rejectPcs;
+
+                            const runningHour = totalOutput / stdOutputPerHour;
+
+                            // Calculate Commercial Time
+                            const totalHours = 8;
+                            let plannedDt = 0;
+                            let unplannedDt = 0;
+                            const breakdown = rpt.downtimeBreakdown as any;
+
+                            let planKeys: readonly string[] = [];
+                            let unplanKeys: readonly string[] = [];
+
+                            if (isMoulding) {
+                              planKeys = INJECTION_PLANNED_DT;
+                              unplanKeys = INJECTION_UNPLANNED_DT;
+                            } else if (activeCategory === "PRINTING") {
+                              planKeys = PRINTING_PLANNED_DT;
+                              unplanKeys = PRINTING_UNPLANNED_DT;
+                            } else if (activeCategory === "PACKING_ASSEMBLY") {
+                              planKeys = PACKING_PLANNED_DT;
+                              unplanKeys = PACKING_UNPLANNED_DT;
+                            }
+
+                            if (breakdown) {
+                              planKeys.forEach((k) => {
+                                const val =
+                                  breakdown?.[k] || breakdown?.[`PLANNED:${k}`];
+                                if (val) plannedDt += Number(val);
+                              });
+                              unplanKeys.forEach((k) => {
+                                const val =
+                                  breakdown?.[k] ||
+                                  breakdown?.[`UNPLANNED:${k}`];
+                                if (val) unplannedDt += Number(val);
+                              });
+                            }
+
+                            const workingTime = totalHours - plannedDt;
+                            const commercialTime = workingTime - unplannedDt;
+
+                            // SPEED RATE = Running Hour / Commercial Time
+                            if (commercialTime <= 0) return "-";
+                            const speedRate = runningHour / commercialTime;
+                            return `${(speedRate * 100).toFixed(1)}%`;
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            const cavStd = rpt.cavityStd;
+                            const ctStd = rpt.cycleTimeStd
+                              ? Number(rpt.cycleTimeStd)
+                              : null;
+
+                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+
+                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+                            if (stdOutputPerHour <= 0) return "-";
+
+                            // Calculate Total Output (Running Hour)
+                            let totalOutput =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0);
+
+                            let rejectPcs = Number(rpt.qtyReject || 0);
+                            const pw = Number(
+                              (rpt.metaData as any)?.productWeight,
+                            );
+                            if (pw > 0) {
+                              rejectPcs = Math.round((rejectPcs * 1000) / pw);
+                            }
+                            totalOutput += rejectPcs;
+
+                            const runningHour = totalOutput / stdOutputPerHour;
+
+                            // Calculate Pass On (Effective Hour numerator)
+                            const passOn =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0);
+
+                            const effectiveHour = passOn / stdOutputPerHour;
+
+                            // QUALITY RATE = Effective Hour / Running Hour
+                            if (runningHour <= 0) return "-";
+                            const qualityRate = effectiveHour / runningHour;
+                            return `${(qualityRate * 100).toFixed(1)}%`;
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            const cavStd = rpt.cavityStd;
+                            const ctStd = rpt.cycleTimeStd
+                              ? Number(rpt.cycleTimeStd)
+                              : null;
+
+                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+
+                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+                            if (stdOutputPerHour <= 0) return "-";
+
+                            // Calculate Working Time & Commercial Time for DT RATE
+                            const totalHours = 8;
+                            let plannedDt = 0;
+                            let unplannedDt = 0;
+                            const breakdown = rpt.downtimeBreakdown as any;
+                            let planKeys: readonly string[] = [];
+                            let unplanKeys: readonly string[] = [];
+
+                            if (isMoulding) {
+                              planKeys = INJECTION_PLANNED_DT;
+                              unplanKeys = INJECTION_UNPLANNED_DT;
+                            } else if (activeCategory === "PRINTING") {
+                              planKeys = PRINTING_PLANNED_DT;
+                              unplanKeys = PRINTING_UNPLANNED_DT;
+                            } else if (activeCategory === "PACKING_ASSEMBLY") {
+                              planKeys = PACKING_PLANNED_DT;
+                              unplanKeys = PACKING_UNPLANNED_DT;
+                            }
+
+                            if (breakdown) {
+                              planKeys.forEach((k) => {
+                                const val =
+                                  breakdown?.[k] || breakdown?.[`PLANNED:${k}`];
+                                if (val) plannedDt += Number(val);
+                              });
+                              unplanKeys.forEach((k) => {
+                                const val =
+                                  breakdown?.[k] ||
+                                  breakdown?.[`UNPLANNED:${k}`];
+                                if (val) unplannedDt += Number(val);
+                              });
+                            }
+
+                            const workingTime = totalHours - plannedDt;
+                            const commercialTime = workingTime - unplannedDt;
+
+                            // DT RATE = Commercial Time / Working Time
+                            if (workingTime <= 0) return "-";
+                            const dtRate = commercialTime / workingTime;
+
+                            // Calculate Running Hour for SPEED RATE
+                            let totalOutput =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0);
+
+                            let rejectPcs = Number(rpt.qtyReject || 0);
+                            const pw = Number(
+                              (rpt.metaData as any)?.productWeight,
+                            );
+                            if (pw > 0) {
+                              rejectPcs = Math.round((rejectPcs * 1000) / pw);
+                            }
+                            totalOutput += rejectPcs;
+
+                            const runningHour = totalOutput / stdOutputPerHour;
+
+                            // SPEED RATE = Running Hour / Commercial Time
+                            if (commercialTime <= 0) return "-";
+                            const speedRate = runningHour / commercialTime;
+
+                            // Calculate Effective Hour for QUALITY RATE
+                            const passOn =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0);
+                            const effectiveHour = passOn / stdOutputPerHour;
+
+                            // QUALITY RATE = Effective Hour / Running Hour
+                            if (runningHour <= 0) return "-";
+                            const qualityRate = effectiveHour / runningHour;
+
+                            // REE = DT RATE × SPEED RATE × QUALITY RATE
+                            const ree = dtRate * speedRate * qualityRate;
+                            return `${(ree * 100).toFixed(1)}%`;
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            const cavStd = rpt.cavityStd;
+                            const ctStd = rpt.cycleTimeStd
+                              ? Number(rpt.cycleTimeStd)
+                              : null;
+                            const totalHours = 8;
+
+                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+
+                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+                            if (stdOutputPerHour <= 0) return "-";
+
+                            // Calculate Effective Hour
+                            const passOn =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0);
+                            const effectiveHour = passOn / stdOutputPerHour;
+
+                            // OEE = Effective Hour / Total Time
+                            const oee = effectiveHour / totalHours;
+                            return `${(oee * 100).toFixed(1)}%`;
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            const totalHours = 8;
+                            let plannedDt = 0;
+                            let unplannedDt = 0;
+                            const breakdown = rpt.downtimeBreakdown as any;
+                            let planKeys: readonly string[] = [];
+                            let unplanKeys: readonly string[] = [];
+
+                            if (isMoulding) {
+                              planKeys = INJECTION_PLANNED_DT;
+                              unplanKeys = INJECTION_UNPLANNED_DT;
+                            } else if (activeCategory === "PRINTING") {
+                              planKeys = PRINTING_PLANNED_DT;
+                              unplanKeys = PRINTING_UNPLANNED_DT;
+                            } else if (activeCategory === "PACKING_ASSEMBLY") {
+                              planKeys = PACKING_PLANNED_DT;
+                              unplanKeys = PACKING_UNPLANNED_DT;
+                            }
+
+                            if (breakdown) {
+                              planKeys.forEach((k) => {
+                                const val =
+                                  breakdown?.[k] || breakdown?.[`PLANNED:${k}`];
+                                if (val) plannedDt += Number(val);
+                              });
+                              unplanKeys.forEach((k) => {
+                                const val =
+                                  breakdown?.[k] ||
+                                  breakdown?.[`UNPLANNED:${k}`];
+                                if (val) unplannedDt += Number(val);
+                              });
+                            }
+
+                            const workingTime = totalHours - plannedDt;
+
+                            if (workingTime <= 0) return "-";
+                            const downTimePct = unplannedDt / workingTime;
+                            return `${(downTimePct * 100).toFixed(1)}%`;
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            let totalOutput =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0);
+
+                            let rejectPcs = Number(rpt.qtyReject || 0);
+
+                            // Convert reject grams to pcs if needed (Rigid)
+                            const pw = Number(
+                              (rpt.metaData as any)?.productWeight,
+                            );
+                            // Logic from lines 1858-1860: if pw > 0, convert
+                            if (pw > 0) {
+                              rejectPcs = Math.round((rejectPcs * 1000) / pw);
+                            }
+
+                            // Total Output includes rejects? Or is it just Good+PassOn+Hold+Wip?
+                            // Based on line 1862/1962: totalOutput += rejectPcs;
+                            // So Total Output = Good + PassOn + Hold + Wip + RejectPcs
+
+                            totalOutput += rejectPcs;
+
+                            if (totalOutput <= 0) return "-";
+                            const rejectRate = rejectPcs / totalOutput;
+                            return `${(rejectRate * 100).toFixed(1)}%`;
                           })()}
                         </TableCell>
                       </>

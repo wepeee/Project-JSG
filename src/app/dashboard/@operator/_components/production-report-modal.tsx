@@ -1893,20 +1893,26 @@ export function ProductionReportModal({
                                 >
                                   {label}
                                 </Label>
-                                <Input
-                                  type="number"
-                                  placeholder="0"
-                                  className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-blue-500"
-                                  value={
-                                    formData.downtimes[`PLANNED:${label}`] || ""
-                                  }
-                                  onChange={(e) =>
-                                    handleDowntimeChange(
-                                      `PLANNED:${label}`,
-                                      e.target.value,
-                                    )
-                                  }
-                                />
+                                <div className="relative">
+                                  <Input
+                                    type="number"
+                                    placeholder="0"
+                                    className="h-9 border-slate-800 bg-slate-950 pr-12 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-blue-500"
+                                    value={
+                                      formData.downtimes[`PLANNED:${label}`] ||
+                                      ""
+                                    }
+                                    onChange={(e) =>
+                                      handleDowntimeChange(
+                                        `PLANNED:${label}`,
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
+                                  <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-500">
+                                    jam
+                                  </span>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -1935,15 +1941,23 @@ export function ProductionReportModal({
                                 >
                                   {label}
                                 </Label>
-                                <Input
-                                  type="number"
-                                  placeholder="0"
-                                  className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-amber-500"
-                                  value={formData.downtimes[label] || ""}
-                                  onChange={(e) =>
-                                    handleDowntimeChange(label, e.target.value)
-                                  }
-                                />
+                                <div className="relative">
+                                  <Input
+                                    type="number"
+                                    placeholder="0"
+                                    className="h-9 border-slate-800 bg-slate-950 pr-12 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-amber-500"
+                                    value={formData.downtimes[label] || ""}
+                                    onChange={(e) =>
+                                      handleDowntimeChange(
+                                        label,
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
+                                  <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-500">
+                                    jam
+                                  </span>
+                                </div>
                               </div>
                             ))}
                           </div>
