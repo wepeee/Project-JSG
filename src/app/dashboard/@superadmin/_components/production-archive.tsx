@@ -590,6 +590,22 @@ export default function ProductionArchive({
                       </TableHead>
                     </>
                   )}
+                  {activeCategory !== "PAPER" && (
+                    <>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Berat Produk (gr)
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Total Reject (Pcs)
+                      </TableHead>
+                    </>
+                  )}
                   <TableHead
                     rowSpan={
                       activeCategory === "PAPER" ||
@@ -732,19 +748,41 @@ export default function ProductionArchive({
                     </>
                   )}
                   {/* INJECTION ALSO DOESN'T HAVE OEE YET, or maybe later. For now just standard view columns for non-paper */}
-                  {activeCategory !== "PAPER" &&
-                    activeCategory !== "PRINTING" &&
-                    activeCategory !== "PACKING_ASSEMBLY" &&
-                    !isMoulding && (
-                      <>
-                        <TableHead className="text-right text-slate-300">
-                          MP
-                        </TableHead>
-                        <TableHead className="text-right text-slate-300">
-                          CT
-                        </TableHead>
-                      </>
-                    )}
+
+                  {activeCategory !== "PAPER" && (
+                    <>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Total Time
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Working Time
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Commercial Hour
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Running Hour
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Effective Hour
+                      </TableHead>
+                    </>
+                  )}
                   <TableHead
                     rowSpan={
                       activeCategory === "PAPER" ||
@@ -1092,14 +1130,51 @@ export default function ProductionArchive({
                         })}
                       </>
                     )}
+
+                    {activeCategory !== "PAPER" && (
+                      <>
+                        <TableCell className="text-right text-xs">
+                          {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any */}
+                          {(rpt.metaData as any)?.productWeight ?? "-"}
+                        </TableCell>
+                        <TableCell className="text-right text-xs font-bold text-red-400">
+                          {(() => {
+                            const pw = Number(
+                              (rpt.metaData as any)?.productWeight,
+                            );
+                            const rj = Number(rpt.qtyReject || 0);
+
+                            if (pw > 0) {
+                              const val = Math.round((rj * 1000) / pw);
+                              return val.toLocaleString("id-ID");
+                            }
+                            return "-";
+                          })()}
+                        </TableCell>
+                      </>
+                    )}
                     <TableCell className="text-right text-xs font-black text-slate-800 dark:text-slate-100">
-                      {(
-                        Number(rpt.qtyGood) +
-                        Number(rpt.qtyPassOn) +
-                        Number(rpt.qtyHold) +
-                        Number(rpt.qtyWip) +
-                        Number(rpt.qtyReject)
-                      ).toLocaleString()}
+                      {(() => {
+                        let total =
+                          Number(rpt.qtyGood || 0) +
+                          Number(rpt.qtyPassOn || 0) +
+                          Number(rpt.qtyHold || 0) +
+                          Number(rpt.qtyWip || 0);
+
+                        let rejectVal = Number(rpt.qtyReject || 0);
+
+                        if (activeCategory !== "PAPER") {
+                          const pw = Number(
+                            (rpt.metaData as any)?.productWeight,
+                          );
+                          if (pw > 0) {
+                            rejectVal = Math.round((rejectVal * 1000) / pw);
+                          }
+                        }
+
+                        total += rejectVal;
+                        return total.toLocaleString("id-ID");
+                      })()}
                     </TableCell>
                     <TableCell className="text-right text-xs font-bold text-amber-600">
                       {rpt.totalDowntime > 0 ? `${rpt.totalDowntime}m` : "-"}
@@ -1383,6 +1458,18 @@ export default function ProductionArchive({
 
                             // 2. Performance
                             let perf = 0;
+                            let rejectPcs = Number(rpt.qtyReject || 0);
+
+                            // Convert Reject to Pcs for Rigid/Injection
+                            if (activeCategory !== "PAPER") {
+                              const pw = Number(
+                                (rpt.metaData as any)?.productWeight,
+                              );
+                              if (pw > 0) {
+                                rejectPcs = Math.round((rejectPcs * 1000) / pw);
+                              }
+                            }
+
                             if ((rpt as any).stdSpeed && operatingTime > 0) {
                               const targetOutput =
                                 Number((rpt as any).stdSpeed) * operatingTime;
@@ -1391,7 +1478,8 @@ export default function ProductionArchive({
                                 Number(rpt.qtyPassOn || 0) +
                                 Number(rpt.qtyHold || 0) +
                                 Number(rpt.qtyWip || 0) +
-                                Number(rpt.qtyReject || 0);
+                                rejectPcs;
+
                               if (targetOutput > 0) {
                                 perf = totalOutput / targetOutput; // Ratio (0-1)
                               }
@@ -1404,7 +1492,7 @@ export default function ProductionArchive({
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0) +
-                              Number(rpt.qtyReject || 0);
+                              rejectPcs;
 
                             if (totalOutput > 0) {
                               qual = Number(rpt.qtyPassOn || 0) / totalOutput; // Ratio (0-1)
@@ -1432,19 +1520,85 @@ export default function ProductionArchive({
                         </TableCell>
                       </>
                     )}
-                    {activeCategory !== "PAPER" &&
-                      activeCategory !== "PRINTING" &&
-                      activeCategory !== "PACKING_ASSEMBLY" &&
-                      !isMoulding && (
-                        <>
-                          <TableCell className="text-right text-xs">
-                            {rpt.manPowerAct ?? "-"}
-                          </TableCell>
-                          <TableCell className="text-right text-xs">
-                            {rpt.cycleTimeAct?.toString() ?? "-"}
-                          </TableCell>
-                        </>
-                      )}
+                    {activeCategory !== "PAPER" && (
+                      <>
+                        <TableCell className="text-right text-xs">
+                          8 Jam
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            const totalMinutes = 480;
+                            let plannedDt = 0;
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                            const breakdown = rpt.downtimeBreakdown as any;
+                            let keys: readonly string[] = [];
+
+                            if (isMoulding) keys = INJECTION_PLANNED_DT;
+                            else if (activeCategory === "PRINTING")
+                              keys = PRINTING_PLANNED_DT;
+                            else if (activeCategory === "PACKING_ASSEMBLY")
+                              keys = PACKING_PLANNED_DT;
+
+                            if (breakdown) {
+                              keys.forEach((k) => {
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                                const val =
+                                  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                                  breakdown?.[k] || breakdown?.[`PLANNED:${k}`];
+                                if (val) plannedDt += Number(val);
+                              });
+                            }
+
+                            const workingTime = totalMinutes - plannedDt;
+                            return `${(workingTime / 60).toFixed(1)} Jam`;
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            const totalMinutes = 480;
+                            let plannedDt = 0;
+                            let unplannedDt = 0;
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                            const breakdown = rpt.downtimeBreakdown as any;
+
+                            let planKeys: readonly string[] = [];
+                            let unplanKeys: readonly string[] = [];
+
+                            if (isMoulding) {
+                              planKeys = INJECTION_PLANNED_DT;
+                              unplanKeys = INJECTION_UNPLANNED_DT;
+                            } else if (activeCategory === "PRINTING") {
+                              planKeys = PRINTING_PLANNED_DT;
+                              unplanKeys = PRINTING_UNPLANNED_DT;
+                            } else if (activeCategory === "PACKING_ASSEMBLY") {
+                              planKeys = PACKING_PLANNED_DT;
+                              unplanKeys = PACKING_UNPLANNED_DT;
+                            }
+
+                            if (breakdown) {
+                              planKeys.forEach((k) => {
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                                const val =
+                                  breakdown?.[k] || breakdown?.[`PLANNED:${k}`];
+                                if (val) plannedDt += Number(val);
+                              });
+                              unplanKeys.forEach((k) => {
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                                const val = breakdown?.[k]; // Unplanned usually doesn't have prefix here based on previous code reading, or maybe it does?
+                                // Check lines 1174, 1205, 1232: strictly `breakdown?.[k]`.
+                                if (val) unplannedDt += Number(val);
+                              });
+                            }
+
+                            const workingTime = totalMinutes - plannedDt;
+                            const commercialTime = workingTime - unplannedDt;
+                            return `${(commercialTime / 60).toFixed(1)} Jam`;
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">-</TableCell>
+                        <TableCell className="text-right text-xs">-</TableCell>
+                      </>
+                    )}
                     <TableCell className="p-2 align-top">
                       {rpt.notes ? (
                         <div className="min-w-[150px] text-xs whitespace-pre-wrap text-slate-700 dark:text-slate-200">

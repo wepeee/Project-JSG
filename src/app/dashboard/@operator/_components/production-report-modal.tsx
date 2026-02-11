@@ -389,6 +389,11 @@ export function ProductionReportModal({
     materialPurge: "", // Rigid only
     productWeight: "", // Injection only
 
+    // Material Output (Bahan Baku)
+    materialPassOn: "", // "Baik"
+    materialHold: "",
+    materialWip: "",
+
     // Output
     qtyGood: "",
     qtyPassOn: "",
@@ -481,7 +486,19 @@ export function ProductionReportModal({
     // Implies: Finish Good = PASS ON + HOLD + WIP
     // We also include 'good' input in case it's used instead of breakdown.
     const finishGood = good + passOn + hold + wip;
-    const totalOut = finishGood + totalReject;
+
+    // Convert Reject to Pcs for Rigid (if Product Weight exists)
+    let rejectCount = totalReject;
+    if (
+      (lphType === "INJECTION" || lphType === "BLOW_MOULDING") &&
+      Number(formData.productWeight) > 0
+    ) {
+      rejectCount = Math.round(
+        (totalReject * 1000) / Number(formData.productWeight),
+      );
+    }
+
+    const totalOut = finishGood + rejectCount;
 
     // Quality = PASS ON / Total Output (User Request)
     // Note: We include 'good' just in case, but primary is Pass On.
@@ -523,7 +540,7 @@ export function ProductionReportModal({
       if (tMin > 0) {
         targetOutputDisplay = speedPerMin * tMin;
 
-        const performanceNumerator = passOn + hold + wip + good;
+        const performanceNumerator = totalOut;
         perf =
           targetOutputDisplay > 0
             ? (performanceNumerator / targetOutputDisplay) * 100
@@ -561,6 +578,7 @@ export function ProductionReportModal({
     totalDowntimeObj, // Updated dependency
     totalReject,
     lphType,
+    formData.productWeight,
   ]);
   const draftKey = React.useMemo(
     () => (task ? `pro_report_v2_${task.step.id}` : ""),
@@ -616,7 +634,10 @@ export function ProductionReportModal({
           inputMaterial: editReport.inputMaterialQty?.toString() || "",
           materialRunner: editReport.materialRunnerQty?.toString() || "",
           materialPurge: editReport.materialPurgeQty?.toString() || "",
-          productWeight: "", // Not in schema yet
+          productWeight: (editReport.metaData as any)?.productWeight || "",
+          materialPassOn: (editReport.metaData as any)?.materialPassOn || "",
+          materialHold: (editReport.metaData as any)?.materialHold || "",
+          materialWip: (editReport.metaData as any)?.materialWip || "",
           qtyGood: editReport.qtyGood?.toString() || "",
           qtyPassOn: editReport.qtyPassOn?.toString() || "",
           qtyWip: editReport.qtyWip?.toString() || "",
@@ -693,6 +714,9 @@ export function ProductionReportModal({
             materialRunner: "",
             materialPurge: "",
             productWeight: "",
+            materialPassOn: "",
+            materialHold: "",
+            materialWip: "",
             qtyGood: "",
             qtyPassOn: "",
             qtyWip: "",
@@ -813,6 +837,12 @@ export function ProductionReportModal({
         materialRunner: String(editReport.materialRunnerQty || ""),
         materialPurge: String(editReport.materialPurgeQty || ""),
 
+        // Metadata fields
+        productWeight: (editReport.metaData as any)?.productWeight || "",
+        materialPassOn: (editReport.metaData as any)?.materialPassOn || "",
+        materialHold: (editReport.metaData as any)?.materialHold || "",
+        materialWip: (editReport.metaData as any)?.materialWip || "",
+
         qtyGood: String(editReport.qtyGood || ""),
         qtyPassOn: String(editReport.qtyPassOn || ""),
         qtyHold: String(editReport.qtyHold || ""),
@@ -910,6 +940,12 @@ export function ProductionReportModal({
           totalDowntime: totalDowntimeObj.total,
           notes: formData.notes,
           othersNote: formData.othersNote,
+          metaData: {
+            productWeight: formData.productWeight || undefined,
+            materialPassOn: formData.materialPassOn || undefined,
+            materialHold: formData.materialHold || undefined,
+            materialWip: formData.materialWip || undefined,
+          },
         },
       });
     } else {
@@ -963,6 +999,12 @@ export function ProductionReportModal({
         totalDowntime: totalDowntimeObj.total,
         notes: formData.notes,
         othersNote: formData.othersNote,
+        metaData: {
+          productWeight: formData.productWeight || undefined,
+          materialPassOn: formData.materialPassOn || undefined,
+          materialHold: formData.materialHold || undefined,
+          materialWip: formData.materialWip || undefined,
+        },
       });
     }
   };
@@ -1370,6 +1412,27 @@ export function ProductionReportModal({
                           />
                         </div>
                       </>
+                    )}
+
+                    {lphType === "INJECTION" && (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-slate-400">
+                          Berat Produk (gr)
+                        </Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          className="border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
+                          value={formData.productWeight}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              productWeight: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -2066,6 +2129,71 @@ export function ProductionReportModal({
                   </div>
                 </div>
 
+                {/* Material Output Section (Moved from Material Tab) */}
+                {lphType === "INJECTION" && (
+                  <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
+                    <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-300">
+                      <Layers className="h-4 w-4 text-emerald-500" /> Bahan Baku
+                    </h3>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold text-emerald-500">
+                          Baik (Kg)
+                        </Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          className="border-l-4 border-slate-800 border-l-emerald-500 bg-slate-950 text-slate-100 placeholder:text-slate-600"
+                          value={formData.materialPassOn}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              materialPassOn: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-slate-400">
+                          Hold (Kg)
+                        </Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          className="border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
+                          value={formData.materialHold}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              materialHold: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-slate-400">
+                          WIP (Kg)
+                        </Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          className="border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-600"
+                          value={formData.materialWip}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              materialWip: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {isRigid &&
                   !isMoulding &&
                   lphType !== "PRINTING" &&
@@ -2217,6 +2345,9 @@ export function ProductionReportModal({
                     materialRunner: "",
                     materialPurge: "",
                     productWeight: "",
+                    materialPassOn: "",
+                    materialHold: "",
+                    materialWip: "",
                     qtyGood: "",
                     qtyPassOn: "",
                     qtyWip: "",

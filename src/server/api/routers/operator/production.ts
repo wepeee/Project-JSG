@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { LphType, ReportStatus, ProStatus } from "../../../../../generated/prisma";
+import {
+  LphType,
+  ReportStatus,
+  ProStatus,
+} from "../../../../../generated/prisma";
 
 const productionReportInput = z.object({
   proStepId: z.number(),
@@ -39,6 +43,7 @@ const productionReportInput = z.object({
   totalDowntime: z.number().default(0),
   notes: z.string().optional(),
   othersNote: z.string().optional(),
+  metaData: z.record(z.string(), z.any()).optional(),
 });
 
 export const productionRouter = createTRPCRouter({
@@ -89,6 +94,7 @@ export const productionRouter = createTRPCRouter({
 
           notes: input.notes,
           othersNote: input.othersNote,
+          metaData: input.metaData || {},
 
           // @ts-ignore: Prisma types not updated yet (requires restart)
           // createdById: ctx.session.user.id, // Save the user ID (Account Owner)
@@ -133,7 +139,7 @@ export const productionRouter = createTRPCRouter({
           for (const s of pro.steps) {
             const hasAnyReport = s.productionReports.length > 0;
             const hasApprovedReport = s.productionReports.some(
-              (r) => r.status === ReportStatus.APPROVED
+              (r) => r.status === ReportStatus.APPROVED,
             );
 
             if (hasAnyReport) stepsWithAnyReport++;
@@ -156,10 +162,10 @@ export const productionRouter = createTRPCRouter({
           }
 
           if (newStatus !== pro.status && pro.status !== ProStatus.CANCELLED) {
-             await ctx.db.pro.update({
-               where: { id: pro.id },
-               data: { status: newStatus }
-             });
+            await ctx.db.pro.update({
+              where: { id: pro.id },
+              data: { status: newStatus },
+            });
           }
         }
       } catch (err) {
@@ -222,6 +228,7 @@ export const productionRouter = createTRPCRouter({
 
           notes: input.data.notes,
           othersNote: input.data.othersNote,
+          metaData: input.data.metaData, // Update metadata if provided
 
           // IMPORTANT: Reset status to PENDING so Admin can re-verify
           status: ReportStatus.PENDING,
@@ -281,6 +288,7 @@ export const productionRouter = createTRPCRouter({
           qtyWip: true,
           notes: true,
           othersNote: true,
+          metaData: true,
           createdAt: true,
           status: true,
           rejectionNote: true,
