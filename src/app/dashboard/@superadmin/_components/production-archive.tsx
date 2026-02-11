@@ -9,6 +9,8 @@ import {
   Search,
   ChevronRight,
   ChevronLeft,
+  Check,
+  X,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
@@ -215,6 +217,16 @@ export default function ProductionArchive({
   });
   const [showRejectDetails, setShowRejectDetails] = React.useState(false);
   const [showDowntimeDetails, setShowDowntimeDetails] = React.useState(false);
+  const [editingReportId, setEditingReportId] = React.useState<string | null>(
+    null,
+  );
+  const [editValues, setEditValues] = React.useState<{
+    cavityStd: number | null;
+    cycleTimeStd: number | null;
+  }>({
+    cavityStd: null,
+    cycleTimeStd: null,
+  });
 
   // Fetch APPROVED reports
   // Auto-recover from "RIGID" state (HMR legacy)
@@ -232,6 +244,39 @@ export default function ProductionArchive({
     category: safeCategory,
     limit: 100,
   });
+
+  const utils = api.useUtils();
+  const updateStandards = api.verification.updateReportStandards.useMutation({
+    onSuccess: () => {
+      void utils.verification.getReports.invalidate();
+      setEditingReportId(null);
+    },
+  });
+
+  const handleEditStart = (
+    reportId: string,
+    currentCavity: number | null,
+    currentCycleTime: number | null,
+  ) => {
+    setEditingReportId(reportId);
+    setEditValues({
+      cavityStd: currentCavity,
+      cycleTimeStd: currentCycleTime ? Number(currentCycleTime) : null,
+    });
+  };
+
+  const handleEditCancel = () => {
+    setEditingReportId(null);
+    setEditValues({ cavityStd: null, cycleTimeStd: null });
+  };
+
+  const handleEditSave = (reportId: string) => {
+    updateStandards.mutate({
+      id: reportId,
+      cavityStd: editValues.cavityStd ?? undefined,
+      cycleTimeStd: editValues.cycleTimeStd ?? undefined,
+    });
+  };
 
   const rigidSubCategories = [
     { id: "INJECTION", label: "INJECTION" },
@@ -332,7 +377,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="w-[120px] text-slate-300"
+                    className="w-[120px] text-center text-slate-300"
                   >
                     Tanggal
                   </TableHead>
@@ -427,7 +472,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-slate-300"
+                    className="text-center text-slate-300"
                   >
                     Shift
                   </TableHead>
@@ -453,7 +498,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-slate-300"
+                    className="text-center text-slate-300"
                   >
                     Mulai
                   </TableHead>
@@ -466,10 +511,32 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-slate-300"
+                    className="text-center text-slate-300"
                   >
                     Selesai
                   </TableHead>
+                  {isMoulding && (
+                    <>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Cav Std
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        CT Std
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        Std Output/Hour
+                      </TableHead>
+                    </>
+                  )}
                   <TableHead
                     rowSpan={
                       activeCategory === "PAPER" ||
@@ -938,7 +1005,7 @@ export default function ProductionArchive({
                     key={rpt.id}
                     className="border-b border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900/50"
                   >
-                    <TableCell className="text-xs font-medium">
+                    <TableCell className="text-center text-xs font-medium">
                       <div>
                         {format(new Date(rpt.reportDate), "dd MMM yyyy")}
                       </div>
@@ -1007,16 +1074,122 @@ export default function ProductionArchive({
                     <TableCell className="text-xs">
                       {rpt.operatorName}
                     </TableCell>
-                    <TableCell className="text-xs whitespace-nowrap text-slate-500">
+                    <TableCell className="text-center text-xs whitespace-nowrap text-slate-500">
                       {rpt.startTime
                         ? format(new Date(rpt.startTime), "dd MMM HH:mm")
                         : "-"}
                     </TableCell>
-                    <TableCell className="text-xs whitespace-nowrap text-slate-500">
+                    <TableCell className="text-center text-xs whitespace-nowrap text-slate-500">
                       {rpt.endTime
                         ? format(new Date(rpt.endTime), "dd MMM HH:mm")
                         : "-"}
                     </TableCell>
+                    {isMoulding && (
+                      <>
+                        <TableCell className="text-right text-xs">
+                          {editingReportId === rpt.id ? (
+                            <div className="flex items-center justify-end gap-1">
+                              <input
+                                type="number"
+                                min="1"
+                                step="1"
+                                value={editValues.cavityStd ?? ""}
+                                onChange={(e) =>
+                                  setEditValues((prev) => ({
+                                    ...prev,
+                                    cavityStd: e.target.value
+                                      ? parseInt(e.target.value)
+                                      : null,
+                                  }))
+                                }
+                                className="w-16 rounded border border-slate-300 px-1 py-0.5 text-right text-xs dark:border-slate-600 dark:bg-slate-800"
+                              />
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                handleEditStart(
+                                  rpt.id,
+                                  rpt.cavityStd,
+                                  rpt.cycleTimeStd
+                                    ? Number(rpt.cycleTimeStd)
+                                    : null,
+                                )
+                              }
+                              className="w-full text-right hover:text-blue-600 dark:hover:text-blue-400"
+                            >
+                              {rpt.cavityStd ?? "-"}
+                            </button>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {editingReportId === rpt.id ? (
+                            <div className="flex items-center justify-end gap-1">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={editValues.cycleTimeStd ?? ""}
+                                onChange={(e) =>
+                                  setEditValues((prev) => ({
+                                    ...prev,
+                                    cycleTimeStd: e.target.value
+                                      ? parseFloat(e.target.value)
+                                      : null,
+                                  }))
+                                }
+                                className="w-16 rounded border border-slate-300 px-1 py-0.5 text-right text-xs dark:border-slate-600 dark:bg-slate-800"
+                              />
+                              <button
+                                onClick={() => handleEditSave(rpt.id)}
+                                disabled={updateStandards.isPending}
+                                className="rounded p-0.5 text-green-600 hover:bg-green-100 disabled:opacity-50 dark:hover:bg-green-900"
+                              >
+                                <Check className="h-3 w-3" />
+                              </button>
+                              <button
+                                onClick={handleEditCancel}
+                                disabled={updateStandards.isPending}
+                                className="rounded p-0.5 text-red-600 hover:bg-red-100 disabled:opacity-50 dark:hover:bg-red-900"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                handleEditStart(
+                                  rpt.id,
+                                  rpt.cavityStd,
+                                  rpt.cycleTimeStd
+                                    ? Number(rpt.cycleTimeStd)
+                                    : null,
+                                )
+                              }
+                              className="w-full text-right hover:text-blue-600 dark:hover:text-blue-400"
+                            >
+                              {rpt.cycleTimeStd
+                                ? Number(rpt.cycleTimeStd).toFixed(2)
+                                : "-"}
+                            </button>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right text-xs font-semibold text-blue-600 dark:text-blue-400">
+                          {(() => {
+                            const cavStd = rpt.cavityStd;
+                            const ctStd = rpt.cycleTimeStd
+                              ? Number(rpt.cycleTimeStd)
+                              : null;
+
+                            if (cavStd && ctStd && ctStd > 0) {
+                              const stdOutputPerHour = (3600 / ctStd) * cavStd;
+                              return Math.round(stdOutputPerHour).toLocaleString();
+                            }
+                            return "-";
+                          })()}
+                        </TableCell>
+                      </>
+                    )}
                     <TableCell className="text-right text-xs font-bold text-green-600">
                       {(
                         Number(rpt.qtyGood) + Number(rpt.qtyPassOn)
@@ -1595,8 +1768,68 @@ export default function ProductionArchive({
                             return `${(commercialTime / 60).toFixed(1)} Jam`;
                           })()}
                         </TableCell>
-                        <TableCell className="text-right text-xs">-</TableCell>
-                        <TableCell className="text-right text-xs">-</TableCell>
+                        <TableCell className="text-right text-xs">
+                          {(() => {
+                            const cavStd = rpt.cavityStd;
+                            const ctStd = rpt.cycleTimeStd
+                              ? Number(rpt.cycleTimeStd)
+                              : null;
+
+                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+
+                            // Calculate Std Output Per Hour
+                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+
+                            if (stdOutputPerHour <= 0) return "-";
+
+                            // Calculate Total Output (in Pcs for Rigid)
+                            let totalOutput =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0);
+
+                            // Convert reject from grams to pcs for rigid
+                            let rejectPcs = Number(rpt.qtyReject || 0);
+                            const pw = Number(
+                              (rpt.metaData as any)?.productWeight,
+                            );
+                            if (pw > 0) {
+                              rejectPcs = Math.round((rejectPcs * 1000) / pw);
+                            }
+                            totalOutput += rejectPcs;
+
+                            // Running Hour = Total Output / Std Output Per Hour
+                            const runningHour = totalOutput / stdOutputPerHour;
+
+                            return `${runningHour.toFixed(2)} Jam`;
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                          {(() => {
+                            const cavStd = rpt.cavityStd;
+                            const ctStd = rpt.cycleTimeStd
+                              ? Number(rpt.cycleTimeStd)
+                              : null;
+
+                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+
+                            // Calculate Std Output Per Hour
+                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+
+                            if (stdOutputPerHour <= 0) return "-";
+
+                            // Get Pass On (Good + Pass On)
+                            const passOn =
+                              Number(rpt.qtyGood || 0) +
+                              Number(rpt.qtyPassOn || 0);
+
+                            // Effective Hour = Pass On / Std Output Per Hour
+                            const effectiveHour = passOn / stdOutputPerHour;
+
+                            return `${effectiveHour.toFixed(2)} Jam`;
+                          })()}
+                        </TableCell>
                       </>
                     )}
                     <TableCell className="p-2 align-top">

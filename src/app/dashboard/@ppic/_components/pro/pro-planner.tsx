@@ -617,7 +617,7 @@ export default function ProPlanner() {
 
     if (!processId) return setErr("Proses wajib dipilih");
 
-    const qty = Number(qtyPoPcs);
+    const qty = parseInt(qtyPoPcs);
     if (!qtyPoPcs.trim() || !Number.isFinite(qty) || qty <= 0) {
       return setErr("Jumlah PO (pcs) wajib > 0");
     }

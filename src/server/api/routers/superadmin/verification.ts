@@ -334,4 +334,22 @@ export const verificationRouter = createTRPCRouter({
         data: { adminNote: input.note },
       });
     }),
+
+  updateReportStandards: superAdminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        cavityStd: z.number().int().positive().optional(),
+        cycleTimeStd: z.number().positive().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.productionReport.update({
+        where: { id: input.id },
+        data: {
+          cavityStd: input.cavityStd,
+          cycleTimeStd: input.cycleTimeStd,
+        },
+      });
+    }),
 });

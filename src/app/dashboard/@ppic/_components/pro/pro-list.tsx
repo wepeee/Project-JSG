@@ -755,7 +755,7 @@ export default function ProList({
     const prod = productName.trim();
     if (!prod) return setErr("Produk wajib diisi");
 
-    const qty = Number(qtyPoPcs);
+    const qty = parseInt(qtyPoPcs);
     if (!qtyPoPcs.trim() || !Number.isFinite(qty) || qty <= 0) {
       return setErr("Qty PO wajib > 0");
     }
