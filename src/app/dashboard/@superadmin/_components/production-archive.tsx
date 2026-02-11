@@ -681,6 +681,14 @@ export default function ProductionArchive({
                       </TableHead>
                     </>
                   )}
+                  {isMoulding && (
+                    <TableHead
+                      rowSpan={2}
+                      className="text-right text-slate-300"
+                    >
+                      Finish Good
+                    </TableHead>
+                  )}
                   <TableHead
                     rowSpan={
                       activeCategory === "PAPER" ||
@@ -1334,6 +1342,18 @@ export default function ProductionArchive({
                         </TableCell>
                       </>
                     )}
+                    {isMoulding && (
+                      <TableCell className="text-right text-xs font-bold text-emerald-600">
+                        {(() => {
+                          const finishGood =
+                            Number(rpt.qtyGood || 0) +
+                            Number(rpt.qtyPassOn || 0) +
+                            Number(rpt.qtyHold || 0) +
+                            Number(rpt.qtyWip || 0);
+                          return finishGood.toLocaleString("id-ID");
+                        })()}
+                      </TableCell>
+                    )}
                     <TableCell className="text-right text-xs font-black text-slate-800 dark:text-slate-100">
                       {(() => {
                         let total =
@@ -1867,7 +1887,11 @@ export default function ProductionArchive({
                             totalOutput += rejectPcs;
 
                             // Running Hour = Total Output / Std Output Per Hour
-                            const runningHour = totalOutput / stdOutputPerHour;
+                            // Running Hour = Total Output / Std Output Per Hour
+                            const runningHour =
+                              activeCategory === "BLOW_MOULDING"
+                                ? 7
+                                : totalOutput / stdOutputPerHour;
 
                             return `${runningHour.toFixed(2)} Jam`;
                           })()}
@@ -1886,13 +1910,15 @@ export default function ProductionArchive({
 
                             if (stdOutputPerHour <= 0) return "-";
 
-                            // Get Pass On (Good + Pass On)
-                            const passOn =
+                            // Get Finish Good (Good + Pass On + Hold + WIP)
+                            const finishGood =
                               Number(rpt.qtyGood || 0) +
-                              Number(rpt.qtyPassOn || 0);
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0);
 
-                            // Effective Hour = Pass On / Std Output Per Hour
-                            const effectiveHour = passOn / stdOutputPerHour;
+                            // Effective Hour = Finish Good / Std Output Per Hour
+                            const effectiveHour = finishGood / stdOutputPerHour;
 
                             return `${effectiveHour.toFixed(2)} Jam`;
                           })()}
@@ -1982,7 +2008,10 @@ export default function ProductionArchive({
                             }
                             totalOutput += rejectPcs;
 
-                            const runningHour = totalOutput / stdOutputPerHour;
+                            const runningHour =
+                              activeCategory === "BLOW_MOULDING"
+                                ? 7
+                                : totalOutput / stdOutputPerHour;
 
                             // Calculate Commercial Time
                             const totalHours = 8;
@@ -2055,14 +2084,19 @@ export default function ProductionArchive({
                             }
                             totalOutput += rejectPcs;
 
-                            const runningHour = totalOutput / stdOutputPerHour;
+                            const runningHour =
+                              activeCategory === "BLOW_MOULDING"
+                                ? 7
+                                : totalOutput / stdOutputPerHour;
 
-                            // Calculate Pass On (Effective Hour numerator)
-                            const passOn =
+                            // Calculate Finish Good (Effective Hour numerator)
+                            const finishGood =
                               Number(rpt.qtyGood || 0) +
-                              Number(rpt.qtyPassOn || 0);
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0);
 
-                            const effectiveHour = passOn / stdOutputPerHour;
+                            const effectiveHour = finishGood / stdOutputPerHour;
 
                             // QUALITY RATE = Effective Hour / Running Hour
                             if (runningHour <= 0) return "-";
@@ -2138,17 +2172,23 @@ export default function ProductionArchive({
                             }
                             totalOutput += rejectPcs;
 
-                            const runningHour = totalOutput / stdOutputPerHour;
+                            // Running Hour logic (Fixed to 7 for Blow Moulding)
+                            const runningHour =
+                              activeCategory === "BLOW_MOULDING"
+                                ? 7
+                                : totalOutput / stdOutputPerHour;
 
                             // SPEED RATE = Running Hour / Commercial Time
                             if (commercialTime <= 0) return "-";
                             const speedRate = runningHour / commercialTime;
 
-                            // Calculate Effective Hour for QUALITY RATE
-                            const passOn =
+                            // Calculate Effective Hour for QUALITY RATE (using Finish Good)
+                            const finishGood =
                               Number(rpt.qtyGood || 0) +
-                              Number(rpt.qtyPassOn || 0);
-                            const effectiveHour = passOn / stdOutputPerHour;
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0);
+                            const effectiveHour = finishGood / stdOutputPerHour;
 
                             // QUALITY RATE = Effective Hour / Running Hour
                             if (runningHour <= 0) return "-";
@@ -2173,10 +2213,12 @@ export default function ProductionArchive({
                             if (stdOutputPerHour <= 0) return "-";
 
                             // Calculate Effective Hour
-                            const passOn =
+                            const finishGood =
                               Number(rpt.qtyGood || 0) +
-                              Number(rpt.qtyPassOn || 0);
-                            const effectiveHour = passOn / stdOutputPerHour;
+                              Number(rpt.qtyPassOn || 0) +
+                              Number(rpt.qtyHold || 0) +
+                              Number(rpt.qtyWip || 0);
+                            const effectiveHour = finishGood / stdOutputPerHour;
 
                             // OEE = Effective Hour / Total Time
                             const oee = effectiveHour / totalHours;
