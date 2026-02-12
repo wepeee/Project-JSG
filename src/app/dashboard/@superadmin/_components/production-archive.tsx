@@ -523,7 +523,8 @@ export default function ProductionArchive({
                   >
                     Selesai
                   </TableHead>
-                  {activeCategory === "PRINTING" && (
+                  {(activeCategory === "PRINTING" ||
+                    activeCategory === "PACKING_ASSEMBLY") && (
                     <>
                       <TableHead
                         rowSpan={2}
@@ -535,8 +536,18 @@ export default function ProductionArchive({
                         rowSpan={2}
                         className="text-right text-slate-300"
                       >
-                        MP ACT
+                        {activeCategory === "PACKING_ASSEMBLY"
+                          ? "MP LPH"
+                          : "MP ACT"}
                       </TableHead>
+                      {activeCategory === "PACKING_ASSEMBLY" && (
+                        <TableHead
+                          rowSpan={2}
+                          className="text-right text-slate-300"
+                        >
+                          MP ACT
+                        </TableHead>
+                      )}
                       <TableHead
                         rowSpan={2}
                         className="text-right text-slate-300"
@@ -694,7 +705,8 @@ export default function ProductionArchive({
                     </>
                   )}
                   {activeCategory !== "PAPER" &&
-                    activeCategory !== "PRINTING" && (
+                    activeCategory !== "PRINTING" &&
+                    activeCategory !== "PACKING_ASSEMBLY" && (
                       <>
                         <TableHead
                           rowSpan={2}
@@ -710,7 +722,9 @@ export default function ProductionArchive({
                         </TableHead>
                       </>
                     )}
-                  {(isMoulding || activeCategory === "PRINTING") && (
+                  {(isMoulding ||
+                    activeCategory === "PRINTING" ||
+                    activeCategory === "PACKING_ASSEMBLY") && (
                     <TableHead
                       rowSpan={2}
                       className="text-right text-slate-300"
@@ -1183,7 +1197,8 @@ export default function ProductionArchive({
                         ? format(new Date(rpt.endTime), "dd MMM HH:mm")
                         : "-"}
                     </TableCell>
-                    {activeCategory === "PRINTING" && (
+                    {(activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY") && (
                       <>
                         <TableCell className="text-right text-xs">
                           <EditableStandardInput
@@ -1211,6 +1226,44 @@ export default function ProductionArchive({
                             ? Number((rpt as any).manPowerAct)
                             : "-"}
                         </TableCell>
+                        {activeCategory === "PACKING_ASSEMBLY" && (
+                          <TableCell className="text-right text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                            {(() => {
+                              const mpLph = Number(
+                                (rpt as any).manPowerAct || 0,
+                              );
+                              if (mpLph <= 0) return "-";
+
+                              // Calculate Working Time ratio
+                              const totalHours = 8;
+                              let plannedDt = 0;
+                              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                              const breakdown = rpt.downtimeBreakdown as any;
+                              // Packing logic only here
+                              const keys: readonly string[] =
+                                PACKING_PLANNED_DT;
+
+                              if (breakdown) {
+                                keys.forEach((k) => {
+                                  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+                                  const val =
+                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                                    breakdown?.[k] ||
+                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                                    breakdown?.[`PLANNED:${k}`];
+                                  if (val) plannedDt += Number(val);
+                                });
+                              }
+
+                              const workingTime = totalHours - plannedDt;
+                              const timeRatio =
+                                workingTime > 0 ? workingTime / totalHours : 0;
+
+                              const val = mpLph * timeRatio;
+                              return val > 0 ? val.toFixed(2) : "-";
+                            })()}
+                          </TableCell>
+                        )}
                         <TableCell className="text-right text-xs">
                           <EditableStandardInput
                             value={
@@ -1409,7 +1462,8 @@ export default function ProductionArchive({
                     )}
 
                     {activeCategory !== "PAPER" &&
-                      activeCategory !== "PRINTING" && (
+                      activeCategory !== "PRINTING" &&
+                      activeCategory !== "PACKING_ASSEMBLY" && (
                         <>
                           <TableCell className="text-right text-xs">
                             {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any */}
@@ -1431,7 +1485,9 @@ export default function ProductionArchive({
                           </TableCell>
                         </>
                       )}
-                    {(isMoulding || activeCategory === "PRINTING") && (
+                    {(isMoulding ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY") && (
                       <TableCell className="text-right text-xs font-bold text-emerald-600">
                         {(() => {
                           const finishGood =
@@ -1506,7 +1562,11 @@ export default function ProductionArchive({
 
                         if (calcTotal <= 0) return "-";
 
-                        if (isMoulding || activeCategory === "PRINTING") {
+                        if (
+                          isMoulding ||
+                          activeCategory === "PRINTING" ||
+                          activeCategory === "PACKING_ASSEMBLY"
+                        ) {
                           return `${calcTotal.toLocaleString("id-ID", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
@@ -1596,7 +1656,12 @@ export default function ProductionArchive({
                                 key={`PK_DT_PLAN_${col}`}
                                 className="text-right text-xs text-purple-500/70"
                               >
-                                {val ? `${val}m` : "-"}
+                                {val
+                                  ? `${Number(val).toLocaleString("id-ID", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })} Jam`
+                                  : "-"}
                               </TableCell>
                             );
                           })}
@@ -1607,7 +1672,12 @@ export default function ProductionArchive({
                                 key={`PK_DT_UNPLAN_${col}`}
                                 className="text-right text-xs text-pink-500/70"
                               >
-                                {val ? `${val}m` : "-"}
+                                {val
+                                  ? `${Number(val).toLocaleString("id-ID", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })} Jam`
+                                  : "-"}
                               </TableCell>
                             );
                           })}
