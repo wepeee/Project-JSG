@@ -341,6 +341,7 @@ export const verificationRouter = createTRPCRouter({
         id: z.string(),
         cavityStd: z.number().int().positive().optional(),
         cycleTimeStd: z.number().positive().optional(),
+        mpStd: z.number().int().positive().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -349,6 +350,7 @@ export const verificationRouter = createTRPCRouter({
         data: {
           cavityStd: input.cavityStd,
           cycleTimeStd: input.cycleTimeStd,
+          manPowerStd: input.mpStd,
         },
       });
     }),

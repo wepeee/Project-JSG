@@ -523,6 +523,34 @@ export default function ProductionArchive({
                   >
                     Selesai
                   </TableHead>
+                  {activeCategory === "PRINTING" && (
+                    <>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        MP STD
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        MP ACT
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        CT STD
+                      </TableHead>
+                      <TableHead
+                        rowSpan={2}
+                        className="text-right text-slate-300"
+                      >
+                        STD OUTPUT / H
+                      </TableHead>
+                    </>
+                  )}
                   {isMoulding && (
                     <>
                       <TableHead
@@ -665,23 +693,24 @@ export default function ProductionArchive({
                       </TableHead>
                     </>
                   )}
-                  {activeCategory !== "PAPER" && (
-                    <>
-                      <TableHead
-                        rowSpan={2}
-                        className="text-right text-slate-300"
-                      >
-                        Berat Produk (gr)
-                      </TableHead>
-                      <TableHead
-                        rowSpan={2}
-                        className="text-right text-slate-300"
-                      >
-                        Total Reject (Pcs)
-                      </TableHead>
-                    </>
-                  )}
-                  {isMoulding && (
+                  {activeCategory !== "PAPER" &&
+                    activeCategory !== "PRINTING" && (
+                      <>
+                        <TableHead
+                          rowSpan={2}
+                          className="text-right text-slate-300"
+                        >
+                          Berat Produk (gr)
+                        </TableHead>
+                        <TableHead
+                          rowSpan={2}
+                          className="text-right text-slate-300"
+                        >
+                          Total Reject (Pcs)
+                        </TableHead>
+                      </>
+                    )}
+                  {(isMoulding || activeCategory === "PRINTING") && (
                     <TableHead
                       rowSpan={2}
                       className="text-right text-slate-300"
@@ -1154,6 +1183,69 @@ export default function ProductionArchive({
                         ? format(new Date(rpt.endTime), "dd MMM HH:mm")
                         : "-"}
                     </TableCell>
+                    {activeCategory === "PRINTING" && (
+                      <>
+                        <TableCell className="text-right text-xs">
+                          <EditableStandardInput
+                            value={
+                              (rpt as any).manPowerStd
+                                ? Number((rpt as any).manPowerStd)
+                                : null
+                            }
+                            step="1"
+                            min="1"
+                            onSave={(val) => {
+                              updateStandards.mutate({
+                                id: rpt.id,
+                                mpStd: val ?? undefined,
+                                cavityStd: rpt.cavityStd ?? undefined,
+                                cycleTimeStd: rpt.cycleTimeStd
+                                  ? Number(rpt.cycleTimeStd)
+                                  : undefined,
+                              });
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell className="text-right text-xs text-slate-600 dark:text-slate-400">
+                          {(rpt as any).manPowerAct
+                            ? Number((rpt as any).manPowerAct)
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          <EditableStandardInput
+                            value={
+                              rpt.cycleTimeStd ? Number(rpt.cycleTimeStd) : null
+                            }
+                            step="0.01"
+                            min="0"
+                            onSave={(val) => {
+                              updateStandards.mutate({
+                                id: rpt.id,
+                                mpStd: (rpt as any).manPowerStd ?? undefined,
+                                cavityStd: rpt.cavityStd ?? undefined,
+                                cycleTimeStd: val ?? undefined,
+                              });
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell className="text-right text-xs font-semibold text-blue-600 dark:text-blue-400">
+                          {(() => {
+                            const ctStd = rpt.cycleTimeStd
+                              ? Number(rpt.cycleTimeStd)
+                              : null;
+
+                            if (ctStd && ctStd > 0) {
+                              // Standard Output = (3600 / CT) * 0.8
+                              const stdOutputPerHour = (3600 / ctStd) * 0.8;
+                              return Math.round(
+                                stdOutputPerHour,
+                              ).toLocaleString();
+                            }
+                            return "-";
+                          })()}
+                        </TableCell>
+                      </>
+                    )}
                     {isMoulding && (
                       <>
                         <TableCell className="text-right text-xs">
@@ -1320,29 +1412,32 @@ export default function ProductionArchive({
                       </>
                     )}
 
-                    {activeCategory !== "PAPER" && (
-                      <>
-                        <TableCell className="text-right text-xs">
-                          {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any */}
-                          {(rpt.metaData as any)?.productWeight ?? "-"}
-                        </TableCell>
-                        <TableCell className="text-right text-xs font-bold text-red-400">
-                          {(() => {
-                            const pw = Number(
-                              (rpt.metaData as any)?.productWeight,
-                            );
-                            const rj = Number(rpt.qtyReject || 0);
+                    {activeCategory !== "PAPER" &&
+                      activeCategory !== "PRINTING" && (
+                        <>
+                          <TableCell className="text-right text-xs">
+                            {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any */}
+                            {(rpt.metaData as any)?.productWeight ?? "-"}
+                          </TableCell>
+                          <TableCell className="text-right text-xs font-bold text-red-400">
+                            {(() => {
+                              const pw = Number(
+                                (rpt.metaData as any)?.productWeight,
+                              );
+                              const rj = Number(rpt.qtyReject || 0);
 
-                            if (pw > 0) {
-                              const val = Math.round((rj * 1000) / pw);
-                              return val.toLocaleString("id-ID");
-                            }
-                            return "-";
-                          })()}
-                        </TableCell>
-                      </>
-                    )}
-                    {isMoulding && (
+                              if (pw > 0) {
+                                const val = Math.round((rj * 1000) / pw);
+                                return val.toLocaleString("id-ID");
+                              }
+                              return isMoulding
+                                ? "-"
+                                : rj.toLocaleString("id-ID");
+                            })()}
+                          </TableCell>
+                        </>
+                      )}
+                    {(isMoulding || activeCategory === "PRINTING") && (
                       <TableCell className="text-right text-xs font-bold text-emerald-600">
                         {(() => {
                           const finishGood =
@@ -1378,9 +1473,50 @@ export default function ProductionArchive({
                       })()}
                     </TableCell>
                     <TableCell className="text-right text-xs font-bold text-amber-600">
-                      {rpt.totalDowntime > 0
-                        ? `${Number(rpt.totalDowntime).toFixed(1)}${isMoulding ? " Jam" : "m"}`
-                        : "-"}
+                      {(() => {
+                        let calcTotal = 0;
+                        let keys: readonly string[] = [];
+
+                        if (isMoulding) {
+                          keys = [
+                            ...INJECTION_PLANNED_DT,
+                            ...INJECTION_UNPLANNED_DT,
+                          ];
+                        } else if (activeCategory === "PRINTING") {
+                          keys = [
+                            ...PRINTING_PLANNED_DT,
+                            ...PRINTING_UNPLANNED_DT,
+                          ];
+                        } else if (activeCategory === "PACKING_ASSEMBLY") {
+                          keys = [
+                            ...PACKING_PLANNED_DT,
+                            ...PACKING_UNPLANNED_DT,
+                          ];
+                        }
+
+                        if (keys.length > 0 && rpt.downtimeBreakdown) {
+                          const bd = rpt.downtimeBreakdown as any;
+                          keys.forEach((k) => {
+                            const val =
+                              bd[k] ||
+                              bd[`PLANNED:${k}`] ||
+                              bd[`UNPLANNED:${k}`];
+                            calcTotal += Number(val || 0);
+                          });
+                        }
+
+                        // Use stored total if calculated is 0 (fallback)
+                        if (calcTotal === 0 && rpt.totalDowntime > 0) {
+                          calcTotal = Number(rpt.totalDowntime);
+                        }
+
+                        if (calcTotal <= 0) return "-";
+
+                        if (isMoulding || activeCategory === "PRINTING") {
+                          return `${calcTotal.toFixed(2)} Jam`;
+                        }
+                        return `${calcTotal}m`;
+                      })()}
                     </TableCell>
                     {activeCategory === "PAPER" && showDowntimeDetails && (
                       <>
@@ -1422,7 +1558,7 @@ export default function ProductionArchive({
                               key={col}
                               className="text-right text-xs text-pink-500/70"
                             >
-                              {val ? `${val}m` : "-"}
+                              {val ? `${Number(val).toFixed(2)} Jam` : "-"}
                             </TableCell>
                           );
                         })}
@@ -1433,7 +1569,7 @@ export default function ProductionArchive({
                               key={col}
                               className="text-right text-xs text-rose-500/70"
                             >
-                              {val ? `${val}m` : "-"}
+                              {val ? `${Number(val).toFixed(2)} Jam` : "-"}
                             </TableCell>
                           );
                         })}
@@ -1482,7 +1618,7 @@ export default function ProductionArchive({
                               key={col}
                               className="text-right text-xs text-blue-500/70"
                             >
-                              {val ? `${Number(val).toFixed(1)} Jam` : "-"}
+                              {val ? `${Number(val).toFixed(2)} Jam` : "-"}
                             </TableCell>
                           );
                         })}
@@ -1497,7 +1633,7 @@ export default function ProductionArchive({
                               key={col}
                               className="text-right text-xs text-orange-500/70"
                             >
-                              {val ? `${Number(val).toFixed(1)} Jam` : "-"}
+                              {val ? `${Number(val).toFixed(2)} Jam` : "-"}
                             </TableCell>
                           );
                         })}
@@ -1862,10 +1998,18 @@ export default function ProductionArchive({
                               ? Number(rpt.cycleTimeStd)
                               : null;
 
-                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+                            if (
+                              (isMoulding && !rpt.cavityStd) ||
+                              !ctStd ||
+                              ctStd <= 0
+                            )
+                              return "-";
 
                             // Calculate Std Output Per Hour
-                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+                            // For Printing: (3600 / CT) * 0.8
+                            const stdOutputPerHour = isMoulding
+                              ? (3600 / ctStd) * (rpt.cavityStd || 1)
+                              : (3600 / ctStd) * 0.8;
 
                             if (stdOutputPerHour <= 0) return "-";
 
@@ -1877,6 +2021,7 @@ export default function ProductionArchive({
                               Number(rpt.qtyWip || 0);
 
                             // Convert reject from grams to pcs for rigid
+                            // For Printing, assuming qtyReject is already PCS if no weight provided or just use raw
                             let rejectPcs = Number(rpt.qtyReject || 0);
                             const pw = Number(
                               (rpt.metaData as any)?.productWeight,
@@ -1886,7 +2031,6 @@ export default function ProductionArchive({
                             }
                             totalOutput += rejectPcs;
 
-                            // Running Hour = Total Output / Std Output Per Hour
                             // Running Hour = Total Output / Std Output Per Hour
                             const runningHour =
                               activeCategory === "BLOW_MOULDING"
@@ -1898,15 +2042,21 @@ export default function ProductionArchive({
                         </TableCell>
                         <TableCell className="text-right text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                           {(() => {
-                            const cavStd = rpt.cavityStd;
                             const ctStd = rpt.cycleTimeStd
                               ? Number(rpt.cycleTimeStd)
                               : null;
 
-                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+                            if (
+                              (isMoulding && !rpt.cavityStd) ||
+                              !ctStd ||
+                              ctStd <= 0
+                            )
+                              return "-";
 
                             // Calculate Std Output Per Hour
-                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+                            const stdOutputPerHour = isMoulding
+                              ? (3600 / ctStd) * (rpt.cavityStd || 1)
+                              : (3600 / ctStd) * 0.8;
 
                             if (stdOutputPerHour <= 0) return "-";
 
@@ -1987,9 +2137,16 @@ export default function ProductionArchive({
                               ? Number(rpt.cycleTimeStd)
                               : null;
 
-                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+                            if (
+                              (isMoulding && !rpt.cavityStd) ||
+                              !ctStd ||
+                              ctStd <= 0
+                            )
+                              return "-";
 
-                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+                            const stdOutputPerHour = isMoulding
+                              ? (3600 / ctStd) * (rpt.cavityStd || 1)
+                              : (3600 / ctStd) * 0.8;
                             if (stdOutputPerHour <= 0) return "-";
 
                             // Calculate Total Output (Running Hour numerator)
@@ -2063,9 +2220,16 @@ export default function ProductionArchive({
                               ? Number(rpt.cycleTimeStd)
                               : null;
 
-                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+                            if (
+                              (isMoulding && !rpt.cavityStd) ||
+                              !ctStd ||
+                              ctStd <= 0
+                            )
+                              return "-";
 
-                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+                            const stdOutputPerHour = isMoulding
+                              ? (3600 / ctStd) * (rpt.cavityStd || 1)
+                              : (3600 / ctStd) * 0.8;
                             if (stdOutputPerHour <= 0) return "-";
 
                             // Calculate Total Output (Running Hour)
@@ -2111,9 +2275,16 @@ export default function ProductionArchive({
                               ? Number(rpt.cycleTimeStd)
                               : null;
 
-                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+                            if (
+                              (isMoulding && !rpt.cavityStd) ||
+                              !ctStd ||
+                              ctStd <= 0
+                            )
+                              return "-";
 
-                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+                            const stdOutputPerHour = isMoulding
+                              ? (3600 / ctStd) * (rpt.cavityStd || 1)
+                              : (3600 / ctStd) * 0.8;
                             if (stdOutputPerHour <= 0) return "-";
 
                             // Calculate Working Time & Commercial Time for DT RATE
@@ -2207,9 +2378,16 @@ export default function ProductionArchive({
                               : null;
                             const totalHours = 8;
 
-                            if (!cavStd || !ctStd || ctStd <= 0) return "-";
+                            if (
+                              (isMoulding && !rpt.cavityStd) ||
+                              !ctStd ||
+                              ctStd <= 0
+                            )
+                              return "-";
 
-                            const stdOutputPerHour = (3600 / ctStd) * cavStd;
+                            const stdOutputPerHour = isMoulding
+                              ? (3600 / ctStd) * (rpt.cavityStd || 1)
+                              : (3600 / ctStd) * 0.8;
                             if (stdOutputPerHour <= 0) return "-";
 
                             // Calculate Effective Hour
