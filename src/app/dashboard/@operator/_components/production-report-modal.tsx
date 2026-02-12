@@ -373,7 +373,7 @@ function DropdownInput({
   };
 
   const activeValues = Object.entries(values).filter(
-    ([k]) => options.includes(k) && Number(values[k]) > 0
+    ([k]) => options.includes(k) && Number(values[k]) > 0,
   );
 
   return (
@@ -381,10 +381,10 @@ function DropdownInput({
       <Label className="mb-2 block text-[10px] font-bold tracking-widest text-slate-500 uppercase">
         {label}
       </Label>
-      <div className="flex gap-2 mb-3">
+      <div className="mb-3 flex gap-2">
         <div className="flex-1">
           <Select value={selected} onValueChange={setSelected}>
-            <SelectTrigger className="w-full border-slate-700 bg-slate-900 text-xs h-9">
+            <SelectTrigger className="h-9 w-full border-slate-700 bg-slate-900 text-xs">
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent className="pointer-events-auto z-[99999]">
@@ -398,7 +398,7 @@ function DropdownInput({
         </div>
         <Input
           type="number"
-          className="w-20 border-slate-700 bg-slate-900 text-right text-xs h-9"
+          className="h-9 w-20 border-slate-700 bg-slate-900 text-right text-xs"
           placeholder="0"
           value={val}
           onChange={(e) => setVal(e.target.value)}
@@ -414,7 +414,7 @@ function DropdownInput({
           onClick={handleAdd}
           disabled={!selected || !val}
           size="icon"
-          className="h-9 w-9 bg-blue-600 hover:bg-blue-700 shrink-0"
+          className="h-9 w-9 shrink-0 bg-blue-600 hover:bg-blue-700"
         >
           <Plus className="h-4 w-4" />
         </Button>
@@ -430,7 +430,10 @@ function DropdownInput({
               <span className="font-medium text-slate-300">{k}</span>
               <div className="flex items-center gap-3">
                 <span className="font-mono font-bold text-slate-100">
-                  {v} <span className="text-slate-500 font-sans text-[9px]">{unit}</span>
+                  {v}{" "}
+                  <span className="font-sans text-[9px] text-slate-500">
+                    {unit}
+                  </span>
                 </span>
                 <button
                   type="button"
@@ -537,11 +540,7 @@ export function ProductionReportModal({
       (Number(String(formData.rejectSetup).replace(/,/g, ".")) || 0) +
       (Number(String(formData.rejectProcess).replace(/,/g, ".")) || 0)
     );
-  }, [
-    formData.rejects,
-    formData.rejectSetup,
-    formData.rejectProcess,
-  ]);
+  }, [formData.rejects, formData.rejectSetup, formData.rejectProcess]);
 
   const totalDowntimeObj = React.useMemo(() => {
     const allEntries = Object.entries(formData.downtimes);
@@ -1047,7 +1046,7 @@ export function ProductionReportModal({
       startTime: formData.startTime,
       endTime: formData.endTime,
       batchNo: formData.batchNo,
-      
+
       mpStd: parseNumber(formData.mpStd) || undefined,
       mpAct: parseNumber(formData.mpAct) || undefined,
       cycleTimeStd: parseNumber(formData.ctStd) || undefined,
@@ -1064,7 +1063,7 @@ export function ProductionReportModal({
       qtyPassOn: parseInteger(formData.qtyPassOn),
       qtyHold: parseInteger(formData.qtyHold),
       qtyWip: parseInteger(formData.qtyWip),
-      
+
       qtyReject: totalReject, // Already calculated (Grams or Pcs based on input)
 
       rejectBreakdown: Object.fromEntries(
@@ -1361,7 +1360,10 @@ export function ProductionReportModal({
                             className="border-blue-900/50 bg-blue-950/20 text-blue-100"
                             value={formData.mpAct}
                             onChange={(e) =>
-                              setFormData({ ...formData, mpAct: e.target.value })
+                              setFormData({
+                                ...formData,
+                                mpAct: e.target.value,
+                              })
                             }
                           />
                         </div>
@@ -1690,18 +1692,18 @@ export function ProductionReportModal({
                             <Separator className="flex-1 bg-slate-800" />
                           </div>
                           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                          <div className="col-span-2 md:col-span-4">
-                            <DropdownInput
-                              label="Reject Product"
-                              options={REJECT_INJECTION_PRODUCT}
-                              values={formData.rejects}
-                              onAdd={(k, v) => handleRejectChange(k, v)}
-                              onRemove={(k) => handleRejectChange(k, "0")}
-                              unit="Gr"
-                              placeholder="Pilih Jenis Reject..."
-                            />
-                            {/* Total Reject Calculation moved or kept? */}
-                            <div className="mt-3 flex items-center justify-end">
+                            <div className="col-span-2 md:col-span-4">
+                              <DropdownInput
+                                label="Reject Product"
+                                options={REJECT_INJECTION_PRODUCT}
+                                values={formData.rejects}
+                                onAdd={(k, v) => handleRejectChange(k, v)}
+                                onRemove={(k) => handleRejectChange(k, "0")}
+                                unit="Gr"
+                                placeholder="Pilih Jenis Reject..."
+                              />
+                              {/* Total Reject Calculation moved or kept? */}
+                              <div className="mt-3 flex items-center justify-end">
                                 <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-1">
                                   <span className="text-[10px] font-bold text-slate-500 uppercase">
                                     Total Product Reject:
@@ -1716,8 +1718,8 @@ export function ProductionReportModal({
                                     Gram
                                   </span>
                                 </div>
+                              </div>
                             </div>
-                          </div>
 
                             <div className="col-span-2 mt-4 md:col-span-4">
                               <div className="mb-4 flex items-center gap-4">
@@ -1747,63 +1749,67 @@ export function ProductionReportModal({
                         </div>
                       </>
                     ) : lphType === "PACKING_ASSEMBLY" ? (
-                      // PACKING ASSEMBLY - 6 Split Sections
+                      // PACKING ASSEMBLY - 6 Split Sections (Dropdowns)
                       <div className="col-span-2 md:col-span-4">
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                           {REJECT_PACKING_ASSEMBLY_SPLIT.map((group, idx) => (
-                            <div key={idx} className="space-y-3">
-                              <h4 className="border-b border-slate-800 pb-2 text-xs font-bold text-slate-500 uppercase">
-                                Bagian {idx + 1}
-                              </h4>
-                              <div className="grid grid-cols-2 gap-4">
-                                {group.map((label) => (
-                                  <div key={label} className="space-y-1">
-                                    <Label
-                                      className="truncate text-[10px] text-slate-500 uppercase"
-                                      title={label}
-                                    >
-                                      {label}
-                                    </Label>
-                                    <Input
-                                      type="number"
-                                      placeholder="0"
-                                      className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
-                                      value={formData.rejects[label] || ""}
-                                      onChange={(e) =>
-                                        handleRejectChange(
-                                          label,
-                                          e.target.value,
-                                        )
-                                      }
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
+                            <DropdownInput
+                              key={idx}
+                              label={`Reject Bagian ${idx + 1}`}
+                              options={group}
+                              values={Object.fromEntries(
+                                Object.entries(formData.rejects).filter(([k]) =>
+                                  group.includes(k),
+                                ),
+                              )}
+                              onAdd={(k, v) => handleRejectChange(k, v)}
+                              onRemove={(k) => handleRejectChange(k, "0")}
+                              unit="Pcs"
+                              placeholder={`Pilih Reject Bagian ${idx + 1}...`}
+                            />
                           ))}
                         </div>
                       </div>
+                    ) : lphType === "PRINTING" ? (
+                      // PRINTING - Dropdown
+                      <div className="col-span-2 md:col-span-4">
+                        <DropdownInput
+                          label="Reject Printing"
+                          options={REJECT_LISTS.PRINTING}
+                          values={Object.fromEntries(
+                            Object.entries(formData.rejects).filter(([k]) =>
+                              REJECT_LISTS.PRINTING.includes(k),
+                            ),
+                          )}
+                          onAdd={(k, v) => handleRejectChange(k, v)}
+                          onRemove={(k) => handleRejectChange(k, "0")}
+                          unit="Pcs"
+                          placeholder="Pilih Jenis Reject..."
+                        />
+                      </div>
                     ) : (
-                      // Standard View for Others
-                      REJECT_LISTS[lphType].map((label) => (
-                        <div key={label} className="space-y-1">
-                          <Label
-                            className="truncate text-[10px] text-slate-500 uppercase"
-                            title={label}
-                          >
-                            {label}
-                          </Label>
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
-                            value={formData.rejects[label] || ""}
-                            onChange={(e) =>
-                              handleRejectChange(label, e.target.value)
-                            }
-                          />
-                        </div>
-                      ))
+                      // Standard View for Others (e.g. PAPER)
+                      <div className="col-span-2 grid grid-cols-2 gap-4 md:col-span-4 md:grid-cols-4">
+                        {REJECT_LISTS[lphType].map((label) => (
+                          <div key={label} className="space-y-1">
+                            <Label
+                              className="truncate text-[10px] text-slate-500 uppercase"
+                              title={label}
+                            >
+                              {label}
+                            </Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
+                              value={formData.rejects[label] || ""}
+                              onChange={(e) =>
+                                handleRejectChange(label, e.target.value)
+                              }
+                            />
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
 

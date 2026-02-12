@@ -1299,19 +1299,13 @@ export default function ProductionArchive({
                       </>
                     )}
                     <TableCell className="text-right text-xs font-bold text-green-600">
-                      {(
-                        Number(rpt.qtyGood) + Number(rpt.qtyPassOn)
-                      )}
+                      {Number(rpt.qtyGood) + Number(rpt.qtyPassOn)}
                     </TableCell>
                     <TableCell className="text-right text-xs text-slate-600 dark:text-slate-400">
-                      {Number(rpt.qtyHold) > 0
-                        ? Number(rpt.qtyHold)
-                        : "-"}
+                      {Number(rpt.qtyHold) > 0 ? Number(rpt.qtyHold) : "-"}
                     </TableCell>
                     <TableCell className="text-right text-xs text-slate-600 dark:text-slate-400">
-                      {Number(rpt.qtyWip) > 0
-                        ? Number(rpt.qtyWip)
-                        : "-"}
+                      {Number(rpt.qtyWip) > 0 ? Number(rpt.qtyWip) : "-"}
                     </TableCell>
                     <TableCell className="text-right text-xs font-bold text-red-600">
                       {Number(rpt.qtyReject) > 0
@@ -1405,7 +1399,9 @@ export default function ProductionArchive({
                               key={`PROD-${col}`}
                               className="text-right text-xs text-cyan-500/70"
                             >
-                              {valProd ? Number(valProd).toLocaleString("id-ID") : "-"}
+                              {valProd
+                                ? Number(valProd).toLocaleString("id-ID")
+                                : "-"}
                             </TableCell>
                           );
                         })}
@@ -1430,9 +1426,7 @@ export default function ProductionArchive({
                                 const val = Math.round((rj * 1000) / pw);
                                 return val;
                               }
-                              return isMoulding
-                                ? "-"
-                                : rj;
+                              return isMoulding ? "-" : rj;
                             })()}
                           </TableCell>
                         </>
