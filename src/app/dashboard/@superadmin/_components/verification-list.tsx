@@ -262,19 +262,54 @@ export default function VerificationList({
                   <div className="text-lg font-bold text-slate-700 dark:text-slate-200">
                     {(
                       Number(rpt.qtyGood) + Number(rpt.qtyPassOn)
-                    ).toLocaleString()}
+                    )}
                   </div>
                 </div>
                 <div>
                   <span className="font-semibold text-red-500">Reject</span>
                   <div className="text-lg font-bold text-red-600">
-                    {Number(rpt.qtyReject).toLocaleString()}
+                    {Number(rpt.qtyReject).toLocaleString("id-ID")}{" "}
+                    <span className="text-xs font-normal text-slate-500">
+                      {rpt.reportType !== "PAPER" ? "Gram" : "Pcs"}
+                    </span>
                   </div>
                 </div>
                 <div>
                   <div className="font-semibold text-slate-500">Downtime</div>
                   <div className="text-lg font-bold text-slate-700 dark:text-slate-200">
-                    {rpt.totalDowntime}m
+                    {(() => {
+                      // Calculate total from breakdown to ensure consistency with details
+                      let calculatedTotal = 0;
+                      const hasBreakdown =
+                        rpt.downtimeBreakdown &&
+                        Object.keys(rpt.downtimeBreakdown as object).length > 0;
+
+                      if (hasBreakdown) {
+                        const values = Object.values(
+                          rpt.downtimeBreakdown as Record<string, number>,
+                        );
+                        const sum = values.reduce(
+                          (acc, val) => acc + Number(val || 0),
+                          0,
+                        );
+
+                        // Rigid: Breakdown is Hours -> Sum is Hours
+                        // Paper: Breakdown is Minutes -> Sum is Minutes -> Convert to Hours
+                        if (rpt.reportType !== "PAPER") {
+                          calculatedTotal = sum;
+                        } else {
+                          calculatedTotal = sum / 60;
+                        }
+                      } else {
+                        // Fallback to stored total (Minutes -> Hours)
+                        calculatedTotal = Number(rpt.totalDowntime || 0) / 60;
+                      }
+
+                      return calculatedTotal.toLocaleString("id-ID", {
+                        maximumFractionDigits: 2,
+                      });
+                    })()}{" "}
+                    Jam
                   </div>
                 </div>
               </div>
@@ -402,12 +437,25 @@ export default function VerificationList({
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                           {Object.entries(
                             rpt.downtimeBreakdown as Record<string, number>,
-                          ).map(([k, v]) => (
-                            <div key={k} className="flex justify-between">
-                              <span>{k}</span>
-                              <span className="font-mono font-bold">{v}m</span>
-                            </div>
-                          ))}
+                          ).map(([k, v]) => {
+                            // Paper downtime is in Minutes, others (Rigid) in Hours
+                            const valInHours =
+                              rpt.reportType === "PAPER"
+                                ? Number(v) / 60
+                                : Number(v);
+                            return (
+                              <div key={k} className="flex justify-between">
+                                <span>{k}</span>
+                                <span className="font-mono font-bold">
+                                  {valInHours.toLocaleString("id-ID", {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 2,
+                                  })}{" "}
+                                  Jam
+                                </span>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}

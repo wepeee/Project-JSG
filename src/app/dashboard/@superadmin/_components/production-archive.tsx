@@ -1239,7 +1239,7 @@ export default function ProductionArchive({
                               const stdOutputPerHour = (3600 / ctStd) * 0.8;
                               return Math.round(
                                 stdOutputPerHour,
-                              ).toLocaleString();
+                              ).toLocaleString("id-ID");
                             }
                             return "-";
                           })()}
@@ -1291,7 +1291,7 @@ export default function ProductionArchive({
                               const stdOutputPerHour = (3600 / ctStd) * cavStd;
                               return Math.round(
                                 stdOutputPerHour,
-                              ).toLocaleString();
+                              ).toLocaleString("id-ID");
                             }
                             return "-";
                           })()}
@@ -1301,21 +1301,21 @@ export default function ProductionArchive({
                     <TableCell className="text-right text-xs font-bold text-green-600">
                       {(
                         Number(rpt.qtyGood) + Number(rpt.qtyPassOn)
-                      ).toLocaleString()}
+                      )}
                     </TableCell>
                     <TableCell className="text-right text-xs text-slate-600 dark:text-slate-400">
                       {Number(rpt.qtyHold) > 0
-                        ? Number(rpt.qtyHold).toLocaleString()
+                        ? Number(rpt.qtyHold)
                         : "-"}
                     </TableCell>
                     <TableCell className="text-right text-xs text-slate-600 dark:text-slate-400">
                       {Number(rpt.qtyWip) > 0
-                        ? Number(rpt.qtyWip).toLocaleString()
+                        ? Number(rpt.qtyWip)
                         : "-"}
                     </TableCell>
                     <TableCell className="text-right text-xs font-bold text-red-600">
                       {Number(rpt.qtyReject) > 0
-                        ? Number(rpt.qtyReject).toLocaleString()
+                        ? Number(rpt.qtyReject).toLocaleString("id-ID")
                         : "-"}
                     </TableCell>
                     {activeCategory === "PAPER" &&
@@ -1328,7 +1328,7 @@ export default function ProductionArchive({
                             key={col}
                             className="text-right text-xs text-slate-500"
                           >
-                            {val ? Number(val).toLocaleString() : "-"}
+                            {val ? Number(val).toLocaleString("id-ID") : "-"}
                           </TableCell>
                         );
                       })}
@@ -1342,7 +1342,7 @@ export default function ProductionArchive({
                             key={col}
                             className="text-right text-xs text-slate-500"
                           >
-                            {val ? Number(val).toLocaleString() : "-"}
+                            {val ? Number(val).toLocaleString("id-ID") : "-"}
                           </TableCell>
                         );
                       })}
@@ -1357,7 +1357,7 @@ export default function ProductionArchive({
                               key={`PK_REJ_VAL_${groupIdx}_${col}`}
                               className="text-right text-xs text-slate-500"
                             >
-                              {val ? Number(val).toLocaleString() : "-"}
+                              {val ? Number(val).toLocaleString("id-ID") : "-"}
                             </TableCell>
                           );
                         }),
@@ -1389,7 +1389,7 @@ export default function ProductionArchive({
                               className="text-right text-xs text-purple-500/70"
                             >
                               {valBB && valBB !== "-"
-                                ? Number(valBB).toLocaleString()
+                                ? Number(valBB).toLocaleString("id-ID")
                                 : "-"}
                             </TableCell>
                           );
@@ -1405,7 +1405,7 @@ export default function ProductionArchive({
                               key={`PROD-${col}`}
                               className="text-right text-xs text-cyan-500/70"
                             >
-                              {valProd ? Number(valProd).toLocaleString() : "-"}
+                              {valProd ? Number(valProd).toLocaleString("id-ID") : "-"}
                             </TableCell>
                           );
                         })}
@@ -1428,11 +1428,11 @@ export default function ProductionArchive({
 
                               if (pw > 0) {
                                 const val = Math.round((rj * 1000) / pw);
-                                return val.toLocaleString("id-ID");
+                                return val;
                               }
                               return isMoulding
                                 ? "-"
-                                : rj.toLocaleString("id-ID");
+                                : rj;
                             })()}
                           </TableCell>
                         </>
@@ -1445,7 +1445,7 @@ export default function ProductionArchive({
                             Number(rpt.qtyPassOn || 0) +
                             Number(rpt.qtyHold || 0) +
                             Number(rpt.qtyWip || 0);
-                          return finishGood.toLocaleString("id-ID");
+                          return finishGood;
                         })()}
                       </TableCell>
                     )}
@@ -1469,7 +1469,7 @@ export default function ProductionArchive({
                         }
 
                         total += rejectVal;
-                        return total.toLocaleString("id-ID");
+                        return total;
                       })()}
                     </TableCell>
                     <TableCell className="text-right text-xs font-bold text-amber-600">
@@ -1513,7 +1513,10 @@ export default function ProductionArchive({
                         if (calcTotal <= 0) return "-";
 
                         if (isMoulding || activeCategory === "PRINTING") {
-                          return `${calcTotal.toFixed(2)} Jam`;
+                          return `${calcTotal.toLocaleString("id-ID", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })} Jam`;
                         }
                         return `${calcTotal}m`;
                       })()}
@@ -1558,7 +1561,12 @@ export default function ProductionArchive({
                               key={col}
                               className="text-right text-xs text-pink-500/70"
                             >
-                              {val ? `${Number(val).toFixed(2)} Jam` : "-"}
+                              {val
+                                ? `${Number(val).toLocaleString("id-ID", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })} Jam`
+                                : "-"}
                             </TableCell>
                           );
                         })}
@@ -1569,7 +1577,12 @@ export default function ProductionArchive({
                               key={col}
                               className="text-right text-xs text-rose-500/70"
                             >
-                              {val ? `${Number(val).toFixed(2)} Jam` : "-"}
+                              {val
+                                ? `${Number(val).toLocaleString("id-ID", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })} Jam`
+                                : "-"}
                             </TableCell>
                           );
                         })}
@@ -1618,7 +1631,12 @@ export default function ProductionArchive({
                               key={col}
                               className="text-right text-xs text-blue-500/70"
                             >
-                              {val ? `${Number(val).toFixed(2)} Jam` : "-"}
+                              {val
+                                ? `${Number(val).toLocaleString("id-ID", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })} Jam`
+                                : "-"}
                             </TableCell>
                           );
                         })}
@@ -1633,7 +1651,12 @@ export default function ProductionArchive({
                               key={col}
                               className="text-right text-xs text-orange-500/70"
                             >
-                              {val ? `${Number(val).toFixed(2)} Jam` : "-"}
+                              {val
+                                ? `${Number(val).toLocaleString("id-ID", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })} Jam`
+                                : "-"}
                             </TableCell>
                           );
                         })}

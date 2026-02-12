@@ -26,9 +26,18 @@ import {
   Flame,
   Layers,
   Zap,
+  Trash2,
+  Plus,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 // --- CONSTANTS ---
 
@@ -334,6 +343,111 @@ const getLphType = (pro: any, machineName: string): LphType => {
   return "INJECTION"; // Default Rigid fallback
 };
 
+interface DropdownInputProps {
+  label: string;
+  options: string[];
+  values: Record<string, string>;
+  onAdd: (key: string, val: string) => void;
+  onRemove: (key: string) => void;
+  unit?: string;
+  placeholder?: string;
+}
+
+function DropdownInput({
+  label,
+  options,
+  values,
+  onAdd,
+  onRemove,
+  unit = "",
+  placeholder = "Pilih...",
+}: DropdownInputProps) {
+  const [selected, setSelected] = React.useState("");
+  const [val, setVal] = React.useState("");
+
+  const handleAdd = () => {
+    if (!selected || !val) return;
+    onAdd(selected, val);
+    setSelected("");
+    setVal("");
+  };
+
+  const activeValues = Object.entries(values).filter(
+    ([k]) => options.includes(k) && Number(values[k]) > 0
+  );
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+      <Label className="mb-2 block text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+        {label}
+      </Label>
+      <div className="flex gap-2 mb-3">
+        <div className="flex-1">
+          <Select value={selected} onValueChange={setSelected}>
+            <SelectTrigger className="w-full border-slate-700 bg-slate-900 text-xs h-9">
+              <SelectValue placeholder={placeholder} />
+            </SelectTrigger>
+            <SelectContent className="pointer-events-auto z-[99999]">
+              {options.map((o) => (
+                <SelectItem key={o} value={o} className="text-xs">
+                  {o}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <Input
+          type="number"
+          className="w-20 border-slate-700 bg-slate-900 text-right text-xs h-9"
+          placeholder="0"
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleAdd();
+            }
+          }}
+        />
+        <Button
+          type="button"
+          onClick={handleAdd}
+          disabled={!selected || !val}
+          size="icon"
+          className="h-9 w-9 bg-blue-600 hover:bg-blue-700 shrink-0"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {activeValues.length > 0 && (
+        <div className="space-y-2">
+          {activeValues.map(([k, v]) => (
+            <div
+              key={k}
+              className="flex items-center justify-between rounded border border-slate-800 bg-slate-900 px-3 py-2 text-xs"
+            >
+              <span className="font-medium text-slate-300">{k}</span>
+              <div className="flex items-center gap-3">
+                <span className="font-mono font-bold text-slate-100">
+                  {v} <span className="text-slate-500 font-sans text-[9px]">{unit}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onRemove(k)}
+                  className="text-red-500 transition-colors hover:text-red-400"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface ProductionReportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -415,29 +529,43 @@ export function ProductionReportModal({
   // Calculate Totals
   const totalReject = React.useMemo(() => {
     const listTotal = Object.values(formData.rejects).reduce(
-      (acc, val) => acc + (Number(val) || 0),
+      (acc, val) => acc + (Number(String(val).replace(/,/g, ".")) || 0),
       0,
     );
     return (
       listTotal +
-      (Number(formData.rejectSetup) || 0) +
-      (Number(formData.rejectProcess) || 0)
+      (Number(String(formData.rejectSetup).replace(/,/g, ".")) || 0) +
+      (Number(String(formData.rejectProcess).replace(/,/g, ".")) || 0)
     );
-  }, [formData.rejects, formData.rejectSetup, formData.rejectProcess]);
+  }, [
+    formData.rejects,
+    formData.rejectSetup,
+    formData.rejectProcess,
+  ]);
 
   const totalDowntimeObj = React.useMemo(() => {
     const allEntries = Object.entries(formData.downtimes);
+    // Rigid inputs are in Hours, Paper inputs are in Minutes
+    const isRigidType = lphType !== "PAPER";
+    const multiplier = isRigidType ? 60 : 1;
+
+    // Helper to robustly parse input string to float
+    const parseVal = (v: string | number) => {
+      if (!v) return 0;
+      return Number(String(v).replace(/,/g, ".")) || 0;
+    };
+
     const total = allEntries.reduce(
-      (acc, [_, val]) => acc + (Number(val) || 0),
+      (acc, [_, val]) => acc + parseVal(val) * multiplier,
       0,
     );
 
     const planned = allEntries
       .filter(([key]) => key.startsWith("PLANNED:"))
-      .reduce((acc, [_, val]) => acc + (Number(val) || 0), 0);
+      .reduce((acc, [_, val]) => acc + parseVal(val) * multiplier, 0);
 
     return { total, planned };
-  }, [formData.downtimes]);
+  }, [formData.downtimes, lphType]);
 
   // Calculate Totals & OEE
   const {
@@ -874,6 +1002,22 @@ export function ProductionReportModal({
     }
   }, [open, editReport]);
 
+  // Helper to parse localized numbers (ID: . = thousand, , = decimal)
+  const parseNumber = (v: string) => {
+    if (!v) return 0;
+    // Replace comma with dot (decimal), do NOT strip dots (to avoid 0.3 -> 3)
+    const clean = v.toString().replace(/,/g, ".");
+    return Number(clean) || 0;
+  };
+
+  // Helper for strictly integer counts (Pcs) - Strips dots/commas/etc
+  const parseInteger = (v: string) => {
+    if (!v) return 0;
+    // Strip all non-digits (e.g. "6.400" -> "6400", "1,000" -> "1000")
+    const clean = v.toString().replace(/\D/g, "");
+    return Number(clean) || 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -893,119 +1037,72 @@ export function ProductionReportModal({
       return;
     }
 
+    // Common data structure
+    const commonData = {
+      proStepId: task.step.id,
+      shift: Number(formData.shift) || task.shift,
+      reportDate: new Date(formData.startDate),
+      operatorName: formData.operatorName,
+      reportType: lphType as any,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      batchNo: formData.batchNo,
+      
+      mpStd: parseNumber(formData.mpStd) || undefined,
+      mpAct: parseNumber(formData.mpAct) || undefined,
+      cycleTimeStd: parseNumber(formData.ctStd) || undefined,
+      cycleTimeAct: parseNumber(formData.ctAct) || undefined,
+      cavityStd: parseNumber(formData.cavStd) || undefined,
+      cavityAct: parseNumber(formData.cavAct) || undefined,
+
+      inputMaterialQty: parseNumber(formData.inputMaterial) || undefined,
+      materialRunnerQty: parseNumber(formData.materialRunner) || undefined,
+      materialPurgeQty: parseNumber(formData.materialPurge) || undefined,
+
+      // Use parseInteger for Counts
+      qtyGood: parseInteger(formData.qtyGood),
+      qtyPassOn: parseInteger(formData.qtyPassOn),
+      qtyHold: parseInteger(formData.qtyHold),
+      qtyWip: parseInteger(formData.qtyWip),
+      
+      qtyReject: totalReject, // Already calculated (Grams or Pcs based on input)
+
+      rejectBreakdown: Object.fromEntries(
+        Object.entries(formData.rejects)
+          .filter(([_, v]) => parseNumber(v) > 0)
+          .map(([k, v]) => [k, parseNumber(v)])
+          .concat(
+            parseNumber(formData.rejectSetup) > 0
+              ? [["Reject Setup", parseNumber(formData.rejectSetup)]]
+              : [],
+            parseNumber(formData.rejectProcess) > 0
+              ? [["Reject Process", parseNumber(formData.rejectProcess)]]
+              : [],
+          ),
+      ),
+      downtimeBreakdown: Object.fromEntries(
+        Object.entries(formData.downtimes)
+          .filter(([_, v]) => parseNumber(v) > 0)
+          .map(([k, v]) => [k, parseNumber(v)]),
+      ),
+      totalDowntime: totalDowntimeObj.total, // Already calculated
+      notes: formData.notes,
+      othersNote: formData.othersNote,
+      metaData: {
+        productWeight: parseNumber(formData.productWeight) || undefined,
+        materialPassOn: parseNumber(formData.materialPassOn) || undefined,
+        materialHold: parseNumber(formData.materialHold) || undefined,
+        materialWip: parseNumber(formData.materialWip) || undefined,
+      },
+    };
+
     if (editReport) {
       updateReportMutation.mutate({
         id: editReport.id,
-        data: {
-          proStepId: task.step.id,
-          shift: Number(formData.shift) || task.shift,
-          reportDate: new Date(formData.startDate),
-          operatorName: formData.operatorName,
-          reportType: lphType as any,
-          startTime: formData.startTime,
-          endTime: formData.endTime,
-          batchNo: formData.batchNo,
-          mpStd: Number(formData.mpStd) || undefined,
-          mpAct: Number(formData.mpAct) || undefined,
-          cycleTimeStd: Number(formData.ctStd) || undefined,
-          cycleTimeAct: Number(formData.ctAct) || undefined,
-          cavityStd: Number(formData.cavStd) || undefined,
-          cavityAct: Number(formData.cavAct) || undefined,
-          inputMaterialQty: Number(formData.inputMaterial) || undefined,
-          materialRunnerQty: Number(formData.materialRunner) || undefined,
-          materialPurgeQty: Number(formData.materialPurge) || undefined,
-          qtyGood: Number(formData.qtyGood) || 0,
-          qtyPassOn: Number(formData.qtyPassOn) || 0,
-          qtyHold: Number(formData.qtyHold) || 0,
-          qtyWip: Number(formData.qtyWip) || 0,
-          qtyReject: totalReject,
-          rejectBreakdown: Object.fromEntries(
-            Object.entries(formData.rejects)
-              .filter(([_, v]) => Number(v) > 0)
-              .map(([k, v]) => [k, Number(v)])
-              .concat(
-                Number(formData.rejectSetup) > 0
-                  ? [["Reject Setup", Number(formData.rejectSetup)]]
-                  : [],
-                Number(formData.rejectProcess) > 0
-                  ? [["Reject Process", Number(formData.rejectProcess)]]
-                  : [],
-              ),
-          ),
-          downtimeBreakdown: Object.fromEntries(
-            Object.entries(formData.downtimes)
-              .filter(([_, v]) => Number(v) > 0)
-              .map(([k, v]) => [k, Number(v)]),
-          ),
-          totalDowntime: totalDowntimeObj.total,
-          notes: formData.notes,
-          othersNote: formData.othersNote,
-          metaData: {
-            productWeight: formData.productWeight || undefined,
-            materialPassOn: formData.materialPassOn || undefined,
-            materialHold: formData.materialHold || undefined,
-            materialWip: formData.materialWip || undefined,
-          },
-        },
+        data: commonData,
       });
     } else {
-      createReportMutation.mutate({
-        proStepId: task.step.id,
-        shift: Number(formData.shift) || task.shift,
-        reportDate: new Date(formData.startDate), // Basic date
-        operatorName: formData.operatorName,
-        reportType: lphType as any,
-
-        startTime: formData.startTime,
-        endTime: formData.endTime, // These are HH:mm strings, handled by backend
-
-        batchNo: formData.batchNo,
-        mpStd: Number(formData.mpStd) || undefined,
-        mpAct: Number(formData.mpAct) || undefined,
-        cycleTimeStd: Number(formData.ctStd) || undefined,
-        cycleTimeAct: Number(formData.ctAct) || undefined,
-        cavityStd: Number(formData.cavStd) || undefined,
-        cavityAct: Number(formData.cavAct) || undefined,
-
-        inputMaterialQty: Number(formData.inputMaterial) || undefined,
-        materialRunnerQty: Number(formData.materialRunner) || undefined,
-        materialPurgeQty: Number(formData.materialPurge) || undefined,
-
-        qtyGood: Number(formData.qtyGood) || 0,
-        qtyPassOn: Number(formData.qtyPassOn) || 0,
-        qtyHold: Number(formData.qtyHold) || 0,
-        qtyWip: Number(formData.qtyWip) || 0,
-        qtyReject: totalReject,
-
-        // Convert "10" (string) to 10 (number) for backend records
-        rejectBreakdown: Object.fromEntries(
-          Object.entries(formData.rejects)
-            .filter(([_, v]) => Number(v) > 0)
-            .map(([k, v]) => [k, Number(v)])
-            .concat(
-              Number(formData.rejectSetup) > 0
-                ? [["Reject Setup", Number(formData.rejectSetup)]]
-                : [],
-              Number(formData.rejectProcess) > 0
-                ? [["Reject Process", Number(formData.rejectProcess)]]
-                : [],
-            ),
-        ),
-        downtimeBreakdown: Object.fromEntries(
-          Object.entries(formData.downtimes)
-            .filter(([_, v]) => Number(v) > 0)
-            .map(([k, v]) => [k, Number(v)]),
-        ),
-        totalDowntime: totalDowntimeObj.total,
-        notes: formData.notes,
-        othersNote: formData.othersNote,
-        metaData: {
-          productWeight: formData.productWeight || undefined,
-          materialPassOn: formData.materialPassOn || undefined,
-          materialHold: formData.materialHold || undefined,
-          materialWip: formData.materialWip || undefined,
-        },
-      });
+      createReportMutation.mutate(commonData);
     }
   };
 
@@ -1222,7 +1319,7 @@ export function ProductionReportModal({
                 </div>
 
                 {/* Rigid Resources */}
-                {isRigid && (
+                {isRigid && !isMoulding && (
                   <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
                     <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-300">
                       <Settings className="h-4 w-4 text-blue-500" /> Resources &
@@ -1252,21 +1349,23 @@ export function ProductionReportModal({
                           </div>
                         )}
 
-                      {/* MP Actual - ALWAYS SHOW */}
-                      <div className="space-y-1">
-                        <Label className="text-xs text-slate-300">
-                          MP Aktual
-                        </Label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          className="border-blue-900/50 bg-blue-950/20 text-blue-100"
-                          value={formData.mpAct}
-                          onChange={(e) =>
-                            setFormData({ ...formData, mpAct: e.target.value })
-                          }
-                        />
-                      </div>
+                      {/* MP Actual - Hide for Injection/Moulding */}
+                      {!isMoulding && (
+                        <div className="space-y-1">
+                          <Label className="text-xs text-slate-300">
+                            MP Aktual
+                          </Label>
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            className="border-blue-900/50 bg-blue-950/20 text-blue-100"
+                            value={formData.mpAct}
+                            onChange={(e) =>
+                              setFormData({ ...formData, mpAct: e.target.value })
+                            }
+                          />
+                        </div>
+                      )}
 
                       {/* CT / SPEED - Only Show for PAPER (Hide for Rigid completely) */}
                       {!isRigid && (
@@ -1591,41 +1690,34 @@ export function ProductionReportModal({
                             <Separator className="flex-1 bg-slate-800" />
                           </div>
                           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                            {REJECT_INJECTION_PRODUCT.map((label) => (
-                              <div key={label} className="space-y-1">
-                                <Label
-                                  className="truncate text-[10px] text-slate-500 uppercase"
-                                  title={label}
-                                >
-                                  {label}
-                                </Label>
-                                <Input
-                                  type="number"
-                                  placeholder="0"
-                                  className="h-9 border-slate-800 bg-slate-950 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-red-500"
-                                  value={formData.rejects[label] || ""}
-                                  onChange={(e) =>
-                                    handleRejectChange(label, e.target.value)
-                                  }
-                                />
-                              </div>
-                            ))}
-                            <div className="col-span-2 flex items-center justify-end md:col-span-4">
-                              <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-1">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase">
-                                  Total Product Reject:
-                                </span>
-                                <span className="font-mono font-bold text-red-400">
-                                  {REJECT_INJECTION_PRODUCT.reduce(
-                                    (acc, key) =>
-                                      acc +
-                                      (Number(formData.rejects[key]) || 0),
-                                    0,
-                                  ).toLocaleString("id-ID")}{" "}
-                                  Gram
-                                </span>
-                              </div>
+                          <div className="col-span-2 md:col-span-4">
+                            <DropdownInput
+                              label="Reject Product"
+                              options={REJECT_INJECTION_PRODUCT}
+                              values={formData.rejects}
+                              onAdd={(k, v) => handleRejectChange(k, v)}
+                              onRemove={(k) => handleRejectChange(k, "0")}
+                              unit="Gr"
+                              placeholder="Pilih Jenis Reject..."
+                            />
+                            {/* Total Reject Calculation moved or kept? */}
+                            <div className="mt-3 flex items-center justify-end">
+                                <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-1">
+                                  <span className="text-[10px] font-bold text-slate-500 uppercase">
+                                    Total Product Reject:
+                                  </span>
+                                  <span className="font-mono font-bold text-red-400">
+                                    {REJECT_INJECTION_PRODUCT.reduce(
+                                      (acc, key) =>
+                                        acc +
+                                        (Number(formData.rejects[key]) || 0),
+                                      0,
+                                    ).toLocaleString("id-ID")}{" "}
+                                    Gram
+                                  </span>
+                                </div>
                             </div>
+                          </div>
 
                             <div className="col-span-2 mt-4 md:col-span-4">
                               <div className="mb-4 flex items-center gap-4">
@@ -1860,7 +1952,39 @@ export function ProductionReportModal({
                     <h3 className="flex items-center gap-2 text-sm font-bold tracking-wider text-amber-500 uppercase">
                       <Zap className="h-4 w-4" /> Downtime (Menit)
                     </h3>
-                    <div>Total: {totalDowntimeObj.total} mnt</div>
+                    <div className="flex items-center gap-4 text-xs">
+                      {isSplitTabs ? (
+                        <>
+                          <div className="rounded bg-slate-800 px-2 py-1">
+                            Loss Hour:{" "}
+                            <span className="font-bold text-slate-200">
+                              {(totalDowntimeObj.planned / 60).toLocaleString(
+                                "id-ID",
+                                {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                },
+                              )}
+                            </span>
+                          </div>
+                          <div className="rounded bg-amber-900/40 px-2 py-1">
+                            Downtime:{" "}
+                            <span className="font-bold text-amber-500">
+                              {(
+                                (totalDowntimeObj.total -
+                                  totalDowntimeObj.planned) /
+                                60
+                              ).toLocaleString("id-ID", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div>Total: {totalDowntimeObj.total} mnt</div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-6">
@@ -1872,95 +1996,55 @@ export function ProductionReportModal({
                       <div className="space-y-6">
                         {/* 1. Loss Hour (Planned) */}
                         <div>
-                          <div className="mb-4 flex items-center gap-4">
-                            <Separator className="flex-1 bg-slate-800" />
-                            <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
-                              Loss Hour
-                            </span>
-                            <Separator className="flex-1 bg-slate-800" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
-                            {(lphType === "PRINTING"
-                              ? LOSS_HOUR_PRINTING
-                              : lphType === "PACKING_ASSEMBLY"
-                                ? LOSS_HOUR_PACKING_ASSEMBLY
-                                : LOSS_HOUR_INJECTION
-                            ).map((label) => (
-                              <div key={label} className="space-y-1">
-                                <Label
-                                  className="truncate text-[10px] text-slate-500 uppercase"
-                                  title={label}
-                                >
-                                  {label}
-                                </Label>
-                                <div className="relative">
-                                  <Input
-                                    type="number"
-                                    placeholder="0"
-                                    className="h-9 border-slate-800 bg-slate-950 pr-12 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-blue-500"
-                                    value={
-                                      formData.downtimes[`PLANNED:${label}`] ||
-                                      ""
-                                    }
-                                    onChange={(e) =>
-                                      handleDowntimeChange(
-                                        `PLANNED:${label}`,
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                  <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-500">
-                                    jam
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                          <DropdownInput
+                            label="Loss Hour (Planned)"
+                            options={
+                              lphType === "PRINTING"
+                                ? LOSS_HOUR_PRINTING
+                                : lphType === "PACKING_ASSEMBLY"
+                                  ? LOSS_HOUR_PACKING_ASSEMBLY
+                                  : LOSS_HOUR_INJECTION
+                            }
+                            values={Object.fromEntries(
+                              Object.entries(formData.downtimes)
+                                .filter(([k]) => k.startsWith("PLANNED:"))
+                                .map(([k, v]) => [
+                                  k.replace("PLANNED:", ""),
+                                  v,
+                                ]),
+                            )}
+                            onAdd={(k, v) =>
+                              handleDowntimeChange(`PLANNED:${k}`, v)
+                            }
+                            onRemove={(k) =>
+                              handleDowntimeChange(`PLANNED:${k}`, "0")
+                            }
+                            unit="Jam"
+                            placeholder="Pilih Loss Hour..."
+                          />
                         </div>
 
                         {/* 2. Downtime (Unplanned) */}
                         <div>
-                          <div className="mb-4 flex items-center gap-4">
-                            <Separator className="flex-1 bg-slate-800" />
-                            <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
-                              Downtime
-                            </span>
-                            <Separator className="flex-1 bg-slate-800" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
-                            {(lphType === "PRINTING"
-                              ? DOWNTIME_PRINTING_LIST
-                              : lphType === "PACKING_ASSEMBLY"
-                                ? DOWNTIME_PACKING_ASSEMBLY_LIST
-                                : DOWNTIME_INJECTION_LIST
-                            ).map((label) => (
-                              <div key={label} className="space-y-1">
-                                <Label
-                                  className="truncate text-[10px] text-slate-500 uppercase"
-                                  title={label}
-                                >
-                                  {label}
-                                </Label>
-                                <div className="relative">
-                                  <Input
-                                    type="number"
-                                    placeholder="0"
-                                    className="h-9 border-slate-800 bg-slate-950 pr-12 text-right font-mono text-sm text-slate-100 placeholder:text-slate-700 focus-visible:ring-amber-500"
-                                    value={formData.downtimes[label] || ""}
-                                    onChange={(e) =>
-                                      handleDowntimeChange(
-                                        label,
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                  <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-500">
-                                    jam
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                          <DropdownInput
+                            label="Downtime / Breakdown (Unplanned)"
+                            options={
+                              lphType === "PRINTING"
+                                ? DOWNTIME_PRINTING_LIST
+                                : lphType === "PACKING_ASSEMBLY"
+                                  ? DOWNTIME_PACKING_ASSEMBLY_LIST
+                                  : DOWNTIME_INJECTION_LIST
+                            }
+                            values={Object.fromEntries(
+                              Object.entries(formData.downtimes).filter(
+                                ([k]) => !k.startsWith("PLANNED:"),
+                              ),
+                            )}
+                            onAdd={(k, v) => handleDowntimeChange(k, v)}
+                            onRemove={(k) => handleDowntimeChange(k, "0")}
+                            unit="Jam"
+                            placeholder="Pilih Jenis Downtime..."
+                          />
                         </div>
                       </div>
                     ) : (
@@ -2152,7 +2236,7 @@ export function ProductionReportModal({
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-bold text-emerald-500">
-                          Baik (Kg)
+                          Baik (Gram)
                         </Label>
                         <Input
                           type="number"
@@ -2170,7 +2254,7 @@ export function ProductionReportModal({
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs text-slate-400">
-                          Hold (Kg)
+                          Hold (Gram)
                         </Label>
                         <Input
                           type="number"
@@ -2188,7 +2272,7 @@ export function ProductionReportModal({
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs text-slate-400">
-                          WIP (Kg)
+                          WIP (Gram)
                         </Label>
                         <Input
                           type="number"

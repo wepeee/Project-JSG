@@ -3,41 +3,28 @@ import { PrismaClient } from "../generated/prisma";
 const db = new PrismaClient();
 
 async function main() {
-  console.log("Checking and fixing user accounts...");
+  console.log("Checking user accounts...");
 
-  // Get all sessions to see what user IDs are being used
-  const sessions = await db.session.findMany({
+  const users = await db.user.findMany({
     select: {
-      userId: true,
-      user: {
-        select: {
-          id: true,
-          username: true,
-          role: true,
-        },
-      },
+      id: true,
+      username: true,
+      role: true,
+      department: true,
+    },
+    orderBy: {
+      username: "asc",
     },
   });
 
-  console.log("\nCurrent sessions:");
-  sessions.forEach((s) => {
-    console.log(`- User ID: ${s.userId}, Username: ${s.user?.username || "MISSING"}, Role: ${s.user?.role || "N/A"}`);
+  console.log(`\nFound ${users.length} users:`);
+  users.forEach((u) => {
+    console.log(
+      `- User: ${u.username.padEnd(15)} | Role: ${u.role.padEnd(10)} | Dept: ${
+        u.department || "-"
+      } | ID: ${u.id}`
+    );
   });
-
-  // Check if there are any orphaned sessions (sessions without users)
-  const orphanedSessions = sessions.filter((s) => !s.user);
-  
-  if (orphanedSessions.length > 0) {
-    console.log(`\n⚠️  Found ${orphanedSessions.length} orphaned session(s)!`);
-    console.log("Deleting orphaned sessions...");
-    
-    for (const session of orphanedSessions) {
-      await db.session.delete({
-        where: { userId: session.userId },
-      });
-      console.log(`  Deleted session for user ID: ${session.userId}`);
-    }
-  }
 
   console.log("\nDone!");
 }
