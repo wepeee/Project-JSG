@@ -10,6 +10,7 @@ import CreateUserForm from "./create-users-form";
 import MachineManager from "./machine-manager";
 import VerificationList from "./verification-list";
 import ProductionArchive from "./production-archive";
+import DashboardOverview from "./dashboard-overview";
 
 type Props = {
   user: {
@@ -20,6 +21,7 @@ type Props = {
 };
 
 type NavKey =
+  | "dashboard"
   | "users"
   | "machines_paper"
   | "machines_rigid"
@@ -29,11 +31,13 @@ type NavKey =
   | "report_archive";
 
 export default function SuperadminShell({ user }: Props) {
-  const [active, setActive] = React.useState<NavKey>("users");
+  const [active, setActive] = React.useState<NavKey>("dashboard");
   const [open, setOpen] = React.useState(false);
 
   const title =
-    active === "users"
+    active === "dashboard"
+      ? "Dashboard Overview"
+      : active === "users"
       ? "Kelola Akun"
       : active === "machines_paper"
         ? "Kelola Mesin Paper"
@@ -90,6 +94,11 @@ export default function SuperadminShell({ user }: Props) {
           </div>
 
           <nav className="flex flex-1 flex-col gap-1 px-2">
+            <SidebarItem
+              label="Dashboard"
+              active={active === "dashboard"}
+              onClick={() => setActive("dashboard")}
+            />
             <SidebarItem
               label="Kelola Akun"
               active={active === "users"}
@@ -181,6 +190,14 @@ export default function SuperadminShell({ user }: Props) {
               </div>
 
               <nav className="flex flex-col gap-1 px-2 py-3">
+                <SidebarItem
+                  label="Dashboard"
+                  active={active === "dashboard"}
+                  onClick={() => {
+                    setActive("dashboard");
+                    setOpen(false);
+                  }}
+                />
                 <SidebarItem
                   label="Kelola Akun"
                   active={active === "users"}
@@ -274,7 +291,9 @@ export default function SuperadminShell({ user }: Props) {
             </div>
           </div>
 
-          {active === "users" ? (
+          {active === "dashboard" ? (
+            <DashboardOverview department={user.department} />
+          ) : active === "users" ? (
             <CreateUserForm />
           ) : active === "audit" ? (
             <div className="rounded-md border p-4 text-sm opacity-80">
