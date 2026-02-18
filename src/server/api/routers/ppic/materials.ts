@@ -19,8 +19,7 @@ export const materialsRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1),
         uom: z.string(),
-        type: z.string().default("wip"),
-        stock: z.number().default(0),
+        type: z.enum(["RAW", "WIP", "CONSUMABLE"]).default("RAW"),
         remark: z.string().optional(),
       }),
     )
@@ -29,8 +28,7 @@ export const materialsRouter = createTRPCRouter({
         data: {
           name: input.name.trim(),
           uom: input.uom,
-          type: input.type,
-          stock: input.stock,
+          type: input.type as any,
         },
       });
     }),
@@ -41,8 +39,7 @@ export const materialsRouter = createTRPCRouter({
         id: z.number().int().positive(),
         name: z.string().min(1),
         uom: z.string(),
-        type: z.string().optional(),
-        stock: z.number().optional(),
+        type: z.enum(["RAW", "WIP", "CONSUMABLE"]).optional(),
         remark: z.string().optional(),
       }),
     )
@@ -52,8 +49,7 @@ export const materialsRouter = createTRPCRouter({
         data: {
           name: input.name.trim(),
           uom: input.uom,
-          type: input.type,
-          stock: input.stock,
+          type: input.type as any,
         },
       });
     }),
