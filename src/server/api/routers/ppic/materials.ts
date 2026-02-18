@@ -88,7 +88,6 @@ export const materialsRouter = createTRPCRouter({
               name,
               uom: "pcs",
               type: MaterialType.WIP,
-              remark: "Auto-created from WIP Inventory",
             })),
             skipDuplicates: true,
           })

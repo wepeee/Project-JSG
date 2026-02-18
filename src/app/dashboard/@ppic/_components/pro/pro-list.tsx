@@ -1890,7 +1890,22 @@ export default function ProList({
                       </TableCell>
                       <TableCell>{p.productName}</TableCell>
                       <TableCell className="text-right">
-                        0 / {p.qtyPoPcs.toLocaleString("id-ID")}
+                        {(() => {
+                          const lastStep = p.proses?.[p.proses.length - 1];
+                          let currentOutput = 0;
+                          if (lastStep?.productionReports) {
+                            currentOutput = lastStep.productionReports
+                              .filter((r: any) => r.status === "APPROVED")
+                              .reduce(
+                                (acc: number, curr: any) =>
+                                  acc +
+                                  (Number(curr.qtyPassOn) || 0) +
+                                  (Number(curr.qtyGood) || 0),
+                                0,
+                              );
+                          }
+                          return `${currentOutput.toLocaleString("id-ID")} / ${p.qtyPoPcs.toLocaleString("id-ID")}`;
+                        })()}
                       </TableCell>
                       <TableCell>
                         {(() => {

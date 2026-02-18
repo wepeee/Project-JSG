@@ -218,14 +218,14 @@ export default function VerificationList({
                   };
                 }
 
-                if (!acc[proId].processes[prosesId]) {
-                  acc[proId].processes[prosesId] = {
+                if (!acc[proId]!.processes[prosesId]) {
+                  acc[proId]!.processes[prosesId] = {
                     process: rpt.proses,
                     reports: [],
                   };
                 }
 
-                acc[proId].processes[prosesId].reports.push(rpt);
+                acc[proId]!.processes[prosesId]!.reports.push(rpt);
                 return acc;
               },
               {} as Record<

@@ -147,6 +147,7 @@ type SlotItem = {
   qtyPoPcs: number;
   startDate: Date | null;
   materials: any[];
+  productionReports: any[];
 };
 
 function PROTooltipContent({
@@ -274,6 +275,7 @@ function buildShiftSlots(
           qtyPoPcs: pro.qtyPoPcs,
           startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
           materials: (process as any).materials ?? [],
+          productionReports: (process as any).productionReports ?? [],
         });
         map.set(slotId, arr);
       }
@@ -732,6 +734,7 @@ export default function PPICSchedule({ onSelectPro }: Props) {
             qtyPoPcs: pro.qtyPoPcs,
             startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
             materials: (process as any).materials ?? [],
+            productionReports: (process as any).productionReports ?? [],
           });
           itemsMap.set(detailedSlotId, arr);
 
@@ -954,6 +957,30 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                                   </span>
                                                 </Badge>
                                               )}
+                                            </div>
+                                            <div className="mt-2 text-[10px]">
+                                              {(() => {
+                                                const reports = (it as any).productionReports || [];
+                                                const currentOutput = reports
+                                                  .filter((r: any) => r.status === "APPROVED")
+                                                  .reduce((acc: number, r: any) => acc + (Number(r.qtyPassOn) || 0) + (Number(r.qtyGood) || 0), 0);
+                                                
+                                                const pct = it.qtyPoPcs > 0 ? Math.min(100, Math.max(0, (currentOutput / it.qtyPoPcs) * 100)) : 0;
+
+                                                return (
+                                                  <div className="flex items-center gap-2">
+                                                    <div className="bg-muted h-1.5 flex-1 overflow-hidden rounded-full">
+                                                      <div
+                                                        className={`h-full ${pct >= 100 ? "bg-green-500" : "bg-blue-500"}`}
+                                                        style={{ width: `${pct}%` }}
+                                                      />
+                                                    </div>
+                                                    <div className="text-[9px] font-medium opacity-80 whitespace-nowrap">
+                                                      {currentOutput.toLocaleString()} ({Math.round(pct)}%)
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })()}
                                             </div>
                                           </DraggableChip>
                                         );

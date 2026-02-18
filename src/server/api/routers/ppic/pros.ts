@@ -101,6 +101,13 @@ export const prosRouter = createTRPCRouter({
                   material: { select: { name: true, uom: true } },
                 },
               },
+              productionReports: {
+                select: {
+                  status: true,
+                  qtyPassOn: true,
+                  qtyGood: true,
+                },
+              },
             },
           },
         },
@@ -740,6 +747,13 @@ export const prosRouter = createTRPCRouter({
                 select: {
                   material: { select: { name: true, uom: true } },
                   qtyReq: true,
+                },
+              },
+              productionReports: {
+                select: {
+                  status: true,
+                  qtyPassOn: true,
+                  qtyGood: true,
                 },
               },
             },
