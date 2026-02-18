@@ -730,26 +730,69 @@ export function ProductionReportModal({
         }
       }
 
-      // 2. If editing a rejected report, load its data
+      // 3. If editing a rejected report, load its data
       if (editReport) {
-        const formatTime = (d?: string | Date) => {
+        // Helper to format Date to HH:mm (Local Time)
+        const formatTime = (d?: string | Date | null) => {
           if (!d) return "";
-          const date = new Date(d);
-          return date.toTimeString().slice(0, 5);
+          // If already in HH:mm format
+          if (typeof d === "string" && /^\d{2}:\d{2}$/.test(d)) return d;
+          // If ISO string with T time
+          if (typeof d === "string" && d.includes("T")) {
+            try {
+              const date = new Date(d);
+              if (isNaN(date.getTime())) return "";
+              const hh = String(date.getHours()).padStart(2, "0");
+              const mm = String(date.getMinutes()).padStart(2, "0");
+              return `${hh}:${mm}`;
+            } catch {
+              return "";
+            }
+          }
+          // If Date object
+          if (d instanceof Date) {
+            const hh = String(d.getHours()).padStart(2, "0");
+            const mm = String(d.getMinutes()).padStart(2, "0");
+            return `${hh}:${mm}`;
+          }
+
+          // Fallback
+          try {
+            const date = new Date(d);
+            if (isNaN(date.getTime())) return "";
+            const hh = String(date.getHours()).padStart(2, "0");
+            const mm = String(date.getMinutes()).padStart(2, "0");
+            return `${hh}:${mm}`;
+          } catch (e) {
+            return "";
+          }
         };
 
-        const formatDate = (d?: string | Date) => {
+        // Helper to format Date to YYYY-MM-DD (Local Time)
+        const formatDate = (d?: string | Date | null) => {
           if (!d) return "";
-          const date = new Date(d);
-          return date.toISOString().slice(0, 10);
+          // If already in YYYY-MM-DD format
+          if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+
+          try {
+            const date = new Date(d);
+            if (isNaN(date.getTime())) return "";
+            // Correctly get YYYY-MM-DD in local time
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, "0");
+            const dd = String(date.getDate()).padStart(2, "0");
+            return `${yyyy}-${mm}-${dd}`;
+          } catch (e) {
+            return "";
+          }
         };
 
-        setFormData({
+        const newFormData = {
           startTime: formatTime(editReport.startTime),
           endTime: formatTime(editReport.endTime),
           startDate: formatDate(editReport.reportDate),
           endDate: formatDate(editReport.reportDate),
-          shift: String(editReport.shift),
+          shift: String(editReport.shift ?? ""),
           operatorName: editReport.operatorName || "",
           batchNo: editReport.batchNo || "",
           mpStd: editReport.manPowerStd?.toString() || "",
@@ -769,14 +812,21 @@ export function ProductionReportModal({
           qtyPassOn: editReport.qtyPassOn?.toString() || "",
           qtyWip: editReport.qtyWip?.toString() || "",
           qtyHold: editReport.qtyHold?.toString() || "",
-          rejectSetup: "",
-          rejectProcess: "",
+          rejectSetup:
+            (editReport.rejectBreakdown as Record<string, number>)?.[
+              "Reject Setup"
+            ]?.toString() || "",
+          rejectProcess:
+            (editReport.rejectBreakdown as Record<string, number>)?.[
+              "Reject Process"
+            ]?.toString() || "",
           rejects: (editReport.rejectBreakdown as Record<string, number> | null)
             ? Object.fromEntries(
-                Object.entries(editReport.rejectBreakdown).map(([k, v]) => [
-                  k,
-                  String(v),
-                ]),
+                Object.entries(editReport.rejectBreakdown)
+                  .filter(
+                    ([k]) => k !== "Reject Setup" && k !== "Reject Process",
+                  )
+                  .map(([k, v]) => [k, String(v)]),
               )
             : {},
           downtimes: (editReport.downtimeBreakdown as Record<
@@ -792,7 +842,10 @@ export function ProductionReportModal({
             : {},
           notes: editReport.notes || "",
           othersNote: editReport.othersNote || "",
-        });
+        };
+
+        setFormData(newFormData);
+
         setIsLoaded(true);
         return; // Skip draft loading
       }
@@ -861,7 +914,15 @@ export function ProductionReportModal({
     } else {
       setIsLoaded(false); // Reset when closed
     }
-  }, [open, task, draftKey, session, editReport]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    open,
+    task?.step.id,
+    task?.shift,
+    draftKey,
+    session?.user?.name,
+    editReport?.id,
+  ]);
 
   // Auto Save
   React.useEffect(() => {
@@ -921,86 +982,6 @@ export function ProductionReportModal({
     },
   });
 
-  // Populate Form from Edit Report
-  React.useEffect(() => {
-    if (open && editReport) {
-      // Helper to format Date to HH:mm
-      const formatTime = (d?: string | Date) => {
-        if (!d) return "";
-        const date = new Date(d);
-        return date.toLocaleTimeString("id", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        });
-      };
-
-      const breakdown =
-        (editReport.rejectBreakdown as Record<string, number>) || {};
-      const downtimeDown =
-        (editReport.downtimeBreakdown as Record<string, number>) || {};
-
-      // Filter out setup/process from general breakdown map if stored there
-      // But typically we stored them separately in logic? NO, we stored them in the same JSON object
-      // So we need to extract them.
-
-      const newFormData: any = {
-        shift: String(editReport.shift),
-        operatorName: editReport.operatorName,
-        startDate: new Date(editReport.reportDate).toISOString().split("T")[0], // YYYY-MM-DD
-        // endDate... not really used in submit?
-        startTime: formatTime(editReport.startTime),
-        endTime: formatTime(editReport.endTime),
-
-        batchNo: editReport.batchNo || "",
-        mpStd: String(editReport.manPowerStd || ""),
-        mpAct: String(editReport.manPowerAct || ""),
-        ctStd: String(editReport.cycleTimeStd || ""),
-        ctAct: String(editReport.cycleTimeAct || ""),
-        cavStd: String(editReport.cavityStd || ""),
-        cavAct: String(editReport.cavityAct || ""),
-
-        inputMaterial: String(editReport.inputMaterialQty || ""),
-        materialRunner: String(editReport.materialRunnerQty || ""),
-        materialPurge: String(editReport.materialPurgeQty || ""),
-
-        // Metadata fields
-        productWeight: (editReport.metaData as any)?.productWeight || "",
-        materialPassOn: (editReport.metaData as any)?.materialPassOn || "",
-        materialHold: (editReport.metaData as any)?.materialHold || "",
-        materialWip: (editReport.metaData as any)?.materialWip || "",
-
-        qtyGood: String(editReport.qtyGood || ""),
-        qtyPassOn: String(editReport.qtyPassOn || ""),
-        qtyHold: String(editReport.qtyHold || ""),
-        qtyWip: String(editReport.qtyWip || ""),
-
-        notes: editReport.notes || "",
-
-        rejectSetup: String(breakdown["Reject Setup"] || ""),
-        rejectProcess: String(breakdown["Reject Process"] || ""),
-        rejects: {},
-        downtimes: {},
-      };
-
-      // Populate dynamic rejects
-      Object.entries(breakdown).forEach(([k, v]) => {
-        if (k !== "Reject Setup" && k !== "Reject Process") {
-          newFormData.rejects[k] = String(v);
-        }
-      });
-
-      // Populate downtimes
-      Object.entries(downtimeDown).forEach(([k, v]) => {
-        newFormData.downtimes[k] = String(v);
-      });
-
-      setFormData((prev) => ({ ...prev, ...newFormData }));
-      setLphType(editReport.reportType);
-      setIsLoaded(true);
-    }
-  }, [open, editReport]);
-
   // Helper to parse localized numbers (ID: . = thousand, , = decimal)
   const parseNumber = (v: string) => {
     if (!v) return 0;
@@ -1034,6 +1015,11 @@ export function ProductionReportModal({
 
     if (!formData.operatorName.trim()) {
       alert("Nama Operator wajib diisi!");
+      return;
+    }
+
+    if (!formData.startTime || !formData.endTime) {
+      alert("Jam Mulai dan Jam Selesai wajib diisi!");
       return;
     }
 
