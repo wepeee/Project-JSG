@@ -276,7 +276,15 @@ export const verificationRouter = createTRPCRouter({
 
         // === PHASE 2: TRANSFER LOGIC (OUT + IN) ===
 
+        // === PHASE 2: TRANSFER LOGIC (OUT + IN) ===
+
         const currentItem = proses.partNumber ?? "UNKNOWN_ITEM";
+        // Correction: For consumption (OUT), we use the INPUT item (Previous Step's Output).
+        // For Step 1, Input = Output (Auto-Refill context).
+        const consumptionItem = isFirstStep
+          ? currentItem
+          : (prevStep?.partNumber ?? "UNKNOWN_ITEM");
+
         const fgItem = pro.partNumber ?? currentItem;
         const qtyWip = report.qtyWip ? Number(report.qtyWip.toString()) : 0;
         const totalOut = qtyPassOn + qtyHold + qtyReject;
@@ -298,7 +306,7 @@ export const verificationRouter = createTRPCRouter({
         // 1. Step 1 Special Handling: Auto-Produce Input Stock
         // Logic: For the first process, we assume input material is "Produced" into WIP first.
         // Qty Created = Ending WIP + Total Output (PassOn + Hold + Reject)
-        if (proses.orderNo === 1) {
+        if (isFirstStep) {
           const totalProduced = qtyWip + totalOut;
           if (totalProduced > 0) {
             await tx.inventoryTxn.create({
@@ -306,7 +314,7 @@ export const verificationRouter = createTRPCRouter({
                 groupId,
                 date: now,
                 type: TxnType.IN,
-                itemId: currentItem,
+                itemId: consumptionItem, // Refilled Item
                 qty: totalProduced,
                 locationId: currentLoc.id,
                 proId: pro.id,
@@ -322,30 +330,34 @@ export const verificationRouter = createTRPCRouter({
         // Ensure we have enough stock to OUT the totalOut amount
         if (totalOut > 0) {
           // Calculate current stock for this Item in this Location for this PRO
-          const balanceAgg = await tx.inventoryTxn.groupBy({
-            by: ["type"],
-            where: {
-              locationId: currentLoc.id,
-              itemId: currentItem,
-              proId: pro.id,
-            },
-            _sum: { qty: true },
-          });
-
-          let currentStock = 0;
-          for (const g of balanceAgg) {
-            const qty = Number(g._sum.qty?.toString() ?? "0");
-            if (g.type === TxnType.IN) currentStock += qty;
-            else if (g.type === TxnType.OUT) currentStock -= qty;
-          }
-
-          if (currentStock < totalOut) {
-            throw new TRPCError({
-              code: "PRECONDITION_FAILED",
-              message: `Stock tidak cukup di ${
-                proses.machine?.name ?? "Mesin"
-              }. Tersedia: ${currentStock}, Butuh OUT: ${totalOut}. (Harap cek inputan step sebelumnya)`,
+          // SKIPPED for Step 1: We just auto-refilled the exact needed amount (totalProduced).
+          // Checking DB via groupBy might fail due to transaction isolation (read-your-writes) not seeing the just-inserted IN txn.
+          if (!isFirstStep) {
+            const balanceAgg = await tx.inventoryTxn.groupBy({
+              by: ["type"],
+              where: {
+                locationId: currentLoc.id,
+                itemId: consumptionItem, // Check stock of the INPUT item
+                proId: pro.id,
+              },
+              _sum: { qty: true },
             });
+
+            let currentStock = 0;
+            for (const g of balanceAgg) {
+              const qty = Number(g._sum.qty?.toString() ?? "0");
+              if (g.type === TxnType.IN) currentStock += qty;
+              else if (g.type === TxnType.OUT) currentStock -= qty;
+            }
+
+            if (currentStock < totalOut) {
+              throw new TRPCError({
+                code: "PRECONDITION_FAILED",
+                message: `Stock tidak cukup di ${
+                  proses.machine?.name ?? "Mesin"
+                }. Tersedia: ${currentStock} (${consumptionItem}), Butuh OUT: ${totalOut}. (Harap cek inputan step sebelumnya)`,
+              });
+            }
           }
 
           // Execute OUT
@@ -354,7 +366,7 @@ export const verificationRouter = createTRPCRouter({
               groupId,
               date: now,
               type: TxnType.OUT,
-              itemId: currentItem,
+              itemId: consumptionItem, // Consume INPUT item
               qty: totalOut,
               locationId: currentLoc.id,
               proId: pro.id,
@@ -521,8 +533,6 @@ export const verificationRouter = createTRPCRouter({
         });
 
         if (freshPro) {
-          // If manually CLOSED or CANCELLED, do not auto-update
-          if (freshPro.status !== "CLOSED" && freshPro.status !== "CANCELLED") {
             let newStatus = freshPro.status;
             let hasActivity = false;
             let totalOutput = 0;
@@ -554,21 +564,30 @@ export const verificationRouter = createTRPCRouter({
 
             // Target Check
             if (totalOutput >= freshPro.qtyPoPcs) {
-              newStatus = "COMPLETE" as any; // Cast for now until prisma generate
+              // CHANGE REQ: User wants COMPLETE not CLOSED/COMPLETE confusion.
+              // Assuming "COMPLETE" is a valid enum status in schema.
+              // Current Enum likely: OPEN, IN_PROGRESS, COMPLETE, CLOSED, CANCELLED
+              newStatus = "COMPLETE" as any;
             } else if (hasActivity) {
               newStatus = "IN_PROGRESS";
             } else {
               newStatus = "OPEN";
             }
 
+            // Guard: Handle Transitions
+            let allowUpdate = true;
+            if (freshPro.status === "CANCELLED") allowUpdate = false;
+            // Only allow CLOSED -> COMPLETE (Fix correction), otherwise keep CLOSED (Short Close)
+            if (freshPro.status === "CLOSED" && newStatus !== "COMPLETE")
+              allowUpdate = false;
+
             // Update if changed
-            if (newStatus !== freshPro.status) {
+            if (allowUpdate && newStatus !== freshPro.status) {
               await tx.pro.update({
                 where: { id: freshPro.id },
                 data: { status: newStatus as any },
               });
             }
-          }
         }
 
         return report;
@@ -684,8 +703,6 @@ export const verificationRouter = createTRPCRouter({
         });
 
         if (freshPro) {
-          // If manually CLOSED or CANCELLED, do not auto-update
-          if (freshPro.status !== "CLOSED" && freshPro.status !== "CANCELLED") {
             let newStatus = freshPro.status;
             let hasActivity = false;
             let totalOutput = 0;
@@ -719,6 +736,9 @@ export const verificationRouter = createTRPCRouter({
 
             // Target Check
             if (totalOutput >= freshPro.qtyPoPcs) {
+              // CHANGE REQ: User wants COMPLETE not CLOSED/COMPLETE confusion.
+              // Assuming "COMPLETE" is a valid enum status in schema.
+              // Current Enum likely: OPEN, IN_PROGRESS, COMPLETE, CLOSED, CANCELLED
               newStatus = "COMPLETE" as any;
             } else if (hasActivity) {
               newStatus = "IN_PROGRESS";
@@ -726,13 +746,19 @@ export const verificationRouter = createTRPCRouter({
               newStatus = "OPEN";
             }
 
-            if (newStatus !== freshPro.status) {
+            // Guard: Handle Transitions
+            let allowUpdate = true;
+            if (freshPro.status === "CANCELLED") allowUpdate = false;
+            // Only allow CLOSED -> COMPLETE (Fix correction), otherwise keep CLOSED (Short Close)
+            if (freshPro.status === "CLOSED" && newStatus !== "COMPLETE")
+              allowUpdate = false;
+
+            if (allowUpdate && newStatus !== freshPro.status) {
               await tx.pro.update({
                 where: { id: freshPro.id },
                 data: { status: newStatus as any },
               });
             }
-          }
         }
 
         return updatedReport;
@@ -795,7 +821,8 @@ export const verificationRouter = createTRPCRouter({
         const pro = report.proses.pro;
 
         // If manually CLOSED or CANCELLED, do not auto-update
-        if (pro.status !== "CLOSED" && pro.status !== "CANCELLED") {
+        // EXCEPTION: Allow CLOSED -> COMPLETE correction
+        
           let newStatus = pro.status;
           let hasActivity = false;
           let totalOutput = 0;
@@ -840,13 +867,19 @@ export const verificationRouter = createTRPCRouter({
             newStatus = "OPEN" as any;
           }
 
-          if (newStatus !== pro.status) {
+          // Guard: Handle Transitions
+          let allowUpdate = true;
+          if (pro.status === "CANCELLED") allowUpdate = false;
+          // Only allow CLOSED -> COMPLETE (Fix correction), otherwise keep CLOSED (Short Close)
+          if (pro.status === "CLOSED" && newStatus !== "COMPLETE")
+            allowUpdate = false;
+
+          if (allowUpdate && newStatus !== pro.status) {
             await ctx.db.pro.update({
               where: { id: pro.id },
               data: { status: newStatus },
             });
           }
-        }
       }
 
       return report;

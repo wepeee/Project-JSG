@@ -317,16 +317,16 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>
+                          <TableHead className="w-[400px]">
                             {groupMode === "PRO"
                               ? "Machine / Location"
                               : "PRO Number"}
                           </TableHead>
-                          <TableHead>Item Name</TableHead>
-                          <TableHead className="text-right">
+                          <TableHead className="w-[300px]">Item Name</TableHead>
+                          <TableHead className="text-right w-[150px]">
                             Qty (Stok)
                           </TableHead>
-                          <TableHead className="w-[100px]"></TableHead>
+                          <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

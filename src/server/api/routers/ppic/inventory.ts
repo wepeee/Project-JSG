@@ -480,7 +480,8 @@ export const inventoryRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.productionReport.findMany({
         where: {
-          status: "APPROVED",
+          // Show ALL reports (Pending/Approved/Rejected) so user can trace history
+          // status: "APPROVED", 
           proses: {
             proId: input.proId,
             ...(input.machineId ? { machineId: input.machineId } : {}),
@@ -489,10 +490,13 @@ export const inventoryRouter = createTRPCRouter({
         orderBy: { reportDate: "desc" },
         select: {
           id: true,
+          status: true, // Needed for UI
           reportDate: true,
           shift: true,
           operatorName: true,
           qtyPassOn: true,
+          qtyWip: true,
+          qtyHold: true,
           qtyReject: true,
           notes: true,
           proses: {

@@ -117,6 +117,7 @@ model Material {
 enum ProStatus {
   OPEN
   IN_PROGRESS
+  COMPLETE
   CLOSED
   CANCELLED
 }

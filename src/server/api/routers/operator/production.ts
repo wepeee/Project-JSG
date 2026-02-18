@@ -164,16 +164,13 @@ export const productionRouter = createTRPCRouter({
 
           let newStatus = pro.status;
 
-          // If all steps have at least one APPROVED report -> CLOSED
-          if (totalSteps > 0 && stepsWithApprovedReport >= totalSteps) {
-            newStatus = ProStatus.CLOSED;
-          }
-          // If at least one step has any report but not all approved -> IN_PROGRESS
-          else if (stepsWithAnyReport > 0) {
+          // Logic Simplified:
+          // If any report exists (pending or approved) -> IN_PROGRESS
+          // Completion/Closing is handled by Superadmin Approval only.
+          
+          if (stepsWithAnyReport > 0) {
             newStatus = ProStatus.IN_PROGRESS;
-          }
-          // If no reports at all -> OPEN
-          else {
+          } else {
             newStatus = ProStatus.OPEN;
           }
 
@@ -323,6 +320,8 @@ export const productionRouter = createTRPCRouter({
             select: {
               id: true,
               pro: true,
+              machineId: true, // Needed for validation in modal
+              partNumber: true, // Needed for validation in modal
               machine: true,
             },
           },

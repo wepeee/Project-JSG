@@ -30,7 +30,7 @@ export default function WipMatrix({
 }: {
   userDepartment?: string;
 }) {
-  const [status, setStatus] = React.useState<string>("ACTIVE"); // OPEN/IN_PROGRESS
+  const [status, setStatus] = React.useState<string>("ALL");
   const [type, setType] = React.useState<string>(() => {
     if (userDepartment === "PAPER") return "PAPER";
     if (userDepartment === "RIGID") return "RIGID";
@@ -54,7 +54,7 @@ export default function WipMatrix({
 
     // Status logic
     let statFilter: "OPEN" | "IN_PROGRESS" | "CLOSED" | undefined = undefined;
-    if (status !== "ALL" && status !== "ACTIVE") {
+    if (status !== "ALL") {
       statFilter = status as any;
     }
 
@@ -132,7 +132,7 @@ export default function WipMatrix({
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ACTIVE">Active (Open/Prog/Comp)</SelectItem>
+            <SelectItem value="ALL">All Statuses (Open/Closed)</SelectItem>
             <SelectItem value="OPEN">Open Only</SelectItem>
             <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
             <SelectItem value="COMPLETE">Complete (Done)</SelectItem>
