@@ -34,6 +34,7 @@ type StepDraft = {
   processId: number | null;
   up: string;
   machineId: number | null;
+  partNumber?: string; // Added
   materialId: number | null;
   qtyReq: string;
 };
@@ -86,16 +87,17 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
         ? new Date(pro.data.startDate).toISOString().slice(0, 10)
         : "",
     );
-    setProcessId(pro.data.processId ?? null);
+    setProcessId(pro.data.proPrefixId ?? null);
 
     setSteps(
-      (pro.data.steps ?? []).map((s: any) => {
+      (pro.data.proses ?? []).map((s: any) => {
         const mat0 = s.materials?.[0];
         return {
           key: uid(),
           id: s.id, // Keep the ID
           orderNo: s.orderNo,
-          processId: pro.data.processId, // Use PRO process ID as default for steps (since it matches)
+          processId: pro.data.proPrefixId, // Use PRO process ID as default for steps (since it matches)
+          partNumber: (s as any).partNumber ?? "", // Added
           up: String(s.up ?? ""),
           machineId: s.machineId ?? null,
           materialId: mat0?.materialId ?? null,
@@ -165,9 +167,9 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
         id: proId,
         productName: prod,
         qtyPoPcs: qty,
-        processId: processId,
+        proPrefixId: processId, // Updated
         startDate: startDate ? new Date(`${startDate}T00:00:00`) : undefined,
-        steps: steps
+        proses: steps
           .slice()
           .sort((a, b) => a.orderNo - b.orderNo)
           .map((s) => ({
@@ -175,6 +177,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
             orderNo: s.orderNo,
             processId: s.processId!,
             up: Number(s.up),
+            partNumber: s.partNumber?.trim() || undefined, // Added
             machineId: s.machineId ?? null,
             materials: s.materialId
               ? [{ materialId: s.materialId, qtyReq: Number(s.qtyReq) }]
@@ -224,185 +227,199 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
 
           <Separator />
 
-          <div className="overflow-x-auto rounded-md border">
-            <div className="min-w-[980px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">No</TableHead>
-                    <TableHead className="min-w-[260px]">Proses</TableHead>
-                    <TableHead className="w-24">UP / CAV</TableHead>
-                    <TableHead className="min-w-[220px]">Machine</TableHead>
-                    <TableHead className="min-w-[260px]">Material</TableHead>
-                    <TableHead className="w-28">Qty</TableHead>
-                    <TableHead className="w-24">UoM</TableHead>
-                    <TableHead className="w-48 text-right">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">No</TableHead>
+                  <TableHead className="min-w-[120px]">Output PN</TableHead>
+                  <TableHead className="min-w-[180px]">Proses</TableHead>
+                  <TableHead className="w-20">UP</TableHead>
+                  <TableHead className="min-w-[150px]">Machine</TableHead>
+                  <TableHead className="min-w-[180px]">Material</TableHead>
+                  <TableHead className="w-24">Qty</TableHead>
+                  <TableHead className="w-20">UoM</TableHead>
+                  <TableHead className="w-24 text-right">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
 
-                <TableBody>
-                  {steps
-                    .slice()
-                    .sort((a, b) => a.orderNo - b.orderNo)
-                    .map((s) => {
-                      const mat = s.materialId
-                        ? (materials.data ?? []).find(
-                            (m) => m.id === s.materialId,
-                          )
-                        : null;
+              <TableBody>
+                {steps
+                  .slice()
+                  .sort((a, b) => a.orderNo - b.orderNo)
+                  .map((s) => {
+                    const mat = s.materialId
+                      ? (materials.data ?? []).find(
+                          (m) => m.id === s.materialId,
+                        )
+                      : null;
 
-                      return (
-                        <TableRow key={s.key}>
-                          <TableCell>{s.orderNo}</TableCell>
+                    return (
+                      <TableRow key={s.key}>
+                        <TableCell>{s.orderNo}</TableCell>
 
-                          <TableCell>
-                            <select
-                              value={s.processId ?? ""}
-                              onChange={(e) => {
-                                const v = e.target.value
-                                  ? Number(e.target.value)
-                                  : null;
+                        <TableCell>
+                          <Input
+                            value={s.partNumber ?? ""}
+                            onChange={(e) =>
+                              setSteps((prev) =>
+                                prev.map((x) =>
+                                  x.key === s.key
+                                    ? { ...x, partNumber: e.target.value }
+                                    : x,
+                                ),
+                              )
+                            }
+                            className="h-10 text-xs"
+                            placeholder="Output PN (Step)"
+                          />
+                        </TableCell>
 
-                                // Update header state juga karena processId itu milik PRO
-                                if (v) setProcessId(v);
+                        <TableCell>
+                          <select
+                            value={s.processId ?? ""}
+                            onChange={(e) => {
+                              const v = e.target.value
+                                ? Number(e.target.value)
+                                : null;
 
-                                // Update visual semua step agar sinkron (optional tapi bagus UX nya)
-                                setSteps((prev) =>
-                                  prev.map((x) => ({ ...x, processId: v })),
-                                );
-                              }}
-                              className={control}
-                            >
-                              <option value="">Pilih proses</option>
-                              {(processes.data ?? []).map((p) => (
-                                <option key={p.id} value={p.id}>
-                                  {p.code} - {p.name}
-                                </option>
-                              ))}
-                            </select>
-                          </TableCell>
+                              // Update header state juga karena processId itu milik PRO
+                              if (v) setProcessId(v);
 
-                          <TableCell>
-                            <Input
-                              type="number"
-                              value={s.up}
-                              onChange={(e) =>
-                                setSteps((prev) =>
-                                  prev.map((x) =>
-                                    x.key === s.key
-                                      ? { ...x, up: e.target.value }
-                                      : x,
-                                  ),
-                                )
-                              }
-                              className="h-10 text-center"
-                            />
-                          </TableCell>
-
-                          <TableCell>
-                            <select
-                              value={s.machineId ?? ""}
-                              onChange={(e) => {
-                                const v = e.target.value
-                                  ? Number(e.target.value)
-                                  : null;
-                                setSteps((prev) =>
-                                  prev.map((x) =>
-                                    x.key === s.key
-                                      ? { ...x, machineId: v }
-                                      : x,
-                                  ),
-                                );
-                              }}
-                              className={control}
-                            >
-                              <option value="">(optional)</option>
-                              {(machines.data ?? []).map((m) => (
-                                <option key={m.id} value={m.id}>
-                                  {m.name}
-                                </option>
-                              ))}
-                            </select>
-                          </TableCell>
-
-                          <TableCell>
-                            <select
-                              value={s.materialId ?? ""}
-                              onChange={(e) => {
-                                const v = e.target.value
-                                  ? Number(e.target.value)
-                                  : null;
-                                setSteps((prev) =>
-                                  prev.map((x) =>
-                                    x.key === s.key
-                                      ? {
-                                          ...x,
-                                          materialId: v,
-                                          qtyReq: v ? x.qtyReq : "",
-                                        }
-                                      : x,
-                                  ),
-                                );
-                              }}
-                              className={control}
-                            >
-                              <option value="">
-                                (optional) pilih material
+                              // Update visual semua step agar sinkron (optional tapi bagus UX nya)
+                              setSteps((prev) =>
+                                prev.map((x) => ({ ...x, processId: v })),
+                              );
+                            }}
+                            className={control}
+                          >
+                            <option value="">Pilih proses</option>
+                            {(processes.data ?? []).map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.code} - {p.name}
                               </option>
-                              {(materials.data ?? []).map((m) => (
-                                <option key={m.id} value={m.id}>
-                                  {m.name} ({String(m.uom)})
-                                </option>
-                              ))}
-                            </select>
-                          </TableCell>
+                            ))}
+                          </select>
+                        </TableCell>
 
-                          <TableCell>
-                            <Input
-                              type="number"
-                              value={s.qtyReq}
-                              onChange={(e) =>
-                                setSteps((prev) =>
-                                  prev.map((x) =>
-                                    x.key === s.key
-                                      ? { ...x, qtyReq: e.target.value }
-                                      : x,
-                                  ),
-                                )
-                              }
-                              disabled={!s.materialId}
-                              className="h-10"
-                            />
-                          </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            value={s.up}
+                            onChange={(e) =>
+                              setSteps((prev) =>
+                                prev.map((x) =>
+                                  x.key === s.key
+                                    ? { ...x, up: e.target.value }
+                                    : x,
+                                ),
+                              )
+                            }
+                            className="h-10 text-center"
+                          />
+                        </TableCell>
 
-                          <TableCell>{mat?.uom ?? "-"}</TableCell>
+                        <TableCell>
+                          <select
+                            value={s.machineId ?? ""}
+                            onChange={(e) => {
+                              const v = e.target.value
+                                ? Number(e.target.value)
+                                : null;
+                              setSteps((prev) =>
+                                prev.map((x) =>
+                                  x.key === s.key ? { ...x, machineId: v } : x,
+                                ),
+                              );
+                            }}
+                            className={control}
+                          >
+                            <option value="">(optional)</option>
+                            {(machines.data ?? []).map((m) => (
+                              <option key={m.id} value={m.id}>
+                                {m.name}
+                              </option>
+                            ))}
+                          </select>
+                        </TableCell>
 
-                          <TableCell className="text-right">
-                            <div className="inline-flex gap-2">
-                              <Button
-                                variant="outline"
-                                className="h-9"
-                                onClick={() => moveStep(s.orderNo, "up")}
-                                disabled={s.orderNo === 1}
-                              >
-                                ↑
-                              </Button>
-                              <Button
-                                variant="outline"
-                                className="h-9"
-                                onClick={() => moveStep(s.orderNo, "down")}
-                                disabled={s.orderNo === steps.length}
-                              >
-                                ↓
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
-            </div>
+                        <TableCell>
+                          <select
+                            value={s.materialId ?? ""}
+                            onChange={(e) => {
+                              const v = e.target.value
+                                ? Number(e.target.value)
+                                : null;
+                              setSteps((prev) =>
+                                prev.map((x) =>
+                                  x.key === s.key
+                                    ? {
+                                        ...x,
+                                        materialId: v,
+                                        qtyReq: v ? x.qtyReq : "",
+                                      }
+                                    : x,
+                                ),
+                              );
+                            }}
+                            className={control}
+                          >
+                            <option value="">(optional) pilih material</option>
+                            {(materials.data ?? []).map((m) => (
+                              <option key={m.id} value={m.id}>
+                                {m.name} ({String(m.uom)})
+                              </option>
+                            ))}
+                          </select>
+                        </TableCell>
+
+                        <TableCell>
+                          <Input
+                            type="number"
+                            value={s.qtyReq}
+                            onChange={(e) =>
+                              setSteps((prev) =>
+                                prev.map((x) =>
+                                  x.key === s.key
+                                    ? { ...x, qtyReq: e.target.value }
+                                    : x,
+                                ),
+                              )
+                            }
+                            disabled={!s.materialId}
+                            className="h-10"
+                          />
+                        </TableCell>
+
+                        <TableCell>{mat?.uom ?? "-"}</TableCell>
+
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => moveStep(s.orderNo, "up")}
+                              disabled={s.orderNo === 1}
+                            >
+                              ↑
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => moveStep(s.orderNo, "down")}
+                              disabled={s.orderNo === steps.length}
+                            >
+                              ↓
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+              </TableBody>
+            </Table>
           </div>
 
           {err ? <p className="text-destructive text-sm">{err}</p> : null}

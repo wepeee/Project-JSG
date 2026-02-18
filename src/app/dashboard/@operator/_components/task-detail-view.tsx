@@ -40,7 +40,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
 
   // Fetch real reports
   const { data: reports } = api.production.getHistory.useQuery({
-    proStepId: task.step.id,
+    prosesId: task.step.id,
     limit: 50,
   });
 

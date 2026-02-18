@@ -6,6 +6,7 @@ import {
   ReportStatus,
   MachineType,
   Uom,
+  type Kode_Proses,
 } from "../generated/prisma";
 
 const prisma = new PrismaClient();
@@ -111,11 +112,11 @@ async function main() {
     console.log(`Processing ${rt.type}...`);
 
     // Ensure Process exists
-    let process = await prisma.process.findUnique({
+    let process = await prisma.kode_Proses.findUnique({
       where: { code: rt.processCode },
     });
     if (!process) {
-      process = await prisma.process.create({
+      process = await prisma.kode_Proses.create({
         data: {
           code: rt.processCode,
           name: rt.processName,
@@ -154,17 +155,17 @@ async function main() {
             qtyPoPcs: item.qty * 2, // PO larger than report
             status: "IN_PROGRESS",
             type: ProType.RIGID,
-            processId: process.id,
+            kode_ProsesId: process.id,
           },
         });
       }
 
-      // Create ProStep
-      let step = await prisma.proStep.findFirst({
+      // Create Proses
+      let step = await prisma.proses.findFirst({
         where: { proId: pro.id, orderNo: 1 },
       });
       if (!step) {
-        step = await prisma.proStep.create({
+        step = await prisma.proses.create({
           data: {
             proId: pro.id,
             orderNo: 1,
@@ -179,7 +180,7 @@ async function main() {
       // Create Production Report
       await prisma.productionReport.create({
         data: {
-          proStepId: step.id,
+          prosesId: step.id,
           reportDate: new Date(),
           shift: 1,
           operatorName: "Dummy Operator",

@@ -1,7 +1,6 @@
 import { PrismaClient } from "../generated/prisma"; // penting: sesuai schema output
 import { hash } from "bcryptjs";
 import { seedRigid } from "./seed_rigid";
-import { seedPaperDashboard } from "./seed_paper_dashboard";
 
 const db = new PrismaClient();
 
@@ -498,9 +497,6 @@ async function main() {
   // --- Run Rigid Seeding ---
   await seedRigid(db);
 
-  // --- Run Paper Dashboard Seeding ---
-  await seedPaperDashboard(db);
-
   // Processes Seed Data
   const processes = [
     { code: "11", name: "INJECTION MOLDING" },
@@ -531,7 +527,7 @@ async function main() {
     const isRigid = rigidCodes.includes(proc.code);
     const type = isRigid ? "RIGID" : "PAPER";
 
-    await db.process.upsert({
+    await db.proPrefix.upsert({
       where: { code: proc.code },
       update: { name: proc.name, type },
       create: { code: proc.code, name: proc.name, type },

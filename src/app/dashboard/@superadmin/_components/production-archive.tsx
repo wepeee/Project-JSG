@@ -9,8 +9,18 @@ import {
   Search,
   ChevronRight,
   ChevronLeft,
+  Ban,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "~/components/ui/dialog";
+import { Textarea } from "~/components/ui/textarea";
 
 import {
   Table,
@@ -285,6 +295,27 @@ export default function ProductionArchive({
       console.error(`Failed to update: ${err.message}`);
     },
   });
+
+  // --- Void Report ---
+  const [voidId, setVoidId] = React.useState<string | null>(null);
+  const [voidReason, setVoidReason] = React.useState("");
+
+  const voidMutation = api.verification.voidReport.useMutation({
+    onSuccess: () => {
+      void utils.verification.getReports.invalidate();
+      void utils.inventory.invalidate();
+      setVoidId(null);
+      setVoidReason("");
+    },
+    onError: (err) => {
+      alert(`Gagal void: ${err.message}`);
+    },
+  });
+
+  const handleVoidSubmit = () => {
+    if (!voidId || !voidReason.trim()) return;
+    voidMutation.mutate({ id: voidId, reason: voidReason });
+  };
 
   const rigidSubCategories = [
     { id: "INJECTION", label: "INJECTION" },
@@ -976,6 +1007,19 @@ export default function ProductionArchive({
                   >
                     Catatan
                   </TableHead>
+                  <TableHead
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
+                    className="w-[100px] text-center text-slate-300"
+                  >
+                    Aksi
+                  </TableHead>
                 </TableRow>
                 {/* SUB-HEADERS FOR DOWNTIME (ROW 2 - PAPER ONLY) */}
                 {/* SUB-HEADERS ROW (Merged) */}
@@ -1127,18 +1171,18 @@ export default function ProductionArchive({
                       </div>
                     </TableCell>
                     <TableCell className="font-mono text-xs font-bold">
-                      {rpt.step.pro.proNumber}
+                      {rpt.proses.pro.proNumber}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {rpt.step.partNumber || "-"}
+                      {rpt.proses.partNumber || "-"}
                     </TableCell>
                     <TableCell className="text-xs">
                       <div className="line-clamp-2 font-semibold">
-                        {rpt.step.pro.productName}
+                        {rpt.proses.pro.productName}
                       </div>
                     </TableCell>
                     <TableCell className="text-xs">
-                      {rpt.step.machine?.name}
+                      {rpt.proses.machine?.name}
                     </TableCell>
                     {activeCategory !== "PAPER" && (
                       <TableCell className="font-mono text-xs">
@@ -2570,6 +2614,21 @@ export default function ProductionArchive({
                         <div className="text-xs text-slate-400 italic">-</div>
                       )}
                     </TableCell>
+                    <TableCell className="p-2 align-top">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 gap-1 text-xs text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+                        onClick={() => {
+                          setVoidId(rpt.id);
+                          setVoidReason("");
+                        }}
+                        disabled={voidMutation.isPending}
+                      >
+                        <Ban className="h-3 w-3" />
+                        Void
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -2577,6 +2636,49 @@ export default function ProductionArchive({
           </div>
         )}
       </div>
+
+      {/* Void Report Dialog */}
+      <Dialog open={!!voidId} onOpenChange={(o) => !o && setVoidId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Void Laporan</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-start gap-3 rounded-lg bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+              <p>
+                Laporan yang di-void akan{" "}
+                <strong>membatalkan posting inventory</strong> (stok
+                dikembalikan). Status laporan berubah menjadi{" "}
+                <strong>VOID</strong> dan tidak bisa dikembalikan.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="void-reason" className="text-sm font-medium">
+                Alasan Void (Wajib)
+              </label>
+              <Textarea
+                id="void-reason"
+                placeholder="Contoh: Data salah input, duplikat laporan, koreksi shift..."
+                value={voidReason}
+                onChange={(e) => setVoidReason(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setVoidId(null)}>
+              Batal
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!voidReason.trim() || voidMutation.isPending}
+              onClick={handleVoidSubmit}
+            >
+              {voidMutation.isPending ? "Memproses..." : "Void Laporan"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

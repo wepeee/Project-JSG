@@ -9,6 +9,7 @@ import { materialsRouter } from "./routers/ppic/materials";
 import { processesRouter } from "./routers/ppic/processes";
 import { prosRouter } from "./routers/ppic/pros";
 import { productionRouter } from "./routers/operator/production";
+import { inventoryRouter } from "./routers/ppic/inventory";
 
 /**
  * This is the primary router for your server.
@@ -26,6 +27,7 @@ export const appRouter = createTRPCRouter({
   production: productionRouter,
   verification: verificationRouter,
   dashboard: dashboardRouter,
+  inventory: inventoryRouter,
 });
 
 // export type definition of API

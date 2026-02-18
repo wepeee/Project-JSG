@@ -7,7 +7,7 @@ import {
 } from "../../../../../generated/prisma";
 
 const productionReportInput = z.object({
-  proStepId: z.number(),
+  prosesId: z.number(),
   shift: z.number(),
   reportDate: z.date(),
   operatorName: z.string(),
@@ -30,12 +30,12 @@ const productionReportInput = z.object({
   materialRunnerQty: z.number().optional(),
   materialPurgeQty: z.number().optional(),
 
-  // Output
-  qtyGood: z.number().default(0),
-  qtyPassOn: z.number().default(0),
-  qtyHold: z.number().default(0),
-  qtyWip: z.number().default(0),
-  qtyReject: z.number().default(0),
+  // Output — operator must explicitly fill these (no silent default)
+  qtyGood: z.number().min(0),
+  qtyPassOn: z.number().min(0),
+  qtyHold: z.number().min(0).default(0),
+  qtyWip: z.number().min(0).default(0),
+  qtyReject: z.number().min(0).default(0),
 
   // Details
   rejectBreakdown: z.record(z.string(), z.number()).optional(),
@@ -50,6 +50,22 @@ export const productionRouter = createTRPCRouter({
   createReport: protectedProcedure
     .input(productionReportInput)
     .mutation(async ({ ctx, input }) => {
+      // Guard: machineId must be assigned on Proses
+      const targetProses = await ctx.db.proses.findUnique({
+        where: { id: input.prosesId },
+        select: { machineId: true, partNumber: true },
+      });
+
+      if (!targetProses) {
+        throw new Error("Proses tidak ditemukan.");
+      }
+
+      if (!targetProses.machineId) {
+        throw new Error(
+          "Mesin belum di-assign oleh PPIC untuk proses ini. Hubungi PPIC.",
+        );
+      }
+
       // Helper to convert HH:mm string to Date object on reportDate
       const setTime = (date: Date, timeStr?: string) => {
         if (!timeStr) return undefined;
@@ -61,7 +77,7 @@ export const productionRouter = createTRPCRouter({
 
       const report = await ctx.db.productionReport.create({
         data: {
-          proStepId: input.proStepId,
+          prosesId: input.prosesId,
           shift: input.shift,
           reportDate: input.reportDate,
           operatorName: input.operatorName,
@@ -107,14 +123,14 @@ export const productionRouter = createTRPCRouter({
       // 2. Satu aja laporan masuk = IN_PROGRESS
       // 3. Semua laporan masuk (tiap step ada report) = DONE
       try {
-        const step = await ctx.db.proStep.findUnique({
-          where: { id: input.proStepId },
+        const proses = await ctx.db.proses.findUnique({
+          where: { id: input.prosesId },
           select: {
             pro: {
               select: {
                 id: true,
                 status: true,
-                steps: {
+                proses: {
                   select: {
                     id: true,
                     productionReports: {
@@ -130,13 +146,13 @@ export const productionRouter = createTRPCRouter({
           },
         });
 
-        if (step?.pro) {
-          const pro = step.pro;
-          const totalSteps = pro.steps.length;
+        if (proses?.pro) {
+          const pro = proses.pro;
+          const totalSteps = pro.proses.length;
           let stepsWithApprovedReport = 0;
           let stepsWithAnyReport = 0;
 
-          for (const s of pro.steps) {
+          for (const s of pro.proses) {
             const hasAnyReport = s.productionReports.length > 0;
             const hasApprovedReport = s.productionReports.some(
               (r) => r.status === ReportStatus.APPROVED,
@@ -241,7 +257,7 @@ export const productionRouter = createTRPCRouter({
       z
         .object({
           limit: z.number().default(20),
-          proStepId: z.number().optional(),
+          prosesId: z.number().optional(),
           operatorName: z.string().optional(),
           createdById: z.string().optional(),
           status: z
@@ -255,7 +271,7 @@ export const productionRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const where: any = {};
-      if (input?.proStepId) where.proStepId = input.proStepId;
+      if (input?.prosesId) where.prosesId = input.prosesId;
       if (input?.operatorName) where.operatorName = input.operatorName;
       // if (input?.createdById) where.createdById = input.createdById;
 
@@ -274,7 +290,7 @@ export const productionRouter = createTRPCRouter({
         take: input?.limit,
         select: {
           id: true,
-          proStepId: true,
+          prosesId: true,
           reportDate: true,
           shift: true,
           operatorName: true,
@@ -303,7 +319,7 @@ export const productionRouter = createTRPCRouter({
           totalDowntime: true,
 
           // Nested relations (replacing include)
-          step: {
+          proses: {
             select: {
               id: true,
               pro: true,

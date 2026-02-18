@@ -33,7 +33,12 @@ type ScheduleItem = RouterOutputs["pros"]["getSchedule"][number];
 
 type ShiftNo = 1 | 2 | 3;
 
-const SHIFTS: Array<{ no: ShiftNo; label: string; time: string; startHour: number }> = [
+const SHIFTS: Array<{
+  no: ShiftNo;
+  label: string;
+  time: string;
+  startHour: number;
+}> = [
   { no: 1, label: "Shift 1", time: "06:00 - 11:00", startHour: 6 },
   { no: 2, label: "Shift 2", time: "11:00 - 16:00", startHour: 11 },
   { no: 3, label: "Shift 3", time: "16:00 - 21:00", startHour: 16 },
@@ -129,8 +134,8 @@ function shiftsNeededForStep(opts: {
 type SlotItem = {
   key: string; // composite draggable id
   proId: number;
-  stepId?: number; 
-  shiftIndex?: number; 
+  stepId?: number;
+  shiftIndex?: number;
   proNumber: string;
   productName: string;
   status: string;
@@ -144,18 +149,18 @@ type SlotItem = {
   materials: any[];
 };
 
-function PROTooltipContent({ 
-  proNumber, 
-  productName, 
-  orderNo, 
-  processCode, 
-  processName, 
-  machineName, 
-  up, 
-  qtyPoPcs, 
-  status, 
-  startDate, 
-  materials 
+function PROTooltipContent({
+  proNumber,
+  productName,
+  orderNo,
+  processCode,
+  processName,
+  machineName,
+  up,
+  qtyPoPcs,
+  status,
+  startDate,
+  materials,
 }: {
   proNumber: string;
   productName: string;
@@ -177,12 +182,14 @@ function PROTooltipContent({
       </div>
       <div className="space-y-1 border-t pt-2">
         <div className="flex justify-between">
-          <span className="opacity-70">Step:</span>
+          <span className="opacity-70">Proses:</span>
           <span className="font-medium">#{orderNo}</span>
         </div>
         <div className="flex justify-between">
           <span className="opacity-70">Process:</span>
-          <span className="font-medium">{processCode} - {processName}</span>
+          <span className="font-medium">
+            {processCode} - {processName}
+          </span>
         </div>
         <div className="flex justify-between">
           <span className="opacity-70">Machine:</span>
@@ -219,7 +226,7 @@ function PROTooltipContent({
       </div>
       {materials && materials.length > 0 && (
         <div className="border-t pt-2">
-          <div className="font-medium mb-1">Materials:</div>
+          <div className="mb-1 font-medium">Materials:</div>
           <div className="space-y-0.5">
             {materials.map((m: any, idx: number) => (
               <div key={idx} className="text-[10px] opacity-80">
@@ -233,41 +240,43 @@ function PROTooltipContent({
   );
 }
 
-function buildShiftSlots(items: ScheduleItem[], range: { start: Date; end: Date }) {
+function buildShiftSlots(
+  items: ScheduleItem[],
+  range: { start: Date; end: Date },
+) {
   const map = new Map<string, SlotItem[]>();
 
   for (const pro of items) {
-    const steps = (pro.steps ?? []).slice().sort((a, b) => a.orderNo - b.orderNo);
+    for (const process of pro.proses ?? []) {
+      const stepStartVal = (process as any).startDate ?? pro.startDate;
+      if (!stepStartVal) continue;
 
-    for (const step of steps) {
-       const stepStartVal = (step as any).startDate ?? pro.startDate;
-       if (!stepStartVal) continue;
+      const actualDay = startOfDay(new Date(stepStartVal));
+      const actualShift = shiftFromDate(new Date(stepStartVal));
 
-       const actualDay = startOfDay(new Date(stepStartVal));
-       const actualShift = shiftFromDate(new Date(stepStartVal));
+      if (actualDay >= range.start && actualDay <= range.end) {
+        // Key is date::shift
+        const slotId = `${dateKey(actualDay)}::${actualShift}`;
 
-       // Check if in range
-       if (actualDay >= range.start && actualDay <= range.end) {
-           const slotId = `${dateKey(actualDay)}::${actualShift}`;
-           const arr = map.get(slotId) ?? [];
-           arr.push({
-               key: `${step.id}::${slotId}`, 
-               proId: pro.id,
-               stepId: step.id,
-               proNumber: pro.proNumber,
-               productName: pro.productName,
-               status: pro.status,
-               orderNo: step.orderNo,
-               processCode: pro.process?.code ?? "??",
-               processName: pro.process?.name ?? "",
-               machineName: step.machine?.name ?? null,
-               up: step.up ?? 1,
-               qtyPoPcs: pro.qtyPoPcs,
-               startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
-               materials: (step as any).materials ?? [],
-           });
-           map.set(slotId, arr);
-       }
+        const arr = map.get(slotId) ?? [];
+        arr.push({
+          key: String(process.id),
+          proId: pro.id,
+          stepId: process.id,
+          proNumber: pro.proNumber,
+          productName: pro.productName,
+          status: pro.status,
+          orderNo: process.orderNo,
+          processCode: pro.proPrefix?.code ?? "??",
+          processName: pro.proPrefix?.name ?? "(tanpa nama)",
+          machineName: process.machine?.name ?? null,
+          up: process.up ?? 1,
+          qtyPoPcs: pro.qtyPoPcs,
+          startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
+          materials: (process as any).materials ?? [],
+        });
+        map.set(slotId, arr);
+      }
     }
   }
 
@@ -294,7 +303,7 @@ export default function PPICSchedule({ onSelectPro }: Props) {
   const [weekCursor, setWeekCursor] = React.useState(new Date());
 
   const utils = api.useUtils();
-  
+
   // Optimistic mutations with proper lifecycle hooks
   const reschedule = api.pros.reschedule.useMutation({
     onMutate: async (variables) => {
@@ -302,33 +311,36 @@ export default function PPICSchedule({ onSelectPro }: Props) {
       await utils.pros.getSchedule.cancel();
       await utils.pros.getById.cancel();
       await utils.pros.list.cancel();
-      
+
       // Snapshot previous values
       const previousSchedule = utils.pros.getSchedule.getData();
       const previousDetail = utils.pros.getById.getData({ id: variables.id });
       const previousList = utils.pros.list.getData({});
-      
+
       // Optimistically update schedule cache
       utils.pros.getSchedule.setData(
-        { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
+        {
+          start: tab === "month" ? calStart : weekStart,
+          end: tab === "month" ? calEnd : weekEnd,
+        },
         (old) => {
           if (!old) return old;
           return old.map((pro) =>
             pro.id === variables.id
               ? { ...pro, startDate: variables.startDate }
-              : pro
+              : pro,
           );
-        }
+        },
       );
-      
+
       // Optimistically update detail cache
       if (previousDetail) {
         utils.pros.getById.setData(
           { id: variables.id },
-          { ...previousDetail, startDate: variables.startDate }
+          { ...previousDetail, startDate: variables.startDate },
         );
       }
-      
+
       // Optimistically update list cache
       if (previousList) {
         utils.pros.list.setData(
@@ -338,24 +350,30 @@ export default function PPICSchedule({ onSelectPro }: Props) {
             items: previousList.items.map((pro) =>
               pro.id === variables.id
                 ? { ...pro, startDate: variables.startDate }
-                : pro
+                : pro,
             ),
-          }
+          },
         );
       }
-      
+
       return { previousSchedule, previousDetail, previousList };
     },
     onError: (_err, variables, context) => {
       // Rollback on error
       if (context?.previousSchedule) {
         utils.pros.getSchedule.setData(
-          { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
-          context.previousSchedule
+          {
+            start: tab === "month" ? calStart : weekStart,
+            end: tab === "month" ? calEnd : weekEnd,
+          },
+          context.previousSchedule,
         );
       }
       if (context?.previousDetail) {
-        utils.pros.getById.setData({ id: variables.id }, context.previousDetail);
+        utils.pros.getById.setData(
+          { id: variables.id },
+          context.previousDetail,
+        );
       }
       if (context?.previousList) {
         utils.pros.list.setData({}, context.previousList);
@@ -369,62 +387,65 @@ export default function PPICSchedule({ onSelectPro }: Props) {
     },
   });
 
-  const rescheduleStep = api.pros.rescheduleStep.useMutation({
+  const rescheduleProses = api.pros.rescheduleProses.useMutation({
     onMutate: async (variables) => {
       await utils.pros.getSchedule.cancel();
       await utils.pros.getById.cancel();
       await utils.pros.list.cancel();
-      
+
       const previousSchedule = utils.pros.getSchedule.getData();
       const previousList = utils.pros.list.getData({});
-      
-      // Find which PRO this step belongs to
+
+      // Find which PRO this process belongs to
       let affectedProId: number | undefined;
       if (previousSchedule) {
         for (const pro of previousSchedule) {
-          if (pro.steps.some((s) => s.id === variables.stepId)) {
+          if (pro.proses.some((s) => s.id === variables.prosesId)) {
             affectedProId = pro.id;
             break;
           }
         }
       }
-      
-      const previousDetail = affectedProId 
+
+      const previousDetail = affectedProId
         ? utils.pros.getById.getData({ id: affectedProId })
         : undefined;
-      
+
       // Update schedule cache
       utils.pros.getSchedule.setData(
-        { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
+        {
+          start: tab === "month" ? calStart : weekStart,
+          end: tab === "month" ? calEnd : weekEnd,
+        },
         (old) => {
           if (!old) return old;
           return old.map((pro) => ({
             ...pro,
-            steps: pro.steps.map((step) =>
-              step.id === variables.stepId
-                ? { ...step, startDate: variables.startDate }
-                : step
+            proses: pro.proses.map((process) =>
+              process.id === variables.prosesId
+                ? { ...process, startDate: variables.startDate }
+                : process,
             ),
           }));
-        }
+        },
       );
-      
+
       // Update detail cache
       if (affectedProId && previousDetail) {
         utils.pros.getById.setData(
           { id: affectedProId },
           {
             ...previousDetail,
-            steps: previousDetail.steps.map((step) =>
-              step.id === variables.stepId
-                ? { ...step, startDate: variables.startDate }
-                : step
+            proses: previousDetail.proses.map((process) =>
+              process.id === variables.prosesId
+                ? { ...process, startDate: variables.startDate }
+                : process,
             ),
-          }
+          },
         );
       }
-      
-      // Update list cache (steps are included in list response)
+
+      // Update list cache (processes are included in list response)
       if (previousList) {
         utils.pros.list.setData(
           {},
@@ -432,27 +453,33 @@ export default function PPICSchedule({ onSelectPro }: Props) {
             ...previousList,
             items: previousList.items.map((pro) => ({
               ...pro,
-              steps: pro.steps.map((step) =>
-                step.id === variables.stepId
-                  ? { ...step, startDate: variables.startDate }
-                  : step
+              proses: pro.proses.map((process) =>
+                process.id === variables.prosesId
+                  ? { ...process, startDate: variables.startDate }
+                  : process,
               ),
             })),
-          }
+          },
         );
       }
-      
+
       return { previousSchedule, previousDetail, previousList, affectedProId };
     },
     onError: (_err, _variables, context) => {
       if (context?.previousSchedule) {
         utils.pros.getSchedule.setData(
-          { start: tab === "month" ? calStart : weekStart, end: tab === "month" ? calEnd : weekEnd },
-          context.previousSchedule
+          {
+            start: tab === "month" ? calStart : weekStart,
+            end: tab === "month" ? calEnd : weekEnd,
+          },
+          context.previousSchedule,
         );
       }
       if (context?.affectedProId && context?.previousDetail) {
-        utils.pros.getById.setData({ id: context.affectedProId }, context.previousDetail);
+        utils.pros.getById.setData(
+          { id: context.affectedProId },
+          context.previousDetail,
+        );
       }
       if (context?.previousList) {
         utils.pros.list.setData({}, context.previousList);
@@ -471,10 +498,19 @@ export default function PPICSchedule({ onSelectPro }: Props) {
     }),
   );
 
-  const calStart = React.useMemo(() => startOfCalendar(currentMonth), [currentMonth]);
-  const calEnd = React.useMemo(() => endOfCalendar(currentMonth), [currentMonth]);
+  const calStart = React.useMemo(
+    () => startOfCalendar(currentMonth),
+    [currentMonth],
+  );
+  const calEnd = React.useMemo(
+    () => endOfCalendar(currentMonth),
+    [currentMonth],
+  );
 
-  const weekStart = React.useMemo(() => startOfWeekMonday(weekCursor), [weekCursor]);
+  const weekStart = React.useMemo(
+    () => startOfWeekMonday(weekCursor),
+    [weekCursor],
+  );
   const weekEnd = React.useMemo(() => {
     const d = new Date(weekStart);
     d.setDate(d.getDate() + 6);
@@ -497,19 +533,16 @@ export default function PPICSchedule({ onSelectPro }: Props) {
     if (!over) return;
 
     const activeStr = String(active.id);
-    const partsActive = activeStr.split("::");
-    
-    // Format: stepId::dateStr or proId::...
-    const id = Number(partsActive[0]);
+    const id = Number(active.id);
     if (!Number.isFinite(id)) return;
 
     const overStr = String(over.id);
     const overParts = overStr.split("::");
     const dateStr = overParts[0] ?? "";
-    
+
     // Check format: date::shift OR date::machine::shift
     let shiftVal = 1;
-    
+
     if (overParts.length === 3) {
       // Machine View: date::machine::shift
       shiftVal = Number(overParts[2]);
@@ -522,12 +555,13 @@ export default function PPICSchedule({ onSelectPro }: Props) {
     if (!d0) return;
 
     // determine shift
-    const shift: ShiftNo = (shiftVal === 2 || shiftVal === 3) ? shiftVal as ShiftNo : 1;
+    const shift: ShiftNo =
+      shiftVal === 2 || shiftVal === 3 ? (shiftVal as ShiftNo) : 1;
 
     const newStart = applyShiftStart(d0, shift);
 
     // Everything is now a step (1 step = 1 shift)
-    rescheduleStep.mutate({ stepId: id, startDate: newStart });
+    rescheduleProses.mutate({ prosesId: id, startDate: newStart });
   };
 
   const monthLabel = currentMonth.toLocaleDateString("id-ID", {
@@ -560,12 +594,15 @@ export default function PPICSchedule({ onSelectPro }: Props) {
 
   const monthWeeks = React.useMemo(() => {
     const rows: Date[][] = [];
-    for (let i = 0; i < monthDays.length; i += 7) rows.push(monthDays.slice(i, i + 7));
+    for (let i = 0; i < monthDays.length; i += 7)
+      rows.push(monthDays.slice(i, i + 7));
     return rows;
   }, [monthDays]);
 
   const itemsByDay = React.useMemo(() => {
-    const map = new Map<string, Array<{
+    const map = new Map<
+      string,
+      Array<{
         stepId: number;
         proId: number;
         proNumber: string;
@@ -583,7 +620,8 @@ export default function PPICSchedule({ onSelectPro }: Props) {
           materialId: number;
           qtyReq: any;
         }>;
-    }>>();
+      }>
+    >();
 
     const data = monthSchedule.data ?? [];
     const q = searchQuery.toLowerCase().trim();
@@ -597,28 +635,28 @@ export default function PPICSchedule({ onSelectPro }: Props) {
       );
 
     for (const pro of filtered) {
-      for (const step of pro.steps ?? []) {
-        const stepStartVal = (step as any).startDate ?? pro.startDate;
+      for (const process of pro.proses ?? []) {
+        const stepStartVal = (process as any).startDate ?? pro.startDate;
         if (!stepStartVal) continue;
-        
+
         const actualDay = startOfDay(new Date(stepStartVal));
         const dateStr = dateKey(actualDay);
-        
+
         const arr = map.get(dateStr) ?? [];
         arr.push({
-          stepId: step.id,
+          stepId: process.id,
           proId: pro.id,
           proNumber: pro.proNumber,
           productName: pro.productName,
-          machineName: step.machine?.name ?? "No Machine",
-          processCode: pro.process?.code ?? "",
-          processName: pro.process?.name ?? "",
-          orderNo: step.orderNo,
-          up: step.up ?? 1,
+          machineName: process.machine?.name ?? "No Machine",
+          processCode: pro.proPrefix?.code ?? "",
+          processName: pro.proPrefix?.name ?? "",
+          orderNo: process.orderNo,
+          up: process.up ?? 1,
           qtyPoPcs: pro.qtyPoPcs,
           status: pro.status,
           startDate: actualDay,
-          materials: (step as any).materials ?? [],
+          materials: (process as any).materials ?? [],
         });
         map.set(dateStr, arr);
       }
@@ -653,53 +691,59 @@ export default function PPICSchedule({ onSelectPro }: Props) {
             pro.productName.toLowerCase().includes(q)
           : true,
       );
-      
+
     const items = filtered;
     const range = { start: weekStart, end: weekEnd };
     const itemsMap = new Map<string, SlotItem[]>();
     const usageMap = new Map<string, number>();
 
     for (const pro of items) {
-      for (const step of (pro.steps ?? [])) {
-        if (!step.machine?.id) continue;
-        const stepStartVal = (step as any).startDate;
+      for (const process of pro.proses ?? []) {
+        if (!process.machine?.id) continue;
+        const stepStartVal = (process as any).startDate ?? pro.startDate;
         if (!stepStartVal) continue;
 
         const actualDay = startOfDay(new Date(stepStartVal));
         const actualShift = shiftFromDate(new Date(stepStartVal));
 
-        const slotId = `${dateKey(actualDay)}::${step.machine.id}`;
-        
-        if (actualDay >= range.start && actualDay <= range.end) {
-           // Key includes SHIFT now: date::machine::shift
-           const slotId = `${dateKey(actualDay)}::${step.machine.id}::${actualShift}`;
-           
-           const arr = itemsMap.get(slotId) ?? [];
-           arr.push({
-              key: `${step.id}::${slotId}`, 
-              proId: pro.id,
-              stepId: step.id, 
-              proNumber: pro.proNumber,
-              productName: pro.productName,
-              status: pro.status,
-              orderNo: step.orderNo,
-              processCode: pro.process?.code ?? "??",
-              processName: pro.process?.name ?? "(tanpa nama)",
-              machineName: step.machine?.name ?? null,
-              up: step.up ?? 1,
-              qtyPoPcs: pro.qtyPoPcs,
-              startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
-              materials: (step as any).materials ?? [],
-           });
-           itemsMap.set(slotId, arr);
+        const slotId = `${dateKey(actualDay)}::${process.machine.id}`; // Base slot ID
 
-           // Calculate Usage
-           const mats = (step as any).materials ?? [];
-           const sheetMat = mats.find((m: any) => m.material?.uom?.toLowerCase() === 'sheet');
-           if (sheetMat) {
-              const current = usageMap.get(slotId) ?? 0;
-              usageMap.set(slotId, current + Number(sheetMat.qtyReq));
-           }
+        // We need detailed slot ID for unique items in the view
+        // The View uses date::machine::shift for columns/cells?
+        // Actually looking at handleDragEnd:
+        // Machine View: date::machine::shift
+
+        if (actualDay >= range.start && actualDay <= range.end) {
+          const detailedSlotId = `${dateKey(actualDay)}::${process.machine.id}::${actualShift}`;
+
+          const arr = itemsMap.get(detailedSlotId) ?? [];
+          arr.push({
+            key: String(process.id),
+            proId: pro.id,
+            stepId: process.id,
+            proNumber: pro.proNumber,
+            productName: pro.productName,
+            status: pro.status,
+            orderNo: process.orderNo,
+            processCode: pro.proPrefix?.code ?? "",
+            processName: pro.proPrefix?.name ?? "",
+            machineName: process.machine?.name ?? null,
+            up: process.up ?? 1,
+            qtyPoPcs: pro.qtyPoPcs,
+            startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
+            materials: (process as any).materials ?? [],
+          });
+          itemsMap.set(detailedSlotId, arr);
+
+          // Calculate Usage
+          const mats = (process as any).materials ?? [];
+          const sheetMat = mats.find(
+            (m: any) => m.material?.uom?.toLowerCase() === "sheet",
+          );
+          if (sheetMat) {
+            const current = usageMap.get(detailedSlotId) ?? 0;
+            usageMap.set(detailedSlotId, current + Number(sheetMat.qtyReq));
+          }
         }
       }
     }
@@ -711,38 +755,39 @@ export default function PPICSchedule({ onSelectPro }: Props) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold">PPIC Schedule</h2>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="mt-1 flex items-center gap-2">
             <Tabs
               value={proType}
               onValueChange={(v) => setProType(v as "PAPER" | "RIGID")}
             >
               <TabsList className="h-7">
-                <TabsTrigger value="PAPER" className="text-xs h-5 px-2">
+                <TabsTrigger value="PAPER" className="h-5 px-2 text-xs">
                   Paper
                 </TabsTrigger>
-                <TabsTrigger value="RIGID" className="text-xs h-5 px-2">
+                <TabsTrigger value="RIGID" className="h-5 px-2 text-xs">
                   Rigid
                 </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
-          <p className="text-xs opacity-60 mt-1">
-             {tab === "shift" 
-               ? (viewMode === "shift" ? "View per Shift" : "View per Mesin") 
-               : "Kalender Bulanan"
-             }
+          <p className="mt-1 text-xs opacity-60">
+            {tab === "shift"
+              ? viewMode === "shift"
+                ? "View per Shift"
+                : "View per Mesin"
+              : "Kalender Bulanan"}
           </p>
         </div>
 
         <div className="relative w-full sm:w-64">
-           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-           <Input
-             type="text"
-             placeholder="Cari No. PRO / Produk..."
-             className="pl-8"
-             value={searchQuery}
-             onChange={(e) => setSearchQuery(e.target.value)}
-           />
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Cari No. PRO / Produk..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
@@ -752,293 +797,378 @@ export default function PPICSchedule({ onSelectPro }: Props) {
             <TabsTrigger value="shift">Mingguan</TabsTrigger>
             <TabsTrigger value="month">Bulanan</TabsTrigger>
           </TabsList>
-          
+
           {tab === "shift" && (
-            <div className="flex bg-muted rounded-md p-1">
-               <button 
-                 onClick={() => setViewMode("shift")}
-                 className={`px-3 py-1 text-xs rounded-sm ${viewMode === "shift" ? "bg-background shadow font-medium" : "opacity-70 hover:opacity-100"}`}
-               >
-                 Shift
-               </button>
-               <button 
-                 onClick={() => setViewMode("machine")}
-                 className={`px-3 py-1 text-xs rounded-sm ${viewMode === "machine" ? "bg-background shadow font-medium" : "opacity-70 hover:opacity-100"}`}
-               >
-                 Mesin
-               </button>
+            <div className="bg-muted flex rounded-md p-1">
+              <button
+                onClick={() => setViewMode("shift")}
+                className={`rounded-sm px-3 py-1 text-xs ${viewMode === "shift" ? "bg-background font-medium shadow" : "opacity-70 hover:opacity-100"}`}
+              >
+                Shift
+              </button>
+              <button
+                onClick={() => setViewMode("machine")}
+                className={`rounded-sm px-3 py-1 text-xs ${viewMode === "machine" ? "bg-background font-medium shadow" : "opacity-70 hover:opacity-100"}`}
+              >
+                Mesin
+              </button>
             </div>
           )}
         </div>
 
         <TooltipProvider delayDuration={300}>
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          <TabsContent value="shift" className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const d = new Date(weekCursor);
-                  d.setDate(d.getDate() - 7);
-                  setWeekCursor(d);
-                }}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="bg-muted/50 w-56 rounded-md border py-1.5 text-center text-sm font-medium">
-                {weekLabel}
+            <TabsContent value="shift" className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const d = new Date(weekCursor);
+                    d.setDate(d.getDate() - 7);
+                    setWeekCursor(d);
+                  }}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="bg-muted/50 w-56 rounded-md border py-1.5 text-center text-sm font-medium">
+                  {weekLabel}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const d = new Date(weekCursor);
+                    d.setDate(d.getDate() + 7);
+                    setWeekCursor(d);
+                  }}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setWeekCursor(new Date())}
+                >
+                  Minggu Ini
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const d = new Date(weekCursor);
-                  d.setDate(d.getDate() + 7);
-                  setWeekCursor(d);
-                }}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setWeekCursor(new Date())}>
-                Minggu Ini
-              </Button>
-            </div>
 
-            <div className="rounded-lg border bg-card overflow-x-auto">
-              <div className="min-w-[1100px]">
-                <div className="grid grid-cols-[140px_repeat(7,minmax(0,1fr))]">
-                  <div className="border-b border-r p-3 text-xs font-semibold opacity-60">
-                    {viewMode === "shift" ? "SHIFT" : "MESIN"}
-                  </div>
-                  {weekDays.map((d) => (
-                    <div key={dateKey(d)} className="border-b border-r p-3 text-center">
-                      <div className="text-xs font-semibold">
-                        {d.toLocaleDateString("id-ID", { weekday: "short" })}
-                      </div>
-                      <div className="text-xs opacity-70">{d.getDate()}</div>
+              <div className="bg-card overflow-x-auto rounded-lg border">
+                <div className="min-w-[1100px]">
+                  <div className="grid grid-cols-[140px_repeat(7,minmax(0,1fr))]">
+                    <div className="border-r border-b p-3 text-xs font-semibold opacity-60">
+                      {viewMode === "shift" ? "SHIFT" : "MESIN"}
                     </div>
-                  ))}
-
-                  {/* RENDER CONTENT BASED ON VIEW MODE */}
-                  {viewMode === "shift" ? (
-                    // SHIFT VIEW
-                    SHIFTS.map((s) => (
-                      <React.Fragment key={s.no}>
-                        <div className="border-b border-r p-3">
-                          <div className="text-sm font-semibold">{s.label}</div>
-                          <div className="text-[11px] opacity-60">{s.time}</div>
+                    {weekDays.map((d) => (
+                      <div
+                        key={dateKey(d)}
+                        className="border-r border-b p-3 text-center"
+                      >
+                        <div className="text-xs font-semibold">
+                          {d.toLocaleDateString("id-ID", { weekday: "short" })}
                         </div>
+                        <div className="text-xs opacity-70">{d.getDate()}</div>
+                      </div>
+                    ))}
 
-                        {weekDays.map((d) => {
-                          const slotId = `${dateKey(d)}::${s.no}`;
-                          const slotItems = shiftSlotMap.get(slotId) ?? [];
+                    {/* RENDER CONTENT BASED ON VIEW MODE */}
+                    {viewMode === "shift"
+                      ? // SHIFT VIEW
+                        SHIFTS.map((s) => (
+                          <React.Fragment key={s.no}>
+                            <div className="border-r border-b p-3">
+                              <div className="text-sm font-semibold">
+                                {s.label}
+                              </div>
+                              <div className="text-[11px] opacity-60">
+                                {s.time}
+                              </div>
+                            </div>
 
-                          return (
-                            <DroppableCell
-                              key={slotId}
-                              id={slotId}
-                              className="border-b border-r p-2 min-h-[140px]"
-                            >
-                               {/* Render items... reuse existing code */}
-                               {weekSchedule.isLoading ? (
-                                  <div className="text-[10px] opacity-40">Loading...</div>
-                               ) : slotItems.length === 0 ? (
-                                  <div className="text-[10px] italic opacity-25">-</div>
-                               ) : (
-                                  <div className="space-y-2">
-                                     {slotItems.map((it) => {
-                                       const { key, ...rest } = it;
-                                       return (
-                                         <DraggableChip 
-                                           key={it.key} 
-                                           id={it.key} 
-                                           onSelect={() => onSelectPro?.(it.proId)}
-                                           tooltip={<PROTooltipContent {...rest} />}
-                                         >
-                                           <div className="flex items-center justify-between gap-2">
-                                              <div className="truncate font-semibold text-blue-700">{it.proNumber}</div>
-                                              <Badge variant="secondary" className="h-5 text-[10px]">{it.status}</Badge>
-                                           </div>
-                                           <div className="truncate text-[11px] opacity-80">{it.productName}</div>
-                                           <div className="mt-1 flex flex-wrap gap-1">
-                                              <Badge variant="outline" className="h-4 max-w-full text-[9px]">
-                                                <span className="truncate">{it.processCode} {it.processName}</span>
+                            {weekDays.map((d) => {
+                              const slotId = `${dateKey(d)}::${s.no}`;
+                              const slotItems = shiftSlotMap.get(slotId) ?? [];
+
+                              return (
+                                <DroppableCell
+                                  key={slotId}
+                                  id={slotId}
+                                  className="min-h-[140px] border-r border-b p-2"
+                                >
+                                  {/* Render items... reuse existing code */}
+                                  {weekSchedule.isLoading ? (
+                                    <div className="text-[10px] opacity-40">
+                                      Loading...
+                                    </div>
+                                  ) : slotItems.length === 0 ? (
+                                    <div className="text-[10px] italic opacity-25">
+                                      -
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      {slotItems.map((it) => {
+                                        const { key, ...rest } = it;
+                                        return (
+                                          <DraggableChip
+                                            key={it.key}
+                                            id={it.key}
+                                            onSelect={() =>
+                                              onSelectPro?.(it.proId)
+                                            }
+                                            tooltip={
+                                              <PROTooltipContent {...rest} />
+                                            }
+                                          >
+                                            <div className="flex items-center justify-between gap-2">
+                                              <div className="truncate font-semibold text-blue-700">
+                                                {it.proNumber}
+                                              </div>
+                                              <Badge
+                                                variant="secondary"
+                                                className="h-5 text-[10px]"
+                                              >
+                                                {it.status}
+                                              </Badge>
+                                            </div>
+                                            <div className="truncate text-[11px] opacity-80">
+                                              {it.productName}
+                                            </div>
+                                            <div className="mt-1 flex flex-wrap gap-1">
+                                              <Badge
+                                                variant="outline"
+                                                className="h-4 max-w-full text-[9px]"
+                                              >
+                                                <span className="truncate">
+                                                  {it.processCode}{" "}
+                                                  {it.processName}
+                                                </span>
                                               </Badge>
                                               {it.machineName && (
-                                                <Badge variant="outline" className="h-4 max-w-full text-[9px]">
-                                                   <span className="truncate">M: {it.machineName}</span>
+                                                <Badge
+                                                  variant="outline"
+                                                  className="h-4 max-w-full text-[9px]"
+                                                >
+                                                  <span className="truncate">
+                                                    M: {it.machineName}
+                                                  </span>
                                                 </Badge>
                                               )}
-                                           </div>
-                                         </DraggableChip>
-                                       );
-                                     })}
-                                  </div>
-                               )}
-                            </DroppableCell>
+                                            </div>
+                                          </DraggableChip>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </DroppableCell>
+                              );
+                            })}
+                          </React.Fragment>
+                        ))
+                      : // MACHINE VIEW
+                        (machines.data ?? []).map((m) => {
+                          return (
+                            <React.Fragment key={m.id}>
+                              <div className="border-r border-b p-3">
+                                <div
+                                  className="truncate text-sm font-semibold"
+                                  title={m.name}
+                                >
+                                  {m.name}
+                                </div>
+                              </div>
+
+                              {weekDays.map((d) => (
+                                <div
+                                  key={dateKey(d)}
+                                  className="border-r border-b p-1"
+                                >
+                                  {[1, 2, 3].map((shiftNo) => {
+                                    const slotId = `${dateKey(d)}::${m.id}::${shiftNo}`;
+                                    const slotItems =
+                                      machineSlotData.itemsMap.get(slotId) ??
+                                      [];
+                                    const used =
+                                      machineSlotData.usageMap.get(slotId) ?? 0;
+                                    const cap = m.stdOutputPerShift ?? 0;
+                                    const isOverload = cap > 0 && used > cap;
+
+                                    return (
+                                      <DroppableCell
+                                        key={slotId}
+                                        id={slotId}
+                                        className={`mb-1 flex min-h-[60px] flex-col rounded p-1.5 last:mb-0 ${isOverload ? "bg-red-100/50" : "bg-muted/10 ring-border/30 ring-1"}`}
+                                      >
+                                        <div
+                                          className={`mb-1 flex items-center justify-between text-[9px] font-medium ${isOverload ? "text-red-700" : "text-muted-foreground"}`}
+                                        >
+                                          <span>S{shiftNo}</span>
+                                          {cap > 0 && (
+                                            <span
+                                              className={
+                                                isOverload
+                                                  ? "font-bold text-red-600"
+                                                  : "opacity-70"
+                                              }
+                                            >
+                                              {used > 0
+                                                ? `${used.toLocaleString()} / `
+                                                : ""}
+                                              {cap.toLocaleString()}
+                                              {isOverload && " ⚠️"}
+                                            </span>
+                                          )}
+                                        </div>
+                                        {weekSchedule.isLoading ? (
+                                          <div className="text-[9px] opacity-40">
+                                            ...
+                                          </div>
+                                        ) : (
+                                          <div className="space-y-1">
+                                            {slotItems.map((it) => {
+                                              const { key, ...rest } = it;
+                                              return (
+                                                <DraggableChip
+                                                  key={it.key}
+                                                  id={it.key}
+                                                  onSelect={() =>
+                                                    onSelectPro?.(it.proId)
+                                                  }
+                                                  tooltip={
+                                                    <PROTooltipContent
+                                                      {...rest}
+                                                    />
+                                                  }
+                                                >
+                                                  <div className="flex items-center justify-between gap-1">
+                                                    <div className="truncate text-[10px] font-semibold text-blue-700">
+                                                      {it.proNumber}
+                                                    </div>
+                                                  </div>
+                                                  <div
+                                                    className="truncate text-[9px] opacity-80"
+                                                    title={it.productName}
+                                                  >
+                                                    {it.productName}
+                                                  </div>
+                                                </DraggableChip>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                      </DroppableCell>
+                                    );
+                                  })}
+                                </div>
+                              ))}
+                            </React.Fragment>
                           );
                         })}
-                      </React.Fragment>
-                    ))
-                  ) : (
-                    // MACHINE VIEW
-                    (machines.data ?? []).map((m) => {
-                       return (
-                         <React.Fragment key={m.id}>
-                            <div className="border-b border-r p-3">
-                               <div className="text-sm font-semibold truncate" title={m.name}>{m.name}</div>
-                            </div>
-                            
-                            {weekDays.map((d) => (
-                               <div key={dateKey(d)} className="border-b border-r p-1">
-                                 {[1, 2, 3].map((shiftNo) => {
-                                      const slotId = `${dateKey(d)}::${m.id}::${shiftNo}`;
-                                      const slotItems = machineSlotData.itemsMap.get(slotId) ?? [];
-                                      const used = machineSlotData.usageMap.get(slotId) ?? 0;
-                                      const cap = m.stdOutputPerShift ?? 0;
-                                      const isOverload = cap > 0 && used > cap;
-                                      
-                                      return (
-                                        <DroppableCell
-                                          key={slotId}
-                                          id={slotId}
-                                          className={`mb-1 last:mb-0 rounded p-1.5 min-h-[60px] flex flex-col ${isOverload ? "bg-red-100/50" : "bg-muted/10 ring-1 ring-border/30"}`}
-                                        >
-                                           <div className={`text-[9px] mb-1 font-medium flex justify-between items-center ${isOverload ? "text-red-700" : "text-muted-foreground"}`}>
-                                              <span>S{shiftNo}</span>
-                                              {cap > 0 && (
-                                                <span className={isOverload ? "text-red-600 font-bold" : "opacity-70"}>
-                                                   {used > 0 ? `${used.toLocaleString()} / ` : ""}{cap.toLocaleString()}
-                                                   {isOverload && " ⚠️"}
-                                                </span>
-                                              )}
-                                           </div>
-                                           {weekSchedule.isLoading ? (
-                                              <div className="text-[9px] opacity-40">...</div>
-                                           ) : (
-                                              <div className="space-y-1">
-                                                 {slotItems.map((it) => {
-                                                   const { key, ...rest } = it;
-                                                   return (
-                                                     <DraggableChip 
-                                                       key={it.key} 
-                                                       id={it.key} 
-                                                       onSelect={() => onSelectPro?.(it.proId)}
-                                                       tooltip={<PROTooltipContent {...rest} />}
-                                                     >
-                                                        <div className="flex items-center justify-between gap-1">
-                                                           <div className="truncate font-semibold text-blue-700 text-[10px]">{it.proNumber}</div>
-                                                        </div>
-                                                        <div className="truncate text-[9px] opacity-80" title={it.productName}>
-                                                           {it.productName}
-                                                        </div>
-                                                     </DraggableChip>
-                                                   );
-                                                 })}
-                                              </div>
-                                           )}
-                                        </DroppableCell>
-                                      );
-                                 })}
-                               </div>
-                             ))}
-                           </React.Fragment>
-                        );
-                     })
-
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="text-xs opacity-70">
-              Catatan: untuk saat ini hanya PRO yang startDate-nya jatuh di minggu ini yang tampil.
-            </div>
-          </TabsContent>
-
-          <TabsContent value="month" className="space-y-3">
-             {/* Month view content (unchanged) */}
-             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const d = new Date(currentMonth);
-                  d.setMonth(d.getMonth() - 1);
-                  setCurrentMonth(d);
-                }}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="bg-muted/50 w-56 rounded-md border py-1.5 text-center text-sm font-medium">
-                {monthLabel}
+              <div className="text-xs opacity-70">
+                Catatan: untuk saat ini hanya PRO yang startDate-nya jatuh di
+                minggu ini yang tampil.
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const d = new Date(currentMonth);
-                  d.setMonth(d.getMonth() + 1);
-                  setCurrentMonth(d);
-                }}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setCurrentMonth(new Date())}>
-                Bulan Ini
-              </Button>
-            </div>
+            </TabsContent>
 
-            <div className="rounded-lg border bg-card">
-              <div className="grid grid-cols-7 gap-0 border-b text-[11px] font-semibold opacity-70">
-                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                  <div key={d} className="px-3 py-2 text-center">
-                    {d}
-                  </div>
-                ))}
+            <TabsContent value="month" className="space-y-3">
+              {/* Month view content (unchanged) */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const d = new Date(currentMonth);
+                    d.setMonth(d.getMonth() - 1);
+                    setCurrentMonth(d);
+                  }}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="bg-muted/50 w-56 rounded-md border py-1.5 text-center text-sm font-medium">
+                  {monthLabel}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const d = new Date(currentMonth);
+                    d.setMonth(d.getMonth() + 1);
+                    setCurrentMonth(d);
+                  }}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCurrentMonth(new Date())}
+                >
+                  Bulan Ini
+                </Button>
               </div>
 
-              <div className="max-h-[70vh] overflow-y-auto">
-                {monthWeeks.map((row, idx) => (
-                  <div key={idx} className="grid grid-cols-7 gap-0">
-                    {row.map((day) => {
-                      const k = dateKey(day);
-                      const items = itemsByDay.get(k) ?? [];
-                      const isThisMonth = day.getMonth() === currentMonth.getMonth();
+              <div className="bg-card rounded-lg border">
+                <div className="grid grid-cols-7 gap-0 border-b text-[11px] font-semibold opacity-70">
+                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
+                    (d) => (
+                      <div key={d} className="px-3 py-2 text-center">
+                        {d}
+                      </div>
+                    ),
+                  )}
+                </div>
 
-                      return (
-                        <DroppableCell
-                          key={k}
-                          id={k}
-                          className={`min-h-[140px] border-r border-b p-2 ${!isThisMonth ? "bg-muted/40" : ""}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className={`text-xs font-semibold ${!isThisMonth ? "opacity-40" : ""}`}>
-                              {day.getDate()}
+                <div className="max-h-[70vh] overflow-y-auto">
+                  {monthWeeks.map((row, idx) => (
+                    <div key={idx} className="grid grid-cols-7 gap-0">
+                      {row.map((day) => {
+                        const k = dateKey(day);
+                        const items = itemsByDay.get(k) ?? [];
+                        const isThisMonth =
+                          day.getMonth() === currentMonth.getMonth();
+
+                        return (
+                          <DroppableCell
+                            key={k}
+                            id={k}
+                            className={`min-h-[140px] border-r border-b p-2 ${!isThisMonth ? "bg-muted/40" : ""}`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div
+                                className={`text-xs font-semibold ${!isThisMonth ? "opacity-40" : ""}`}
+                              >
+                                {day.getDate()}
+                              </div>
                             </div>
-                          </div>
 
-                          <div className="mt-2 space-y-1.5">
-                            {monthSchedule.isLoading ? (
-                              <div className="text-[10px] opacity-40">Loading...</div>
-                            ) : items.length === 0 ? (
-                                <div className="text-[10px] italic opacity-25">-</div>
-                            ) : (
+                            <div className="mt-2 space-y-1.5">
+                              {monthSchedule.isLoading ? (
+                                <div className="text-[10px] opacity-40">
+                                  Loading...
+                                </div>
+                              ) : items.length === 0 ? (
+                                <div className="text-[10px] italic opacity-25">
+                                  -
+                                </div>
+                              ) : (
                                 items.map((stepInfo, idx) => (
                                   <DraggableChip
-                                    key={`${stepInfo.stepId}::${k}::${idx}`}
-                                    id={`${stepInfo.stepId}::${k}::${idx}`} // Unique ID for drag
-                                    onSelect={() => onSelectPro?.(stepInfo.proId)}
+                                    key={String(stepInfo.stepId)}
+                                    id={String(stepInfo.stepId)} // Unique ID for drag
+                                    onSelect={() =>
+                                      onSelectPro?.(stepInfo.proId)
+                                    }
                                     tooltip={
-                                      <PROTooltipContent 
-                                        {...stepInfo}
-                                      />
+                                      <PROTooltipContent {...stepInfo} />
                                     }
                                   >
                                     <div className="flex items-start justify-between gap-1">
                                       <div className="min-w-0 flex-1">
-                                        <div className="truncate font-semibold text-blue-700 text-[11px]">
+                                        <div className="truncate text-[11px] font-semibold text-blue-700">
                                           {stepInfo.proNumber}
                                         </div>
                                         <div className="truncate text-[10px] opacity-70">
@@ -1047,27 +1177,32 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                       </div>
                                     </div>
                                     <div className="mt-1 flex items-center gap-1">
-                                      <Badge variant="secondary" className="h-4 text-[9px] font-medium">
+                                      <Badge
+                                        variant="secondary"
+                                        className="h-4 text-[9px] font-medium"
+                                      >
                                         🔧 {stepInfo.machineName}
                                       </Badge>
                                     </div>
                                   </DraggableChip>
                                 ))
-                            )}
-                          </div>
-                        </DroppableCell>
-                      );
-                    })}
-                  </div>
-                ))}
+                              )}
+                            </div>
+                          </DroppableCell>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="text-xs opacity-70">Drag PRO ke tanggal lain untuk mengubah startDate.</div>
-          </TabsContent>
-        </DndContext>
-      </TooltipProvider>
-    </Tabs>
+              <div className="text-xs opacity-70">
+                Drag PRO ke tanggal lain untuk mengubah startDate.
+              </div>
+            </TabsContent>
+          </DndContext>
+        </TooltipProvider>
+      </Tabs>
     </div>
   );
 }
@@ -1119,10 +1254,14 @@ function DraggableChip({
       {...listeners}
       {...attributes}
       onClick={() => {
-        if (transform && (Math.abs(transform.x) > 4 || Math.abs(transform.y) > 4)) return;
+        if (
+          transform &&
+          (Math.abs(transform.x) > 4 || Math.abs(transform.y) > 4)
+        )
+          return;
         onSelect();
       }}
-      className="overflow-hidden rounded border bg-background/50 p-2 text-[11px] cursor-grab active:cursor-grabbing hover:border-primary"
+      className="bg-background/50 hover:border-primary cursor-grab overflow-hidden rounded border p-2 text-[11px] active:cursor-grabbing"
     >
       {children}
     </div>
@@ -1132,9 +1271,7 @@ function DraggableChip({
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        {chipContent}
-      </TooltipTrigger>
+      <TooltipTrigger asChild>{chipContent}</TooltipTrigger>
       <TooltipContent side="right" className="max-w-xs">
         {tooltip}
       </TooltipContent>

@@ -11,6 +11,7 @@ import MachineManager from "./machine-manager";
 import VerificationList from "./verification-list";
 import ProductionArchive from "./production-archive";
 import DashboardOverview from "./dashboard-overview";
+import WipMonitor from "./inventory/wip-monitor";
 
 type Props = {
   user: {
@@ -28,7 +29,8 @@ type NavKey =
   | "settings"
   | "audit"
   | "verification"
-  | "report_archive";
+  | "report_archive"
+  | "inventory";
 
 export default function SuperadminShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("dashboard");
@@ -38,18 +40,20 @@ export default function SuperadminShell({ user }: Props) {
     active === "dashboard"
       ? "Dashboard Overview"
       : active === "users"
-      ? "Kelola Akun"
-      : active === "machines_paper"
-        ? "Kelola Mesin Paper"
-        : active === "machines_rigid"
-          ? "Kelola Mesin Rigid"
-          : active === "settings"
-            ? "Pengaturan"
-            : active === "audit"
-              ? "Audit Log"
-              : active === "verification"
-                ? "Verifikasi Laporan"
-                : "Daftar Laporan";
+        ? "Kelola Akun"
+        : active === "machines_paper"
+          ? "Kelola Mesin Paper"
+          : active === "machines_rigid"
+            ? "Kelola Mesin Rigid"
+            : active === "settings"
+              ? "Pengaturan"
+              : active === "audit"
+                ? "Audit Log"
+                : active === "verification"
+                  ? "Verifikasi Laporan"
+                  : active === "report_archive"
+                    ? "Daftar Laporan"
+                    : "Monitoring Inventory";
 
   // Filter Logic
   const showPaperMachines = !user.department || user.department === "PAPER";
@@ -100,6 +104,22 @@ export default function SuperadminShell({ user }: Props) {
               onClick={() => setActive("dashboard")}
             />
             <SidebarItem
+              label="Monitoring Inventory"
+              active={active === "inventory"}
+              onClick={() => setActive("inventory")}
+            />
+            <SidebarItem
+              label="Verifikasi Laporan"
+              active={active === "verification"}
+              onClick={() => setActive("verification")}
+            />
+            <SidebarItem
+              label="Daftar Laporan"
+              active={active === "report_archive"}
+              onClick={() => setActive("report_archive")}
+            />
+            <div className="my-2 border-t border-dashed" />
+            <SidebarItem
               label="Kelola Akun"
               active={active === "users"}
               onClick={() => setActive("users")}
@@ -113,17 +133,6 @@ export default function SuperadminShell({ user }: Props) {
               label="Pengaturan"
               active={active === "settings"}
               onClick={() => setActive("settings")}
-            />
-            <div className="my-2 border-t border-dashed" />
-            <SidebarItem
-              label="Verifikasi Laporan"
-              active={active === "verification"}
-              onClick={() => setActive("verification")}
-            />
-            <SidebarItem
-              label="Daftar Laporan"
-              active={active === "report_archive"}
-              onClick={() => setActive("report_archive")}
             />
             <div className="px-3 pt-2 pb-1 text-xs font-semibold opacity-50">
               MESIN
@@ -199,6 +208,31 @@ export default function SuperadminShell({ user }: Props) {
                   }}
                 />
                 <SidebarItem
+                  label="Monitoring Inventory"
+                  active={active === "inventory"}
+                  onClick={() => {
+                    setActive("inventory");
+                    setOpen(false);
+                  }}
+                />
+                <SidebarItem
+                  label="Verifikasi Laporan"
+                  active={active === "verification"}
+                  onClick={() => {
+                    setActive("verification");
+                    setOpen(false);
+                  }}
+                />
+                <SidebarItem
+                  label="Daftar Laporan"
+                  active={active === "report_archive"}
+                  onClick={() => {
+                    setActive("report_archive");
+                    setOpen(false);
+                  }}
+                />
+                <div className="my-2 border-t border-dashed" />
+                <SidebarItem
                   label="Kelola Akun"
                   active={active === "users"}
                   onClick={() => {
@@ -219,23 +253,6 @@ export default function SuperadminShell({ user }: Props) {
                   active={active === "settings"}
                   onClick={() => {
                     setActive("settings");
-                    setOpen(false);
-                  }}
-                />
-                <div className="my-2 border-t border-dashed" />
-                <SidebarItem
-                  label="Verifikasi Laporan"
-                  active={active === "verification"}
-                  onClick={() => {
-                    setActive("verification");
-                    setOpen(false);
-                  }}
-                />
-                <SidebarItem
-                  label="Daftar Laporan"
-                  active={active === "report_archive"}
-                  onClick={() => {
-                    setActive("report_archive");
                     setOpen(false);
                   }}
                 />
@@ -309,6 +326,8 @@ export default function SuperadminShell({ user }: Props) {
             <MachineManager machineType="RIGID" />
           ) : active === "report_archive" ? (
             <ProductionArchive userDepartment={user.department} />
+          ) : active === "inventory" ? (
+            <WipMonitor userDepartment={user.department} />
           ) : (
             <VerificationList userDepartment={user.department} />
           )}

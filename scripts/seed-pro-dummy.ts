@@ -20,7 +20,7 @@ async function main() {
   // Hapus LPH yang mungkin terkait (jika ada sisa)
   await prisma.productionReport.deleteMany({
     where: {
-      step: {
+      proses: {
         pro: {
           proNumber: { in: proNumbers },
         },
@@ -123,13 +123,13 @@ async function main() {
   console.log("✅ Machines ready");
 
   // 4. Pastikan Process tersedia
-  const processPaper = await prisma.process.upsert({
+  const processPaper = await prisma.kode_Proses.upsert({
     where: { code: "11" },
     update: {},
     create: { code: "11", name: "Paper Process", type: "PAPER" },
   });
 
-  const processRigid = await prisma.process.upsert({
+  const processRigid = await prisma.kode_Proses.upsert({
     where: { code: "22" },
     update: {},
     create: { code: "22", name: "Rigid Process", type: "RIGID" },
@@ -169,8 +169,8 @@ async function main() {
       startDate: today,
       status: ProStatus.IN_PROGRESS,
       type: "PAPER",
-      processId: processPaper.id,
-      steps: {
+      kode_ProsesId: processPaper.id,
+      proses: {
         create: {
           orderNo: 1,
           machineId: machinePaper.id,
@@ -194,8 +194,8 @@ async function main() {
       startDate: today,
       status: ProStatus.IN_PROGRESS,
       type: "PAPER",
-      processId: processPaper.id,
-      steps: {
+      kode_ProsesId: processPaper.id,
+      proses: {
         create: {
           orderNo: 1,
           machineId: machinePrinting.id,
@@ -222,8 +222,8 @@ async function main() {
       startDate: today,
       status: ProStatus.IN_PROGRESS,
       type: "RIGID",
-      processId: processRigid.id,
-      steps: {
+      kode_ProsesId: processRigid.id,
+      proses: {
         create: {
           orderNo: 1,
           machineId: machinePacking.id,
@@ -247,8 +247,8 @@ async function main() {
       startDate: today,
       status: ProStatus.IN_PROGRESS,
       type: "RIGID",
-      processId: processRigid.id,
-      steps: {
+      kode_ProsesId: processRigid.id,
+      proses: {
         create: {
           orderNo: 1,
           machineId: machineBlow.id,
@@ -272,8 +272,8 @@ async function main() {
       startDate: today,
       status: ProStatus.IN_PROGRESS,
       type: "RIGID",
-      processId: processRigid.id,
-      steps: {
+      kode_ProsesId: processRigid.id,
+      proses: {
         create: {
           orderNo: 1,
           machineId: machineInjection.id,

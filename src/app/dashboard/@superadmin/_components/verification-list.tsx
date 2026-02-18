@@ -63,6 +63,8 @@ export default function VerificationList({
   const approveMutation = api.verification.approveReport.useMutation({
     onSuccess: () => {
       utils.verification.getReports.invalidate();
+      // Auto-refresh WIP Monitor & Matrix after inventory changes
+      utils.inventory.invalidate();
     },
   });
 
@@ -184,10 +186,10 @@ export default function VerificationList({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-slate-600 uppercase">
-                      {rpt.step.pro.proNumber}
+                      {rpt.proses.pro.proNumber}
                     </span>
                     <span className="text-sm font-bold">
-                      {rpt.step.pro.productName}
+                      {rpt.proses.pro.productName}
                     </span>
                   </div>
                   <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
@@ -195,7 +197,7 @@ export default function VerificationList({
                       Operator: {rpt.operatorName}
                     </span>
                     <span>•</span>
-                    <span>{rpt.step.machine?.name}</span>
+                    <span>{rpt.proses.machine?.name}</span>
                     <span>•</span>
                     <span>Shift {rpt.shift}</span>
                     <span>•</span>
@@ -254,18 +256,42 @@ export default function VerificationList({
               </div>
 
               {/* Stats Grid */}
+              {/* Stats Grid */}
               <div className="grid grid-cols-4 gap-2 rounded-lg bg-slate-50 p-3 text-xs dark:bg-slate-950/50">
-                <div className="col-span-2">
+                <div
+                  className={
+                    rpt.reportType === "PAPER" || Number(rpt.qtyWip) > 0
+                      ? "col-span-1"
+                      : "col-span-2"
+                  }
+                >
                   <div className="font-semibold text-slate-500">
-                    Pass On / Good
+                    {rpt.reportType === "PAPER"
+                      ? "Pass On / FG"
+                      : "Pass On / Good"}
                   </div>
                   <div className="text-lg font-bold text-slate-700 dark:text-slate-200">
                     {(
                       Number(rpt.qtyGood) + Number(rpt.qtyPassOn)
-                    )}
+                    ).toLocaleString("id-ID")}
+                    <span className="ml-1 text-xs font-normal text-slate-500">
+                      {rpt.reportType === "PAPER" ? "(Pcs)" : ""}
+                    </span>
                   </div>
                 </div>
-                <div>
+
+                {(rpt.reportType === "PAPER" || Number(rpt.qtyWip) > 0) && (
+                  <div className="col-span-1">
+                    <div className="font-semibold text-blue-600 dark:text-blue-400">
+                      WIP (Current)
+                    </div>
+                    <div className="text-lg font-bold text-blue-700 dark:text-blue-500">
+                      {Number(rpt.qtyWip).toLocaleString("id-ID")}
+                    </div>
+                  </div>
+                )}
+
+                <div className="col-span-1">
                   <span className="font-semibold text-red-500">Reject</span>
                   <div className="text-lg font-bold text-red-600">
                     {Number(rpt.qtyReject).toLocaleString("id-ID")}{" "}

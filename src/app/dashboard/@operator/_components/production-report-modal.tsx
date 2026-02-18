@@ -1020,25 +1020,49 @@ export function ProductionReportModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Confirmation dialog
-    const confirmed = window.confirm(
-      "Apakah Anda yakin data sudah benar dan siap dikirim untuk verifikasi?",
-    );
-    if (!confirmed) {
+    // Guard: machineId and partNumber must be set by PPIC
+    if (!task?.step?.machineId) {
+      alert("Mesin belum di-assign oleh PPIC untuk proses ini. Hubungi PPIC.");
       return;
     }
-
-    setLoading(true);
+    if (!task?.step?.partNumber) {
+      alert(
+        "Part Number belum diisi oleh PPIC untuk proses ini. Hubungi PPIC.",
+      );
+      return;
+    }
 
     if (!formData.operatorName.trim()) {
       alert("Nama Operator wajib diisi!");
-      setLoading(false);
       return;
     }
 
+    // Guard: qtyGood and qtyPassOn must be explicitly provided
+    if (formData.qtyGood === "" && formData.qtyPassOn === "") {
+      alert("Output (Qty Good atau Qty Pass On) wajib diisi!");
+      return;
+    }
+
+    // Confirm if qtyPassOn is 0
+    const passOnVal = parseInteger(formData.qtyPassOn);
+    if (passOnVal === 0) {
+      const zeroConfirm = window.confirm(
+        "Output Pass On = 0. Apakah Anda yakin? (misal: shift full downtime)",
+      );
+      if (!zeroConfirm) return;
+    }
+
+    // Final confirmation
+    const confirmed = window.confirm(
+      "Apakah Anda yakin data sudah benar dan siap dikirim untuk verifikasi?",
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+
     // Common data structure
     const commonData = {
-      proStepId: task.step.id,
+      prosesId: task.step.id,
       shift: Number(formData.shift) || task.shift,
       reportDate: new Date(formData.startDate),
       operatorName: formData.operatorName,
@@ -2475,6 +2499,17 @@ export function ProductionReportModal({
             </button>
           </div>
           <div className="flex w-full gap-2 sm:w-auto">
+            {(!task?.step?.machineId || !task?.step?.partNumber) && (
+              <div className="flex w-full items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span>
+                  {!task?.step?.machineId
+                    ? "Mesin belum di-assign oleh PPIC."
+                    : "Part Number belum diisi oleh PPIC."}{" "}
+                  Hubungi PPIC untuk melengkapi data sebelum submit.
+                </span>
+              </div>
+            )}
             <Button
               type="button"
               variant="ghost"
@@ -2486,8 +2521,10 @@ export function ProductionReportModal({
             <Button
               form="lph-form"
               type="submit"
-              disabled={loading}
-              className="flex-1 bg-blue-600 px-8 font-bold shadow-lg shadow-blue-900/20 hover:bg-blue-700 sm:flex-none"
+              disabled={
+                loading || !task?.step?.machineId || !task?.step?.partNumber
+              }
+              className="flex-1 bg-blue-600 px-8 font-bold shadow-lg shadow-blue-900/20 hover:bg-blue-700 disabled:opacity-50 sm:flex-none"
             >
               {loading ? "Mengirim..." : "Kirim Laporan"}
             </Button>

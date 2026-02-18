@@ -153,11 +153,12 @@ exports.Prisma.MaterialScalarFieldEnum = {
   id: 'id',
   name: 'name',
   uom: 'uom',
+  type: 'type',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.ProcessScalarFieldEnum = {
+exports.Prisma.ProPrefixScalarFieldEnum = {
   id: 'id',
   code: 'code',
   name: 'name',
@@ -173,17 +174,18 @@ exports.Prisma.ProScalarFieldEnum = {
   id: 'id',
   proNumber: 'proNumber',
   productName: 'productName',
+  partNumber: 'partNumber',
   qtyPoPcs: 'qtyPoPcs',
   startDate: 'startDate',
   status: 'status',
   type: 'type',
   autoShiftExpansion: 'autoShiftExpansion',
-  processId: 'processId',
+  proPrefixId: 'proPrefixId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.ProStepScalarFieldEnum = {
+exports.Prisma.ProsesScalarFieldEnum = {
   id: 'id',
   proId: 'proId',
   orderNo: 'orderNo',
@@ -195,16 +197,16 @@ exports.Prisma.ProStepScalarFieldEnum = {
   batchNo: 'batchNo'
 };
 
-exports.Prisma.ProStepMaterialScalarFieldEnum = {
+exports.Prisma.ProsesMaterialScalarFieldEnum = {
   id: 'id',
-  stepId: 'stepId',
+  prosesId: 'prosesId',
   materialId: 'materialId',
   qtyReq: 'qtyReq'
 };
 
 exports.Prisma.ProductionReportScalarFieldEnum = {
   id: 'id',
-  proStepId: 'proStepId',
+  prosesId: 'prosesId',
   reportDate: 'reportDate',
   shift: 'shift',
   operatorName: 'operatorName',
@@ -239,7 +241,35 @@ exports.Prisma.ProductionReportScalarFieldEnum = {
   status: 'status',
   rejectionNote: 'rejectionNote',
   checkedById: 'checkedById',
-  checkedAt: 'checkedAt'
+  checkedAt: 'checkedAt',
+  voidedAt: 'voidedAt',
+  voidedById: 'voidedById',
+  voidReason: 'voidReason',
+  stockPostedAt: 'stockPostedAt',
+  inputWipQty: 'inputWipQty'
+};
+
+exports.Prisma.InventoryLocationScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  type: 'type',
+  machineId: 'machineId'
+};
+
+exports.Prisma.InventoryTxnScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  date: 'date',
+  type: 'type',
+  itemId: 'itemId',
+  qty: 'qty',
+  locationId: 'locationId',
+  proId: 'proId',
+  prosesId: 'prosesId',
+  productionReportId: 'productionReportId',
+  notes: 'notes',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -275,7 +305,7 @@ exports.Prisma.MaterialOrderByRelevanceFieldEnum = {
   uom: 'uom'
 };
 
-exports.Prisma.ProcessOrderByRelevanceFieldEnum = {
+exports.Prisma.ProPrefixOrderByRelevanceFieldEnum = {
   code: 'code',
   name: 'name'
 };
@@ -286,10 +316,11 @@ exports.Prisma.ProSequenceOrderByRelevanceFieldEnum = {
 
 exports.Prisma.ProOrderByRelevanceFieldEnum = {
   proNumber: 'proNumber',
-  productName: 'productName'
+  productName: 'productName',
+  partNumber: 'partNumber'
 };
 
-exports.Prisma.ProStepOrderByRelevanceFieldEnum = {
+exports.Prisma.ProsesOrderByRelevanceFieldEnum = {
   partNumber: 'partNumber',
   batchNo: 'batchNo'
 };
@@ -314,7 +345,22 @@ exports.Prisma.ProductionReportOrderByRelevanceFieldEnum = {
   adminNote: 'adminNote',
   createdById: 'createdById',
   rejectionNote: 'rejectionNote',
-  checkedById: 'checkedById'
+  checkedById: 'checkedById',
+  voidedById: 'voidedById',
+  voidReason: 'voidReason'
+};
+
+exports.Prisma.InventoryLocationOrderByRelevanceFieldEnum = {
+  code: 'code',
+  name: 'name'
+};
+
+exports.Prisma.InventoryTxnOrderByRelevanceFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  itemId: 'itemId',
+  productionReportId: 'productionReportId',
+  notes: 'notes'
 };
 exports.Role = exports.$Enums.Role = {
   SUPERADMIN: 'SUPERADMIN',
@@ -336,6 +382,12 @@ exports.MachineType = exports.$Enums.MachineType = {
   RIGID: 'RIGID'
 };
 
+exports.MaterialType = exports.$Enums.MaterialType = {
+  RAW: 'RAW',
+  WIP: 'WIP',
+  CONSUMABLE: 'CONSUMABLE'
+};
+
 exports.ProType = exports.$Enums.ProType = {
   PAPER: 'PAPER',
   RIGID: 'RIGID',
@@ -345,6 +397,7 @@ exports.ProType = exports.$Enums.ProType = {
 exports.ProStatus = exports.$Enums.ProStatus = {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETE: 'COMPLETE',
   CLOSED: 'CLOSED',
   CANCELLED: 'CANCELLED'
 };
@@ -360,19 +413,36 @@ exports.LphType = exports.$Enums.LphType = {
 exports.ReportStatus = exports.$Enums.ReportStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
-  REJECTED: 'REJECTED'
+  REJECTED: 'REJECTED',
+  VOID: 'VOID'
+};
+
+exports.LocationType = exports.$Enums.LocationType = {
+  WIP: 'WIP',
+  FG: 'FG',
+  RAW: 'RAW',
+  HOLD: 'HOLD',
+  SCRAP: 'SCRAP'
+};
+
+exports.TxnType = exports.$Enums.TxnType = {
+  IN: 'IN',
+  OUT: 'OUT',
+  ADJUST: 'ADJUST'
 };
 
 exports.Prisma.ModelName = {
   User: 'User',
   Machine: 'Machine',
   Material: 'Material',
-  Process: 'Process',
+  ProPrefix: 'ProPrefix',
   ProSequence: 'ProSequence',
   Pro: 'Pro',
-  ProStep: 'ProStep',
-  ProStepMaterial: 'ProStepMaterial',
-  ProductionReport: 'ProductionReport'
+  Proses: 'Proses',
+  ProsesMaterial: 'ProsesMaterial',
+  ProductionReport: 'ProductionReport',
+  InventoryLocation: 'InventoryLocation',
+  InventoryTxn: 'InventoryTxn'
 };
 
 /**

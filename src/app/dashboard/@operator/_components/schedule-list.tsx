@@ -175,7 +175,7 @@ export function ScheduleList() {
         <div className="space-y-4">
           {schedule.data
             ?.flatMap((pro) =>
-              pro.steps.map((step) => {
+              pro.proses.map((step) => {
                 const stepDate = step.startDate
                   ? new Date(step.startDate)
                   : null;
@@ -270,7 +270,7 @@ export function ScheduleList() {
                             Proses
                           </span>
                           <span className="text-xs font-black">
-                            {pro.process?.name}
+                            {pro.proPrefix?.name}
                           </span>
                         </div>
                       </div>

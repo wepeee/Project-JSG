@@ -10,7 +10,8 @@ export const processesRouter = createTRPCRouter({
   list: ppicProcedure
     .input(z.object({ type: z.enum(["PAPER", "RIGID", "OTHER"]).optional() }))
     .query(({ ctx, input }) => {
-      return ctx.db.process.findMany({
+      // Logic adjusted to use ProPrefix (formerly Kode_Proses)
+      return ctx.db.proPrefix.findMany({
         where: input.type ? { type: input.type } : undefined,
         orderBy: { code: "asc" },
       });
@@ -19,14 +20,14 @@ export const processesRouter = createTRPCRouter({
   create: ppicProcedure
     .input(
       z.object({
-        code: z.string().regex(/^\d{2}$/, "Kode proses harus 2 digit (00-99)"),
-        name: z.string().min(1, "Nama proses wajib diisi"),
+        code: z.string().regex(/^\d{2}$/, "Code harus 2 digit (00-99)"),
+        name: z.string().min(1, "Nama prefix wajib diisi"),
         type: z.enum(["PAPER", "RIGID", "OTHER"]).optional().default("PAPER"),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        return await ctx.db.process.create({
+        return await ctx.db.proPrefix.create({
           data: {
             code: input.code,
             name: input.name.trim(),
@@ -40,7 +41,7 @@ export const processesRouter = createTRPCRouter({
         ) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "Kode / nama proses sudah ada",
+            message: "Kode / nama prefix sudah ada",
           });
         }
         throw e;
@@ -58,7 +59,7 @@ export const processesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        return await ctx.db.process.update({
+        return await ctx.db.proPrefix.update({
           where: { id: input.id },
           data: {
             code: input.code,
@@ -73,7 +74,7 @@ export const processesRouter = createTRPCRouter({
         ) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "Kode / nama proses sudah dipakai",
+            message: "Kode / nama prefix sudah dipakai",
           });
         }
         throw e;
@@ -83,8 +84,8 @@ export const processesRouter = createTRPCRouter({
   delete: ppicProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      // kalau proses sudah dipakai di PRO step, delete bakal gagal (FK). Itu bagus.
-      await ctx.db.process.delete({ where: { id: input.id } });
+      // kalau sudah dipakai di PRO, delete bakal gagal (FK). Itu bagus.
+      await ctx.db.proPrefix.delete({ where: { id: input.id } });
       return { ok: true };
     }),
 });

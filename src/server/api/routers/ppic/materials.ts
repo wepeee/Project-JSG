@@ -18,13 +18,20 @@ export const materialsRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().min(1),
-        uom: z.enum(UOM_OPTIONS),
+        uom: z.string(),
+        type: z.string().default("wip"),
+        stock: z.number().default(0),
         remark: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.material.create({
-        data: { name: input.name.trim(), uom: input.uom },
+        data: {
+          name: input.name.trim(),
+          uom: input.uom,
+          type: input.type,
+          stock: input.stock,
+        },
       });
     }),
 
@@ -33,14 +40,21 @@ export const materialsRouter = createTRPCRouter({
       z.object({
         id: z.number().int().positive(),
         name: z.string().min(1),
-        uom: z.enum(UOM_OPTIONS),
+        uom: z.string(),
+        type: z.string().optional(),
+        stock: z.number().optional(),
         remark: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.material.update({
         where: { id: input.id },
-        data: { name: input.name.trim(), uom: input.uom },
+        data: {
+          name: input.name.trim(),
+          uom: input.uom,
+          type: input.type,
+          stock: input.stock,
+        },
       });
     }),
 

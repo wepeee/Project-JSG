@@ -49,8 +49,8 @@ export function HistoryList() {
   // Construct task object for modal when editing
   const getTaskFromReport = (report: any) => {
     return {
-      pro: report.step.pro,
-      step: report.step,
+      pro: report.proses.pro,
+      step: report.proses,
       shift: report.shift,
     };
   };
@@ -103,10 +103,10 @@ export function HistoryList() {
             {/* Context Info (Only needed in general list) */}
             <div className="mb-2 flex items-center gap-2 border-b border-dashed border-slate-200 pb-2 dark:border-slate-800">
               <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                {rpt.step.pro.proNumber}
+                {rpt.proses.pro.proNumber}
               </span>
               <span className="line-clamp-1 text-xs font-bold text-slate-800 dark:text-slate-200">
-                {rpt.step.pro.productName}
+                {rpt.proses.pro.productName}
               </span>
             </div>
 

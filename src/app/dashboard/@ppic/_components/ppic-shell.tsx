@@ -20,18 +20,15 @@ type Props = {
   };
 };
 
-type NavKey =
-  | "schedule"
-  | "prolist"
-  | "materials"
-  | "processes"
-  | "planning";
+type NavKey = "schedule" | "prolist" | "materials" | "processes" | "planning";
 
 export default function PPICShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("prolist");
   const [open, setOpen] = React.useState(false);
-  const [proTypeFilter, setProTypeFilter] = React.useState<"PAPER" | "RIGID" | "ALL">("PAPER"); // Added
-  
+  const [proTypeFilter, setProTypeFilter] = React.useState<
+    "PAPER" | "RIGID" | "ALL"
+  >("PAPER"); // Added
+
   const [jumpToProId, setJumpToProId] = React.useState<number | null>(null);
 
   const title =
@@ -87,9 +84,27 @@ export default function PPICShell({ user }: Props) {
               active={active === "prolist"}
               onClick={() => setActive("prolist")}
               submenu={[
-                { label: "Paper Box", onClick: () => { setActive("prolist"); setProTypeFilter("PAPER"); } },
-                { label: "Rigid Box", onClick: () => { setActive("prolist"); setProTypeFilter("RIGID"); } },
-                { label: "Semua", onClick: () => { setActive("prolist"); setProTypeFilter("ALL"); } },
+                {
+                  label: "Paper Box",
+                  onClick: () => {
+                    setActive("prolist");
+                    setProTypeFilter("PAPER");
+                  },
+                },
+                {
+                  label: "Rigid Box",
+                  onClick: () => {
+                    setActive("prolist");
+                    setProTypeFilter("RIGID");
+                  },
+                },
+                {
+                  label: "Semua",
+                  onClick: () => {
+                    setActive("prolist");
+                    setProTypeFilter("ALL");
+                  },
+                },
               ]}
             />
             <SidebarItem
@@ -162,9 +177,30 @@ export default function PPICShell({ user }: Props) {
                     setOpen(false);
                   }}
                   submenu={[
-                    { label: "Paper Box", onClick: () => { setActive("prolist"); setProTypeFilter("PAPER"); setOpen(false); } },
-                    { label: "Rigid Box", onClick: () => { setActive("prolist"); setProTypeFilter("RIGID"); setOpen(false); } },
-                    { label: "Semua", onClick: () => { setActive("prolist"); setProTypeFilter("ALL"); setOpen(false); } },
+                    {
+                      label: "Paper Box",
+                      onClick: () => {
+                        setActive("prolist");
+                        setProTypeFilter("PAPER");
+                        setOpen(false);
+                      },
+                    },
+                    {
+                      label: "Rigid Box",
+                      onClick: () => {
+                        setActive("prolist");
+                        setProTypeFilter("RIGID");
+                        setOpen(false);
+                      },
+                    },
+                    {
+                      label: "Semua",
+                      onClick: () => {
+                        setActive("prolist");
+                        setProTypeFilter("ALL");
+                        setOpen(false);
+                      },
+                    },
                   ]}
                 />
                 <SidebarItem
@@ -217,7 +253,7 @@ export default function PPICShell({ user }: Props) {
         ) : null}
 
         {/* Main */}
-        <main className="w-full px-4 py-6 lg:px-6">
+        <main className="min-w-0 flex-1 overflow-hidden px-4 py-6 lg:px-6">
           {/* Desktop header */}
           <div className="mb-6 hidden items-center justify-between lg:flex">
             <div>
@@ -231,24 +267,24 @@ export default function PPICShell({ user }: Props) {
           <Separator className="mb-6 hidden lg:block" />
 
           {active === "prolist" ? (
-            <ProList 
-              initialSelectedId={jumpToProId} 
+            <ProList
+              initialSelectedId={jumpToProId}
               onClearJump={() => setJumpToProId(null)}
               initialTypeFilter={proTypeFilter} // Added
             />
           ) : active === "planning" ? (
             <ProPlanner />
           ) : active === "schedule" ? (
-             <PPICSchedule 
+            <PPICSchedule
               onSelectPro={(id) => {
                 setJumpToProId(id);
                 setActive("prolist");
-              }} 
+              }}
             />
           ) : active === "processes" ? (
             <ProcessManager />
           ) : (
-             <MaterialManager />
+            <MaterialManager />
           )}
         </main>
       </div>
@@ -301,7 +337,7 @@ function SidebarItemWithSubmenu({
           setShowSubmenu(!showSubmenu);
         }}
         className={[
-          "w-full rounded-md px-3 py-2 text-left text-sm flex items-center justify-between",
+          "flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm",
           active ? "bg-muted font-medium" : "hover:bg-muted/60",
         ].join(" ")}
       >
@@ -312,17 +348,22 @@ function SidebarItemWithSubmenu({
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
       {showSubmenu && (
-        <div className="ml-4 mt-1 space-y-1">
+        <div className="mt-1 ml-4 space-y-1">
           {submenu.map((item, idx) => (
             <button
               key={idx}
               type="button"
               onClick={item.onClick}
-              className="w-full rounded-md px-3 py-1.5 text-left text-xs hover:bg-muted/60"
+              className="hover:bg-muted/60 w-full rounded-md px-3 py-1.5 text-left text-xs"
             >
               {item.label}
             </button>

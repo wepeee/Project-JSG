@@ -39,11 +39,11 @@ export const prosRouter = createTRPCRouter({
       z.object({
         q: z.string().optional(), // search proNumber / productName
         status: z
-          .enum(["OPEN", "IN_PROGRESS", "CLOSED", "CANCELLED"])
+          .enum(["OPEN", "IN_PROGRESS", "COMPLETE", "CLOSED", "CANCELLED"])
           .optional(),
-        type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(), // Added
+        type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(),
         take: z.number().min(5).max(50).default(20),
-        cursor: z.number().int().positive().optional(), // pakai Pro.id
+        cursor: z.number().int().positive().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -52,7 +52,7 @@ export const prosRouter = createTRPCRouter({
 
       const where: any = {};
       if (input.status) where.status = input.status;
-      if (input.type) where.type = input.type; // Added
+      if (input.type) where.type = input.type;
 
       if (q) {
         where.OR = [
@@ -70,14 +70,15 @@ export const prosRouter = createTRPCRouter({
           id: true,
           proNumber: true,
           productName: true,
+          partNumber: true, // FG Part Number
           qtyPoPcs: true,
           startDate: true,
           status: true,
-          type: true, // Added
-          autoShiftExpansion: true, // Added flag
+          type: true,
+          autoShiftExpansion: true,
           createdAt: true,
-          process: { select: { code: true, name: true } }, // Added to header
-          steps: {
+          proPrefix: { select: { code: true, name: true } }, // Renamed from Kode_Proses
+          proses: {
             orderBy: { orderNo: "asc" },
             select: {
               id: true,
@@ -91,8 +92,8 @@ export const prosRouter = createTRPCRouter({
                   uom: true,
                 },
               },
-              startDate: true, // add this
-              partNumber: true, // Added
+              startDate: true,
+              partNumber: true, // Step Output Part Number
               estimatedShifts: true,
               materials: {
                 select: {
@@ -118,14 +119,15 @@ export const prosRouter = createTRPCRouter({
     .input(
       z.object({
         productName: z.string().min(1),
-        processId: z.number().int().positive(), // New: header process
-        type: z.enum(["PAPER", "RIGID", "OTHER"]).default("PAPER"), // Added
+        partNumber: z.string().optional(), // Header Part Number (FG)
+        proPrefixId: z.number().int().positive(), // Renamed from kode_ProsesId
+        type: z.enum(["PAPER", "RIGID", "OTHER"]).default("PAPER"),
         qtyPoPcs: z.number().int().positive(),
         proNumber: z.string().optional(), // Manual PRO override
         startDate: z.coerce.date().optional(),
         expand: z.boolean().default(true).optional(),
-        autoShiftExpansion: z.boolean().default(false).optional(), // Flag otomatisasi shift
-        steps: z
+        autoShiftExpansion: z.boolean().default(false).optional(),
+        proses: z
           .array(
             z.object({
               up: z.number().int().min(0).optional(),
@@ -139,8 +141,8 @@ export const prosRouter = createTRPCRouter({
                 )
                 .default([]),
               startDate: z.coerce.date().optional(),
-              partNumber: z.string().optional(), // Added to step input
-              batchNo: z.string().optional(), // Added for Rigid CSV
+              partNumber: z.string().optional(),
+              batchNo: z.string().optional(),
             }),
           )
           .min(1),
@@ -150,7 +152,7 @@ export const prosRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const baseDate = input.startDate ?? new Date();
 
-      const steps = input.steps;
+      const steps = input.proses;
 
       if (!steps.length) {
         throw new TRPCError({
@@ -159,17 +161,27 @@ export const prosRouter = createTRPCRouter({
         });
       }
 
-      const proc = await ctx.db.process.findUnique({
-        where: { id: input.processId },
-        select: { code: true },
-      });
-      if (!proc)
+      // Enforce 1 step for RIGID
+      if (input.type === "RIGID" && steps.length > 1) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Proses tidak valid",
+          message: "RIGID PRO hanya boleh memiliki 1 step proses.",
+        });
+      }
+
+      // Fetch Prefix using ProPrefix table
+      const prefixData = await ctx.db.proPrefix.findUnique({
+        where: { id: input.proPrefixId },
+        select: { code: true },
+      });
+      if (!prefixData)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Prefix/Kategori PRO tidak valid",
         });
 
-      const prefix = `${proc.code}${mm(baseDate)}${yy(baseDate)}`; // 6 digit
+      // Generate sequence using ProSequence (maintained logic)
+      const prefix = `${prefixData.code}${mm(baseDate)}${yy(baseDate)}`; // 6 digit
 
       return ctx.db.$transaction(async (tx) => {
         let proNumber = input.proNumber?.trim();
@@ -194,23 +206,24 @@ export const prosRouter = createTRPCRouter({
         }
 
         // AUTO-SET PRO.startDate from first step's startDate
-        const firstStepDate = input.steps[0]?.startDate ?? undefined;
+        const firstStepDate = input.proses[0]?.startDate ?? undefined;
 
         const created = await tx.pro.create({
           data: {
             proNumber,
-            processId: input.processId,
+            proPrefixId: input.proPrefixId, // Renamed
             productName: input.productName,
+            partNumber: input.partNumber, // Added
             qtyPoPcs: input.qtyPoPcs,
-            startDate: firstStepDate, // Auto from first step
+            startDate: firstStepDate,
             status: "OPEN",
-            type: input.type, // Added
-            autoShiftExpansion: input.autoShiftExpansion ?? false, // Save flag
+            type: input.type,
+            autoShiftExpansion: input.autoShiftExpansion ?? false,
           },
         });
 
         // -------------------------------------------------------------
-        // AUTOMATIC EXPANSION: 1 Shift = 1 ProStep row
+        // AUTOMATIC EXPANSION logic (Unchanged mostly)
 
         let proStartDate = input.startDate ?? new Date();
         let currentDay = startOfDay(proStartDate);
@@ -218,8 +231,8 @@ export const prosRouter = createTRPCRouter({
 
         let globalOrderNo = 1;
 
-        for (const inputStep of input.steps) {
-          const std = 1000; // Default if no machine
+        for (const inputStep of input.proses) {
+          const std = 1000;
           const firstMatQty = inputStep.materials[0]?.qtyReq;
           const qty =
             firstMatQty !== undefined ? Number(firstMatQty) : input.qtyPoPcs;
@@ -241,7 +254,6 @@ export const prosRouter = createTRPCRouter({
               ? Math.max(1, Math.ceil(qty / (up * machineStd)))
               : 1;
 
-          // Use inputStep's startDate as anchor if provided
           if (inputStep.startDate) {
             currentDay = startOfDay(new Date(inputStep.startDate));
             currentShift = getShiftFromTime(new Date(inputStep.startDate));
@@ -266,15 +278,15 @@ export const prosRouter = createTRPCRouter({
               );
             }
 
-            await tx.proStep.create({
+            await tx.proses.create({
               data: {
                 proId: created.id,
                 orderNo: globalOrderNo++,
                 up: inputStep.up,
                 machineId: inputStep.machineId ?? null,
                 startDate: getShiftDate(currentDay, currentShift),
-                partNumber: inputStep.partNumber, // Added
-                batchNo: inputStep.batchNo, // Added for Rigid
+                partNumber: inputStep.partNumber,
+                batchNo: inputStep.batchNo,
                 materials: {
                   create: (inputStep.materials ?? []).map((m) => ({
                     materialId: m.materialId,
@@ -285,7 +297,6 @@ export const prosRouter = createTRPCRouter({
               },
             });
 
-            // Advance cursor if we are expanding OR if no explicit start date on step
             if (input.expand !== false) {
               if (currentShift < 2) currentShift++;
               else {
@@ -295,8 +306,6 @@ export const prosRouter = createTRPCRouter({
             }
           }
         }
-        // -------------------------------------------------------------
-
         return created;
       });
     }),
@@ -310,16 +319,17 @@ export const prosRouter = createTRPCRouter({
           id: true,
           proNumber: true,
           productName: true,
+          partNumber: true, // Added
           qtyPoPcs: true,
           startDate: true,
           status: true,
-          type: true, // Added
+          type: true,
           createdAt: true,
           updatedAt: true,
-          autoShiftExpansion: true, // Added flag
-          processId: true, // Added to header
-          process: { select: { code: true, name: true } }, // Added to header
-          steps: {
+          autoShiftExpansion: true,
+          proPrefixId: true, // Renamed
+          proPrefix: { select: { code: true, name: true } }, // Renamed
+          proses: {
             orderBy: { orderNo: "asc" },
             select: {
               id: true,
@@ -327,8 +337,8 @@ export const prosRouter = createTRPCRouter({
               up: true,
               machineId: true,
               startDate: true,
-              partNumber: true, // Added
-              batchNo: true, // Added
+              partNumber: true,
+              batchNo: true,
               estimatedShifts: true,
               machine: {
                 select: {
@@ -364,18 +374,18 @@ export const prosRouter = createTRPCRouter({
       z.object({
         id: z.number().int().positive(),
         productName: z.string().min(1),
-        partNumber: z.string().optional(),
-        processId: z.number().int().positive(),
+        partNumber: z.string().optional(), // Header Part Number
+        proPrefixId: z.number().int().positive(), // Renamed
         qtyPoPcs: z.number().int().positive(),
         startDate: z.coerce.date().optional(),
         status: z
-          .enum(["OPEN", "IN_PROGRESS", "CLOSED", "CANCELLED"])
+          .enum(["OPEN", "IN_PROGRESS", "COMPLETE", "CLOSED", "CANCELLED"])
           .optional(),
         type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(),
-        steps: z
+        proses: z
           .array(
             z.object({
-              id: z.number().optional(), // Added ID to track existing steps
+              id: z.number().optional(),
               orderNo: z.number().int().positive(),
               up: z.number().int().min(0),
               machineId: z.number().int().positive().nullable().optional(),
@@ -403,7 +413,7 @@ export const prosRouter = createTRPCRouter({
           where: { id: input.id },
           select: {
             proNumber: true,
-            processId: true,
+            proPrefixId: true, // Renamed
             qtyPoPcs: true,
             startDate: true,
           },
@@ -416,16 +426,16 @@ export const prosRouter = createTRPCRouter({
           });
         }
 
-        // Calculate new PRO Number if process changed
+        // Calculate new PRO Number if prefix changed
         let newProNumber: string | undefined;
-        if (input.processId !== oldPro.processId) {
-          const newProc = await tx.process.findUnique({
-            where: { id: input.processId },
+        if (input.proPrefixId !== oldPro.proPrefixId) {
+          const newPrefix = await tx.proPrefix.findUnique({
+            where: { id: input.proPrefixId },
             select: { code: true },
           });
 
-          if (newProc && oldPro.proNumber.length >= 2) {
-            newProNumber = newProc.code + oldPro.proNumber.slice(2);
+          if (newPrefix && oldPro.proNumber.length >= 2) {
+            newProNumber = newPrefix.code + oldPro.proNumber.slice(2);
 
             // Check conflict
             const conflict = await tx.pro.findUnique({
@@ -434,7 +444,7 @@ export const prosRouter = createTRPCRouter({
             if (conflict) {
               throw new TRPCError({
                 code: "CONFLICT",
-                message: `Nomor PRO baru '${newProNumber}' sudah digunakan oleh PRO lain. Tidak bisa mengganti proses.`,
+                message: `Nomor PRO baru '${newProNumber}' sudah digunakan oleh PRO lain. Tidak bisa mengganti proses/prefix.`,
               });
             }
           }
@@ -445,10 +455,10 @@ export const prosRouter = createTRPCRouter({
           where: { id: input.id },
           data: {
             ...(newProNumber ? { proNumber: newProNumber } : {}),
-            processId: input.processId,
+            proPrefixId: input.proPrefixId, // Renamed
             productName: input.productName,
             ...(input.partNumber !== undefined
-              ? { partNumber: input.partNumber }
+              ? { partNumber: input.partNumber } // Now valid
               : {}),
             qtyPoPcs: input.qtyPoPcs,
             startDate: input.startDate,
@@ -458,24 +468,33 @@ export const prosRouter = createTRPCRouter({
         });
 
         // 3. Diff Steps (Update, Create, Delete)
-        // Fetch existing steps to compare
-        const existingSteps = await tx.proStep.findMany({
+        const existingProses = await tx.proses.findMany({
           where: { proId: input.id },
           select: { id: true },
         });
 
         const inputIds = new Set(
-          input.steps.map((s) => s.id).filter((id): id is number => !!id),
+          input.proses.map((s) => s.id).filter((id): id is number => !!id),
         );
-        const existingIds = new Set(existingSteps.map((s) => s.id));
+        const existingIds = new Set(existingProses.map((s) => s.id));
 
-        // DELETE: Steps in DB but not in Input
-        const toDelete = existingSteps.filter((s) => !inputIds.has(s.id));
+        const toDelete = existingProses.filter((s) => !inputIds.has(s.id));
         for (const step of toDelete) {
+          // Check for approved reports
+          const hasApprovedReports = await tx.productionReport.findFirst({
+            where: { prosesId: step.id, status: "APPROVED" },
+          });
+
+          if (hasApprovedReports) {
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: `Step ID ${step.id} memiliki laporan APPROVED. Tidak bisa dihapus.`,
+            });
+          }
+
           try {
-            await tx.proStep.delete({ where: { id: step.id } });
+            await tx.proses.delete({ where: { id: step.id } });
           } catch (e: any) {
-            // Check for Prisma FK violation error (P2003)
             if (e.code === "P2003") {
               throw new TRPCError({
                 code: "PRECONDITION_FAILED",
@@ -486,34 +505,30 @@ export const prosRouter = createTRPCRouter({
           }
         }
 
-        // UPSERT (Update existing, Create new)
+        // UPSERT
         let baseDate = input.startDate ?? oldPro.startDate ?? new Date();
         let currentDay = startOfDay(baseDate);
         let currentShift = getShiftFromTime(baseDate);
 
         let globalOrderNo = 1;
 
-        for (const s of input.steps) {
+        for (const s of input.proses) {
           const matMaterials = s.materials ?? [];
 
-          // Respect input Start Date if provided (Manual Scheduling)
           if (s.startDate) {
             currentDay = startOfDay(new Date(s.startDate));
             currentShift = getShiftFromTime(new Date(s.startDate));
           }
 
           const stepDate = getShiftDate(currentDay, currentShift);
-          const needs = 1; // Default to 1 shift per step in this explicit list mode
+          const needs = 1;
 
-          // Helper to recreate material relations
-          const recreateMaterials = async (stepId: number) => {
-            // Delete old materials for this step
-            await tx.proStepMaterial.deleteMany({ where: { stepId } });
-            // Create new
+          const recreateMaterials = async (prosesId: number) => {
+            await tx.prosesMaterial.deleteMany({ where: { prosesId } });
             if (matMaterials.length > 0) {
-              await tx.proStepMaterial.createMany({
+              await tx.prosesMaterial.createMany({
                 data: matMaterials.map((m) => ({
-                  stepId,
+                  prosesId,
                   materialId: m.materialId,
                   qtyReq: new Prisma.Decimal(m.qtyReq),
                 })),
@@ -522,24 +537,21 @@ export const prosRouter = createTRPCRouter({
           };
 
           if (s.id && existingIds.has(s.id)) {
-            // --- UPDATE EXISTING ---
-            await tx.proStep.update({
+            await tx.proses.update({
               where: { id: s.id },
               data: {
-                orderNo: globalOrderNo++, // Enforce sequential order
+                orderNo: globalOrderNo++,
                 up: s.up,
                 machineId: s.machineId ?? null,
-
                 partNumber: s.partNumber,
                 batchNo: s.batchNo,
-                startDate: stepDate, // <--- Correct date from input or sequence
+                startDate: stepDate,
                 estimatedShifts: needs,
               },
             });
             await recreateMaterials(s.id);
           } else {
-            // --- CREATE NEW ---
-            await tx.proStep.create({
+            await tx.proses.create({
               data: {
                 proId: input.id,
                 orderNo: globalOrderNo++,
@@ -559,7 +571,6 @@ export const prosRouter = createTRPCRouter({
             });
           }
 
-          // Advance Cursor (1 step = 1 shift logic)
           if (currentShift < 2) {
             currentShift++;
           } else {
@@ -578,18 +589,71 @@ export const prosRouter = createTRPCRouter({
   delete: ppicProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      const exists = await ctx.db.pro.findUnique({
+      // 1. Check PRO exists and get related data
+      const pro = await ctx.db.pro.findUnique({
         where: { id: input.id },
-        select: { id: true },
+        include: {
+          proses: {
+            include: {
+              productionReports: { select: { id: true, status: true } },
+            },
+          },
+        },
       });
-      if (!exists) {
+
+      if (!pro) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "PRO tidak ditemukan",
         });
       }
 
-      await ctx.db.pro.delete({ where: { id: input.id } });
+      // 2. Block delete if any APPROVED reports exist (data integrity)
+      const allReports = pro.proses.flatMap((p) => p.productionReports);
+      const hasApproved = allReports.some((r) => r.status === "APPROVED");
+      if (hasApproved) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "Tidak bisa menghapus PRO yang sudah memiliki laporan APPROVED. Void laporan terlebih dahulu.",
+        });
+      }
+
+      // 3. Cascade delete in correct order within transaction
+      await ctx.db.$transaction(async (tx) => {
+        const prosesIds = pro.proses.map((p) => p.id);
+        const reportIds = allReports.map((r) => r.id);
+
+        // Delete InventoryTxn linked to this PRO or its reports
+        if (reportIds.length > 0) {
+          await tx.inventoryTxn.deleteMany({
+            where: {
+              OR: [
+                { proId: input.id },
+                { prosesId: { in: prosesIds } },
+                { productionReportId: { in: reportIds } },
+              ],
+            },
+          });
+        } else {
+          await tx.inventoryTxn.deleteMany({
+            where: {
+              OR: [{ proId: input.id }, { prosesId: { in: prosesIds } }],
+            },
+          });
+        }
+
+        // Delete ProductionReports (PENDING/REJECTED only, APPROVED blocked above)
+        if (reportIds.length > 0) {
+          await tx.productionReport.deleteMany({
+            where: { id: { in: reportIds } },
+          });
+        }
+
+        // Delete PRO (Proses + ProsesMaterial cascade automatically)
+        await tx.pro.delete({ where: { id: input.id } });
+      });
+
       return { ok: true };
     }),
 
@@ -602,12 +666,11 @@ export const prosRouter = createTRPCRouter({
       });
     }),
 
-  rescheduleStep: ppicProcedure
-    .input(z.object({ stepId: z.number(), startDate: z.coerce.date() }))
+  rescheduleProses: ppicProcedure
+    .input(z.object({ prosesId: z.number(), startDate: z.coerce.date() }))
     .mutation(async ({ ctx, input }) => {
-      // Logic: Update startDate of specific step
-      return ctx.db.proStep.update({
-        where: { id: input.stepId },
+      return ctx.db.proses.update({
+        where: { id: input.prosesId },
         data: { startDate: input.startDate },
       });
     }),
@@ -622,18 +685,16 @@ export const prosRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const items = await ctx.db.pro.findMany({
         where: {
-          status: { not: ProStatus.CANCELLED }, // Don't show cancelled PROs
+          status: { not: ProStatus.CANCELLED },
           OR: [
-            // PRO startDate in range
             {
               startDate: {
                 gte: input.start,
                 lte: input.end,
               },
             },
-            // OR any step startDate in range
             {
-              steps: {
+              proses: {
                 some: {
                   startDate: {
                     gte: input.start,
@@ -648,18 +709,20 @@ export const prosRouter = createTRPCRouter({
           id: true,
           proNumber: true,
           productName: true,
+          partNumber: true, // Added
           qtyPoPcs: true,
           startDate: true,
           status: true,
           type: true,
-          autoShiftExpansion: true, // Added flag
-          process: { select: { name: true, code: true } }, // Added to header
-          steps: {
+          autoShiftExpansion: true,
+          proPrefix: { select: { name: true, code: true } }, // Renamed
+          proses: {
             orderBy: { orderNo: "asc" },
             select: {
               id: true,
               orderNo: true,
               up: true,
+              machineId: true,
               machine: {
                 select: {
                   id: true,
@@ -669,9 +732,9 @@ export const prosRouter = createTRPCRouter({
                   cycleTimeSec: true,
                 },
               },
-              startDate: true, // add this
-              partNumber: true, // Added
-              batchNo: true, // Added
+              startDate: true,
+              partNumber: true,
+              batchNo: true,
               estimatedShifts: true,
               materials: {
                 select: {
@@ -688,7 +751,6 @@ export const prosRouter = createTRPCRouter({
     }),
 });
 
-// --- HELPER FUNCTION UNTUK CEK KAPASITAS ---
 async function checkCapacity(
   tx: Prisma.TransactionClient,
   machineId: number | null,
@@ -702,8 +764,7 @@ async function checkCapacity(
 
   const max = machine.stdOutputPerShift;
 
-  // Cari load existing di tanggal & shift (slotDate) yang sama
-  const existingSteps = await tx.proStep.findMany({
+  const existingSteps = await tx.proses.findMany({
     where: {
       machineId,
       pro: { status: { notIn: [ProStatus.CLOSED, ProStatus.CANCELLED] } },
@@ -715,7 +776,6 @@ async function checkCapacity(
 
   let currentLoad = 0;
   for (const s of existingSteps) {
-    // Cari material sheet punya step ini
     const sheetMat = s.materials.find((m) => m.material.uom === "sheet");
     if (sheetMat) {
       currentLoad += Number(sheetMat.qtyReq);

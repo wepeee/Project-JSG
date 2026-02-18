@@ -29,10 +29,10 @@ export type Machine = $Result.DefaultSelection<Prisma.$MachinePayload>
  */
 export type Material = $Result.DefaultSelection<Prisma.$MaterialPayload>
 /**
- * Model Process
+ * Model ProPrefix
  * 
  */
-export type Process = $Result.DefaultSelection<Prisma.$ProcessPayload>
+export type ProPrefix = $Result.DefaultSelection<Prisma.$ProPrefixPayload>
 /**
  * Model ProSequence
  * 
@@ -44,20 +44,30 @@ export type ProSequence = $Result.DefaultSelection<Prisma.$ProSequencePayload>
  */
 export type Pro = $Result.DefaultSelection<Prisma.$ProPayload>
 /**
- * Model ProStep
+ * Model Proses
  * 
  */
-export type ProStep = $Result.DefaultSelection<Prisma.$ProStepPayload>
+export type Proses = $Result.DefaultSelection<Prisma.$ProsesPayload>
 /**
- * Model ProStepMaterial
+ * Model ProsesMaterial
  * 
  */
-export type ProStepMaterial = $Result.DefaultSelection<Prisma.$ProStepMaterialPayload>
+export type ProsesMaterial = $Result.DefaultSelection<Prisma.$ProsesMaterialPayload>
 /**
  * Model ProductionReport
  * 
  */
 export type ProductionReport = $Result.DefaultSelection<Prisma.$ProductionReportPayload>
+/**
+ * Model InventoryLocation
+ * 
+ */
+export type InventoryLocation = $Result.DefaultSelection<Prisma.$InventoryLocationPayload>
+/**
+ * Model InventoryTxn
+ * 
+ */
+export type InventoryTxn = $Result.DefaultSelection<Prisma.$InventoryTxnPayload>
 
 /**
  * Enums
@@ -92,9 +102,19 @@ export const MachineType: {
 export type MachineType = (typeof MachineType)[keyof typeof MachineType]
 
 
+export const MaterialType: {
+  RAW: 'RAW',
+  WIP: 'WIP',
+  CONSUMABLE: 'CONSUMABLE'
+};
+
+export type MaterialType = (typeof MaterialType)[keyof typeof MaterialType]
+
+
 export const ProStatus: {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETE: 'COMPLETE',
   CLOSED: 'CLOSED',
   CANCELLED: 'CANCELLED'
 };
@@ -114,7 +134,8 @@ export type ProType = (typeof ProType)[keyof typeof ProType]
 export const ReportStatus: {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
-  REJECTED: 'REJECTED'
+  REJECTED: 'REJECTED',
+  VOID: 'VOID'
 };
 
 export type ReportStatus = (typeof ReportStatus)[keyof typeof ReportStatus]
@@ -130,6 +151,26 @@ export const LphType: {
 
 export type LphType = (typeof LphType)[keyof typeof LphType]
 
+
+export const LocationType: {
+  WIP: 'WIP',
+  FG: 'FG',
+  RAW: 'RAW',
+  HOLD: 'HOLD',
+  SCRAP: 'SCRAP'
+};
+
+export type LocationType = (typeof LocationType)[keyof typeof LocationType]
+
+
+export const TxnType: {
+  IN: 'IN',
+  OUT: 'OUT',
+  ADJUST: 'ADJUST'
+};
+
+export type TxnType = (typeof TxnType)[keyof typeof TxnType]
+
 }
 
 export type Role = $Enums.Role
@@ -143,6 +184,10 @@ export const Uom: typeof $Enums.Uom
 export type MachineType = $Enums.MachineType
 
 export const MachineType: typeof $Enums.MachineType
+
+export type MaterialType = $Enums.MaterialType
+
+export const MaterialType: typeof $Enums.MaterialType
 
 export type ProStatus = $Enums.ProStatus
 
@@ -159,6 +204,14 @@ export const ReportStatus: typeof $Enums.ReportStatus
 export type LphType = $Enums.LphType
 
 export const LphType: typeof $Enums.LphType
+
+export type LocationType = $Enums.LocationType
+
+export const LocationType: typeof $Enums.LocationType
+
+export type TxnType = $Enums.TxnType
+
+export const TxnType: typeof $Enums.TxnType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -309,14 +362,14 @@ export class PrismaClient<
   get material(): Prisma.MaterialDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.process`: Exposes CRUD operations for the **Process** model.
+   * `prisma.proPrefix`: Exposes CRUD operations for the **ProPrefix** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more Processes
-    * const processes = await prisma.process.findMany()
+    * // Fetch zero or more ProPrefixes
+    * const proPrefixes = await prisma.proPrefix.findMany()
     * ```
     */
-  get process(): Prisma.ProcessDelegate<ExtArgs, ClientOptions>;
+  get proPrefix(): Prisma.ProPrefixDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.proSequence`: Exposes CRUD operations for the **ProSequence** model.
@@ -339,24 +392,24 @@ export class PrismaClient<
   get pro(): Prisma.ProDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.proStep`: Exposes CRUD operations for the **ProStep** model.
+   * `prisma.proses`: Exposes CRUD operations for the **Proses** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more ProSteps
-    * const proSteps = await prisma.proStep.findMany()
+    * // Fetch zero or more Proses
+    * const proses = await prisma.proses.findMany()
     * ```
     */
-  get proStep(): Prisma.ProStepDelegate<ExtArgs, ClientOptions>;
+  get proses(): Prisma.ProsesDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.proStepMaterial`: Exposes CRUD operations for the **ProStepMaterial** model.
+   * `prisma.prosesMaterial`: Exposes CRUD operations for the **ProsesMaterial** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more ProStepMaterials
-    * const proStepMaterials = await prisma.proStepMaterial.findMany()
+    * // Fetch zero or more ProsesMaterials
+    * const prosesMaterials = await prisma.prosesMaterial.findMany()
     * ```
     */
-  get proStepMaterial(): Prisma.ProStepMaterialDelegate<ExtArgs, ClientOptions>;
+  get prosesMaterial(): Prisma.ProsesMaterialDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.productionReport`: Exposes CRUD operations for the **ProductionReport** model.
@@ -367,6 +420,26 @@ export class PrismaClient<
     * ```
     */
   get productionReport(): Prisma.ProductionReportDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.inventoryLocation`: Exposes CRUD operations for the **InventoryLocation** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more InventoryLocations
+    * const inventoryLocations = await prisma.inventoryLocation.findMany()
+    * ```
+    */
+  get inventoryLocation(): Prisma.InventoryLocationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.inventoryTxn`: Exposes CRUD operations for the **InventoryTxn** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more InventoryTxns
+    * const inventoryTxns = await prisma.inventoryTxn.findMany()
+    * ```
+    */
+  get inventoryTxn(): Prisma.InventoryTxnDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -811,12 +884,14 @@ export namespace Prisma {
     User: 'User',
     Machine: 'Machine',
     Material: 'Material',
-    Process: 'Process',
+    ProPrefix: 'ProPrefix',
     ProSequence: 'ProSequence',
     Pro: 'Pro',
-    ProStep: 'ProStep',
-    ProStepMaterial: 'ProStepMaterial',
-    ProductionReport: 'ProductionReport'
+    Proses: 'Proses',
+    ProsesMaterial: 'ProsesMaterial',
+    ProductionReport: 'ProductionReport',
+    InventoryLocation: 'InventoryLocation',
+    InventoryTxn: 'InventoryTxn'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -835,7 +910,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "machine" | "material" | "process" | "proSequence" | "pro" | "proStep" | "proStepMaterial" | "productionReport"
+      modelProps: "user" | "machine" | "material" | "proPrefix" | "proSequence" | "pro" | "proses" | "prosesMaterial" | "productionReport" | "inventoryLocation" | "inventoryTxn"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1037,69 +1112,69 @@ export namespace Prisma {
           }
         }
       }
-      Process: {
-        payload: Prisma.$ProcessPayload<ExtArgs>
-        fields: Prisma.ProcessFieldRefs
+      ProPrefix: {
+        payload: Prisma.$ProPrefixPayload<ExtArgs>
+        fields: Prisma.ProPrefixFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.ProcessFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProcessPayload> | null
+            args: Prisma.ProPrefixFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProPrefixPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.ProcessFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProcessPayload>
+            args: Prisma.ProPrefixFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProPrefixPayload>
           }
           findFirst: {
-            args: Prisma.ProcessFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProcessPayload> | null
+            args: Prisma.ProPrefixFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProPrefixPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.ProcessFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProcessPayload>
+            args: Prisma.ProPrefixFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProPrefixPayload>
           }
           findMany: {
-            args: Prisma.ProcessFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProcessPayload>[]
+            args: Prisma.ProPrefixFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProPrefixPayload>[]
           }
           create: {
-            args: Prisma.ProcessCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProcessPayload>
+            args: Prisma.ProPrefixCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProPrefixPayload>
           }
           createMany: {
-            args: Prisma.ProcessCreateManyArgs<ExtArgs>
+            args: Prisma.ProPrefixCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           delete: {
-            args: Prisma.ProcessDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProcessPayload>
+            args: Prisma.ProPrefixDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProPrefixPayload>
           }
           update: {
-            args: Prisma.ProcessUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProcessPayload>
+            args: Prisma.ProPrefixUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProPrefixPayload>
           }
           deleteMany: {
-            args: Prisma.ProcessDeleteManyArgs<ExtArgs>
+            args: Prisma.ProPrefixDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.ProcessUpdateManyArgs<ExtArgs>
+            args: Prisma.ProPrefixUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           upsert: {
-            args: Prisma.ProcessUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProcessPayload>
+            args: Prisma.ProPrefixUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProPrefixPayload>
           }
           aggregate: {
-            args: Prisma.ProcessAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateProcess>
+            args: Prisma.ProPrefixAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateProPrefix>
           }
           groupBy: {
-            args: Prisma.ProcessGroupByArgs<ExtArgs>
-            result: $Utils.Optional<ProcessGroupByOutputType>[]
+            args: Prisma.ProPrefixGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ProPrefixGroupByOutputType>[]
           }
           count: {
-            args: Prisma.ProcessCountArgs<ExtArgs>
-            result: $Utils.Optional<ProcessCountAggregateOutputType> | number
+            args: Prisma.ProPrefixCountArgs<ExtArgs>
+            result: $Utils.Optional<ProPrefixCountAggregateOutputType> | number
           }
         }
       }
@@ -1235,135 +1310,135 @@ export namespace Prisma {
           }
         }
       }
-      ProStep: {
-        payload: Prisma.$ProStepPayload<ExtArgs>
-        fields: Prisma.ProStepFieldRefs
+      Proses: {
+        payload: Prisma.$ProsesPayload<ExtArgs>
+        fields: Prisma.ProsesFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.ProStepFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepPayload> | null
+            args: Prisma.ProsesFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.ProStepFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepPayload>
+            args: Prisma.ProsesFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesPayload>
           }
           findFirst: {
-            args: Prisma.ProStepFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepPayload> | null
+            args: Prisma.ProsesFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.ProStepFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepPayload>
+            args: Prisma.ProsesFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesPayload>
           }
           findMany: {
-            args: Prisma.ProStepFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepPayload>[]
+            args: Prisma.ProsesFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesPayload>[]
           }
           create: {
-            args: Prisma.ProStepCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepPayload>
+            args: Prisma.ProsesCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesPayload>
           }
           createMany: {
-            args: Prisma.ProStepCreateManyArgs<ExtArgs>
+            args: Prisma.ProsesCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           delete: {
-            args: Prisma.ProStepDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepPayload>
+            args: Prisma.ProsesDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesPayload>
           }
           update: {
-            args: Prisma.ProStepUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepPayload>
+            args: Prisma.ProsesUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesPayload>
           }
           deleteMany: {
-            args: Prisma.ProStepDeleteManyArgs<ExtArgs>
+            args: Prisma.ProsesDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.ProStepUpdateManyArgs<ExtArgs>
+            args: Prisma.ProsesUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           upsert: {
-            args: Prisma.ProStepUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepPayload>
+            args: Prisma.ProsesUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesPayload>
           }
           aggregate: {
-            args: Prisma.ProStepAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateProStep>
+            args: Prisma.ProsesAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateProses>
           }
           groupBy: {
-            args: Prisma.ProStepGroupByArgs<ExtArgs>
-            result: $Utils.Optional<ProStepGroupByOutputType>[]
+            args: Prisma.ProsesGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ProsesGroupByOutputType>[]
           }
           count: {
-            args: Prisma.ProStepCountArgs<ExtArgs>
-            result: $Utils.Optional<ProStepCountAggregateOutputType> | number
+            args: Prisma.ProsesCountArgs<ExtArgs>
+            result: $Utils.Optional<ProsesCountAggregateOutputType> | number
           }
         }
       }
-      ProStepMaterial: {
-        payload: Prisma.$ProStepMaterialPayload<ExtArgs>
-        fields: Prisma.ProStepMaterialFieldRefs
+      ProsesMaterial: {
+        payload: Prisma.$ProsesMaterialPayload<ExtArgs>
+        fields: Prisma.ProsesMaterialFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.ProStepMaterialFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepMaterialPayload> | null
+            args: Prisma.ProsesMaterialFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesMaterialPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.ProStepMaterialFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepMaterialPayload>
+            args: Prisma.ProsesMaterialFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesMaterialPayload>
           }
           findFirst: {
-            args: Prisma.ProStepMaterialFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepMaterialPayload> | null
+            args: Prisma.ProsesMaterialFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesMaterialPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.ProStepMaterialFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepMaterialPayload>
+            args: Prisma.ProsesMaterialFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesMaterialPayload>
           }
           findMany: {
-            args: Prisma.ProStepMaterialFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepMaterialPayload>[]
+            args: Prisma.ProsesMaterialFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesMaterialPayload>[]
           }
           create: {
-            args: Prisma.ProStepMaterialCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepMaterialPayload>
+            args: Prisma.ProsesMaterialCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesMaterialPayload>
           }
           createMany: {
-            args: Prisma.ProStepMaterialCreateManyArgs<ExtArgs>
+            args: Prisma.ProsesMaterialCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           delete: {
-            args: Prisma.ProStepMaterialDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepMaterialPayload>
+            args: Prisma.ProsesMaterialDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesMaterialPayload>
           }
           update: {
-            args: Prisma.ProStepMaterialUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepMaterialPayload>
+            args: Prisma.ProsesMaterialUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesMaterialPayload>
           }
           deleteMany: {
-            args: Prisma.ProStepMaterialDeleteManyArgs<ExtArgs>
+            args: Prisma.ProsesMaterialDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.ProStepMaterialUpdateManyArgs<ExtArgs>
+            args: Prisma.ProsesMaterialUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           upsert: {
-            args: Prisma.ProStepMaterialUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ProStepMaterialPayload>
+            args: Prisma.ProsesMaterialUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProsesMaterialPayload>
           }
           aggregate: {
-            args: Prisma.ProStepMaterialAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateProStepMaterial>
+            args: Prisma.ProsesMaterialAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateProsesMaterial>
           }
           groupBy: {
-            args: Prisma.ProStepMaterialGroupByArgs<ExtArgs>
-            result: $Utils.Optional<ProStepMaterialGroupByOutputType>[]
+            args: Prisma.ProsesMaterialGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ProsesMaterialGroupByOutputType>[]
           }
           count: {
-            args: Prisma.ProStepMaterialCountArgs<ExtArgs>
-            result: $Utils.Optional<ProStepMaterialCountAggregateOutputType> | number
+            args: Prisma.ProsesMaterialCountArgs<ExtArgs>
+            result: $Utils.Optional<ProsesMaterialCountAggregateOutputType> | number
           }
         }
       }
@@ -1430,6 +1505,138 @@ export namespace Prisma {
           count: {
             args: Prisma.ProductionReportCountArgs<ExtArgs>
             result: $Utils.Optional<ProductionReportCountAggregateOutputType> | number
+          }
+        }
+      }
+      InventoryLocation: {
+        payload: Prisma.$InventoryLocationPayload<ExtArgs>
+        fields: Prisma.InventoryLocationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.InventoryLocationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryLocationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.InventoryLocationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryLocationPayload>
+          }
+          findFirst: {
+            args: Prisma.InventoryLocationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryLocationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.InventoryLocationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryLocationPayload>
+          }
+          findMany: {
+            args: Prisma.InventoryLocationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryLocationPayload>[]
+          }
+          create: {
+            args: Prisma.InventoryLocationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryLocationPayload>
+          }
+          createMany: {
+            args: Prisma.InventoryLocationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.InventoryLocationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryLocationPayload>
+          }
+          update: {
+            args: Prisma.InventoryLocationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryLocationPayload>
+          }
+          deleteMany: {
+            args: Prisma.InventoryLocationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.InventoryLocationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.InventoryLocationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryLocationPayload>
+          }
+          aggregate: {
+            args: Prisma.InventoryLocationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateInventoryLocation>
+          }
+          groupBy: {
+            args: Prisma.InventoryLocationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<InventoryLocationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.InventoryLocationCountArgs<ExtArgs>
+            result: $Utils.Optional<InventoryLocationCountAggregateOutputType> | number
+          }
+        }
+      }
+      InventoryTxn: {
+        payload: Prisma.$InventoryTxnPayload<ExtArgs>
+        fields: Prisma.InventoryTxnFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.InventoryTxnFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryTxnPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.InventoryTxnFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryTxnPayload>
+          }
+          findFirst: {
+            args: Prisma.InventoryTxnFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryTxnPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.InventoryTxnFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryTxnPayload>
+          }
+          findMany: {
+            args: Prisma.InventoryTxnFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryTxnPayload>[]
+          }
+          create: {
+            args: Prisma.InventoryTxnCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryTxnPayload>
+          }
+          createMany: {
+            args: Prisma.InventoryTxnCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.InventoryTxnDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryTxnPayload>
+          }
+          update: {
+            args: Prisma.InventoryTxnUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryTxnPayload>
+          }
+          deleteMany: {
+            args: Prisma.InventoryTxnDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.InventoryTxnUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.InventoryTxnUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InventoryTxnPayload>
+          }
+          aggregate: {
+            args: Prisma.InventoryTxnAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateInventoryTxn>
+          }
+          groupBy: {
+            args: Prisma.InventoryTxnGroupByArgs<ExtArgs>
+            result: $Utils.Optional<InventoryTxnGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.InventoryTxnCountArgs<ExtArgs>
+            result: $Utils.Optional<InventoryTxnCountAggregateOutputType> | number
           }
         }
       }
@@ -1532,12 +1739,14 @@ export namespace Prisma {
     user?: UserOmit
     machine?: MachineOmit
     material?: MaterialOmit
-    process?: ProcessOmit
+    proPrefix?: ProPrefixOmit
     proSequence?: ProSequenceOmit
     pro?: ProOmit
-    proStep?: ProStepOmit
-    proStepMaterial?: ProStepMaterialOmit
+    proses?: ProsesOmit
+    prosesMaterial?: ProsesMaterialOmit
     productionReport?: ProductionReportOmit
+    inventoryLocation?: InventoryLocationOmit
+    inventoryTxn?: InventoryTxnOmit
   }
 
   /* Types for Logging */
@@ -1658,11 +1867,11 @@ export namespace Prisma {
    */
 
   export type MachineCountOutputType = {
-    proSteps: number
+    proses: number
   }
 
   export type MachineCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    proSteps?: boolean | MachineCountOutputTypeCountProStepsArgs
+    proses?: boolean | MachineCountOutputTypeCountProsesArgs
   }
 
   // Custom InputTypes
@@ -1679,8 +1888,8 @@ export namespace Prisma {
   /**
    * MachineCountOutputType without action
    */
-  export type MachineCountOutputTypeCountProStepsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProStepWhereInput
+  export type MachineCountOutputTypeCountProsesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProsesWhereInput
   }
 
 
@@ -1689,11 +1898,11 @@ export namespace Prisma {
    */
 
   export type MaterialCountOutputType = {
-    proStepMaterials: number
+    prosesMaterials: number
   }
 
   export type MaterialCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    proStepMaterials?: boolean | MaterialCountOutputTypeCountProStepMaterialsArgs
+    prosesMaterials?: boolean | MaterialCountOutputTypeCountProsesMaterialsArgs
   }
 
   // Custom InputTypes
@@ -1710,38 +1919,38 @@ export namespace Prisma {
   /**
    * MaterialCountOutputType without action
    */
-  export type MaterialCountOutputTypeCountProStepMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProStepMaterialWhereInput
+  export type MaterialCountOutputTypeCountProsesMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProsesMaterialWhereInput
   }
 
 
   /**
-   * Count Type ProcessCountOutputType
+   * Count Type ProPrefixCountOutputType
    */
 
-  export type ProcessCountOutputType = {
+  export type ProPrefixCountOutputType = {
     pros: number
   }
 
-  export type ProcessCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    pros?: boolean | ProcessCountOutputTypeCountProsArgs
+  export type ProPrefixCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    pros?: boolean | ProPrefixCountOutputTypeCountProsArgs
   }
 
   // Custom InputTypes
   /**
-   * ProcessCountOutputType without action
+   * ProPrefixCountOutputType without action
    */
-  export type ProcessCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProcessCountOutputType
+     * Select specific fields to fetch from the ProPrefixCountOutputType
      */
-    select?: ProcessCountOutputTypeSelect<ExtArgs> | null
+    select?: ProPrefixCountOutputTypeSelect<ExtArgs> | null
   }
 
   /**
-   * ProcessCountOutputType without action
+   * ProPrefixCountOutputType without action
    */
-  export type ProcessCountOutputTypeCountProsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixCountOutputTypeCountProsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProWhereInput
   }
 
@@ -1751,11 +1960,13 @@ export namespace Prisma {
    */
 
   export type ProCountOutputType = {
-    steps: number
+    proses: number
+    inventoryTxns: number
   }
 
   export type ProCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    steps?: boolean | ProCountOutputTypeCountStepsArgs
+    proses?: boolean | ProCountOutputTypeCountProsesArgs
+    inventoryTxns?: boolean | ProCountOutputTypeCountInventoryTxnsArgs
   }
 
   // Custom InputTypes
@@ -1772,48 +1983,126 @@ export namespace Prisma {
   /**
    * ProCountOutputType without action
    */
-  export type ProCountOutputTypeCountStepsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProStepWhereInput
+  export type ProCountOutputTypeCountProsesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProsesWhereInput
+  }
+
+  /**
+   * ProCountOutputType without action
+   */
+  export type ProCountOutputTypeCountInventoryTxnsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InventoryTxnWhereInput
   }
 
 
   /**
-   * Count Type ProStepCountOutputType
+   * Count Type ProsesCountOutputType
    */
 
-  export type ProStepCountOutputType = {
+  export type ProsesCountOutputType = {
     materials: number
     productionReports: number
+    inventoryTxns: number
   }
 
-  export type ProStepCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    materials?: boolean | ProStepCountOutputTypeCountMaterialsArgs
-    productionReports?: boolean | ProStepCountOutputTypeCountProductionReportsArgs
+  export type ProsesCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    materials?: boolean | ProsesCountOutputTypeCountMaterialsArgs
+    productionReports?: boolean | ProsesCountOutputTypeCountProductionReportsArgs
+    inventoryTxns?: boolean | ProsesCountOutputTypeCountInventoryTxnsArgs
   }
 
   // Custom InputTypes
   /**
-   * ProStepCountOutputType without action
+   * ProsesCountOutputType without action
    */
-  export type ProStepCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepCountOutputType
+     * Select specific fields to fetch from the ProsesCountOutputType
      */
-    select?: ProStepCountOutputTypeSelect<ExtArgs> | null
+    select?: ProsesCountOutputTypeSelect<ExtArgs> | null
   }
 
   /**
-   * ProStepCountOutputType without action
+   * ProsesCountOutputType without action
    */
-  export type ProStepCountOutputTypeCountMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProStepMaterialWhereInput
+  export type ProsesCountOutputTypeCountMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProsesMaterialWhereInput
   }
 
   /**
-   * ProStepCountOutputType without action
+   * ProsesCountOutputType without action
    */
-  export type ProStepCountOutputTypeCountProductionReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesCountOutputTypeCountProductionReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProductionReportWhereInput
+  }
+
+  /**
+   * ProsesCountOutputType without action
+   */
+  export type ProsesCountOutputTypeCountInventoryTxnsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InventoryTxnWhereInput
+  }
+
+
+  /**
+   * Count Type ProductionReportCountOutputType
+   */
+
+  export type ProductionReportCountOutputType = {
+    inventoryTxns: number
+  }
+
+  export type ProductionReportCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    inventoryTxns?: boolean | ProductionReportCountOutputTypeCountInventoryTxnsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ProductionReportCountOutputType without action
+   */
+  export type ProductionReportCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReportCountOutputType
+     */
+    select?: ProductionReportCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ProductionReportCountOutputType without action
+   */
+  export type ProductionReportCountOutputTypeCountInventoryTxnsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InventoryTxnWhereInput
+  }
+
+
+  /**
+   * Count Type InventoryLocationCountOutputType
+   */
+
+  export type InventoryLocationCountOutputType = {
+    txns: number
+  }
+
+  export type InventoryLocationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    txns?: boolean | InventoryLocationCountOutputTypeCountTxnsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * InventoryLocationCountOutputType without action
+   */
+  export type InventoryLocationCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocationCountOutputType
+     */
+    select?: InventoryLocationCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * InventoryLocationCountOutputType without action
+   */
+  export type InventoryLocationCountOutputTypeCountTxnsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InventoryTxnWhereInput
   }
 
 
@@ -3132,7 +3421,8 @@ export namespace Prisma {
     workCenter?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    proSteps?: boolean | Machine$proStepsArgs<ExtArgs>
+    proses?: boolean | Machine$prosesArgs<ExtArgs>
+    location?: boolean | Machine$locationArgs<ExtArgs>
     _count?: boolean | MachineCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["machine"]>
 
@@ -3158,14 +3448,16 @@ export namespace Prisma {
 
   export type MachineOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "stdOutputPerHour" | "stdOutputPerShift" | "uom" | "type" | "remark" | "cycleTimeSec" | "cycleTimeMin" | "cavity" | "manPower" | "stdOutputPerDay" | "workCenter" | "createdAt" | "updatedAt", ExtArgs["result"]["machine"]>
   export type MachineInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    proSteps?: boolean | Machine$proStepsArgs<ExtArgs>
+    proses?: boolean | Machine$prosesArgs<ExtArgs>
+    location?: boolean | Machine$locationArgs<ExtArgs>
     _count?: boolean | MachineCountOutputTypeDefaultArgs<ExtArgs>
   }
 
   export type $MachinePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Machine"
     objects: {
-      proSteps: Prisma.$ProStepPayload<ExtArgs>[]
+      proses: Prisma.$ProsesPayload<ExtArgs>[]
+      location: Prisma.$InventoryLocationPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -3523,7 +3815,8 @@ export namespace Prisma {
    */
   export interface Prisma__MachineClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    proSteps<T extends Machine$proStepsArgs<ExtArgs> = {}>(args?: Subset<T, Machine$proStepsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    proses<T extends Machine$prosesArgs<ExtArgs> = {}>(args?: Subset<T, Machine$prosesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    location<T extends Machine$locationArgs<ExtArgs> = {}>(args?: Subset<T, Machine$locationArgs<ExtArgs>>): Prisma__InventoryLocationClient<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3911,27 +4204,46 @@ export namespace Prisma {
   }
 
   /**
-   * Machine.proSteps
+   * Machine.proses
    */
-  export type Machine$proStepsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Machine$prosesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Proses
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProsesSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Proses
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProsesOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
-    where?: ProStepWhereInput
-    orderBy?: ProStepOrderByWithRelationInput | ProStepOrderByWithRelationInput[]
-    cursor?: ProStepWhereUniqueInput
+    include?: ProsesInclude<ExtArgs> | null
+    where?: ProsesWhereInput
+    orderBy?: ProsesOrderByWithRelationInput | ProsesOrderByWithRelationInput[]
+    cursor?: ProsesWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: ProStepScalarFieldEnum | ProStepScalarFieldEnum[]
+    distinct?: ProsesScalarFieldEnum | ProsesScalarFieldEnum[]
+  }
+
+  /**
+   * Machine.location
+   */
+  export type Machine$locationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocation
+     */
+    select?: InventoryLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryLocation
+     */
+    omit?: InventoryLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryLocationInclude<ExtArgs> | null
+    where?: InventoryLocationWhereInput
   }
 
   /**
@@ -3977,6 +4289,7 @@ export namespace Prisma {
     id: number | null
     name: string | null
     uom: string | null
+    type: $Enums.MaterialType | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3985,6 +4298,7 @@ export namespace Prisma {
     id: number | null
     name: string | null
     uom: string | null
+    type: $Enums.MaterialType | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3993,6 +4307,7 @@ export namespace Prisma {
     id: number
     name: number
     uom: number
+    type: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -4011,6 +4326,7 @@ export namespace Prisma {
     id?: true
     name?: true
     uom?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4019,6 +4335,7 @@ export namespace Prisma {
     id?: true
     name?: true
     uom?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4027,6 +4344,7 @@ export namespace Prisma {
     id?: true
     name?: true
     uom?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -4122,6 +4440,7 @@ export namespace Prisma {
     id: number
     name: string
     uom: string
+    type: $Enums.MaterialType
     createdAt: Date
     updatedAt: Date
     _count: MaterialCountAggregateOutputType | null
@@ -4149,9 +4468,10 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     uom?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    proStepMaterials?: boolean | Material$proStepMaterialsArgs<ExtArgs>
+    prosesMaterials?: boolean | Material$prosesMaterialsArgs<ExtArgs>
     _count?: boolean | MaterialCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["material"]>
 
@@ -4161,25 +4481,27 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     uom?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type MaterialOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "uom" | "createdAt" | "updatedAt", ExtArgs["result"]["material"]>
+  export type MaterialOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "uom" | "type" | "createdAt" | "updatedAt", ExtArgs["result"]["material"]>
   export type MaterialInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    proStepMaterials?: boolean | Material$proStepMaterialsArgs<ExtArgs>
+    prosesMaterials?: boolean | Material$prosesMaterialsArgs<ExtArgs>
     _count?: boolean | MaterialCountOutputTypeDefaultArgs<ExtArgs>
   }
 
   export type $MaterialPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Material"
     objects: {
-      proStepMaterials: Prisma.$ProStepMaterialPayload<ExtArgs>[]
+      prosesMaterials: Prisma.$ProsesMaterialPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
       name: string
       uom: string
+      type: $Enums.MaterialType
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["material"]>
@@ -4522,7 +4844,7 @@ export namespace Prisma {
    */
   export interface Prisma__MaterialClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    proStepMaterials<T extends Material$proStepMaterialsArgs<ExtArgs> = {}>(args?: Subset<T, Material$proStepMaterialsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    prosesMaterials<T extends Material$prosesMaterialsArgs<ExtArgs> = {}>(args?: Subset<T, Material$prosesMaterialsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4555,6 +4877,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Material", 'Int'>
     readonly name: FieldRef<"Material", 'String'>
     readonly uom: FieldRef<"Material", 'String'>
+    readonly type: FieldRef<"Material", 'MaterialType'>
     readonly createdAt: FieldRef<"Material", 'DateTime'>
     readonly updatedAt: FieldRef<"Material", 'DateTime'>
   }
@@ -4900,27 +5223,27 @@ export namespace Prisma {
   }
 
   /**
-   * Material.proStepMaterials
+   * Material.prosesMaterials
    */
-  export type Material$proStepMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Material$prosesMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
-    where?: ProStepMaterialWhereInput
-    orderBy?: ProStepMaterialOrderByWithRelationInput | ProStepMaterialOrderByWithRelationInput[]
-    cursor?: ProStepMaterialWhereUniqueInput
+    include?: ProsesMaterialInclude<ExtArgs> | null
+    where?: ProsesMaterialWhereInput
+    orderBy?: ProsesMaterialOrderByWithRelationInput | ProsesMaterialOrderByWithRelationInput[]
+    cursor?: ProsesMaterialWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: ProStepMaterialScalarFieldEnum | ProStepMaterialScalarFieldEnum[]
+    distinct?: ProsesMaterialScalarFieldEnum | ProsesMaterialScalarFieldEnum[]
   }
 
   /**
@@ -4943,40 +5266,40 @@ export namespace Prisma {
 
 
   /**
-   * Model Process
+   * Model ProPrefix
    */
 
-  export type AggregateProcess = {
-    _count: ProcessCountAggregateOutputType | null
-    _avg: ProcessAvgAggregateOutputType | null
-    _sum: ProcessSumAggregateOutputType | null
-    _min: ProcessMinAggregateOutputType | null
-    _max: ProcessMaxAggregateOutputType | null
+  export type AggregateProPrefix = {
+    _count: ProPrefixCountAggregateOutputType | null
+    _avg: ProPrefixAvgAggregateOutputType | null
+    _sum: ProPrefixSumAggregateOutputType | null
+    _min: ProPrefixMinAggregateOutputType | null
+    _max: ProPrefixMaxAggregateOutputType | null
   }
 
-  export type ProcessAvgAggregateOutputType = {
+  export type ProPrefixAvgAggregateOutputType = {
     id: number | null
   }
 
-  export type ProcessSumAggregateOutputType = {
+  export type ProPrefixSumAggregateOutputType = {
     id: number | null
   }
 
-  export type ProcessMinAggregateOutputType = {
-    id: number | null
-    code: string | null
-    name: string | null
-    type: $Enums.ProType | null
-  }
-
-  export type ProcessMaxAggregateOutputType = {
+  export type ProPrefixMinAggregateOutputType = {
     id: number | null
     code: string | null
     name: string | null
     type: $Enums.ProType | null
   }
 
-  export type ProcessCountAggregateOutputType = {
+  export type ProPrefixMaxAggregateOutputType = {
+    id: number | null
+    code: string | null
+    name: string | null
+    type: $Enums.ProType | null
+  }
+
+  export type ProPrefixCountAggregateOutputType = {
     id: number
     code: number
     name: number
@@ -4985,29 +5308,29 @@ export namespace Prisma {
   }
 
 
-  export type ProcessAvgAggregateInputType = {
+  export type ProPrefixAvgAggregateInputType = {
     id?: true
   }
 
-  export type ProcessSumAggregateInputType = {
+  export type ProPrefixSumAggregateInputType = {
     id?: true
   }
 
-  export type ProcessMinAggregateInputType = {
-    id?: true
-    code?: true
-    name?: true
-    type?: true
-  }
-
-  export type ProcessMaxAggregateInputType = {
+  export type ProPrefixMinAggregateInputType = {
     id?: true
     code?: true
     name?: true
     type?: true
   }
 
-  export type ProcessCountAggregateInputType = {
+  export type ProPrefixMaxAggregateInputType = {
+    id?: true
+    code?: true
+    name?: true
+    type?: true
+  }
+
+  export type ProPrefixCountAggregateInputType = {
     id?: true
     code?: true
     name?: true
@@ -5015,144 +5338,144 @@ export namespace Prisma {
     _all?: true
   }
 
-  export type ProcessAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which Process to aggregate.
+     * Filter which ProPrefix to aggregate.
      */
-    where?: ProcessWhereInput
+    where?: ProPrefixWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Processes to fetch.
+     * Determine the order of ProPrefixes to fetch.
      */
-    orderBy?: ProcessOrderByWithRelationInput | ProcessOrderByWithRelationInput[]
+    orderBy?: ProPrefixOrderByWithRelationInput | ProPrefixOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: ProcessWhereUniqueInput
+    cursor?: ProPrefixWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Processes from the position of the cursor.
+     * Take `±n` ProPrefixes from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Processes.
+     * Skip the first `n` ProPrefixes.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned Processes
+     * Count returned ProPrefixes
     **/
-    _count?: true | ProcessCountAggregateInputType
+    _count?: true | ProPrefixCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to average
     **/
-    _avg?: ProcessAvgAggregateInputType
+    _avg?: ProPrefixAvgAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to sum
     **/
-    _sum?: ProcessSumAggregateInputType
+    _sum?: ProPrefixSumAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: ProcessMinAggregateInputType
+    _min?: ProPrefixMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: ProcessMaxAggregateInputType
+    _max?: ProPrefixMaxAggregateInputType
   }
 
-  export type GetProcessAggregateType<T extends ProcessAggregateArgs> = {
-        [P in keyof T & keyof AggregateProcess]: P extends '_count' | 'count'
+  export type GetProPrefixAggregateType<T extends ProPrefixAggregateArgs> = {
+        [P in keyof T & keyof AggregateProPrefix]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateProcess[P]>
-      : GetScalarType<T[P], AggregateProcess[P]>
+        : GetScalarType<T[P], AggregateProPrefix[P]>
+      : GetScalarType<T[P], AggregateProPrefix[P]>
   }
 
 
 
 
-  export type ProcessGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProcessWhereInput
-    orderBy?: ProcessOrderByWithAggregationInput | ProcessOrderByWithAggregationInput[]
-    by: ProcessScalarFieldEnum[] | ProcessScalarFieldEnum
-    having?: ProcessScalarWhereWithAggregatesInput
+  export type ProPrefixGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProPrefixWhereInput
+    orderBy?: ProPrefixOrderByWithAggregationInput | ProPrefixOrderByWithAggregationInput[]
+    by: ProPrefixScalarFieldEnum[] | ProPrefixScalarFieldEnum
+    having?: ProPrefixScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: ProcessCountAggregateInputType | true
-    _avg?: ProcessAvgAggregateInputType
-    _sum?: ProcessSumAggregateInputType
-    _min?: ProcessMinAggregateInputType
-    _max?: ProcessMaxAggregateInputType
+    _count?: ProPrefixCountAggregateInputType | true
+    _avg?: ProPrefixAvgAggregateInputType
+    _sum?: ProPrefixSumAggregateInputType
+    _min?: ProPrefixMinAggregateInputType
+    _max?: ProPrefixMaxAggregateInputType
   }
 
-  export type ProcessGroupByOutputType = {
+  export type ProPrefixGroupByOutputType = {
     id: number
     code: string
     name: string
     type: $Enums.ProType
-    _count: ProcessCountAggregateOutputType | null
-    _avg: ProcessAvgAggregateOutputType | null
-    _sum: ProcessSumAggregateOutputType | null
-    _min: ProcessMinAggregateOutputType | null
-    _max: ProcessMaxAggregateOutputType | null
+    _count: ProPrefixCountAggregateOutputType | null
+    _avg: ProPrefixAvgAggregateOutputType | null
+    _sum: ProPrefixSumAggregateOutputType | null
+    _min: ProPrefixMinAggregateOutputType | null
+    _max: ProPrefixMaxAggregateOutputType | null
   }
 
-  type GetProcessGroupByPayload<T extends ProcessGroupByArgs> = Prisma.PrismaPromise<
+  type GetProPrefixGroupByPayload<T extends ProPrefixGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<ProcessGroupByOutputType, T['by']> &
+      PickEnumerable<ProPrefixGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof ProcessGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof ProPrefixGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], ProcessGroupByOutputType[P]>
-            : GetScalarType<T[P], ProcessGroupByOutputType[P]>
+              : GetScalarType<T[P], ProPrefixGroupByOutputType[P]>
+            : GetScalarType<T[P], ProPrefixGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type ProcessSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type ProPrefixSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     code?: boolean
     name?: boolean
     type?: boolean
-    pros?: boolean | Process$prosArgs<ExtArgs>
-    _count?: boolean | ProcessCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["process"]>
+    pros?: boolean | ProPrefix$prosArgs<ExtArgs>
+    _count?: boolean | ProPrefixCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["proPrefix"]>
 
 
 
-  export type ProcessSelectScalar = {
+  export type ProPrefixSelectScalar = {
     id?: boolean
     code?: boolean
     name?: boolean
     type?: boolean
   }
 
-  export type ProcessOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "type", ExtArgs["result"]["process"]>
-  export type ProcessInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    pros?: boolean | Process$prosArgs<ExtArgs>
-    _count?: boolean | ProcessCountOutputTypeDefaultArgs<ExtArgs>
+  export type ProPrefixOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "type", ExtArgs["result"]["proPrefix"]>
+  export type ProPrefixInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    pros?: boolean | ProPrefix$prosArgs<ExtArgs>
+    _count?: boolean | ProPrefixCountOutputTypeDefaultArgs<ExtArgs>
   }
 
-  export type $ProcessPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Process"
+  export type $ProPrefixPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ProPrefix"
     objects: {
       pros: Prisma.$ProPayload<ExtArgs>[]
     }
@@ -5161,143 +5484,143 @@ export namespace Prisma {
       code: string
       name: string
       type: $Enums.ProType
-    }, ExtArgs["result"]["process"]>
+    }, ExtArgs["result"]["proPrefix"]>
     composites: {}
   }
 
-  type ProcessGetPayload<S extends boolean | null | undefined | ProcessDefaultArgs> = $Result.GetResult<Prisma.$ProcessPayload, S>
+  type ProPrefixGetPayload<S extends boolean | null | undefined | ProPrefixDefaultArgs> = $Result.GetResult<Prisma.$ProPrefixPayload, S>
 
-  type ProcessCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<ProcessFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: ProcessCountAggregateInputType | true
+  type ProPrefixCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ProPrefixFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ProPrefixCountAggregateInputType | true
     }
 
-  export interface ProcessDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Process'], meta: { name: 'Process' } }
+  export interface ProPrefixDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProPrefix'], meta: { name: 'ProPrefix' } }
     /**
-     * Find zero or one Process that matches the filter.
-     * @param {ProcessFindUniqueArgs} args - Arguments to find a Process
+     * Find zero or one ProPrefix that matches the filter.
+     * @param {ProPrefixFindUniqueArgs} args - Arguments to find a ProPrefix
      * @example
-     * // Get one Process
-     * const process = await prisma.process.findUnique({
+     * // Get one ProPrefix
+     * const proPrefix = await prisma.proPrefix.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends ProcessFindUniqueArgs>(args: SelectSubset<T, ProcessFindUniqueArgs<ExtArgs>>): Prisma__ProcessClient<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends ProPrefixFindUniqueArgs>(args: SelectSubset<T, ProPrefixFindUniqueArgs<ExtArgs>>): Prisma__ProPrefixClient<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one Process that matches the filter or throw an error with `error.code='P2025'`
+     * Find one ProPrefix that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {ProcessFindUniqueOrThrowArgs} args - Arguments to find a Process
+     * @param {ProPrefixFindUniqueOrThrowArgs} args - Arguments to find a ProPrefix
      * @example
-     * // Get one Process
-     * const process = await prisma.process.findUniqueOrThrow({
+     * // Get one ProPrefix
+     * const proPrefix = await prisma.proPrefix.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends ProcessFindUniqueOrThrowArgs>(args: SelectSubset<T, ProcessFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProcessClient<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends ProPrefixFindUniqueOrThrowArgs>(args: SelectSubset<T, ProPrefixFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProPrefixClient<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Process that matches the filter.
+     * Find the first ProPrefix that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProcessFindFirstArgs} args - Arguments to find a Process
+     * @param {ProPrefixFindFirstArgs} args - Arguments to find a ProPrefix
      * @example
-     * // Get one Process
-     * const process = await prisma.process.findFirst({
+     * // Get one ProPrefix
+     * const proPrefix = await prisma.proPrefix.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends ProcessFindFirstArgs>(args?: SelectSubset<T, ProcessFindFirstArgs<ExtArgs>>): Prisma__ProcessClient<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends ProPrefixFindFirstArgs>(args?: SelectSubset<T, ProPrefixFindFirstArgs<ExtArgs>>): Prisma__ProPrefixClient<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Process that matches the filter or
+     * Find the first ProPrefix that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProcessFindFirstOrThrowArgs} args - Arguments to find a Process
+     * @param {ProPrefixFindFirstOrThrowArgs} args - Arguments to find a ProPrefix
      * @example
-     * // Get one Process
-     * const process = await prisma.process.findFirstOrThrow({
+     * // Get one ProPrefix
+     * const proPrefix = await prisma.proPrefix.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends ProcessFindFirstOrThrowArgs>(args?: SelectSubset<T, ProcessFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProcessClient<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends ProPrefixFindFirstOrThrowArgs>(args?: SelectSubset<T, ProPrefixFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProPrefixClient<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more Processes that matches the filter.
+     * Find zero or more ProPrefixes that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProcessFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {ProPrefixFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all Processes
-     * const processes = await prisma.process.findMany()
+     * // Get all ProPrefixes
+     * const proPrefixes = await prisma.proPrefix.findMany()
      * 
-     * // Get first 10 Processes
-     * const processes = await prisma.process.findMany({ take: 10 })
+     * // Get first 10 ProPrefixes
+     * const proPrefixes = await prisma.proPrefix.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const processWithIdOnly = await prisma.process.findMany({ select: { id: true } })
+     * const proPrefixWithIdOnly = await prisma.proPrefix.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends ProcessFindManyArgs>(args?: SelectSubset<T, ProcessFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends ProPrefixFindManyArgs>(args?: SelectSubset<T, ProPrefixFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a Process.
-     * @param {ProcessCreateArgs} args - Arguments to create a Process.
+     * Create a ProPrefix.
+     * @param {ProPrefixCreateArgs} args - Arguments to create a ProPrefix.
      * @example
-     * // Create one Process
-     * const Process = await prisma.process.create({
+     * // Create one ProPrefix
+     * const ProPrefix = await prisma.proPrefix.create({
      *   data: {
-     *     // ... data to create a Process
+     *     // ... data to create a ProPrefix
      *   }
      * })
      * 
      */
-    create<T extends ProcessCreateArgs>(args: SelectSubset<T, ProcessCreateArgs<ExtArgs>>): Prisma__ProcessClient<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends ProPrefixCreateArgs>(args: SelectSubset<T, ProPrefixCreateArgs<ExtArgs>>): Prisma__ProPrefixClient<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many Processes.
-     * @param {ProcessCreateManyArgs} args - Arguments to create many Processes.
+     * Create many ProPrefixes.
+     * @param {ProPrefixCreateManyArgs} args - Arguments to create many ProPrefixes.
      * @example
-     * // Create many Processes
-     * const process = await prisma.process.createMany({
+     * // Create many ProPrefixes
+     * const proPrefix = await prisma.proPrefix.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends ProcessCreateManyArgs>(args?: SelectSubset<T, ProcessCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends ProPrefixCreateManyArgs>(args?: SelectSubset<T, ProPrefixCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Delete a Process.
-     * @param {ProcessDeleteArgs} args - Arguments to delete one Process.
+     * Delete a ProPrefix.
+     * @param {ProPrefixDeleteArgs} args - Arguments to delete one ProPrefix.
      * @example
-     * // Delete one Process
-     * const Process = await prisma.process.delete({
+     * // Delete one ProPrefix
+     * const ProPrefix = await prisma.proPrefix.delete({
      *   where: {
-     *     // ... filter to delete one Process
+     *     // ... filter to delete one ProPrefix
      *   }
      * })
      * 
      */
-    delete<T extends ProcessDeleteArgs>(args: SelectSubset<T, ProcessDeleteArgs<ExtArgs>>): Prisma__ProcessClient<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends ProPrefixDeleteArgs>(args: SelectSubset<T, ProPrefixDeleteArgs<ExtArgs>>): Prisma__ProPrefixClient<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one Process.
-     * @param {ProcessUpdateArgs} args - Arguments to update one Process.
+     * Update one ProPrefix.
+     * @param {ProPrefixUpdateArgs} args - Arguments to update one ProPrefix.
      * @example
-     * // Update one Process
-     * const process = await prisma.process.update({
+     * // Update one ProPrefix
+     * const proPrefix = await prisma.proPrefix.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -5307,30 +5630,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends ProcessUpdateArgs>(args: SelectSubset<T, ProcessUpdateArgs<ExtArgs>>): Prisma__ProcessClient<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends ProPrefixUpdateArgs>(args: SelectSubset<T, ProPrefixUpdateArgs<ExtArgs>>): Prisma__ProPrefixClient<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more Processes.
-     * @param {ProcessDeleteManyArgs} args - Arguments to filter Processes to delete.
+     * Delete zero or more ProPrefixes.
+     * @param {ProPrefixDeleteManyArgs} args - Arguments to filter ProPrefixes to delete.
      * @example
-     * // Delete a few Processes
-     * const { count } = await prisma.process.deleteMany({
+     * // Delete a few ProPrefixes
+     * const { count } = await prisma.proPrefix.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends ProcessDeleteManyArgs>(args?: SelectSubset<T, ProcessDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends ProPrefixDeleteManyArgs>(args?: SelectSubset<T, ProPrefixDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Processes.
+     * Update zero or more ProPrefixes.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProcessUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {ProPrefixUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many Processes
-     * const process = await prisma.process.updateMany({
+     * // Update many ProPrefixes
+     * const proPrefix = await prisma.proPrefix.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -5340,56 +5663,56 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends ProcessUpdateManyArgs>(args: SelectSubset<T, ProcessUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends ProPrefixUpdateManyArgs>(args: SelectSubset<T, ProPrefixUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create or update one Process.
-     * @param {ProcessUpsertArgs} args - Arguments to update or create a Process.
+     * Create or update one ProPrefix.
+     * @param {ProPrefixUpsertArgs} args - Arguments to update or create a ProPrefix.
      * @example
-     * // Update or create a Process
-     * const process = await prisma.process.upsert({
+     * // Update or create a ProPrefix
+     * const proPrefix = await prisma.proPrefix.upsert({
      *   create: {
-     *     // ... data to create a Process
+     *     // ... data to create a ProPrefix
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the Process we want to update
+     *     // ... the filter for the ProPrefix we want to update
      *   }
      * })
      */
-    upsert<T extends ProcessUpsertArgs>(args: SelectSubset<T, ProcessUpsertArgs<ExtArgs>>): Prisma__ProcessClient<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends ProPrefixUpsertArgs>(args: SelectSubset<T, ProPrefixUpsertArgs<ExtArgs>>): Prisma__ProPrefixClient<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of Processes.
+     * Count the number of ProPrefixes.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProcessCountArgs} args - Arguments to filter Processes to count.
+     * @param {ProPrefixCountArgs} args - Arguments to filter ProPrefixes to count.
      * @example
-     * // Count the number of Processes
-     * const count = await prisma.process.count({
+     * // Count the number of ProPrefixes
+     * const count = await prisma.proPrefix.count({
      *   where: {
-     *     // ... the filter for the Processes we want to count
+     *     // ... the filter for the ProPrefixes we want to count
      *   }
      * })
     **/
-    count<T extends ProcessCountArgs>(
-      args?: Subset<T, ProcessCountArgs>,
+    count<T extends ProPrefixCountArgs>(
+      args?: Subset<T, ProPrefixCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], ProcessCountAggregateOutputType>
+          : GetScalarType<T['select'], ProPrefixCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a Process.
+     * Allows you to perform aggregations operations on a ProPrefix.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProcessAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {ProPrefixAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -5409,13 +5732,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends ProcessAggregateArgs>(args: Subset<T, ProcessAggregateArgs>): Prisma.PrismaPromise<GetProcessAggregateType<T>>
+    aggregate<T extends ProPrefixAggregateArgs>(args: Subset<T, ProPrefixAggregateArgs>): Prisma.PrismaPromise<GetProPrefixAggregateType<T>>
 
     /**
-     * Group by Process.
+     * Group by ProPrefix.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProcessGroupByArgs} args - Group by arguments.
+     * @param {ProPrefixGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -5430,14 +5753,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends ProcessGroupByArgs,
+      T extends ProPrefixGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: ProcessGroupByArgs['orderBy'] }
-        : { orderBy?: ProcessGroupByArgs['orderBy'] },
+        ? { orderBy: ProPrefixGroupByArgs['orderBy'] }
+        : { orderBy?: ProPrefixGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -5486,22 +5809,22 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, ProcessGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProcessGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, ProPrefixGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProPrefixGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the Process model
+   * Fields of the ProPrefix model
    */
-  readonly fields: ProcessFieldRefs;
+  readonly fields: ProPrefixFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for Process.
+   * The delegate class that acts as a "Promise-like" for ProPrefix.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__ProcessClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__ProPrefixClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    pros<T extends Process$prosArgs<ExtArgs> = {}>(args?: Subset<T, Process$prosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    pros<T extends ProPrefix$prosArgs<ExtArgs> = {}>(args?: Subset<T, ProPrefix$prosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5528,359 +5851,359 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the Process model
+   * Fields of the ProPrefix model
    */
-  interface ProcessFieldRefs {
-    readonly id: FieldRef<"Process", 'Int'>
-    readonly code: FieldRef<"Process", 'String'>
-    readonly name: FieldRef<"Process", 'String'>
-    readonly type: FieldRef<"Process", 'ProType'>
+  interface ProPrefixFieldRefs {
+    readonly id: FieldRef<"ProPrefix", 'Int'>
+    readonly code: FieldRef<"ProPrefix", 'String'>
+    readonly name: FieldRef<"ProPrefix", 'String'>
+    readonly type: FieldRef<"ProPrefix", 'ProType'>
   }
     
 
   // Custom InputTypes
   /**
-   * Process findUnique
+   * ProPrefix findUnique
    */
-  export type ProcessFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Process
+     * Select specific fields to fetch from the ProPrefix
      */
-    select?: ProcessSelect<ExtArgs> | null
+    select?: ProPrefixSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Process
+     * Omit specific fields from the ProPrefix
      */
-    omit?: ProcessOmit<ExtArgs> | null
+    omit?: ProPrefixOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProcessInclude<ExtArgs> | null
+    include?: ProPrefixInclude<ExtArgs> | null
     /**
-     * Filter, which Process to fetch.
+     * Filter, which ProPrefix to fetch.
      */
-    where: ProcessWhereUniqueInput
+    where: ProPrefixWhereUniqueInput
   }
 
   /**
-   * Process findUniqueOrThrow
+   * ProPrefix findUniqueOrThrow
    */
-  export type ProcessFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Process
+     * Select specific fields to fetch from the ProPrefix
      */
-    select?: ProcessSelect<ExtArgs> | null
+    select?: ProPrefixSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Process
+     * Omit specific fields from the ProPrefix
      */
-    omit?: ProcessOmit<ExtArgs> | null
+    omit?: ProPrefixOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProcessInclude<ExtArgs> | null
+    include?: ProPrefixInclude<ExtArgs> | null
     /**
-     * Filter, which Process to fetch.
+     * Filter, which ProPrefix to fetch.
      */
-    where: ProcessWhereUniqueInput
+    where: ProPrefixWhereUniqueInput
   }
 
   /**
-   * Process findFirst
+   * ProPrefix findFirst
    */
-  export type ProcessFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Process
+     * Select specific fields to fetch from the ProPrefix
      */
-    select?: ProcessSelect<ExtArgs> | null
+    select?: ProPrefixSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Process
+     * Omit specific fields from the ProPrefix
      */
-    omit?: ProcessOmit<ExtArgs> | null
+    omit?: ProPrefixOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProcessInclude<ExtArgs> | null
+    include?: ProPrefixInclude<ExtArgs> | null
     /**
-     * Filter, which Process to fetch.
+     * Filter, which ProPrefix to fetch.
      */
-    where?: ProcessWhereInput
+    where?: ProPrefixWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Processes to fetch.
+     * Determine the order of ProPrefixes to fetch.
      */
-    orderBy?: ProcessOrderByWithRelationInput | ProcessOrderByWithRelationInput[]
+    orderBy?: ProPrefixOrderByWithRelationInput | ProPrefixOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for Processes.
+     * Sets the position for searching for ProPrefixes.
      */
-    cursor?: ProcessWhereUniqueInput
+    cursor?: ProPrefixWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Processes from the position of the cursor.
+     * Take `±n` ProPrefixes from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Processes.
+     * Skip the first `n` ProPrefixes.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of Processes.
+     * Filter by unique combinations of ProPrefixes.
      */
-    distinct?: ProcessScalarFieldEnum | ProcessScalarFieldEnum[]
+    distinct?: ProPrefixScalarFieldEnum | ProPrefixScalarFieldEnum[]
   }
 
   /**
-   * Process findFirstOrThrow
+   * ProPrefix findFirstOrThrow
    */
-  export type ProcessFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Process
+     * Select specific fields to fetch from the ProPrefix
      */
-    select?: ProcessSelect<ExtArgs> | null
+    select?: ProPrefixSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Process
+     * Omit specific fields from the ProPrefix
      */
-    omit?: ProcessOmit<ExtArgs> | null
+    omit?: ProPrefixOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProcessInclude<ExtArgs> | null
+    include?: ProPrefixInclude<ExtArgs> | null
     /**
-     * Filter, which Process to fetch.
+     * Filter, which ProPrefix to fetch.
      */
-    where?: ProcessWhereInput
+    where?: ProPrefixWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Processes to fetch.
+     * Determine the order of ProPrefixes to fetch.
      */
-    orderBy?: ProcessOrderByWithRelationInput | ProcessOrderByWithRelationInput[]
+    orderBy?: ProPrefixOrderByWithRelationInput | ProPrefixOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for Processes.
+     * Sets the position for searching for ProPrefixes.
      */
-    cursor?: ProcessWhereUniqueInput
+    cursor?: ProPrefixWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Processes from the position of the cursor.
+     * Take `±n` ProPrefixes from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Processes.
+     * Skip the first `n` ProPrefixes.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of Processes.
+     * Filter by unique combinations of ProPrefixes.
      */
-    distinct?: ProcessScalarFieldEnum | ProcessScalarFieldEnum[]
+    distinct?: ProPrefixScalarFieldEnum | ProPrefixScalarFieldEnum[]
   }
 
   /**
-   * Process findMany
+   * ProPrefix findMany
    */
-  export type ProcessFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Process
+     * Select specific fields to fetch from the ProPrefix
      */
-    select?: ProcessSelect<ExtArgs> | null
+    select?: ProPrefixSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Process
+     * Omit specific fields from the ProPrefix
      */
-    omit?: ProcessOmit<ExtArgs> | null
+    omit?: ProPrefixOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProcessInclude<ExtArgs> | null
+    include?: ProPrefixInclude<ExtArgs> | null
     /**
-     * Filter, which Processes to fetch.
+     * Filter, which ProPrefixes to fetch.
      */
-    where?: ProcessWhereInput
+    where?: ProPrefixWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Processes to fetch.
+     * Determine the order of ProPrefixes to fetch.
      */
-    orderBy?: ProcessOrderByWithRelationInput | ProcessOrderByWithRelationInput[]
+    orderBy?: ProPrefixOrderByWithRelationInput | ProPrefixOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing Processes.
+     * Sets the position for listing ProPrefixes.
      */
-    cursor?: ProcessWhereUniqueInput
+    cursor?: ProPrefixWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Processes from the position of the cursor.
+     * Take `±n` ProPrefixes from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Processes.
+     * Skip the first `n` ProPrefixes.
      */
     skip?: number
-    distinct?: ProcessScalarFieldEnum | ProcessScalarFieldEnum[]
+    distinct?: ProPrefixScalarFieldEnum | ProPrefixScalarFieldEnum[]
   }
 
   /**
-   * Process create
+   * ProPrefix create
    */
-  export type ProcessCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Process
+     * Select specific fields to fetch from the ProPrefix
      */
-    select?: ProcessSelect<ExtArgs> | null
+    select?: ProPrefixSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Process
+     * Omit specific fields from the ProPrefix
      */
-    omit?: ProcessOmit<ExtArgs> | null
+    omit?: ProPrefixOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProcessInclude<ExtArgs> | null
+    include?: ProPrefixInclude<ExtArgs> | null
     /**
-     * The data needed to create a Process.
+     * The data needed to create a ProPrefix.
      */
-    data: XOR<ProcessCreateInput, ProcessUncheckedCreateInput>
+    data: XOR<ProPrefixCreateInput, ProPrefixUncheckedCreateInput>
   }
 
   /**
-   * Process createMany
+   * ProPrefix createMany
    */
-  export type ProcessCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many Processes.
+     * The data used to create many ProPrefixes.
      */
-    data: ProcessCreateManyInput | ProcessCreateManyInput[]
+    data: ProPrefixCreateManyInput | ProPrefixCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * Process update
+   * ProPrefix update
    */
-  export type ProcessUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Process
+     * Select specific fields to fetch from the ProPrefix
      */
-    select?: ProcessSelect<ExtArgs> | null
+    select?: ProPrefixSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Process
+     * Omit specific fields from the ProPrefix
      */
-    omit?: ProcessOmit<ExtArgs> | null
+    omit?: ProPrefixOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProcessInclude<ExtArgs> | null
+    include?: ProPrefixInclude<ExtArgs> | null
     /**
-     * The data needed to update a Process.
+     * The data needed to update a ProPrefix.
      */
-    data: XOR<ProcessUpdateInput, ProcessUncheckedUpdateInput>
+    data: XOR<ProPrefixUpdateInput, ProPrefixUncheckedUpdateInput>
     /**
-     * Choose, which Process to update.
+     * Choose, which ProPrefix to update.
      */
-    where: ProcessWhereUniqueInput
+    where: ProPrefixWhereUniqueInput
   }
 
   /**
-   * Process updateMany
+   * ProPrefix updateMany
    */
-  export type ProcessUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update Processes.
+     * The data used to update ProPrefixes.
      */
-    data: XOR<ProcessUpdateManyMutationInput, ProcessUncheckedUpdateManyInput>
+    data: XOR<ProPrefixUpdateManyMutationInput, ProPrefixUncheckedUpdateManyInput>
     /**
-     * Filter which Processes to update
+     * Filter which ProPrefixes to update
      */
-    where?: ProcessWhereInput
+    where?: ProPrefixWhereInput
     /**
-     * Limit how many Processes to update.
+     * Limit how many ProPrefixes to update.
      */
     limit?: number
   }
 
   /**
-   * Process upsert
+   * ProPrefix upsert
    */
-  export type ProcessUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Process
+     * Select specific fields to fetch from the ProPrefix
      */
-    select?: ProcessSelect<ExtArgs> | null
+    select?: ProPrefixSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Process
+     * Omit specific fields from the ProPrefix
      */
-    omit?: ProcessOmit<ExtArgs> | null
+    omit?: ProPrefixOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProcessInclude<ExtArgs> | null
+    include?: ProPrefixInclude<ExtArgs> | null
     /**
-     * The filter to search for the Process to update in case it exists.
+     * The filter to search for the ProPrefix to update in case it exists.
      */
-    where: ProcessWhereUniqueInput
+    where: ProPrefixWhereUniqueInput
     /**
-     * In case the Process found by the `where` argument doesn't exist, create a new Process with this data.
+     * In case the ProPrefix found by the `where` argument doesn't exist, create a new ProPrefix with this data.
      */
-    create: XOR<ProcessCreateInput, ProcessUncheckedCreateInput>
+    create: XOR<ProPrefixCreateInput, ProPrefixUncheckedCreateInput>
     /**
-     * In case the Process was found with the provided `where` argument, update it with this data.
+     * In case the ProPrefix was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<ProcessUpdateInput, ProcessUncheckedUpdateInput>
+    update: XOR<ProPrefixUpdateInput, ProPrefixUncheckedUpdateInput>
   }
 
   /**
-   * Process delete
+   * ProPrefix delete
    */
-  export type ProcessDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Process
+     * Select specific fields to fetch from the ProPrefix
      */
-    select?: ProcessSelect<ExtArgs> | null
+    select?: ProPrefixSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Process
+     * Omit specific fields from the ProPrefix
      */
-    omit?: ProcessOmit<ExtArgs> | null
+    omit?: ProPrefixOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProcessInclude<ExtArgs> | null
+    include?: ProPrefixInclude<ExtArgs> | null
     /**
-     * Filter which Process to delete.
+     * Filter which ProPrefix to delete.
      */
-    where: ProcessWhereUniqueInput
+    where: ProPrefixWhereUniqueInput
   }
 
   /**
-   * Process deleteMany
+   * ProPrefix deleteMany
    */
-  export type ProcessDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which Processes to delete
+     * Filter which ProPrefixes to delete
      */
-    where?: ProcessWhereInput
+    where?: ProPrefixWhereInput
     /**
-     * Limit how many Processes to delete.
+     * Limit how many ProPrefixes to delete.
      */
     limit?: number
   }
 
   /**
-   * Process.pros
+   * ProPrefix.pros
    */
-  export type Process$prosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefix$prosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Pro
      */
@@ -5902,21 +6225,21 @@ export namespace Prisma {
   }
 
   /**
-   * Process without action
+   * ProPrefix without action
    */
-  export type ProcessDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProPrefixDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Process
+     * Select specific fields to fetch from the ProPrefix
      */
-    select?: ProcessSelect<ExtArgs> | null
+    select?: ProPrefixSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Process
+     * Omit specific fields from the ProPrefix
      */
-    omit?: ProcessOmit<ExtArgs> | null
+    omit?: ProPrefixOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProcessInclude<ExtArgs> | null
+    include?: ProPrefixInclude<ExtArgs> | null
   }
 
 
@@ -6818,25 +7141,26 @@ export namespace Prisma {
   export type ProAvgAggregateOutputType = {
     id: number | null
     qtyPoPcs: number | null
-    processId: number | null
+    proPrefixId: number | null
   }
 
   export type ProSumAggregateOutputType = {
     id: number | null
     qtyPoPcs: number | null
-    processId: number | null
+    proPrefixId: number | null
   }
 
   export type ProMinAggregateOutputType = {
     id: number | null
     proNumber: string | null
     productName: string | null
+    partNumber: string | null
     qtyPoPcs: number | null
     startDate: Date | null
     status: $Enums.ProStatus | null
     type: $Enums.ProType | null
     autoShiftExpansion: boolean | null
-    processId: number | null
+    proPrefixId: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6845,12 +7169,13 @@ export namespace Prisma {
     id: number | null
     proNumber: string | null
     productName: string | null
+    partNumber: string | null
     qtyPoPcs: number | null
     startDate: Date | null
     status: $Enums.ProStatus | null
     type: $Enums.ProType | null
     autoShiftExpansion: boolean | null
-    processId: number | null
+    proPrefixId: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6859,12 +7184,13 @@ export namespace Prisma {
     id: number
     proNumber: number
     productName: number
+    partNumber: number
     qtyPoPcs: number
     startDate: number
     status: number
     type: number
     autoShiftExpansion: number
-    processId: number
+    proPrefixId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -6874,25 +7200,26 @@ export namespace Prisma {
   export type ProAvgAggregateInputType = {
     id?: true
     qtyPoPcs?: true
-    processId?: true
+    proPrefixId?: true
   }
 
   export type ProSumAggregateInputType = {
     id?: true
     qtyPoPcs?: true
-    processId?: true
+    proPrefixId?: true
   }
 
   export type ProMinAggregateInputType = {
     id?: true
     proNumber?: true
     productName?: true
+    partNumber?: true
     qtyPoPcs?: true
     startDate?: true
     status?: true
     type?: true
     autoShiftExpansion?: true
-    processId?: true
+    proPrefixId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6901,12 +7228,13 @@ export namespace Prisma {
     id?: true
     proNumber?: true
     productName?: true
+    partNumber?: true
     qtyPoPcs?: true
     startDate?: true
     status?: true
     type?: true
     autoShiftExpansion?: true
-    processId?: true
+    proPrefixId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6915,12 +7243,13 @@ export namespace Prisma {
     id?: true
     proNumber?: true
     productName?: true
+    partNumber?: true
     qtyPoPcs?: true
     startDate?: true
     status?: true
     type?: true
     autoShiftExpansion?: true
-    processId?: true
+    proPrefixId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -7016,12 +7345,13 @@ export namespace Prisma {
     id: number
     proNumber: string
     productName: string
+    partNumber: string | null
     qtyPoPcs: number
     startDate: Date | null
     status: $Enums.ProStatus
     type: $Enums.ProType
     autoShiftExpansion: boolean
-    processId: number | null
+    proPrefixId: number | null
     createdAt: Date
     updatedAt: Date
     _count: ProCountAggregateOutputType | null
@@ -7049,16 +7379,18 @@ export namespace Prisma {
     id?: boolean
     proNumber?: boolean
     productName?: boolean
+    partNumber?: boolean
     qtyPoPcs?: boolean
     startDate?: boolean
     status?: boolean
     type?: boolean
     autoShiftExpansion?: boolean
-    processId?: boolean
+    proPrefixId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    process?: boolean | Pro$processArgs<ExtArgs>
-    steps?: boolean | Pro$stepsArgs<ExtArgs>
+    proPrefix?: boolean | Pro$proPrefixArgs<ExtArgs>
+    proses?: boolean | Pro$prosesArgs<ExtArgs>
+    inventoryTxns?: boolean | Pro$inventoryTxnsArgs<ExtArgs>
     _count?: boolean | ProCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["pro"]>
 
@@ -7068,39 +7400,43 @@ export namespace Prisma {
     id?: boolean
     proNumber?: boolean
     productName?: boolean
+    partNumber?: boolean
     qtyPoPcs?: boolean
     startDate?: boolean
     status?: boolean
     type?: boolean
     autoShiftExpansion?: boolean
-    processId?: boolean
+    proPrefixId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "qtyPoPcs" | "startDate" | "status" | "type" | "autoShiftExpansion" | "processId" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
+  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "partNumber" | "qtyPoPcs" | "startDate" | "status" | "type" | "autoShiftExpansion" | "proPrefixId" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
   export type ProInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    process?: boolean | Pro$processArgs<ExtArgs>
-    steps?: boolean | Pro$stepsArgs<ExtArgs>
+    proPrefix?: boolean | Pro$proPrefixArgs<ExtArgs>
+    proses?: boolean | Pro$prosesArgs<ExtArgs>
+    inventoryTxns?: boolean | Pro$inventoryTxnsArgs<ExtArgs>
     _count?: boolean | ProCountOutputTypeDefaultArgs<ExtArgs>
   }
 
   export type $ProPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Pro"
     objects: {
-      process: Prisma.$ProcessPayload<ExtArgs> | null
-      steps: Prisma.$ProStepPayload<ExtArgs>[]
+      proPrefix: Prisma.$ProPrefixPayload<ExtArgs> | null
+      proses: Prisma.$ProsesPayload<ExtArgs>[]
+      inventoryTxns: Prisma.$InventoryTxnPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
       proNumber: string
       productName: string
+      partNumber: string | null
       qtyPoPcs: number
       startDate: Date | null
       status: $Enums.ProStatus
       type: $Enums.ProType
       autoShiftExpansion: boolean
-      processId: number | null
+      proPrefixId: number | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["pro"]>
@@ -7443,8 +7779,9 @@ export namespace Prisma {
    */
   export interface Prisma__ProClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    process<T extends Pro$processArgs<ExtArgs> = {}>(args?: Subset<T, Pro$processArgs<ExtArgs>>): Prisma__ProcessClient<$Result.GetResult<Prisma.$ProcessPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    steps<T extends Pro$stepsArgs<ExtArgs> = {}>(args?: Subset<T, Pro$stepsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    proPrefix<T extends Pro$proPrefixArgs<ExtArgs> = {}>(args?: Subset<T, Pro$proPrefixArgs<ExtArgs>>): Prisma__ProPrefixClient<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    proses<T extends Pro$prosesArgs<ExtArgs> = {}>(args?: Subset<T, Pro$prosesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    inventoryTxns<T extends Pro$inventoryTxnsArgs<ExtArgs> = {}>(args?: Subset<T, Pro$inventoryTxnsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7477,12 +7814,13 @@ export namespace Prisma {
     readonly id: FieldRef<"Pro", 'Int'>
     readonly proNumber: FieldRef<"Pro", 'String'>
     readonly productName: FieldRef<"Pro", 'String'>
+    readonly partNumber: FieldRef<"Pro", 'String'>
     readonly qtyPoPcs: FieldRef<"Pro", 'Int'>
     readonly startDate: FieldRef<"Pro", 'DateTime'>
     readonly status: FieldRef<"Pro", 'ProStatus'>
     readonly type: FieldRef<"Pro", 'ProType'>
     readonly autoShiftExpansion: FieldRef<"Pro", 'Boolean'>
-    readonly processId: FieldRef<"Pro", 'Int'>
+    readonly proPrefixId: FieldRef<"Pro", 'Int'>
     readonly createdAt: FieldRef<"Pro", 'DateTime'>
     readonly updatedAt: FieldRef<"Pro", 'DateTime'>
   }
@@ -7828,46 +8166,70 @@ export namespace Prisma {
   }
 
   /**
-   * Pro.process
+   * Pro.proPrefix
    */
-  export type Pro$processArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Pro$proPrefixArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Process
+     * Select specific fields to fetch from the ProPrefix
      */
-    select?: ProcessSelect<ExtArgs> | null
+    select?: ProPrefixSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Process
+     * Omit specific fields from the ProPrefix
      */
-    omit?: ProcessOmit<ExtArgs> | null
+    omit?: ProPrefixOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProcessInclude<ExtArgs> | null
-    where?: ProcessWhereInput
+    include?: ProPrefixInclude<ExtArgs> | null
+    where?: ProPrefixWhereInput
   }
 
   /**
-   * Pro.steps
+   * Pro.proses
    */
-  export type Pro$stepsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Pro$prosesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Proses
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProsesSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Proses
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProsesOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
-    where?: ProStepWhereInput
-    orderBy?: ProStepOrderByWithRelationInput | ProStepOrderByWithRelationInput[]
-    cursor?: ProStepWhereUniqueInput
+    include?: ProsesInclude<ExtArgs> | null
+    where?: ProsesWhereInput
+    orderBy?: ProsesOrderByWithRelationInput | ProsesOrderByWithRelationInput[]
+    cursor?: ProsesWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: ProStepScalarFieldEnum | ProStepScalarFieldEnum[]
+    distinct?: ProsesScalarFieldEnum | ProsesScalarFieldEnum[]
+  }
+
+  /**
+   * Pro.inventoryTxns
+   */
+  export type Pro$inventoryTxnsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    where?: InventoryTxnWhereInput
+    orderBy?: InventoryTxnOrderByWithRelationInput | InventoryTxnOrderByWithRelationInput[]
+    cursor?: InventoryTxnWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: InventoryTxnScalarFieldEnum | InventoryTxnScalarFieldEnum[]
   }
 
   /**
@@ -7890,18 +8252,18 @@ export namespace Prisma {
 
 
   /**
-   * Model ProStep
+   * Model Proses
    */
 
-  export type AggregateProStep = {
-    _count: ProStepCountAggregateOutputType | null
-    _avg: ProStepAvgAggregateOutputType | null
-    _sum: ProStepSumAggregateOutputType | null
-    _min: ProStepMinAggregateOutputType | null
-    _max: ProStepMaxAggregateOutputType | null
+  export type AggregateProses = {
+    _count: ProsesCountAggregateOutputType | null
+    _avg: ProsesAvgAggregateOutputType | null
+    _sum: ProsesSumAggregateOutputType | null
+    _min: ProsesMinAggregateOutputType | null
+    _max: ProsesMaxAggregateOutputType | null
   }
 
-  export type ProStepAvgAggregateOutputType = {
+  export type ProsesAvgAggregateOutputType = {
     id: number | null
     proId: number | null
     orderNo: number | null
@@ -7910,7 +8272,7 @@ export namespace Prisma {
     machineId: number | null
   }
 
-  export type ProStepSumAggregateOutputType = {
+  export type ProsesSumAggregateOutputType = {
     id: number | null
     proId: number | null
     orderNo: number | null
@@ -7919,19 +8281,7 @@ export namespace Prisma {
     machineId: number | null
   }
 
-  export type ProStepMinAggregateOutputType = {
-    id: number | null
-    proId: number | null
-    orderNo: number | null
-    up: number | null
-    estimatedShifts: number | null
-    startDate: Date | null
-    machineId: number | null
-    partNumber: string | null
-    batchNo: string | null
-  }
-
-  export type ProStepMaxAggregateOutputType = {
+  export type ProsesMinAggregateOutputType = {
     id: number | null
     proId: number | null
     orderNo: number | null
@@ -7943,7 +8293,19 @@ export namespace Prisma {
     batchNo: string | null
   }
 
-  export type ProStepCountAggregateOutputType = {
+  export type ProsesMaxAggregateOutputType = {
+    id: number | null
+    proId: number | null
+    orderNo: number | null
+    up: number | null
+    estimatedShifts: number | null
+    startDate: Date | null
+    machineId: number | null
+    partNumber: string | null
+    batchNo: string | null
+  }
+
+  export type ProsesCountAggregateOutputType = {
     id: number
     proId: number
     orderNo: number
@@ -7957,7 +8319,7 @@ export namespace Prisma {
   }
 
 
-  export type ProStepAvgAggregateInputType = {
+  export type ProsesAvgAggregateInputType = {
     id?: true
     proId?: true
     orderNo?: true
@@ -7966,7 +8328,7 @@ export namespace Prisma {
     machineId?: true
   }
 
-  export type ProStepSumAggregateInputType = {
+  export type ProsesSumAggregateInputType = {
     id?: true
     proId?: true
     orderNo?: true
@@ -7975,19 +8337,7 @@ export namespace Prisma {
     machineId?: true
   }
 
-  export type ProStepMinAggregateInputType = {
-    id?: true
-    proId?: true
-    orderNo?: true
-    up?: true
-    estimatedShifts?: true
-    startDate?: true
-    machineId?: true
-    partNumber?: true
-    batchNo?: true
-  }
-
-  export type ProStepMaxAggregateInputType = {
+  export type ProsesMinAggregateInputType = {
     id?: true
     proId?: true
     orderNo?: true
@@ -7999,7 +8349,19 @@ export namespace Prisma {
     batchNo?: true
   }
 
-  export type ProStepCountAggregateInputType = {
+  export type ProsesMaxAggregateInputType = {
+    id?: true
+    proId?: true
+    orderNo?: true
+    up?: true
+    estimatedShifts?: true
+    startDate?: true
+    machineId?: true
+    partNumber?: true
+    batchNo?: true
+  }
+
+  export type ProsesCountAggregateInputType = {
     id?: true
     proId?: true
     orderNo?: true
@@ -8012,93 +8374,93 @@ export namespace Prisma {
     _all?: true
   }
 
-  export type ProStepAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which ProStep to aggregate.
+     * Filter which Proses to aggregate.
      */
-    where?: ProStepWhereInput
+    where?: ProsesWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of ProSteps to fetch.
+     * Determine the order of Proses to fetch.
      */
-    orderBy?: ProStepOrderByWithRelationInput | ProStepOrderByWithRelationInput[]
+    orderBy?: ProsesOrderByWithRelationInput | ProsesOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: ProStepWhereUniqueInput
+    cursor?: ProsesWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` ProSteps from the position of the cursor.
+     * Take `±n` Proses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` ProSteps.
+     * Skip the first `n` Proses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned ProSteps
+     * Count returned Proses
     **/
-    _count?: true | ProStepCountAggregateInputType
+    _count?: true | ProsesCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to average
     **/
-    _avg?: ProStepAvgAggregateInputType
+    _avg?: ProsesAvgAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to sum
     **/
-    _sum?: ProStepSumAggregateInputType
+    _sum?: ProsesSumAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: ProStepMinAggregateInputType
+    _min?: ProsesMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: ProStepMaxAggregateInputType
+    _max?: ProsesMaxAggregateInputType
   }
 
-  export type GetProStepAggregateType<T extends ProStepAggregateArgs> = {
-        [P in keyof T & keyof AggregateProStep]: P extends '_count' | 'count'
+  export type GetProsesAggregateType<T extends ProsesAggregateArgs> = {
+        [P in keyof T & keyof AggregateProses]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateProStep[P]>
-      : GetScalarType<T[P], AggregateProStep[P]>
+        : GetScalarType<T[P], AggregateProses[P]>
+      : GetScalarType<T[P], AggregateProses[P]>
   }
 
 
 
 
-  export type ProStepGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProStepWhereInput
-    orderBy?: ProStepOrderByWithAggregationInput | ProStepOrderByWithAggregationInput[]
-    by: ProStepScalarFieldEnum[] | ProStepScalarFieldEnum
-    having?: ProStepScalarWhereWithAggregatesInput
+  export type ProsesGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProsesWhereInput
+    orderBy?: ProsesOrderByWithAggregationInput | ProsesOrderByWithAggregationInput[]
+    by: ProsesScalarFieldEnum[] | ProsesScalarFieldEnum
+    having?: ProsesScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: ProStepCountAggregateInputType | true
-    _avg?: ProStepAvgAggregateInputType
-    _sum?: ProStepSumAggregateInputType
-    _min?: ProStepMinAggregateInputType
-    _max?: ProStepMaxAggregateInputType
+    _count?: ProsesCountAggregateInputType | true
+    _avg?: ProsesAvgAggregateInputType
+    _sum?: ProsesSumAggregateInputType
+    _min?: ProsesMinAggregateInputType
+    _max?: ProsesMaxAggregateInputType
   }
 
-  export type ProStepGroupByOutputType = {
+  export type ProsesGroupByOutputType = {
     id: number
     proId: number
     orderNo: number
@@ -8108,28 +8470,28 @@ export namespace Prisma {
     machineId: number | null
     partNumber: string | null
     batchNo: string | null
-    _count: ProStepCountAggregateOutputType | null
-    _avg: ProStepAvgAggregateOutputType | null
-    _sum: ProStepSumAggregateOutputType | null
-    _min: ProStepMinAggregateOutputType | null
-    _max: ProStepMaxAggregateOutputType | null
+    _count: ProsesCountAggregateOutputType | null
+    _avg: ProsesAvgAggregateOutputType | null
+    _sum: ProsesSumAggregateOutputType | null
+    _min: ProsesMinAggregateOutputType | null
+    _max: ProsesMaxAggregateOutputType | null
   }
 
-  type GetProStepGroupByPayload<T extends ProStepGroupByArgs> = Prisma.PrismaPromise<
+  type GetProsesGroupByPayload<T extends ProsesGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<ProStepGroupByOutputType, T['by']> &
+      PickEnumerable<ProsesGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof ProStepGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof ProsesGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], ProStepGroupByOutputType[P]>
-            : GetScalarType<T[P], ProStepGroupByOutputType[P]>
+              : GetScalarType<T[P], ProsesGroupByOutputType[P]>
+            : GetScalarType<T[P], ProsesGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type ProStepSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type ProsesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     proId?: boolean
     orderNo?: boolean
@@ -8140,15 +8502,16 @@ export namespace Prisma {
     partNumber?: boolean
     batchNo?: boolean
     pro?: boolean | ProDefaultArgs<ExtArgs>
-    machine?: boolean | ProStep$machineArgs<ExtArgs>
-    materials?: boolean | ProStep$materialsArgs<ExtArgs>
-    productionReports?: boolean | ProStep$productionReportsArgs<ExtArgs>
-    _count?: boolean | ProStepCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["proStep"]>
+    machine?: boolean | Proses$machineArgs<ExtArgs>
+    materials?: boolean | Proses$materialsArgs<ExtArgs>
+    productionReports?: boolean | Proses$productionReportsArgs<ExtArgs>
+    inventoryTxns?: boolean | Proses$inventoryTxnsArgs<ExtArgs>
+    _count?: boolean | ProsesCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["proses"]>
 
 
 
-  export type ProStepSelectScalar = {
+  export type ProsesSelectScalar = {
     id?: boolean
     proId?: boolean
     orderNo?: boolean
@@ -8160,22 +8523,24 @@ export namespace Prisma {
     batchNo?: boolean
   }
 
-  export type ProStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "up" | "estimatedShifts" | "startDate" | "machineId" | "partNumber" | "batchNo", ExtArgs["result"]["proStep"]>
-  export type ProStepInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "up" | "estimatedShifts" | "startDate" | "machineId" | "partNumber" | "batchNo", ExtArgs["result"]["proses"]>
+  export type ProsesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pro?: boolean | ProDefaultArgs<ExtArgs>
-    machine?: boolean | ProStep$machineArgs<ExtArgs>
-    materials?: boolean | ProStep$materialsArgs<ExtArgs>
-    productionReports?: boolean | ProStep$productionReportsArgs<ExtArgs>
-    _count?: boolean | ProStepCountOutputTypeDefaultArgs<ExtArgs>
+    machine?: boolean | Proses$machineArgs<ExtArgs>
+    materials?: boolean | Proses$materialsArgs<ExtArgs>
+    productionReports?: boolean | Proses$productionReportsArgs<ExtArgs>
+    inventoryTxns?: boolean | Proses$inventoryTxnsArgs<ExtArgs>
+    _count?: boolean | ProsesCountOutputTypeDefaultArgs<ExtArgs>
   }
 
-  export type $ProStepPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "ProStep"
+  export type $ProsesPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Proses"
     objects: {
       pro: Prisma.$ProPayload<ExtArgs>
       machine: Prisma.$MachinePayload<ExtArgs> | null
-      materials: Prisma.$ProStepMaterialPayload<ExtArgs>[]
+      materials: Prisma.$ProsesMaterialPayload<ExtArgs>[]
       productionReports: Prisma.$ProductionReportPayload<ExtArgs>[]
+      inventoryTxns: Prisma.$InventoryTxnPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -8187,143 +8552,143 @@ export namespace Prisma {
       machineId: number | null
       partNumber: string | null
       batchNo: string | null
-    }, ExtArgs["result"]["proStep"]>
+    }, ExtArgs["result"]["proses"]>
     composites: {}
   }
 
-  type ProStepGetPayload<S extends boolean | null | undefined | ProStepDefaultArgs> = $Result.GetResult<Prisma.$ProStepPayload, S>
+  type ProsesGetPayload<S extends boolean | null | undefined | ProsesDefaultArgs> = $Result.GetResult<Prisma.$ProsesPayload, S>
 
-  type ProStepCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<ProStepFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: ProStepCountAggregateInputType | true
+  type ProsesCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ProsesFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ProsesCountAggregateInputType | true
     }
 
-  export interface ProStepDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProStep'], meta: { name: 'ProStep' } }
+  export interface ProsesDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Proses'], meta: { name: 'Proses' } }
     /**
-     * Find zero or one ProStep that matches the filter.
-     * @param {ProStepFindUniqueArgs} args - Arguments to find a ProStep
+     * Find zero or one Proses that matches the filter.
+     * @param {ProsesFindUniqueArgs} args - Arguments to find a Proses
      * @example
-     * // Get one ProStep
-     * const proStep = await prisma.proStep.findUnique({
+     * // Get one Proses
+     * const proses = await prisma.proses.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends ProStepFindUniqueArgs>(args: SelectSubset<T, ProStepFindUniqueArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends ProsesFindUniqueArgs>(args: SelectSubset<T, ProsesFindUniqueArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one ProStep that matches the filter or throw an error with `error.code='P2025'`
+     * Find one Proses that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {ProStepFindUniqueOrThrowArgs} args - Arguments to find a ProStep
+     * @param {ProsesFindUniqueOrThrowArgs} args - Arguments to find a Proses
      * @example
-     * // Get one ProStep
-     * const proStep = await prisma.proStep.findUniqueOrThrow({
+     * // Get one Proses
+     * const proses = await prisma.proses.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends ProStepFindUniqueOrThrowArgs>(args: SelectSubset<T, ProStepFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends ProsesFindUniqueOrThrowArgs>(args: SelectSubset<T, ProsesFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first ProStep that matches the filter.
+     * Find the first Proses that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepFindFirstArgs} args - Arguments to find a ProStep
+     * @param {ProsesFindFirstArgs} args - Arguments to find a Proses
      * @example
-     * // Get one ProStep
-     * const proStep = await prisma.proStep.findFirst({
+     * // Get one Proses
+     * const proses = await prisma.proses.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends ProStepFindFirstArgs>(args?: SelectSubset<T, ProStepFindFirstArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends ProsesFindFirstArgs>(args?: SelectSubset<T, ProsesFindFirstArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first ProStep that matches the filter or
+     * Find the first Proses that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepFindFirstOrThrowArgs} args - Arguments to find a ProStep
+     * @param {ProsesFindFirstOrThrowArgs} args - Arguments to find a Proses
      * @example
-     * // Get one ProStep
-     * const proStep = await prisma.proStep.findFirstOrThrow({
+     * // Get one Proses
+     * const proses = await prisma.proses.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends ProStepFindFirstOrThrowArgs>(args?: SelectSubset<T, ProStepFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends ProsesFindFirstOrThrowArgs>(args?: SelectSubset<T, ProsesFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more ProSteps that matches the filter.
+     * Find zero or more Proses that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {ProsesFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all ProSteps
-     * const proSteps = await prisma.proStep.findMany()
+     * // Get all Proses
+     * const proses = await prisma.proses.findMany()
      * 
-     * // Get first 10 ProSteps
-     * const proSteps = await prisma.proStep.findMany({ take: 10 })
+     * // Get first 10 Proses
+     * const proses = await prisma.proses.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const proStepWithIdOnly = await prisma.proStep.findMany({ select: { id: true } })
+     * const prosesWithIdOnly = await prisma.proses.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends ProStepFindManyArgs>(args?: SelectSubset<T, ProStepFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends ProsesFindManyArgs>(args?: SelectSubset<T, ProsesFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a ProStep.
-     * @param {ProStepCreateArgs} args - Arguments to create a ProStep.
+     * Create a Proses.
+     * @param {ProsesCreateArgs} args - Arguments to create a Proses.
      * @example
-     * // Create one ProStep
-     * const ProStep = await prisma.proStep.create({
+     * // Create one Proses
+     * const Proses = await prisma.proses.create({
      *   data: {
-     *     // ... data to create a ProStep
+     *     // ... data to create a Proses
      *   }
      * })
      * 
      */
-    create<T extends ProStepCreateArgs>(args: SelectSubset<T, ProStepCreateArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends ProsesCreateArgs>(args: SelectSubset<T, ProsesCreateArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many ProSteps.
-     * @param {ProStepCreateManyArgs} args - Arguments to create many ProSteps.
+     * Create many Proses.
+     * @param {ProsesCreateManyArgs} args - Arguments to create many Proses.
      * @example
-     * // Create many ProSteps
-     * const proStep = await prisma.proStep.createMany({
+     * // Create many Proses
+     * const proses = await prisma.proses.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends ProStepCreateManyArgs>(args?: SelectSubset<T, ProStepCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends ProsesCreateManyArgs>(args?: SelectSubset<T, ProsesCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Delete a ProStep.
-     * @param {ProStepDeleteArgs} args - Arguments to delete one ProStep.
+     * Delete a Proses.
+     * @param {ProsesDeleteArgs} args - Arguments to delete one Proses.
      * @example
-     * // Delete one ProStep
-     * const ProStep = await prisma.proStep.delete({
+     * // Delete one Proses
+     * const Proses = await prisma.proses.delete({
      *   where: {
-     *     // ... filter to delete one ProStep
+     *     // ... filter to delete one Proses
      *   }
      * })
      * 
      */
-    delete<T extends ProStepDeleteArgs>(args: SelectSubset<T, ProStepDeleteArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends ProsesDeleteArgs>(args: SelectSubset<T, ProsesDeleteArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one ProStep.
-     * @param {ProStepUpdateArgs} args - Arguments to update one ProStep.
+     * Update one Proses.
+     * @param {ProsesUpdateArgs} args - Arguments to update one Proses.
      * @example
-     * // Update one ProStep
-     * const proStep = await prisma.proStep.update({
+     * // Update one Proses
+     * const proses = await prisma.proses.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -8333,30 +8698,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends ProStepUpdateArgs>(args: SelectSubset<T, ProStepUpdateArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends ProsesUpdateArgs>(args: SelectSubset<T, ProsesUpdateArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more ProSteps.
-     * @param {ProStepDeleteManyArgs} args - Arguments to filter ProSteps to delete.
+     * Delete zero or more Proses.
+     * @param {ProsesDeleteManyArgs} args - Arguments to filter Proses to delete.
      * @example
-     * // Delete a few ProSteps
-     * const { count } = await prisma.proStep.deleteMany({
+     * // Delete a few Proses
+     * const { count } = await prisma.proses.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends ProStepDeleteManyArgs>(args?: SelectSubset<T, ProStepDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends ProsesDeleteManyArgs>(args?: SelectSubset<T, ProsesDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more ProSteps.
+     * Update zero or more Proses.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {ProsesUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many ProSteps
-     * const proStep = await prisma.proStep.updateMany({
+     * // Update many Proses
+     * const proses = await prisma.proses.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -8366,56 +8731,56 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends ProStepUpdateManyArgs>(args: SelectSubset<T, ProStepUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends ProsesUpdateManyArgs>(args: SelectSubset<T, ProsesUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create or update one ProStep.
-     * @param {ProStepUpsertArgs} args - Arguments to update or create a ProStep.
+     * Create or update one Proses.
+     * @param {ProsesUpsertArgs} args - Arguments to update or create a Proses.
      * @example
-     * // Update or create a ProStep
-     * const proStep = await prisma.proStep.upsert({
+     * // Update or create a Proses
+     * const proses = await prisma.proses.upsert({
      *   create: {
-     *     // ... data to create a ProStep
+     *     // ... data to create a Proses
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the ProStep we want to update
+     *     // ... the filter for the Proses we want to update
      *   }
      * })
      */
-    upsert<T extends ProStepUpsertArgs>(args: SelectSubset<T, ProStepUpsertArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends ProsesUpsertArgs>(args: SelectSubset<T, ProsesUpsertArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of ProSteps.
+     * Count the number of Proses.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepCountArgs} args - Arguments to filter ProSteps to count.
+     * @param {ProsesCountArgs} args - Arguments to filter Proses to count.
      * @example
-     * // Count the number of ProSteps
-     * const count = await prisma.proStep.count({
+     * // Count the number of Proses
+     * const count = await prisma.proses.count({
      *   where: {
-     *     // ... the filter for the ProSteps we want to count
+     *     // ... the filter for the Proses we want to count
      *   }
      * })
     **/
-    count<T extends ProStepCountArgs>(
-      args?: Subset<T, ProStepCountArgs>,
+    count<T extends ProsesCountArgs>(
+      args?: Subset<T, ProsesCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], ProStepCountAggregateOutputType>
+          : GetScalarType<T['select'], ProsesCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a ProStep.
+     * Allows you to perform aggregations operations on a Proses.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {ProsesAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -8435,13 +8800,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends ProStepAggregateArgs>(args: Subset<T, ProStepAggregateArgs>): Prisma.PrismaPromise<GetProStepAggregateType<T>>
+    aggregate<T extends ProsesAggregateArgs>(args: Subset<T, ProsesAggregateArgs>): Prisma.PrismaPromise<GetProsesAggregateType<T>>
 
     /**
-     * Group by ProStep.
+     * Group by Proses.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepGroupByArgs} args - Group by arguments.
+     * @param {ProsesGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -8456,14 +8821,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends ProStepGroupByArgs,
+      T extends ProsesGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: ProStepGroupByArgs['orderBy'] }
-        : { orderBy?: ProStepGroupByArgs['orderBy'] },
+        ? { orderBy: ProsesGroupByArgs['orderBy'] }
+        : { orderBy?: ProsesGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -8512,25 +8877,26 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, ProStepGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProStepGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, ProsesGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProsesGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the ProStep model
+   * Fields of the Proses model
    */
-  readonly fields: ProStepFieldRefs;
+  readonly fields: ProsesFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for ProStep.
+   * The delegate class that acts as a "Promise-like" for Proses.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__ProStepClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__ProsesClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     pro<T extends ProDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProDefaultArgs<ExtArgs>>): Prisma__ProClient<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    machine<T extends ProStep$machineArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$machineArgs<ExtArgs>>): Prisma__MachineClient<$Result.GetResult<Prisma.$MachinePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    materials<T extends ProStep$materialsArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$materialsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    productionReports<T extends ProStep$productionReportsArgs<ExtArgs> = {}>(args?: Subset<T, ProStep$productionReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    machine<T extends Proses$machineArgs<ExtArgs> = {}>(args?: Subset<T, Proses$machineArgs<ExtArgs>>): Prisma__MachineClient<$Result.GetResult<Prisma.$MachinePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    materials<T extends Proses$materialsArgs<ExtArgs> = {}>(args?: Subset<T, Proses$materialsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    productionReports<T extends Proses$productionReportsArgs<ExtArgs> = {}>(args?: Subset<T, Proses$productionReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    inventoryTxns<T extends Proses$inventoryTxnsArgs<ExtArgs> = {}>(args?: Subset<T, Proses$inventoryTxnsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8557,364 +8923,364 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the ProStep model
+   * Fields of the Proses model
    */
-  interface ProStepFieldRefs {
-    readonly id: FieldRef<"ProStep", 'Int'>
-    readonly proId: FieldRef<"ProStep", 'Int'>
-    readonly orderNo: FieldRef<"ProStep", 'Int'>
-    readonly up: FieldRef<"ProStep", 'Int'>
-    readonly estimatedShifts: FieldRef<"ProStep", 'Int'>
-    readonly startDate: FieldRef<"ProStep", 'DateTime'>
-    readonly machineId: FieldRef<"ProStep", 'Int'>
-    readonly partNumber: FieldRef<"ProStep", 'String'>
-    readonly batchNo: FieldRef<"ProStep", 'String'>
+  interface ProsesFieldRefs {
+    readonly id: FieldRef<"Proses", 'Int'>
+    readonly proId: FieldRef<"Proses", 'Int'>
+    readonly orderNo: FieldRef<"Proses", 'Int'>
+    readonly up: FieldRef<"Proses", 'Int'>
+    readonly estimatedShifts: FieldRef<"Proses", 'Int'>
+    readonly startDate: FieldRef<"Proses", 'DateTime'>
+    readonly machineId: FieldRef<"Proses", 'Int'>
+    readonly partNumber: FieldRef<"Proses", 'String'>
+    readonly batchNo: FieldRef<"Proses", 'String'>
   }
     
 
   // Custom InputTypes
   /**
-   * ProStep findUnique
+   * Proses findUnique
    */
-  export type ProStepFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Proses
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProsesSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Proses
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProsesOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
+    include?: ProsesInclude<ExtArgs> | null
     /**
-     * Filter, which ProStep to fetch.
+     * Filter, which Proses to fetch.
      */
-    where: ProStepWhereUniqueInput
+    where: ProsesWhereUniqueInput
   }
 
   /**
-   * ProStep findUniqueOrThrow
+   * Proses findUniqueOrThrow
    */
-  export type ProStepFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Proses
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProsesSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Proses
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProsesOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
+    include?: ProsesInclude<ExtArgs> | null
     /**
-     * Filter, which ProStep to fetch.
+     * Filter, which Proses to fetch.
      */
-    where: ProStepWhereUniqueInput
+    where: ProsesWhereUniqueInput
   }
 
   /**
-   * ProStep findFirst
+   * Proses findFirst
    */
-  export type ProStepFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Proses
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProsesSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Proses
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProsesOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
+    include?: ProsesInclude<ExtArgs> | null
     /**
-     * Filter, which ProStep to fetch.
+     * Filter, which Proses to fetch.
      */
-    where?: ProStepWhereInput
+    where?: ProsesWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of ProSteps to fetch.
+     * Determine the order of Proses to fetch.
      */
-    orderBy?: ProStepOrderByWithRelationInput | ProStepOrderByWithRelationInput[]
+    orderBy?: ProsesOrderByWithRelationInput | ProsesOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for ProSteps.
+     * Sets the position for searching for Proses.
      */
-    cursor?: ProStepWhereUniqueInput
+    cursor?: ProsesWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` ProSteps from the position of the cursor.
+     * Take `±n` Proses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` ProSteps.
+     * Skip the first `n` Proses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of ProSteps.
+     * Filter by unique combinations of Proses.
      */
-    distinct?: ProStepScalarFieldEnum | ProStepScalarFieldEnum[]
+    distinct?: ProsesScalarFieldEnum | ProsesScalarFieldEnum[]
   }
 
   /**
-   * ProStep findFirstOrThrow
+   * Proses findFirstOrThrow
    */
-  export type ProStepFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Proses
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProsesSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Proses
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProsesOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
+    include?: ProsesInclude<ExtArgs> | null
     /**
-     * Filter, which ProStep to fetch.
+     * Filter, which Proses to fetch.
      */
-    where?: ProStepWhereInput
+    where?: ProsesWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of ProSteps to fetch.
+     * Determine the order of Proses to fetch.
      */
-    orderBy?: ProStepOrderByWithRelationInput | ProStepOrderByWithRelationInput[]
+    orderBy?: ProsesOrderByWithRelationInput | ProsesOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for ProSteps.
+     * Sets the position for searching for Proses.
      */
-    cursor?: ProStepWhereUniqueInput
+    cursor?: ProsesWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` ProSteps from the position of the cursor.
+     * Take `±n` Proses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` ProSteps.
+     * Skip the first `n` Proses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of ProSteps.
+     * Filter by unique combinations of Proses.
      */
-    distinct?: ProStepScalarFieldEnum | ProStepScalarFieldEnum[]
+    distinct?: ProsesScalarFieldEnum | ProsesScalarFieldEnum[]
   }
 
   /**
-   * ProStep findMany
+   * Proses findMany
    */
-  export type ProStepFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Proses
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProsesSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Proses
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProsesOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
+    include?: ProsesInclude<ExtArgs> | null
     /**
-     * Filter, which ProSteps to fetch.
+     * Filter, which Proses to fetch.
      */
-    where?: ProStepWhereInput
+    where?: ProsesWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of ProSteps to fetch.
+     * Determine the order of Proses to fetch.
      */
-    orderBy?: ProStepOrderByWithRelationInput | ProStepOrderByWithRelationInput[]
+    orderBy?: ProsesOrderByWithRelationInput | ProsesOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing ProSteps.
+     * Sets the position for listing Proses.
      */
-    cursor?: ProStepWhereUniqueInput
+    cursor?: ProsesWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` ProSteps from the position of the cursor.
+     * Take `±n` Proses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` ProSteps.
+     * Skip the first `n` Proses.
      */
     skip?: number
-    distinct?: ProStepScalarFieldEnum | ProStepScalarFieldEnum[]
+    distinct?: ProsesScalarFieldEnum | ProsesScalarFieldEnum[]
   }
 
   /**
-   * ProStep create
+   * Proses create
    */
-  export type ProStepCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Proses
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProsesSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Proses
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProsesOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
+    include?: ProsesInclude<ExtArgs> | null
     /**
-     * The data needed to create a ProStep.
+     * The data needed to create a Proses.
      */
-    data: XOR<ProStepCreateInput, ProStepUncheckedCreateInput>
+    data: XOR<ProsesCreateInput, ProsesUncheckedCreateInput>
   }
 
   /**
-   * ProStep createMany
+   * Proses createMany
    */
-  export type ProStepCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many ProSteps.
+     * The data used to create many Proses.
      */
-    data: ProStepCreateManyInput | ProStepCreateManyInput[]
+    data: ProsesCreateManyInput | ProsesCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * ProStep update
+   * Proses update
    */
-  export type ProStepUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Proses
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProsesSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Proses
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProsesOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
+    include?: ProsesInclude<ExtArgs> | null
     /**
-     * The data needed to update a ProStep.
+     * The data needed to update a Proses.
      */
-    data: XOR<ProStepUpdateInput, ProStepUncheckedUpdateInput>
+    data: XOR<ProsesUpdateInput, ProsesUncheckedUpdateInput>
     /**
-     * Choose, which ProStep to update.
+     * Choose, which Proses to update.
      */
-    where: ProStepWhereUniqueInput
+    where: ProsesWhereUniqueInput
   }
 
   /**
-   * ProStep updateMany
+   * Proses updateMany
    */
-  export type ProStepUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update ProSteps.
+     * The data used to update Proses.
      */
-    data: XOR<ProStepUpdateManyMutationInput, ProStepUncheckedUpdateManyInput>
+    data: XOR<ProsesUpdateManyMutationInput, ProsesUncheckedUpdateManyInput>
     /**
-     * Filter which ProSteps to update
+     * Filter which Proses to update
      */
-    where?: ProStepWhereInput
+    where?: ProsesWhereInput
     /**
-     * Limit how many ProSteps to update.
+     * Limit how many Proses to update.
      */
     limit?: number
   }
 
   /**
-   * ProStep upsert
+   * Proses upsert
    */
-  export type ProStepUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Proses
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProsesSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Proses
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProsesOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
+    include?: ProsesInclude<ExtArgs> | null
     /**
-     * The filter to search for the ProStep to update in case it exists.
+     * The filter to search for the Proses to update in case it exists.
      */
-    where: ProStepWhereUniqueInput
+    where: ProsesWhereUniqueInput
     /**
-     * In case the ProStep found by the `where` argument doesn't exist, create a new ProStep with this data.
+     * In case the Proses found by the `where` argument doesn't exist, create a new Proses with this data.
      */
-    create: XOR<ProStepCreateInput, ProStepUncheckedCreateInput>
+    create: XOR<ProsesCreateInput, ProsesUncheckedCreateInput>
     /**
-     * In case the ProStep was found with the provided `where` argument, update it with this data.
+     * In case the Proses was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<ProStepUpdateInput, ProStepUncheckedUpdateInput>
+    update: XOR<ProsesUpdateInput, ProsesUncheckedUpdateInput>
   }
 
   /**
-   * ProStep delete
+   * Proses delete
    */
-  export type ProStepDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the Proses
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: ProsesSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the Proses
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: ProsesOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
+    include?: ProsesInclude<ExtArgs> | null
     /**
-     * Filter which ProStep to delete.
+     * Filter which Proses to delete.
      */
-    where: ProStepWhereUniqueInput
+    where: ProsesWhereUniqueInput
   }
 
   /**
-   * ProStep deleteMany
+   * Proses deleteMany
    */
-  export type ProStepDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which ProSteps to delete
+     * Filter which Proses to delete
      */
-    where?: ProStepWhereInput
+    where?: ProsesWhereInput
     /**
-     * Limit how many ProSteps to delete.
+     * Limit how many Proses to delete.
      */
     limit?: number
   }
 
   /**
-   * ProStep.machine
+   * Proses.machine
    */
-  export type ProStep$machineArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Proses$machineArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Machine
      */
@@ -8931,33 +9297,33 @@ export namespace Prisma {
   }
 
   /**
-   * ProStep.materials
+   * Proses.materials
    */
-  export type ProStep$materialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Proses$materialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
-    where?: ProStepMaterialWhereInput
-    orderBy?: ProStepMaterialOrderByWithRelationInput | ProStepMaterialOrderByWithRelationInput[]
-    cursor?: ProStepMaterialWhereUniqueInput
+    include?: ProsesMaterialInclude<ExtArgs> | null
+    where?: ProsesMaterialWhereInput
+    orderBy?: ProsesMaterialOrderByWithRelationInput | ProsesMaterialOrderByWithRelationInput[]
+    cursor?: ProsesMaterialWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: ProStepMaterialScalarFieldEnum | ProStepMaterialScalarFieldEnum[]
+    distinct?: ProsesMaterialScalarFieldEnum | ProsesMaterialScalarFieldEnum[]
   }
 
   /**
-   * ProStep.productionReports
+   * Proses.productionReports
    */
-  export type ProStep$productionReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Proses$productionReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the ProductionReport
      */
@@ -8979,393 +9345,417 @@ export namespace Prisma {
   }
 
   /**
-   * ProStep without action
+   * Proses.inventoryTxns
    */
-  export type ProStepDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Proses$inventoryTxnsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStep
+     * Select specific fields to fetch from the InventoryTxn
      */
-    select?: ProStepSelect<ExtArgs> | null
+    select?: InventoryTxnSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStep
+     * Omit specific fields from the InventoryTxn
      */
-    omit?: ProStepOmit<ExtArgs> | null
+    omit?: InventoryTxnOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepInclude<ExtArgs> | null
+    include?: InventoryTxnInclude<ExtArgs> | null
+    where?: InventoryTxnWhereInput
+    orderBy?: InventoryTxnOrderByWithRelationInput | InventoryTxnOrderByWithRelationInput[]
+    cursor?: InventoryTxnWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: InventoryTxnScalarFieldEnum | InventoryTxnScalarFieldEnum[]
+  }
+
+  /**
+   * Proses without action
+   */
+  export type ProsesDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Proses
+     */
+    select?: ProsesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Proses
+     */
+    omit?: ProsesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProsesInclude<ExtArgs> | null
   }
 
 
   /**
-   * Model ProStepMaterial
+   * Model ProsesMaterial
    */
 
-  export type AggregateProStepMaterial = {
-    _count: ProStepMaterialCountAggregateOutputType | null
-    _avg: ProStepMaterialAvgAggregateOutputType | null
-    _sum: ProStepMaterialSumAggregateOutputType | null
-    _min: ProStepMaterialMinAggregateOutputType | null
-    _max: ProStepMaterialMaxAggregateOutputType | null
+  export type AggregateProsesMaterial = {
+    _count: ProsesMaterialCountAggregateOutputType | null
+    _avg: ProsesMaterialAvgAggregateOutputType | null
+    _sum: ProsesMaterialSumAggregateOutputType | null
+    _min: ProsesMaterialMinAggregateOutputType | null
+    _max: ProsesMaterialMaxAggregateOutputType | null
   }
 
-  export type ProStepMaterialAvgAggregateOutputType = {
+  export type ProsesMaterialAvgAggregateOutputType = {
     id: number | null
-    stepId: number | null
+    prosesId: number | null
     materialId: number | null
     qtyReq: Decimal | null
   }
 
-  export type ProStepMaterialSumAggregateOutputType = {
+  export type ProsesMaterialSumAggregateOutputType = {
     id: number | null
-    stepId: number | null
+    prosesId: number | null
     materialId: number | null
     qtyReq: Decimal | null
   }
 
-  export type ProStepMaterialMinAggregateOutputType = {
+  export type ProsesMaterialMinAggregateOutputType = {
     id: number | null
-    stepId: number | null
+    prosesId: number | null
     materialId: number | null
     qtyReq: Decimal | null
   }
 
-  export type ProStepMaterialMaxAggregateOutputType = {
+  export type ProsesMaterialMaxAggregateOutputType = {
     id: number | null
-    stepId: number | null
+    prosesId: number | null
     materialId: number | null
     qtyReq: Decimal | null
   }
 
-  export type ProStepMaterialCountAggregateOutputType = {
+  export type ProsesMaterialCountAggregateOutputType = {
     id: number
-    stepId: number
+    prosesId: number
     materialId: number
     qtyReq: number
     _all: number
   }
 
 
-  export type ProStepMaterialAvgAggregateInputType = {
+  export type ProsesMaterialAvgAggregateInputType = {
     id?: true
-    stepId?: true
+    prosesId?: true
     materialId?: true
     qtyReq?: true
   }
 
-  export type ProStepMaterialSumAggregateInputType = {
+  export type ProsesMaterialSumAggregateInputType = {
     id?: true
-    stepId?: true
+    prosesId?: true
     materialId?: true
     qtyReq?: true
   }
 
-  export type ProStepMaterialMinAggregateInputType = {
+  export type ProsesMaterialMinAggregateInputType = {
     id?: true
-    stepId?: true
+    prosesId?: true
     materialId?: true
     qtyReq?: true
   }
 
-  export type ProStepMaterialMaxAggregateInputType = {
+  export type ProsesMaterialMaxAggregateInputType = {
     id?: true
-    stepId?: true
+    prosesId?: true
     materialId?: true
     qtyReq?: true
   }
 
-  export type ProStepMaterialCountAggregateInputType = {
+  export type ProsesMaterialCountAggregateInputType = {
     id?: true
-    stepId?: true
+    prosesId?: true
     materialId?: true
     qtyReq?: true
     _all?: true
   }
 
-  export type ProStepMaterialAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which ProStepMaterial to aggregate.
+     * Filter which ProsesMaterial to aggregate.
      */
-    where?: ProStepMaterialWhereInput
+    where?: ProsesMaterialWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of ProStepMaterials to fetch.
+     * Determine the order of ProsesMaterials to fetch.
      */
-    orderBy?: ProStepMaterialOrderByWithRelationInput | ProStepMaterialOrderByWithRelationInput[]
+    orderBy?: ProsesMaterialOrderByWithRelationInput | ProsesMaterialOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: ProStepMaterialWhereUniqueInput
+    cursor?: ProsesMaterialWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` ProStepMaterials from the position of the cursor.
+     * Take `±n` ProsesMaterials from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` ProStepMaterials.
+     * Skip the first `n` ProsesMaterials.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned ProStepMaterials
+     * Count returned ProsesMaterials
     **/
-    _count?: true | ProStepMaterialCountAggregateInputType
+    _count?: true | ProsesMaterialCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to average
     **/
-    _avg?: ProStepMaterialAvgAggregateInputType
+    _avg?: ProsesMaterialAvgAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to sum
     **/
-    _sum?: ProStepMaterialSumAggregateInputType
+    _sum?: ProsesMaterialSumAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: ProStepMaterialMinAggregateInputType
+    _min?: ProsesMaterialMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: ProStepMaterialMaxAggregateInputType
+    _max?: ProsesMaterialMaxAggregateInputType
   }
 
-  export type GetProStepMaterialAggregateType<T extends ProStepMaterialAggregateArgs> = {
-        [P in keyof T & keyof AggregateProStepMaterial]: P extends '_count' | 'count'
+  export type GetProsesMaterialAggregateType<T extends ProsesMaterialAggregateArgs> = {
+        [P in keyof T & keyof AggregateProsesMaterial]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateProStepMaterial[P]>
-      : GetScalarType<T[P], AggregateProStepMaterial[P]>
+        : GetScalarType<T[P], AggregateProsesMaterial[P]>
+      : GetScalarType<T[P], AggregateProsesMaterial[P]>
   }
 
 
 
 
-  export type ProStepMaterialGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProStepMaterialWhereInput
-    orderBy?: ProStepMaterialOrderByWithAggregationInput | ProStepMaterialOrderByWithAggregationInput[]
-    by: ProStepMaterialScalarFieldEnum[] | ProStepMaterialScalarFieldEnum
-    having?: ProStepMaterialScalarWhereWithAggregatesInput
+  export type ProsesMaterialGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProsesMaterialWhereInput
+    orderBy?: ProsesMaterialOrderByWithAggregationInput | ProsesMaterialOrderByWithAggregationInput[]
+    by: ProsesMaterialScalarFieldEnum[] | ProsesMaterialScalarFieldEnum
+    having?: ProsesMaterialScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: ProStepMaterialCountAggregateInputType | true
-    _avg?: ProStepMaterialAvgAggregateInputType
-    _sum?: ProStepMaterialSumAggregateInputType
-    _min?: ProStepMaterialMinAggregateInputType
-    _max?: ProStepMaterialMaxAggregateInputType
+    _count?: ProsesMaterialCountAggregateInputType | true
+    _avg?: ProsesMaterialAvgAggregateInputType
+    _sum?: ProsesMaterialSumAggregateInputType
+    _min?: ProsesMaterialMinAggregateInputType
+    _max?: ProsesMaterialMaxAggregateInputType
   }
 
-  export type ProStepMaterialGroupByOutputType = {
+  export type ProsesMaterialGroupByOutputType = {
     id: number
-    stepId: number
+    prosesId: number
     materialId: number
     qtyReq: Decimal
-    _count: ProStepMaterialCountAggregateOutputType | null
-    _avg: ProStepMaterialAvgAggregateOutputType | null
-    _sum: ProStepMaterialSumAggregateOutputType | null
-    _min: ProStepMaterialMinAggregateOutputType | null
-    _max: ProStepMaterialMaxAggregateOutputType | null
+    _count: ProsesMaterialCountAggregateOutputType | null
+    _avg: ProsesMaterialAvgAggregateOutputType | null
+    _sum: ProsesMaterialSumAggregateOutputType | null
+    _min: ProsesMaterialMinAggregateOutputType | null
+    _max: ProsesMaterialMaxAggregateOutputType | null
   }
 
-  type GetProStepMaterialGroupByPayload<T extends ProStepMaterialGroupByArgs> = Prisma.PrismaPromise<
+  type GetProsesMaterialGroupByPayload<T extends ProsesMaterialGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<ProStepMaterialGroupByOutputType, T['by']> &
+      PickEnumerable<ProsesMaterialGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof ProStepMaterialGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof ProsesMaterialGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], ProStepMaterialGroupByOutputType[P]>
-            : GetScalarType<T[P], ProStepMaterialGroupByOutputType[P]>
+              : GetScalarType<T[P], ProsesMaterialGroupByOutputType[P]>
+            : GetScalarType<T[P], ProsesMaterialGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type ProStepMaterialSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type ProsesMaterialSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    stepId?: boolean
+    prosesId?: boolean
     materialId?: boolean
     qtyReq?: boolean
-    step?: boolean | ProStepDefaultArgs<ExtArgs>
+    proses?: boolean | ProsesDefaultArgs<ExtArgs>
     material?: boolean | MaterialDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["proStepMaterial"]>
+  }, ExtArgs["result"]["prosesMaterial"]>
 
 
 
-  export type ProStepMaterialSelectScalar = {
+  export type ProsesMaterialSelectScalar = {
     id?: boolean
-    stepId?: boolean
+    prosesId?: boolean
     materialId?: boolean
     qtyReq?: boolean
   }
 
-  export type ProStepMaterialOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "stepId" | "materialId" | "qtyReq", ExtArgs["result"]["proStepMaterial"]>
-  export type ProStepMaterialInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    step?: boolean | ProStepDefaultArgs<ExtArgs>
+  export type ProsesMaterialOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "prosesId" | "materialId" | "qtyReq", ExtArgs["result"]["prosesMaterial"]>
+  export type ProsesMaterialInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    proses?: boolean | ProsesDefaultArgs<ExtArgs>
     material?: boolean | MaterialDefaultArgs<ExtArgs>
   }
 
-  export type $ProStepMaterialPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "ProStepMaterial"
+  export type $ProsesMaterialPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ProsesMaterial"
     objects: {
-      step: Prisma.$ProStepPayload<ExtArgs>
+      proses: Prisma.$ProsesPayload<ExtArgs>
       material: Prisma.$MaterialPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
-      stepId: number
+      prosesId: number
       materialId: number
       qtyReq: Prisma.Decimal
-    }, ExtArgs["result"]["proStepMaterial"]>
+    }, ExtArgs["result"]["prosesMaterial"]>
     composites: {}
   }
 
-  type ProStepMaterialGetPayload<S extends boolean | null | undefined | ProStepMaterialDefaultArgs> = $Result.GetResult<Prisma.$ProStepMaterialPayload, S>
+  type ProsesMaterialGetPayload<S extends boolean | null | undefined | ProsesMaterialDefaultArgs> = $Result.GetResult<Prisma.$ProsesMaterialPayload, S>
 
-  type ProStepMaterialCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<ProStepMaterialFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: ProStepMaterialCountAggregateInputType | true
+  type ProsesMaterialCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ProsesMaterialFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ProsesMaterialCountAggregateInputType | true
     }
 
-  export interface ProStepMaterialDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProStepMaterial'], meta: { name: 'ProStepMaterial' } }
+  export interface ProsesMaterialDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProsesMaterial'], meta: { name: 'ProsesMaterial' } }
     /**
-     * Find zero or one ProStepMaterial that matches the filter.
-     * @param {ProStepMaterialFindUniqueArgs} args - Arguments to find a ProStepMaterial
+     * Find zero or one ProsesMaterial that matches the filter.
+     * @param {ProsesMaterialFindUniqueArgs} args - Arguments to find a ProsesMaterial
      * @example
-     * // Get one ProStepMaterial
-     * const proStepMaterial = await prisma.proStepMaterial.findUnique({
+     * // Get one ProsesMaterial
+     * const prosesMaterial = await prisma.prosesMaterial.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends ProStepMaterialFindUniqueArgs>(args: SelectSubset<T, ProStepMaterialFindUniqueArgs<ExtArgs>>): Prisma__ProStepMaterialClient<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends ProsesMaterialFindUniqueArgs>(args: SelectSubset<T, ProsesMaterialFindUniqueArgs<ExtArgs>>): Prisma__ProsesMaterialClient<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one ProStepMaterial that matches the filter or throw an error with `error.code='P2025'`
+     * Find one ProsesMaterial that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {ProStepMaterialFindUniqueOrThrowArgs} args - Arguments to find a ProStepMaterial
+     * @param {ProsesMaterialFindUniqueOrThrowArgs} args - Arguments to find a ProsesMaterial
      * @example
-     * // Get one ProStepMaterial
-     * const proStepMaterial = await prisma.proStepMaterial.findUniqueOrThrow({
+     * // Get one ProsesMaterial
+     * const prosesMaterial = await prisma.prosesMaterial.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends ProStepMaterialFindUniqueOrThrowArgs>(args: SelectSubset<T, ProStepMaterialFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProStepMaterialClient<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends ProsesMaterialFindUniqueOrThrowArgs>(args: SelectSubset<T, ProsesMaterialFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProsesMaterialClient<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first ProStepMaterial that matches the filter.
+     * Find the first ProsesMaterial that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepMaterialFindFirstArgs} args - Arguments to find a ProStepMaterial
+     * @param {ProsesMaterialFindFirstArgs} args - Arguments to find a ProsesMaterial
      * @example
-     * // Get one ProStepMaterial
-     * const proStepMaterial = await prisma.proStepMaterial.findFirst({
+     * // Get one ProsesMaterial
+     * const prosesMaterial = await prisma.prosesMaterial.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends ProStepMaterialFindFirstArgs>(args?: SelectSubset<T, ProStepMaterialFindFirstArgs<ExtArgs>>): Prisma__ProStepMaterialClient<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends ProsesMaterialFindFirstArgs>(args?: SelectSubset<T, ProsesMaterialFindFirstArgs<ExtArgs>>): Prisma__ProsesMaterialClient<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first ProStepMaterial that matches the filter or
+     * Find the first ProsesMaterial that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepMaterialFindFirstOrThrowArgs} args - Arguments to find a ProStepMaterial
+     * @param {ProsesMaterialFindFirstOrThrowArgs} args - Arguments to find a ProsesMaterial
      * @example
-     * // Get one ProStepMaterial
-     * const proStepMaterial = await prisma.proStepMaterial.findFirstOrThrow({
+     * // Get one ProsesMaterial
+     * const prosesMaterial = await prisma.prosesMaterial.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends ProStepMaterialFindFirstOrThrowArgs>(args?: SelectSubset<T, ProStepMaterialFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProStepMaterialClient<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends ProsesMaterialFindFirstOrThrowArgs>(args?: SelectSubset<T, ProsesMaterialFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProsesMaterialClient<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more ProStepMaterials that matches the filter.
+     * Find zero or more ProsesMaterials that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepMaterialFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {ProsesMaterialFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all ProStepMaterials
-     * const proStepMaterials = await prisma.proStepMaterial.findMany()
+     * // Get all ProsesMaterials
+     * const prosesMaterials = await prisma.prosesMaterial.findMany()
      * 
-     * // Get first 10 ProStepMaterials
-     * const proStepMaterials = await prisma.proStepMaterial.findMany({ take: 10 })
+     * // Get first 10 ProsesMaterials
+     * const prosesMaterials = await prisma.prosesMaterial.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const proStepMaterialWithIdOnly = await prisma.proStepMaterial.findMany({ select: { id: true } })
+     * const prosesMaterialWithIdOnly = await prisma.prosesMaterial.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends ProStepMaterialFindManyArgs>(args?: SelectSubset<T, ProStepMaterialFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends ProsesMaterialFindManyArgs>(args?: SelectSubset<T, ProsesMaterialFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a ProStepMaterial.
-     * @param {ProStepMaterialCreateArgs} args - Arguments to create a ProStepMaterial.
+     * Create a ProsesMaterial.
+     * @param {ProsesMaterialCreateArgs} args - Arguments to create a ProsesMaterial.
      * @example
-     * // Create one ProStepMaterial
-     * const ProStepMaterial = await prisma.proStepMaterial.create({
+     * // Create one ProsesMaterial
+     * const ProsesMaterial = await prisma.prosesMaterial.create({
      *   data: {
-     *     // ... data to create a ProStepMaterial
+     *     // ... data to create a ProsesMaterial
      *   }
      * })
      * 
      */
-    create<T extends ProStepMaterialCreateArgs>(args: SelectSubset<T, ProStepMaterialCreateArgs<ExtArgs>>): Prisma__ProStepMaterialClient<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends ProsesMaterialCreateArgs>(args: SelectSubset<T, ProsesMaterialCreateArgs<ExtArgs>>): Prisma__ProsesMaterialClient<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many ProStepMaterials.
-     * @param {ProStepMaterialCreateManyArgs} args - Arguments to create many ProStepMaterials.
+     * Create many ProsesMaterials.
+     * @param {ProsesMaterialCreateManyArgs} args - Arguments to create many ProsesMaterials.
      * @example
-     * // Create many ProStepMaterials
-     * const proStepMaterial = await prisma.proStepMaterial.createMany({
+     * // Create many ProsesMaterials
+     * const prosesMaterial = await prisma.prosesMaterial.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends ProStepMaterialCreateManyArgs>(args?: SelectSubset<T, ProStepMaterialCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends ProsesMaterialCreateManyArgs>(args?: SelectSubset<T, ProsesMaterialCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Delete a ProStepMaterial.
-     * @param {ProStepMaterialDeleteArgs} args - Arguments to delete one ProStepMaterial.
+     * Delete a ProsesMaterial.
+     * @param {ProsesMaterialDeleteArgs} args - Arguments to delete one ProsesMaterial.
      * @example
-     * // Delete one ProStepMaterial
-     * const ProStepMaterial = await prisma.proStepMaterial.delete({
+     * // Delete one ProsesMaterial
+     * const ProsesMaterial = await prisma.prosesMaterial.delete({
      *   where: {
-     *     // ... filter to delete one ProStepMaterial
+     *     // ... filter to delete one ProsesMaterial
      *   }
      * })
      * 
      */
-    delete<T extends ProStepMaterialDeleteArgs>(args: SelectSubset<T, ProStepMaterialDeleteArgs<ExtArgs>>): Prisma__ProStepMaterialClient<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends ProsesMaterialDeleteArgs>(args: SelectSubset<T, ProsesMaterialDeleteArgs<ExtArgs>>): Prisma__ProsesMaterialClient<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one ProStepMaterial.
-     * @param {ProStepMaterialUpdateArgs} args - Arguments to update one ProStepMaterial.
+     * Update one ProsesMaterial.
+     * @param {ProsesMaterialUpdateArgs} args - Arguments to update one ProsesMaterial.
      * @example
-     * // Update one ProStepMaterial
-     * const proStepMaterial = await prisma.proStepMaterial.update({
+     * // Update one ProsesMaterial
+     * const prosesMaterial = await prisma.prosesMaterial.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -9375,30 +9765,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends ProStepMaterialUpdateArgs>(args: SelectSubset<T, ProStepMaterialUpdateArgs<ExtArgs>>): Prisma__ProStepMaterialClient<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends ProsesMaterialUpdateArgs>(args: SelectSubset<T, ProsesMaterialUpdateArgs<ExtArgs>>): Prisma__ProsesMaterialClient<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more ProStepMaterials.
-     * @param {ProStepMaterialDeleteManyArgs} args - Arguments to filter ProStepMaterials to delete.
+     * Delete zero or more ProsesMaterials.
+     * @param {ProsesMaterialDeleteManyArgs} args - Arguments to filter ProsesMaterials to delete.
      * @example
-     * // Delete a few ProStepMaterials
-     * const { count } = await prisma.proStepMaterial.deleteMany({
+     * // Delete a few ProsesMaterials
+     * const { count } = await prisma.prosesMaterial.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends ProStepMaterialDeleteManyArgs>(args?: SelectSubset<T, ProStepMaterialDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends ProsesMaterialDeleteManyArgs>(args?: SelectSubset<T, ProsesMaterialDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more ProStepMaterials.
+     * Update zero or more ProsesMaterials.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepMaterialUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {ProsesMaterialUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many ProStepMaterials
-     * const proStepMaterial = await prisma.proStepMaterial.updateMany({
+     * // Update many ProsesMaterials
+     * const prosesMaterial = await prisma.prosesMaterial.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -9408,56 +9798,56 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends ProStepMaterialUpdateManyArgs>(args: SelectSubset<T, ProStepMaterialUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends ProsesMaterialUpdateManyArgs>(args: SelectSubset<T, ProsesMaterialUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create or update one ProStepMaterial.
-     * @param {ProStepMaterialUpsertArgs} args - Arguments to update or create a ProStepMaterial.
+     * Create or update one ProsesMaterial.
+     * @param {ProsesMaterialUpsertArgs} args - Arguments to update or create a ProsesMaterial.
      * @example
-     * // Update or create a ProStepMaterial
-     * const proStepMaterial = await prisma.proStepMaterial.upsert({
+     * // Update or create a ProsesMaterial
+     * const prosesMaterial = await prisma.prosesMaterial.upsert({
      *   create: {
-     *     // ... data to create a ProStepMaterial
+     *     // ... data to create a ProsesMaterial
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the ProStepMaterial we want to update
+     *     // ... the filter for the ProsesMaterial we want to update
      *   }
      * })
      */
-    upsert<T extends ProStepMaterialUpsertArgs>(args: SelectSubset<T, ProStepMaterialUpsertArgs<ExtArgs>>): Prisma__ProStepMaterialClient<$Result.GetResult<Prisma.$ProStepMaterialPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends ProsesMaterialUpsertArgs>(args: SelectSubset<T, ProsesMaterialUpsertArgs<ExtArgs>>): Prisma__ProsesMaterialClient<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of ProStepMaterials.
+     * Count the number of ProsesMaterials.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepMaterialCountArgs} args - Arguments to filter ProStepMaterials to count.
+     * @param {ProsesMaterialCountArgs} args - Arguments to filter ProsesMaterials to count.
      * @example
-     * // Count the number of ProStepMaterials
-     * const count = await prisma.proStepMaterial.count({
+     * // Count the number of ProsesMaterials
+     * const count = await prisma.prosesMaterial.count({
      *   where: {
-     *     // ... the filter for the ProStepMaterials we want to count
+     *     // ... the filter for the ProsesMaterials we want to count
      *   }
      * })
     **/
-    count<T extends ProStepMaterialCountArgs>(
-      args?: Subset<T, ProStepMaterialCountArgs>,
+    count<T extends ProsesMaterialCountArgs>(
+      args?: Subset<T, ProsesMaterialCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], ProStepMaterialCountAggregateOutputType>
+          : GetScalarType<T['select'], ProsesMaterialCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a ProStepMaterial.
+     * Allows you to perform aggregations operations on a ProsesMaterial.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepMaterialAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {ProsesMaterialAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -9477,13 +9867,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends ProStepMaterialAggregateArgs>(args: Subset<T, ProStepMaterialAggregateArgs>): Prisma.PrismaPromise<GetProStepMaterialAggregateType<T>>
+    aggregate<T extends ProsesMaterialAggregateArgs>(args: Subset<T, ProsesMaterialAggregateArgs>): Prisma.PrismaPromise<GetProsesMaterialAggregateType<T>>
 
     /**
-     * Group by ProStepMaterial.
+     * Group by ProsesMaterial.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {ProStepMaterialGroupByArgs} args - Group by arguments.
+     * @param {ProsesMaterialGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -9498,14 +9888,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends ProStepMaterialGroupByArgs,
+      T extends ProsesMaterialGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: ProStepMaterialGroupByArgs['orderBy'] }
-        : { orderBy?: ProStepMaterialGroupByArgs['orderBy'] },
+        ? { orderBy: ProsesMaterialGroupByArgs['orderBy'] }
+        : { orderBy?: ProsesMaterialGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -9554,22 +9944,22 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, ProStepMaterialGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProStepMaterialGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, ProsesMaterialGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProsesMaterialGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the ProStepMaterial model
+   * Fields of the ProsesMaterial model
    */
-  readonly fields: ProStepMaterialFieldRefs;
+  readonly fields: ProsesMaterialFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for ProStepMaterial.
+   * The delegate class that acts as a "Promise-like" for ProsesMaterial.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__ProStepMaterialClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__ProsesMaterialClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    step<T extends ProStepDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProStepDefaultArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    proses<T extends ProsesDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProsesDefaultArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     material<T extends MaterialDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MaterialDefaultArgs<ExtArgs>>): Prisma__MaterialClient<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -9597,371 +9987,371 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the ProStepMaterial model
+   * Fields of the ProsesMaterial model
    */
-  interface ProStepMaterialFieldRefs {
-    readonly id: FieldRef<"ProStepMaterial", 'Int'>
-    readonly stepId: FieldRef<"ProStepMaterial", 'Int'>
-    readonly materialId: FieldRef<"ProStepMaterial", 'Int'>
-    readonly qtyReq: FieldRef<"ProStepMaterial", 'Decimal'>
+  interface ProsesMaterialFieldRefs {
+    readonly id: FieldRef<"ProsesMaterial", 'Int'>
+    readonly prosesId: FieldRef<"ProsesMaterial", 'Int'>
+    readonly materialId: FieldRef<"ProsesMaterial", 'Int'>
+    readonly qtyReq: FieldRef<"ProsesMaterial", 'Decimal'>
   }
     
 
   // Custom InputTypes
   /**
-   * ProStepMaterial findUnique
+   * ProsesMaterial findUnique
    */
-  export type ProStepMaterialFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
+    include?: ProsesMaterialInclude<ExtArgs> | null
     /**
-     * Filter, which ProStepMaterial to fetch.
+     * Filter, which ProsesMaterial to fetch.
      */
-    where: ProStepMaterialWhereUniqueInput
+    where: ProsesMaterialWhereUniqueInput
   }
 
   /**
-   * ProStepMaterial findUniqueOrThrow
+   * ProsesMaterial findUniqueOrThrow
    */
-  export type ProStepMaterialFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
+    include?: ProsesMaterialInclude<ExtArgs> | null
     /**
-     * Filter, which ProStepMaterial to fetch.
+     * Filter, which ProsesMaterial to fetch.
      */
-    where: ProStepMaterialWhereUniqueInput
+    where: ProsesMaterialWhereUniqueInput
   }
 
   /**
-   * ProStepMaterial findFirst
+   * ProsesMaterial findFirst
    */
-  export type ProStepMaterialFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
+    include?: ProsesMaterialInclude<ExtArgs> | null
     /**
-     * Filter, which ProStepMaterial to fetch.
+     * Filter, which ProsesMaterial to fetch.
      */
-    where?: ProStepMaterialWhereInput
+    where?: ProsesMaterialWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of ProStepMaterials to fetch.
+     * Determine the order of ProsesMaterials to fetch.
      */
-    orderBy?: ProStepMaterialOrderByWithRelationInput | ProStepMaterialOrderByWithRelationInput[]
+    orderBy?: ProsesMaterialOrderByWithRelationInput | ProsesMaterialOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for ProStepMaterials.
+     * Sets the position for searching for ProsesMaterials.
      */
-    cursor?: ProStepMaterialWhereUniqueInput
+    cursor?: ProsesMaterialWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` ProStepMaterials from the position of the cursor.
+     * Take `±n` ProsesMaterials from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` ProStepMaterials.
+     * Skip the first `n` ProsesMaterials.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of ProStepMaterials.
+     * Filter by unique combinations of ProsesMaterials.
      */
-    distinct?: ProStepMaterialScalarFieldEnum | ProStepMaterialScalarFieldEnum[]
+    distinct?: ProsesMaterialScalarFieldEnum | ProsesMaterialScalarFieldEnum[]
   }
 
   /**
-   * ProStepMaterial findFirstOrThrow
+   * ProsesMaterial findFirstOrThrow
    */
-  export type ProStepMaterialFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
+    include?: ProsesMaterialInclude<ExtArgs> | null
     /**
-     * Filter, which ProStepMaterial to fetch.
+     * Filter, which ProsesMaterial to fetch.
      */
-    where?: ProStepMaterialWhereInput
+    where?: ProsesMaterialWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of ProStepMaterials to fetch.
+     * Determine the order of ProsesMaterials to fetch.
      */
-    orderBy?: ProStepMaterialOrderByWithRelationInput | ProStepMaterialOrderByWithRelationInput[]
+    orderBy?: ProsesMaterialOrderByWithRelationInput | ProsesMaterialOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for ProStepMaterials.
+     * Sets the position for searching for ProsesMaterials.
      */
-    cursor?: ProStepMaterialWhereUniqueInput
+    cursor?: ProsesMaterialWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` ProStepMaterials from the position of the cursor.
+     * Take `±n` ProsesMaterials from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` ProStepMaterials.
+     * Skip the first `n` ProsesMaterials.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of ProStepMaterials.
+     * Filter by unique combinations of ProsesMaterials.
      */
-    distinct?: ProStepMaterialScalarFieldEnum | ProStepMaterialScalarFieldEnum[]
+    distinct?: ProsesMaterialScalarFieldEnum | ProsesMaterialScalarFieldEnum[]
   }
 
   /**
-   * ProStepMaterial findMany
+   * ProsesMaterial findMany
    */
-  export type ProStepMaterialFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
+    include?: ProsesMaterialInclude<ExtArgs> | null
     /**
-     * Filter, which ProStepMaterials to fetch.
+     * Filter, which ProsesMaterials to fetch.
      */
-    where?: ProStepMaterialWhereInput
+    where?: ProsesMaterialWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of ProStepMaterials to fetch.
+     * Determine the order of ProsesMaterials to fetch.
      */
-    orderBy?: ProStepMaterialOrderByWithRelationInput | ProStepMaterialOrderByWithRelationInput[]
+    orderBy?: ProsesMaterialOrderByWithRelationInput | ProsesMaterialOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing ProStepMaterials.
+     * Sets the position for listing ProsesMaterials.
      */
-    cursor?: ProStepMaterialWhereUniqueInput
+    cursor?: ProsesMaterialWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` ProStepMaterials from the position of the cursor.
+     * Take `±n` ProsesMaterials from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` ProStepMaterials.
+     * Skip the first `n` ProsesMaterials.
      */
     skip?: number
-    distinct?: ProStepMaterialScalarFieldEnum | ProStepMaterialScalarFieldEnum[]
+    distinct?: ProsesMaterialScalarFieldEnum | ProsesMaterialScalarFieldEnum[]
   }
 
   /**
-   * ProStepMaterial create
+   * ProsesMaterial create
    */
-  export type ProStepMaterialCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
+    include?: ProsesMaterialInclude<ExtArgs> | null
     /**
-     * The data needed to create a ProStepMaterial.
+     * The data needed to create a ProsesMaterial.
      */
-    data: XOR<ProStepMaterialCreateInput, ProStepMaterialUncheckedCreateInput>
+    data: XOR<ProsesMaterialCreateInput, ProsesMaterialUncheckedCreateInput>
   }
 
   /**
-   * ProStepMaterial createMany
+   * ProsesMaterial createMany
    */
-  export type ProStepMaterialCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many ProStepMaterials.
+     * The data used to create many ProsesMaterials.
      */
-    data: ProStepMaterialCreateManyInput | ProStepMaterialCreateManyInput[]
+    data: ProsesMaterialCreateManyInput | ProsesMaterialCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * ProStepMaterial update
+   * ProsesMaterial update
    */
-  export type ProStepMaterialUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
+    include?: ProsesMaterialInclude<ExtArgs> | null
     /**
-     * The data needed to update a ProStepMaterial.
+     * The data needed to update a ProsesMaterial.
      */
-    data: XOR<ProStepMaterialUpdateInput, ProStepMaterialUncheckedUpdateInput>
+    data: XOR<ProsesMaterialUpdateInput, ProsesMaterialUncheckedUpdateInput>
     /**
-     * Choose, which ProStepMaterial to update.
+     * Choose, which ProsesMaterial to update.
      */
-    where: ProStepMaterialWhereUniqueInput
+    where: ProsesMaterialWhereUniqueInput
   }
 
   /**
-   * ProStepMaterial updateMany
+   * ProsesMaterial updateMany
    */
-  export type ProStepMaterialUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update ProStepMaterials.
+     * The data used to update ProsesMaterials.
      */
-    data: XOR<ProStepMaterialUpdateManyMutationInput, ProStepMaterialUncheckedUpdateManyInput>
+    data: XOR<ProsesMaterialUpdateManyMutationInput, ProsesMaterialUncheckedUpdateManyInput>
     /**
-     * Filter which ProStepMaterials to update
+     * Filter which ProsesMaterials to update
      */
-    where?: ProStepMaterialWhereInput
+    where?: ProsesMaterialWhereInput
     /**
-     * Limit how many ProStepMaterials to update.
+     * Limit how many ProsesMaterials to update.
      */
     limit?: number
   }
 
   /**
-   * ProStepMaterial upsert
+   * ProsesMaterial upsert
    */
-  export type ProStepMaterialUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
+    include?: ProsesMaterialInclude<ExtArgs> | null
     /**
-     * The filter to search for the ProStepMaterial to update in case it exists.
+     * The filter to search for the ProsesMaterial to update in case it exists.
      */
-    where: ProStepMaterialWhereUniqueInput
+    where: ProsesMaterialWhereUniqueInput
     /**
-     * In case the ProStepMaterial found by the `where` argument doesn't exist, create a new ProStepMaterial with this data.
+     * In case the ProsesMaterial found by the `where` argument doesn't exist, create a new ProsesMaterial with this data.
      */
-    create: XOR<ProStepMaterialCreateInput, ProStepMaterialUncheckedCreateInput>
+    create: XOR<ProsesMaterialCreateInput, ProsesMaterialUncheckedCreateInput>
     /**
-     * In case the ProStepMaterial was found with the provided `where` argument, update it with this data.
+     * In case the ProsesMaterial was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<ProStepMaterialUpdateInput, ProStepMaterialUncheckedUpdateInput>
+    update: XOR<ProsesMaterialUpdateInput, ProsesMaterialUncheckedUpdateInput>
   }
 
   /**
-   * ProStepMaterial delete
+   * ProsesMaterial delete
    */
-  export type ProStepMaterialDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
+    include?: ProsesMaterialInclude<ExtArgs> | null
     /**
-     * Filter which ProStepMaterial to delete.
+     * Filter which ProsesMaterial to delete.
      */
-    where: ProStepMaterialWhereUniqueInput
+    where: ProsesMaterialWhereUniqueInput
   }
 
   /**
-   * ProStepMaterial deleteMany
+   * ProsesMaterial deleteMany
    */
-  export type ProStepMaterialDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which ProStepMaterials to delete
+     * Filter which ProsesMaterials to delete
      */
-    where?: ProStepMaterialWhereInput
+    where?: ProsesMaterialWhereInput
     /**
-     * Limit how many ProStepMaterials to delete.
+     * Limit how many ProsesMaterials to delete.
      */
     limit?: number
   }
 
   /**
-   * ProStepMaterial without action
+   * ProsesMaterial without action
    */
-  export type ProStepMaterialDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type ProsesMaterialDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ProStepMaterial
+     * Select specific fields to fetch from the ProsesMaterial
      */
-    select?: ProStepMaterialSelect<ExtArgs> | null
+    select?: ProsesMaterialSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ProStepMaterial
+     * Omit specific fields from the ProsesMaterial
      */
-    omit?: ProStepMaterialOmit<ExtArgs> | null
+    omit?: ProsesMaterialOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ProStepMaterialInclude<ExtArgs> | null
+    include?: ProsesMaterialInclude<ExtArgs> | null
   }
 
 
@@ -9978,7 +10368,7 @@ export namespace Prisma {
   }
 
   export type ProductionReportAvgAggregateOutputType = {
-    proStepId: number | null
+    prosesId: number | null
     shift: number | null
     manPowerStd: number | null
     manPowerAct: number | null
@@ -9995,10 +10385,11 @@ export namespace Prisma {
     qtyGood: Decimal | null
     qtyReject: Decimal | null
     totalDowntime: number | null
+    inputWipQty: Decimal | null
   }
 
   export type ProductionReportSumAggregateOutputType = {
-    proStepId: number | null
+    prosesId: number | null
     shift: number | null
     manPowerStd: number | null
     manPowerAct: number | null
@@ -10015,11 +10406,12 @@ export namespace Prisma {
     qtyGood: Decimal | null
     qtyReject: Decimal | null
     totalDowntime: number | null
+    inputWipQty: Decimal | null
   }
 
   export type ProductionReportMinAggregateOutputType = {
     id: string | null
-    proStepId: number | null
+    prosesId: number | null
     reportDate: Date | null
     shift: number | null
     operatorName: string | null
@@ -10052,11 +10444,16 @@ export namespace Prisma {
     rejectionNote: string | null
     checkedById: string | null
     checkedAt: Date | null
+    voidedAt: Date | null
+    voidedById: string | null
+    voidReason: string | null
+    stockPostedAt: Date | null
+    inputWipQty: Decimal | null
   }
 
   export type ProductionReportMaxAggregateOutputType = {
     id: string | null
-    proStepId: number | null
+    prosesId: number | null
     reportDate: Date | null
     shift: number | null
     operatorName: string | null
@@ -10089,11 +10486,16 @@ export namespace Prisma {
     rejectionNote: string | null
     checkedById: string | null
     checkedAt: Date | null
+    voidedAt: Date | null
+    voidedById: string | null
+    voidReason: string | null
+    stockPostedAt: Date | null
+    inputWipQty: Decimal | null
   }
 
   export type ProductionReportCountAggregateOutputType = {
     id: number
-    proStepId: number
+    prosesId: number
     reportDate: number
     shift: number
     operatorName: number
@@ -10129,12 +10531,17 @@ export namespace Prisma {
     rejectionNote: number
     checkedById: number
     checkedAt: number
+    voidedAt: number
+    voidedById: number
+    voidReason: number
+    stockPostedAt: number
+    inputWipQty: number
     _all: number
   }
 
 
   export type ProductionReportAvgAggregateInputType = {
-    proStepId?: true
+    prosesId?: true
     shift?: true
     manPowerStd?: true
     manPowerAct?: true
@@ -10151,10 +10558,11 @@ export namespace Prisma {
     qtyGood?: true
     qtyReject?: true
     totalDowntime?: true
+    inputWipQty?: true
   }
 
   export type ProductionReportSumAggregateInputType = {
-    proStepId?: true
+    prosesId?: true
     shift?: true
     manPowerStd?: true
     manPowerAct?: true
@@ -10171,11 +10579,12 @@ export namespace Prisma {
     qtyGood?: true
     qtyReject?: true
     totalDowntime?: true
+    inputWipQty?: true
   }
 
   export type ProductionReportMinAggregateInputType = {
     id?: true
-    proStepId?: true
+    prosesId?: true
     reportDate?: true
     shift?: true
     operatorName?: true
@@ -10208,11 +10617,16 @@ export namespace Prisma {
     rejectionNote?: true
     checkedById?: true
     checkedAt?: true
+    voidedAt?: true
+    voidedById?: true
+    voidReason?: true
+    stockPostedAt?: true
+    inputWipQty?: true
   }
 
   export type ProductionReportMaxAggregateInputType = {
     id?: true
-    proStepId?: true
+    prosesId?: true
     reportDate?: true
     shift?: true
     operatorName?: true
@@ -10245,11 +10659,16 @@ export namespace Prisma {
     rejectionNote?: true
     checkedById?: true
     checkedAt?: true
+    voidedAt?: true
+    voidedById?: true
+    voidReason?: true
+    stockPostedAt?: true
+    inputWipQty?: true
   }
 
   export type ProductionReportCountAggregateInputType = {
     id?: true
-    proStepId?: true
+    prosesId?: true
     reportDate?: true
     shift?: true
     operatorName?: true
@@ -10285,6 +10704,11 @@ export namespace Prisma {
     rejectionNote?: true
     checkedById?: true
     checkedAt?: true
+    voidedAt?: true
+    voidedById?: true
+    voidReason?: true
+    stockPostedAt?: true
+    inputWipQty?: true
     _all?: true
   }
 
@@ -10376,7 +10800,7 @@ export namespace Prisma {
 
   export type ProductionReportGroupByOutputType = {
     id: string
-    proStepId: number
+    prosesId: number
     reportDate: Date
     shift: number
     operatorName: string
@@ -10412,6 +10836,11 @@ export namespace Prisma {
     rejectionNote: string | null
     checkedById: string | null
     checkedAt: Date | null
+    voidedAt: Date | null
+    voidedById: string | null
+    voidReason: string | null
+    stockPostedAt: Date | null
+    inputWipQty: Decimal | null
     _count: ProductionReportCountAggregateOutputType | null
     _avg: ProductionReportAvgAggregateOutputType | null
     _sum: ProductionReportSumAggregateOutputType | null
@@ -10435,7 +10864,7 @@ export namespace Prisma {
 
   export type ProductionReportSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    proStepId?: boolean
+    prosesId?: boolean
     reportDate?: boolean
     shift?: boolean
     operatorName?: boolean
@@ -10471,16 +10900,23 @@ export namespace Prisma {
     rejectionNote?: boolean
     checkedById?: boolean
     checkedAt?: boolean
-    step?: boolean | ProStepDefaultArgs<ExtArgs>
+    voidedAt?: boolean
+    voidedById?: boolean
+    voidReason?: boolean
+    stockPostedAt?: boolean
+    inputWipQty?: boolean
+    proses?: boolean | ProsesDefaultArgs<ExtArgs>
     createdBy?: boolean | ProductionReport$createdByArgs<ExtArgs>
     checkedBy?: boolean | ProductionReport$checkedByArgs<ExtArgs>
+    inventoryTxns?: boolean | ProductionReport$inventoryTxnsArgs<ExtArgs>
+    _count?: boolean | ProductionReportCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["productionReport"]>
 
 
 
   export type ProductionReportSelectScalar = {
     id?: boolean
-    proStepId?: boolean
+    prosesId?: boolean
     reportDate?: boolean
     shift?: boolean
     operatorName?: boolean
@@ -10516,25 +10952,33 @@ export namespace Prisma {
     rejectionNote?: boolean
     checkedById?: boolean
     checkedAt?: boolean
+    voidedAt?: boolean
+    voidedById?: boolean
+    voidReason?: boolean
+    stockPostedAt?: boolean
+    inputWipQty?: boolean
   }
 
-  export type ProductionReportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proStepId" | "reportDate" | "shift" | "operatorName" | "reportType" | "startTime" | "endTime" | "batchNo" | "manPowerStd" | "manPowerAct" | "cycleTimeStd" | "cycleTimeAct" | "cavityStd" | "cavityAct" | "inputMaterialQty" | "materialRunnerQty" | "materialPurgeQty" | "qtyPassOn" | "qtyHold" | "qtyWip" | "qtyGood" | "qtyReject" | "rejectBreakdown" | "downtimeBreakdown" | "totalDowntime" | "notes" | "othersNote" | "adminNote" | "metaData" | "createdById" | "createdAt" | "updatedAt" | "status" | "rejectionNote" | "checkedById" | "checkedAt", ExtArgs["result"]["productionReport"]>
+  export type ProductionReportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "prosesId" | "reportDate" | "shift" | "operatorName" | "reportType" | "startTime" | "endTime" | "batchNo" | "manPowerStd" | "manPowerAct" | "cycleTimeStd" | "cycleTimeAct" | "cavityStd" | "cavityAct" | "inputMaterialQty" | "materialRunnerQty" | "materialPurgeQty" | "qtyPassOn" | "qtyHold" | "qtyWip" | "qtyGood" | "qtyReject" | "rejectBreakdown" | "downtimeBreakdown" | "totalDowntime" | "notes" | "othersNote" | "adminNote" | "metaData" | "createdById" | "createdAt" | "updatedAt" | "status" | "rejectionNote" | "checkedById" | "checkedAt" | "voidedAt" | "voidedById" | "voidReason" | "stockPostedAt" | "inputWipQty", ExtArgs["result"]["productionReport"]>
   export type ProductionReportInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    step?: boolean | ProStepDefaultArgs<ExtArgs>
+    proses?: boolean | ProsesDefaultArgs<ExtArgs>
     createdBy?: boolean | ProductionReport$createdByArgs<ExtArgs>
     checkedBy?: boolean | ProductionReport$checkedByArgs<ExtArgs>
+    inventoryTxns?: boolean | ProductionReport$inventoryTxnsArgs<ExtArgs>
+    _count?: boolean | ProductionReportCountOutputTypeDefaultArgs<ExtArgs>
   }
 
   export type $ProductionReportPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "ProductionReport"
     objects: {
-      step: Prisma.$ProStepPayload<ExtArgs>
+      proses: Prisma.$ProsesPayload<ExtArgs>
       createdBy: Prisma.$UserPayload<ExtArgs> | null
       checkedBy: Prisma.$UserPayload<ExtArgs> | null
+      inventoryTxns: Prisma.$InventoryTxnPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      proStepId: number
+      prosesId: number
       reportDate: Date
       shift: number
       operatorName: string
@@ -10570,6 +11014,11 @@ export namespace Prisma {
       rejectionNote: string | null
       checkedById: string | null
       checkedAt: Date | null
+      voidedAt: Date | null
+      voidedById: string | null
+      voidReason: string | null
+      stockPostedAt: Date | null
+      inputWipQty: Prisma.Decimal | null
     }, ExtArgs["result"]["productionReport"]>
     composites: {}
   }
@@ -10910,9 +11359,10 @@ export namespace Prisma {
    */
   export interface Prisma__ProductionReportClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    step<T extends ProStepDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProStepDefaultArgs<ExtArgs>>): Prisma__ProStepClient<$Result.GetResult<Prisma.$ProStepPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    proses<T extends ProsesDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProsesDefaultArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     createdBy<T extends ProductionReport$createdByArgs<ExtArgs> = {}>(args?: Subset<T, ProductionReport$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     checkedBy<T extends ProductionReport$checkedByArgs<ExtArgs> = {}>(args?: Subset<T, ProductionReport$checkedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    inventoryTxns<T extends ProductionReport$inventoryTxnsArgs<ExtArgs> = {}>(args?: Subset<T, ProductionReport$inventoryTxnsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10943,7 +11393,7 @@ export namespace Prisma {
    */
   interface ProductionReportFieldRefs {
     readonly id: FieldRef<"ProductionReport", 'String'>
-    readonly proStepId: FieldRef<"ProductionReport", 'Int'>
+    readonly prosesId: FieldRef<"ProductionReport", 'Int'>
     readonly reportDate: FieldRef<"ProductionReport", 'DateTime'>
     readonly shift: FieldRef<"ProductionReport", 'Int'>
     readonly operatorName: FieldRef<"ProductionReport", 'String'>
@@ -10979,6 +11429,11 @@ export namespace Prisma {
     readonly rejectionNote: FieldRef<"ProductionReport", 'String'>
     readonly checkedById: FieldRef<"ProductionReport", 'String'>
     readonly checkedAt: FieldRef<"ProductionReport", 'DateTime'>
+    readonly voidedAt: FieldRef<"ProductionReport", 'DateTime'>
+    readonly voidedById: FieldRef<"ProductionReport", 'String'>
+    readonly voidReason: FieldRef<"ProductionReport", 'String'>
+    readonly stockPostedAt: FieldRef<"ProductionReport", 'DateTime'>
+    readonly inputWipQty: FieldRef<"ProductionReport", 'Decimal'>
   }
     
 
@@ -11360,6 +11815,30 @@ export namespace Prisma {
   }
 
   /**
+   * ProductionReport.inventoryTxns
+   */
+  export type ProductionReport$inventoryTxnsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    where?: InventoryTxnWhereInput
+    orderBy?: InventoryTxnOrderByWithRelationInput | InventoryTxnOrderByWithRelationInput[]
+    cursor?: InventoryTxnWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: InventoryTxnScalarFieldEnum | InventoryTxnScalarFieldEnum[]
+  }
+
+  /**
    * ProductionReport without action
    */
   export type ProductionReportDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11375,6 +11854,2143 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ProductionReportInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model InventoryLocation
+   */
+
+  export type AggregateInventoryLocation = {
+    _count: InventoryLocationCountAggregateOutputType | null
+    _avg: InventoryLocationAvgAggregateOutputType | null
+    _sum: InventoryLocationSumAggregateOutputType | null
+    _min: InventoryLocationMinAggregateOutputType | null
+    _max: InventoryLocationMaxAggregateOutputType | null
+  }
+
+  export type InventoryLocationAvgAggregateOutputType = {
+    id: number | null
+    machineId: number | null
+  }
+
+  export type InventoryLocationSumAggregateOutputType = {
+    id: number | null
+    machineId: number | null
+  }
+
+  export type InventoryLocationMinAggregateOutputType = {
+    id: number | null
+    code: string | null
+    name: string | null
+    type: $Enums.LocationType | null
+    machineId: number | null
+  }
+
+  export type InventoryLocationMaxAggregateOutputType = {
+    id: number | null
+    code: string | null
+    name: string | null
+    type: $Enums.LocationType | null
+    machineId: number | null
+  }
+
+  export type InventoryLocationCountAggregateOutputType = {
+    id: number
+    code: number
+    name: number
+    type: number
+    machineId: number
+    _all: number
+  }
+
+
+  export type InventoryLocationAvgAggregateInputType = {
+    id?: true
+    machineId?: true
+  }
+
+  export type InventoryLocationSumAggregateInputType = {
+    id?: true
+    machineId?: true
+  }
+
+  export type InventoryLocationMinAggregateInputType = {
+    id?: true
+    code?: true
+    name?: true
+    type?: true
+    machineId?: true
+  }
+
+  export type InventoryLocationMaxAggregateInputType = {
+    id?: true
+    code?: true
+    name?: true
+    type?: true
+    machineId?: true
+  }
+
+  export type InventoryLocationCountAggregateInputType = {
+    id?: true
+    code?: true
+    name?: true
+    type?: true
+    machineId?: true
+    _all?: true
+  }
+
+  export type InventoryLocationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InventoryLocation to aggregate.
+     */
+    where?: InventoryLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InventoryLocations to fetch.
+     */
+    orderBy?: InventoryLocationOrderByWithRelationInput | InventoryLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: InventoryLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InventoryLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InventoryLocations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned InventoryLocations
+    **/
+    _count?: true | InventoryLocationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: InventoryLocationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: InventoryLocationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: InventoryLocationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: InventoryLocationMaxAggregateInputType
+  }
+
+  export type GetInventoryLocationAggregateType<T extends InventoryLocationAggregateArgs> = {
+        [P in keyof T & keyof AggregateInventoryLocation]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateInventoryLocation[P]>
+      : GetScalarType<T[P], AggregateInventoryLocation[P]>
+  }
+
+
+
+
+  export type InventoryLocationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InventoryLocationWhereInput
+    orderBy?: InventoryLocationOrderByWithAggregationInput | InventoryLocationOrderByWithAggregationInput[]
+    by: InventoryLocationScalarFieldEnum[] | InventoryLocationScalarFieldEnum
+    having?: InventoryLocationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: InventoryLocationCountAggregateInputType | true
+    _avg?: InventoryLocationAvgAggregateInputType
+    _sum?: InventoryLocationSumAggregateInputType
+    _min?: InventoryLocationMinAggregateInputType
+    _max?: InventoryLocationMaxAggregateInputType
+  }
+
+  export type InventoryLocationGroupByOutputType = {
+    id: number
+    code: string
+    name: string
+    type: $Enums.LocationType
+    machineId: number | null
+    _count: InventoryLocationCountAggregateOutputType | null
+    _avg: InventoryLocationAvgAggregateOutputType | null
+    _sum: InventoryLocationSumAggregateOutputType | null
+    _min: InventoryLocationMinAggregateOutputType | null
+    _max: InventoryLocationMaxAggregateOutputType | null
+  }
+
+  type GetInventoryLocationGroupByPayload<T extends InventoryLocationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<InventoryLocationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof InventoryLocationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], InventoryLocationGroupByOutputType[P]>
+            : GetScalarType<T[P], InventoryLocationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type InventoryLocationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    code?: boolean
+    name?: boolean
+    type?: boolean
+    machineId?: boolean
+    machine?: boolean | InventoryLocation$machineArgs<ExtArgs>
+    txns?: boolean | InventoryLocation$txnsArgs<ExtArgs>
+    _count?: boolean | InventoryLocationCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["inventoryLocation"]>
+
+
+
+  export type InventoryLocationSelectScalar = {
+    id?: boolean
+    code?: boolean
+    name?: boolean
+    type?: boolean
+    machineId?: boolean
+  }
+
+  export type InventoryLocationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "type" | "machineId", ExtArgs["result"]["inventoryLocation"]>
+  export type InventoryLocationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    machine?: boolean | InventoryLocation$machineArgs<ExtArgs>
+    txns?: boolean | InventoryLocation$txnsArgs<ExtArgs>
+    _count?: boolean | InventoryLocationCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $InventoryLocationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "InventoryLocation"
+    objects: {
+      machine: Prisma.$MachinePayload<ExtArgs> | null
+      txns: Prisma.$InventoryTxnPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      code: string
+      name: string
+      type: $Enums.LocationType
+      machineId: number | null
+    }, ExtArgs["result"]["inventoryLocation"]>
+    composites: {}
+  }
+
+  type InventoryLocationGetPayload<S extends boolean | null | undefined | InventoryLocationDefaultArgs> = $Result.GetResult<Prisma.$InventoryLocationPayload, S>
+
+  type InventoryLocationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<InventoryLocationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: InventoryLocationCountAggregateInputType | true
+    }
+
+  export interface InventoryLocationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['InventoryLocation'], meta: { name: 'InventoryLocation' } }
+    /**
+     * Find zero or one InventoryLocation that matches the filter.
+     * @param {InventoryLocationFindUniqueArgs} args - Arguments to find a InventoryLocation
+     * @example
+     * // Get one InventoryLocation
+     * const inventoryLocation = await prisma.inventoryLocation.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends InventoryLocationFindUniqueArgs>(args: SelectSubset<T, InventoryLocationFindUniqueArgs<ExtArgs>>): Prisma__InventoryLocationClient<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one InventoryLocation that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {InventoryLocationFindUniqueOrThrowArgs} args - Arguments to find a InventoryLocation
+     * @example
+     * // Get one InventoryLocation
+     * const inventoryLocation = await prisma.inventoryLocation.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends InventoryLocationFindUniqueOrThrowArgs>(args: SelectSubset<T, InventoryLocationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__InventoryLocationClient<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first InventoryLocation that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryLocationFindFirstArgs} args - Arguments to find a InventoryLocation
+     * @example
+     * // Get one InventoryLocation
+     * const inventoryLocation = await prisma.inventoryLocation.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends InventoryLocationFindFirstArgs>(args?: SelectSubset<T, InventoryLocationFindFirstArgs<ExtArgs>>): Prisma__InventoryLocationClient<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first InventoryLocation that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryLocationFindFirstOrThrowArgs} args - Arguments to find a InventoryLocation
+     * @example
+     * // Get one InventoryLocation
+     * const inventoryLocation = await prisma.inventoryLocation.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends InventoryLocationFindFirstOrThrowArgs>(args?: SelectSubset<T, InventoryLocationFindFirstOrThrowArgs<ExtArgs>>): Prisma__InventoryLocationClient<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more InventoryLocations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryLocationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all InventoryLocations
+     * const inventoryLocations = await prisma.inventoryLocation.findMany()
+     * 
+     * // Get first 10 InventoryLocations
+     * const inventoryLocations = await prisma.inventoryLocation.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const inventoryLocationWithIdOnly = await prisma.inventoryLocation.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends InventoryLocationFindManyArgs>(args?: SelectSubset<T, InventoryLocationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a InventoryLocation.
+     * @param {InventoryLocationCreateArgs} args - Arguments to create a InventoryLocation.
+     * @example
+     * // Create one InventoryLocation
+     * const InventoryLocation = await prisma.inventoryLocation.create({
+     *   data: {
+     *     // ... data to create a InventoryLocation
+     *   }
+     * })
+     * 
+     */
+    create<T extends InventoryLocationCreateArgs>(args: SelectSubset<T, InventoryLocationCreateArgs<ExtArgs>>): Prisma__InventoryLocationClient<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many InventoryLocations.
+     * @param {InventoryLocationCreateManyArgs} args - Arguments to create many InventoryLocations.
+     * @example
+     * // Create many InventoryLocations
+     * const inventoryLocation = await prisma.inventoryLocation.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends InventoryLocationCreateManyArgs>(args?: SelectSubset<T, InventoryLocationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a InventoryLocation.
+     * @param {InventoryLocationDeleteArgs} args - Arguments to delete one InventoryLocation.
+     * @example
+     * // Delete one InventoryLocation
+     * const InventoryLocation = await prisma.inventoryLocation.delete({
+     *   where: {
+     *     // ... filter to delete one InventoryLocation
+     *   }
+     * })
+     * 
+     */
+    delete<T extends InventoryLocationDeleteArgs>(args: SelectSubset<T, InventoryLocationDeleteArgs<ExtArgs>>): Prisma__InventoryLocationClient<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one InventoryLocation.
+     * @param {InventoryLocationUpdateArgs} args - Arguments to update one InventoryLocation.
+     * @example
+     * // Update one InventoryLocation
+     * const inventoryLocation = await prisma.inventoryLocation.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends InventoryLocationUpdateArgs>(args: SelectSubset<T, InventoryLocationUpdateArgs<ExtArgs>>): Prisma__InventoryLocationClient<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more InventoryLocations.
+     * @param {InventoryLocationDeleteManyArgs} args - Arguments to filter InventoryLocations to delete.
+     * @example
+     * // Delete a few InventoryLocations
+     * const { count } = await prisma.inventoryLocation.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends InventoryLocationDeleteManyArgs>(args?: SelectSubset<T, InventoryLocationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more InventoryLocations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryLocationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many InventoryLocations
+     * const inventoryLocation = await prisma.inventoryLocation.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends InventoryLocationUpdateManyArgs>(args: SelectSubset<T, InventoryLocationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one InventoryLocation.
+     * @param {InventoryLocationUpsertArgs} args - Arguments to update or create a InventoryLocation.
+     * @example
+     * // Update or create a InventoryLocation
+     * const inventoryLocation = await prisma.inventoryLocation.upsert({
+     *   create: {
+     *     // ... data to create a InventoryLocation
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the InventoryLocation we want to update
+     *   }
+     * })
+     */
+    upsert<T extends InventoryLocationUpsertArgs>(args: SelectSubset<T, InventoryLocationUpsertArgs<ExtArgs>>): Prisma__InventoryLocationClient<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of InventoryLocations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryLocationCountArgs} args - Arguments to filter InventoryLocations to count.
+     * @example
+     * // Count the number of InventoryLocations
+     * const count = await prisma.inventoryLocation.count({
+     *   where: {
+     *     // ... the filter for the InventoryLocations we want to count
+     *   }
+     * })
+    **/
+    count<T extends InventoryLocationCountArgs>(
+      args?: Subset<T, InventoryLocationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], InventoryLocationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a InventoryLocation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryLocationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends InventoryLocationAggregateArgs>(args: Subset<T, InventoryLocationAggregateArgs>): Prisma.PrismaPromise<GetInventoryLocationAggregateType<T>>
+
+    /**
+     * Group by InventoryLocation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryLocationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends InventoryLocationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: InventoryLocationGroupByArgs['orderBy'] }
+        : { orderBy?: InventoryLocationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, InventoryLocationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetInventoryLocationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the InventoryLocation model
+   */
+  readonly fields: InventoryLocationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for InventoryLocation.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__InventoryLocationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    machine<T extends InventoryLocation$machineArgs<ExtArgs> = {}>(args?: Subset<T, InventoryLocation$machineArgs<ExtArgs>>): Prisma__MachineClient<$Result.GetResult<Prisma.$MachinePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    txns<T extends InventoryLocation$txnsArgs<ExtArgs> = {}>(args?: Subset<T, InventoryLocation$txnsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the InventoryLocation model
+   */
+  interface InventoryLocationFieldRefs {
+    readonly id: FieldRef<"InventoryLocation", 'Int'>
+    readonly code: FieldRef<"InventoryLocation", 'String'>
+    readonly name: FieldRef<"InventoryLocation", 'String'>
+    readonly type: FieldRef<"InventoryLocation", 'LocationType'>
+    readonly machineId: FieldRef<"InventoryLocation", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * InventoryLocation findUnique
+   */
+  export type InventoryLocationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocation
+     */
+    select?: InventoryLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryLocation
+     */
+    omit?: InventoryLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryLocationInclude<ExtArgs> | null
+    /**
+     * Filter, which InventoryLocation to fetch.
+     */
+    where: InventoryLocationWhereUniqueInput
+  }
+
+  /**
+   * InventoryLocation findUniqueOrThrow
+   */
+  export type InventoryLocationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocation
+     */
+    select?: InventoryLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryLocation
+     */
+    omit?: InventoryLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryLocationInclude<ExtArgs> | null
+    /**
+     * Filter, which InventoryLocation to fetch.
+     */
+    where: InventoryLocationWhereUniqueInput
+  }
+
+  /**
+   * InventoryLocation findFirst
+   */
+  export type InventoryLocationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocation
+     */
+    select?: InventoryLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryLocation
+     */
+    omit?: InventoryLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryLocationInclude<ExtArgs> | null
+    /**
+     * Filter, which InventoryLocation to fetch.
+     */
+    where?: InventoryLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InventoryLocations to fetch.
+     */
+    orderBy?: InventoryLocationOrderByWithRelationInput | InventoryLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InventoryLocations.
+     */
+    cursor?: InventoryLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InventoryLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InventoryLocations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InventoryLocations.
+     */
+    distinct?: InventoryLocationScalarFieldEnum | InventoryLocationScalarFieldEnum[]
+  }
+
+  /**
+   * InventoryLocation findFirstOrThrow
+   */
+  export type InventoryLocationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocation
+     */
+    select?: InventoryLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryLocation
+     */
+    omit?: InventoryLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryLocationInclude<ExtArgs> | null
+    /**
+     * Filter, which InventoryLocation to fetch.
+     */
+    where?: InventoryLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InventoryLocations to fetch.
+     */
+    orderBy?: InventoryLocationOrderByWithRelationInput | InventoryLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InventoryLocations.
+     */
+    cursor?: InventoryLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InventoryLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InventoryLocations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InventoryLocations.
+     */
+    distinct?: InventoryLocationScalarFieldEnum | InventoryLocationScalarFieldEnum[]
+  }
+
+  /**
+   * InventoryLocation findMany
+   */
+  export type InventoryLocationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocation
+     */
+    select?: InventoryLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryLocation
+     */
+    omit?: InventoryLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryLocationInclude<ExtArgs> | null
+    /**
+     * Filter, which InventoryLocations to fetch.
+     */
+    where?: InventoryLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InventoryLocations to fetch.
+     */
+    orderBy?: InventoryLocationOrderByWithRelationInput | InventoryLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing InventoryLocations.
+     */
+    cursor?: InventoryLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InventoryLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InventoryLocations.
+     */
+    skip?: number
+    distinct?: InventoryLocationScalarFieldEnum | InventoryLocationScalarFieldEnum[]
+  }
+
+  /**
+   * InventoryLocation create
+   */
+  export type InventoryLocationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocation
+     */
+    select?: InventoryLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryLocation
+     */
+    omit?: InventoryLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryLocationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a InventoryLocation.
+     */
+    data: XOR<InventoryLocationCreateInput, InventoryLocationUncheckedCreateInput>
+  }
+
+  /**
+   * InventoryLocation createMany
+   */
+  export type InventoryLocationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many InventoryLocations.
+     */
+    data: InventoryLocationCreateManyInput | InventoryLocationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * InventoryLocation update
+   */
+  export type InventoryLocationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocation
+     */
+    select?: InventoryLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryLocation
+     */
+    omit?: InventoryLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryLocationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a InventoryLocation.
+     */
+    data: XOR<InventoryLocationUpdateInput, InventoryLocationUncheckedUpdateInput>
+    /**
+     * Choose, which InventoryLocation to update.
+     */
+    where: InventoryLocationWhereUniqueInput
+  }
+
+  /**
+   * InventoryLocation updateMany
+   */
+  export type InventoryLocationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update InventoryLocations.
+     */
+    data: XOR<InventoryLocationUpdateManyMutationInput, InventoryLocationUncheckedUpdateManyInput>
+    /**
+     * Filter which InventoryLocations to update
+     */
+    where?: InventoryLocationWhereInput
+    /**
+     * Limit how many InventoryLocations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * InventoryLocation upsert
+   */
+  export type InventoryLocationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocation
+     */
+    select?: InventoryLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryLocation
+     */
+    omit?: InventoryLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryLocationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the InventoryLocation to update in case it exists.
+     */
+    where: InventoryLocationWhereUniqueInput
+    /**
+     * In case the InventoryLocation found by the `where` argument doesn't exist, create a new InventoryLocation with this data.
+     */
+    create: XOR<InventoryLocationCreateInput, InventoryLocationUncheckedCreateInput>
+    /**
+     * In case the InventoryLocation was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<InventoryLocationUpdateInput, InventoryLocationUncheckedUpdateInput>
+  }
+
+  /**
+   * InventoryLocation delete
+   */
+  export type InventoryLocationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocation
+     */
+    select?: InventoryLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryLocation
+     */
+    omit?: InventoryLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryLocationInclude<ExtArgs> | null
+    /**
+     * Filter which InventoryLocation to delete.
+     */
+    where: InventoryLocationWhereUniqueInput
+  }
+
+  /**
+   * InventoryLocation deleteMany
+   */
+  export type InventoryLocationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InventoryLocations to delete
+     */
+    where?: InventoryLocationWhereInput
+    /**
+     * Limit how many InventoryLocations to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * InventoryLocation.machine
+   */
+  export type InventoryLocation$machineArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Machine
+     */
+    select?: MachineSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Machine
+     */
+    omit?: MachineOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MachineInclude<ExtArgs> | null
+    where?: MachineWhereInput
+  }
+
+  /**
+   * InventoryLocation.txns
+   */
+  export type InventoryLocation$txnsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    where?: InventoryTxnWhereInput
+    orderBy?: InventoryTxnOrderByWithRelationInput | InventoryTxnOrderByWithRelationInput[]
+    cursor?: InventoryTxnWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: InventoryTxnScalarFieldEnum | InventoryTxnScalarFieldEnum[]
+  }
+
+  /**
+   * InventoryLocation without action
+   */
+  export type InventoryLocationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryLocation
+     */
+    select?: InventoryLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryLocation
+     */
+    omit?: InventoryLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryLocationInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model InventoryTxn
+   */
+
+  export type AggregateInventoryTxn = {
+    _count: InventoryTxnCountAggregateOutputType | null
+    _avg: InventoryTxnAvgAggregateOutputType | null
+    _sum: InventoryTxnSumAggregateOutputType | null
+    _min: InventoryTxnMinAggregateOutputType | null
+    _max: InventoryTxnMaxAggregateOutputType | null
+  }
+
+  export type InventoryTxnAvgAggregateOutputType = {
+    qty: Decimal | null
+    locationId: number | null
+    proId: number | null
+    prosesId: number | null
+  }
+
+  export type InventoryTxnSumAggregateOutputType = {
+    qty: Decimal | null
+    locationId: number | null
+    proId: number | null
+    prosesId: number | null
+  }
+
+  export type InventoryTxnMinAggregateOutputType = {
+    id: string | null
+    groupId: string | null
+    date: Date | null
+    type: $Enums.TxnType | null
+    itemId: string | null
+    qty: Decimal | null
+    locationId: number | null
+    proId: number | null
+    prosesId: number | null
+    productionReportId: string | null
+    notes: string | null
+    createdAt: Date | null
+  }
+
+  export type InventoryTxnMaxAggregateOutputType = {
+    id: string | null
+    groupId: string | null
+    date: Date | null
+    type: $Enums.TxnType | null
+    itemId: string | null
+    qty: Decimal | null
+    locationId: number | null
+    proId: number | null
+    prosesId: number | null
+    productionReportId: string | null
+    notes: string | null
+    createdAt: Date | null
+  }
+
+  export type InventoryTxnCountAggregateOutputType = {
+    id: number
+    groupId: number
+    date: number
+    type: number
+    itemId: number
+    qty: number
+    locationId: number
+    proId: number
+    prosesId: number
+    productionReportId: number
+    notes: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type InventoryTxnAvgAggregateInputType = {
+    qty?: true
+    locationId?: true
+    proId?: true
+    prosesId?: true
+  }
+
+  export type InventoryTxnSumAggregateInputType = {
+    qty?: true
+    locationId?: true
+    proId?: true
+    prosesId?: true
+  }
+
+  export type InventoryTxnMinAggregateInputType = {
+    id?: true
+    groupId?: true
+    date?: true
+    type?: true
+    itemId?: true
+    qty?: true
+    locationId?: true
+    proId?: true
+    prosesId?: true
+    productionReportId?: true
+    notes?: true
+    createdAt?: true
+  }
+
+  export type InventoryTxnMaxAggregateInputType = {
+    id?: true
+    groupId?: true
+    date?: true
+    type?: true
+    itemId?: true
+    qty?: true
+    locationId?: true
+    proId?: true
+    prosesId?: true
+    productionReportId?: true
+    notes?: true
+    createdAt?: true
+  }
+
+  export type InventoryTxnCountAggregateInputType = {
+    id?: true
+    groupId?: true
+    date?: true
+    type?: true
+    itemId?: true
+    qty?: true
+    locationId?: true
+    proId?: true
+    prosesId?: true
+    productionReportId?: true
+    notes?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type InventoryTxnAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InventoryTxn to aggregate.
+     */
+    where?: InventoryTxnWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InventoryTxns to fetch.
+     */
+    orderBy?: InventoryTxnOrderByWithRelationInput | InventoryTxnOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: InventoryTxnWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InventoryTxns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InventoryTxns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned InventoryTxns
+    **/
+    _count?: true | InventoryTxnCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: InventoryTxnAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: InventoryTxnSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: InventoryTxnMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: InventoryTxnMaxAggregateInputType
+  }
+
+  export type GetInventoryTxnAggregateType<T extends InventoryTxnAggregateArgs> = {
+        [P in keyof T & keyof AggregateInventoryTxn]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateInventoryTxn[P]>
+      : GetScalarType<T[P], AggregateInventoryTxn[P]>
+  }
+
+
+
+
+  export type InventoryTxnGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InventoryTxnWhereInput
+    orderBy?: InventoryTxnOrderByWithAggregationInput | InventoryTxnOrderByWithAggregationInput[]
+    by: InventoryTxnScalarFieldEnum[] | InventoryTxnScalarFieldEnum
+    having?: InventoryTxnScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: InventoryTxnCountAggregateInputType | true
+    _avg?: InventoryTxnAvgAggregateInputType
+    _sum?: InventoryTxnSumAggregateInputType
+    _min?: InventoryTxnMinAggregateInputType
+    _max?: InventoryTxnMaxAggregateInputType
+  }
+
+  export type InventoryTxnGroupByOutputType = {
+    id: string
+    groupId: string
+    date: Date
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal
+    locationId: number
+    proId: number | null
+    prosesId: number | null
+    productionReportId: string | null
+    notes: string | null
+    createdAt: Date
+    _count: InventoryTxnCountAggregateOutputType | null
+    _avg: InventoryTxnAvgAggregateOutputType | null
+    _sum: InventoryTxnSumAggregateOutputType | null
+    _min: InventoryTxnMinAggregateOutputType | null
+    _max: InventoryTxnMaxAggregateOutputType | null
+  }
+
+  type GetInventoryTxnGroupByPayload<T extends InventoryTxnGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<InventoryTxnGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof InventoryTxnGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], InventoryTxnGroupByOutputType[P]>
+            : GetScalarType<T[P], InventoryTxnGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type InventoryTxnSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    groupId?: boolean
+    date?: boolean
+    type?: boolean
+    itemId?: boolean
+    qty?: boolean
+    locationId?: boolean
+    proId?: boolean
+    prosesId?: boolean
+    productionReportId?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    location?: boolean | InventoryLocationDefaultArgs<ExtArgs>
+    pro?: boolean | InventoryTxn$proArgs<ExtArgs>
+    proses?: boolean | InventoryTxn$prosesArgs<ExtArgs>
+    productionReport?: boolean | InventoryTxn$productionReportArgs<ExtArgs>
+  }, ExtArgs["result"]["inventoryTxn"]>
+
+
+
+  export type InventoryTxnSelectScalar = {
+    id?: boolean
+    groupId?: boolean
+    date?: boolean
+    type?: boolean
+    itemId?: boolean
+    qty?: boolean
+    locationId?: boolean
+    proId?: boolean
+    prosesId?: boolean
+    productionReportId?: boolean
+    notes?: boolean
+    createdAt?: boolean
+  }
+
+  export type InventoryTxnOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "groupId" | "date" | "type" | "itemId" | "qty" | "locationId" | "proId" | "prosesId" | "productionReportId" | "notes" | "createdAt", ExtArgs["result"]["inventoryTxn"]>
+  export type InventoryTxnInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    location?: boolean | InventoryLocationDefaultArgs<ExtArgs>
+    pro?: boolean | InventoryTxn$proArgs<ExtArgs>
+    proses?: boolean | InventoryTxn$prosesArgs<ExtArgs>
+    productionReport?: boolean | InventoryTxn$productionReportArgs<ExtArgs>
+  }
+
+  export type $InventoryTxnPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "InventoryTxn"
+    objects: {
+      location: Prisma.$InventoryLocationPayload<ExtArgs>
+      pro: Prisma.$ProPayload<ExtArgs> | null
+      proses: Prisma.$ProsesPayload<ExtArgs> | null
+      productionReport: Prisma.$ProductionReportPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      groupId: string
+      date: Date
+      type: $Enums.TxnType
+      itemId: string
+      qty: Prisma.Decimal
+      locationId: number
+      proId: number | null
+      prosesId: number | null
+      productionReportId: string | null
+      notes: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["inventoryTxn"]>
+    composites: {}
+  }
+
+  type InventoryTxnGetPayload<S extends boolean | null | undefined | InventoryTxnDefaultArgs> = $Result.GetResult<Prisma.$InventoryTxnPayload, S>
+
+  type InventoryTxnCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<InventoryTxnFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: InventoryTxnCountAggregateInputType | true
+    }
+
+  export interface InventoryTxnDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['InventoryTxn'], meta: { name: 'InventoryTxn' } }
+    /**
+     * Find zero or one InventoryTxn that matches the filter.
+     * @param {InventoryTxnFindUniqueArgs} args - Arguments to find a InventoryTxn
+     * @example
+     * // Get one InventoryTxn
+     * const inventoryTxn = await prisma.inventoryTxn.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends InventoryTxnFindUniqueArgs>(args: SelectSubset<T, InventoryTxnFindUniqueArgs<ExtArgs>>): Prisma__InventoryTxnClient<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one InventoryTxn that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {InventoryTxnFindUniqueOrThrowArgs} args - Arguments to find a InventoryTxn
+     * @example
+     * // Get one InventoryTxn
+     * const inventoryTxn = await prisma.inventoryTxn.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends InventoryTxnFindUniqueOrThrowArgs>(args: SelectSubset<T, InventoryTxnFindUniqueOrThrowArgs<ExtArgs>>): Prisma__InventoryTxnClient<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first InventoryTxn that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryTxnFindFirstArgs} args - Arguments to find a InventoryTxn
+     * @example
+     * // Get one InventoryTxn
+     * const inventoryTxn = await prisma.inventoryTxn.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends InventoryTxnFindFirstArgs>(args?: SelectSubset<T, InventoryTxnFindFirstArgs<ExtArgs>>): Prisma__InventoryTxnClient<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first InventoryTxn that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryTxnFindFirstOrThrowArgs} args - Arguments to find a InventoryTxn
+     * @example
+     * // Get one InventoryTxn
+     * const inventoryTxn = await prisma.inventoryTxn.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends InventoryTxnFindFirstOrThrowArgs>(args?: SelectSubset<T, InventoryTxnFindFirstOrThrowArgs<ExtArgs>>): Prisma__InventoryTxnClient<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more InventoryTxns that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryTxnFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all InventoryTxns
+     * const inventoryTxns = await prisma.inventoryTxn.findMany()
+     * 
+     * // Get first 10 InventoryTxns
+     * const inventoryTxns = await prisma.inventoryTxn.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const inventoryTxnWithIdOnly = await prisma.inventoryTxn.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends InventoryTxnFindManyArgs>(args?: SelectSubset<T, InventoryTxnFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a InventoryTxn.
+     * @param {InventoryTxnCreateArgs} args - Arguments to create a InventoryTxn.
+     * @example
+     * // Create one InventoryTxn
+     * const InventoryTxn = await prisma.inventoryTxn.create({
+     *   data: {
+     *     // ... data to create a InventoryTxn
+     *   }
+     * })
+     * 
+     */
+    create<T extends InventoryTxnCreateArgs>(args: SelectSubset<T, InventoryTxnCreateArgs<ExtArgs>>): Prisma__InventoryTxnClient<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many InventoryTxns.
+     * @param {InventoryTxnCreateManyArgs} args - Arguments to create many InventoryTxns.
+     * @example
+     * // Create many InventoryTxns
+     * const inventoryTxn = await prisma.inventoryTxn.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends InventoryTxnCreateManyArgs>(args?: SelectSubset<T, InventoryTxnCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a InventoryTxn.
+     * @param {InventoryTxnDeleteArgs} args - Arguments to delete one InventoryTxn.
+     * @example
+     * // Delete one InventoryTxn
+     * const InventoryTxn = await prisma.inventoryTxn.delete({
+     *   where: {
+     *     // ... filter to delete one InventoryTxn
+     *   }
+     * })
+     * 
+     */
+    delete<T extends InventoryTxnDeleteArgs>(args: SelectSubset<T, InventoryTxnDeleteArgs<ExtArgs>>): Prisma__InventoryTxnClient<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one InventoryTxn.
+     * @param {InventoryTxnUpdateArgs} args - Arguments to update one InventoryTxn.
+     * @example
+     * // Update one InventoryTxn
+     * const inventoryTxn = await prisma.inventoryTxn.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends InventoryTxnUpdateArgs>(args: SelectSubset<T, InventoryTxnUpdateArgs<ExtArgs>>): Prisma__InventoryTxnClient<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more InventoryTxns.
+     * @param {InventoryTxnDeleteManyArgs} args - Arguments to filter InventoryTxns to delete.
+     * @example
+     * // Delete a few InventoryTxns
+     * const { count } = await prisma.inventoryTxn.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends InventoryTxnDeleteManyArgs>(args?: SelectSubset<T, InventoryTxnDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more InventoryTxns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryTxnUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many InventoryTxns
+     * const inventoryTxn = await prisma.inventoryTxn.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends InventoryTxnUpdateManyArgs>(args: SelectSubset<T, InventoryTxnUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one InventoryTxn.
+     * @param {InventoryTxnUpsertArgs} args - Arguments to update or create a InventoryTxn.
+     * @example
+     * // Update or create a InventoryTxn
+     * const inventoryTxn = await prisma.inventoryTxn.upsert({
+     *   create: {
+     *     // ... data to create a InventoryTxn
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the InventoryTxn we want to update
+     *   }
+     * })
+     */
+    upsert<T extends InventoryTxnUpsertArgs>(args: SelectSubset<T, InventoryTxnUpsertArgs<ExtArgs>>): Prisma__InventoryTxnClient<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of InventoryTxns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryTxnCountArgs} args - Arguments to filter InventoryTxns to count.
+     * @example
+     * // Count the number of InventoryTxns
+     * const count = await prisma.inventoryTxn.count({
+     *   where: {
+     *     // ... the filter for the InventoryTxns we want to count
+     *   }
+     * })
+    **/
+    count<T extends InventoryTxnCountArgs>(
+      args?: Subset<T, InventoryTxnCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], InventoryTxnCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a InventoryTxn.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryTxnAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends InventoryTxnAggregateArgs>(args: Subset<T, InventoryTxnAggregateArgs>): Prisma.PrismaPromise<GetInventoryTxnAggregateType<T>>
+
+    /**
+     * Group by InventoryTxn.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InventoryTxnGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends InventoryTxnGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: InventoryTxnGroupByArgs['orderBy'] }
+        : { orderBy?: InventoryTxnGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, InventoryTxnGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetInventoryTxnGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the InventoryTxn model
+   */
+  readonly fields: InventoryTxnFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for InventoryTxn.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__InventoryTxnClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    location<T extends InventoryLocationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, InventoryLocationDefaultArgs<ExtArgs>>): Prisma__InventoryLocationClient<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    pro<T extends InventoryTxn$proArgs<ExtArgs> = {}>(args?: Subset<T, InventoryTxn$proArgs<ExtArgs>>): Prisma__ProClient<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    proses<T extends InventoryTxn$prosesArgs<ExtArgs> = {}>(args?: Subset<T, InventoryTxn$prosesArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    productionReport<T extends InventoryTxn$productionReportArgs<ExtArgs> = {}>(args?: Subset<T, InventoryTxn$productionReportArgs<ExtArgs>>): Prisma__ProductionReportClient<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the InventoryTxn model
+   */
+  interface InventoryTxnFieldRefs {
+    readonly id: FieldRef<"InventoryTxn", 'String'>
+    readonly groupId: FieldRef<"InventoryTxn", 'String'>
+    readonly date: FieldRef<"InventoryTxn", 'DateTime'>
+    readonly type: FieldRef<"InventoryTxn", 'TxnType'>
+    readonly itemId: FieldRef<"InventoryTxn", 'String'>
+    readonly qty: FieldRef<"InventoryTxn", 'Decimal'>
+    readonly locationId: FieldRef<"InventoryTxn", 'Int'>
+    readonly proId: FieldRef<"InventoryTxn", 'Int'>
+    readonly prosesId: FieldRef<"InventoryTxn", 'Int'>
+    readonly productionReportId: FieldRef<"InventoryTxn", 'String'>
+    readonly notes: FieldRef<"InventoryTxn", 'String'>
+    readonly createdAt: FieldRef<"InventoryTxn", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * InventoryTxn findUnique
+   */
+  export type InventoryTxnFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    /**
+     * Filter, which InventoryTxn to fetch.
+     */
+    where: InventoryTxnWhereUniqueInput
+  }
+
+  /**
+   * InventoryTxn findUniqueOrThrow
+   */
+  export type InventoryTxnFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    /**
+     * Filter, which InventoryTxn to fetch.
+     */
+    where: InventoryTxnWhereUniqueInput
+  }
+
+  /**
+   * InventoryTxn findFirst
+   */
+  export type InventoryTxnFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    /**
+     * Filter, which InventoryTxn to fetch.
+     */
+    where?: InventoryTxnWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InventoryTxns to fetch.
+     */
+    orderBy?: InventoryTxnOrderByWithRelationInput | InventoryTxnOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InventoryTxns.
+     */
+    cursor?: InventoryTxnWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InventoryTxns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InventoryTxns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InventoryTxns.
+     */
+    distinct?: InventoryTxnScalarFieldEnum | InventoryTxnScalarFieldEnum[]
+  }
+
+  /**
+   * InventoryTxn findFirstOrThrow
+   */
+  export type InventoryTxnFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    /**
+     * Filter, which InventoryTxn to fetch.
+     */
+    where?: InventoryTxnWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InventoryTxns to fetch.
+     */
+    orderBy?: InventoryTxnOrderByWithRelationInput | InventoryTxnOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InventoryTxns.
+     */
+    cursor?: InventoryTxnWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InventoryTxns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InventoryTxns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InventoryTxns.
+     */
+    distinct?: InventoryTxnScalarFieldEnum | InventoryTxnScalarFieldEnum[]
+  }
+
+  /**
+   * InventoryTxn findMany
+   */
+  export type InventoryTxnFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    /**
+     * Filter, which InventoryTxns to fetch.
+     */
+    where?: InventoryTxnWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InventoryTxns to fetch.
+     */
+    orderBy?: InventoryTxnOrderByWithRelationInput | InventoryTxnOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing InventoryTxns.
+     */
+    cursor?: InventoryTxnWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InventoryTxns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InventoryTxns.
+     */
+    skip?: number
+    distinct?: InventoryTxnScalarFieldEnum | InventoryTxnScalarFieldEnum[]
+  }
+
+  /**
+   * InventoryTxn create
+   */
+  export type InventoryTxnCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    /**
+     * The data needed to create a InventoryTxn.
+     */
+    data: XOR<InventoryTxnCreateInput, InventoryTxnUncheckedCreateInput>
+  }
+
+  /**
+   * InventoryTxn createMany
+   */
+  export type InventoryTxnCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many InventoryTxns.
+     */
+    data: InventoryTxnCreateManyInput | InventoryTxnCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * InventoryTxn update
+   */
+  export type InventoryTxnUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    /**
+     * The data needed to update a InventoryTxn.
+     */
+    data: XOR<InventoryTxnUpdateInput, InventoryTxnUncheckedUpdateInput>
+    /**
+     * Choose, which InventoryTxn to update.
+     */
+    where: InventoryTxnWhereUniqueInput
+  }
+
+  /**
+   * InventoryTxn updateMany
+   */
+  export type InventoryTxnUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update InventoryTxns.
+     */
+    data: XOR<InventoryTxnUpdateManyMutationInput, InventoryTxnUncheckedUpdateManyInput>
+    /**
+     * Filter which InventoryTxns to update
+     */
+    where?: InventoryTxnWhereInput
+    /**
+     * Limit how many InventoryTxns to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * InventoryTxn upsert
+   */
+  export type InventoryTxnUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    /**
+     * The filter to search for the InventoryTxn to update in case it exists.
+     */
+    where: InventoryTxnWhereUniqueInput
+    /**
+     * In case the InventoryTxn found by the `where` argument doesn't exist, create a new InventoryTxn with this data.
+     */
+    create: XOR<InventoryTxnCreateInput, InventoryTxnUncheckedCreateInput>
+    /**
+     * In case the InventoryTxn was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<InventoryTxnUpdateInput, InventoryTxnUncheckedUpdateInput>
+  }
+
+  /**
+   * InventoryTxn delete
+   */
+  export type InventoryTxnDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
+    /**
+     * Filter which InventoryTxn to delete.
+     */
+    where: InventoryTxnWhereUniqueInput
+  }
+
+  /**
+   * InventoryTxn deleteMany
+   */
+  export type InventoryTxnDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InventoryTxns to delete
+     */
+    where?: InventoryTxnWhereInput
+    /**
+     * Limit how many InventoryTxns to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * InventoryTxn.pro
+   */
+  export type InventoryTxn$proArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Pro
+     */
+    select?: ProSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Pro
+     */
+    omit?: ProOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProInclude<ExtArgs> | null
+    where?: ProWhereInput
+  }
+
+  /**
+   * InventoryTxn.proses
+   */
+  export type InventoryTxn$prosesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Proses
+     */
+    select?: ProsesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Proses
+     */
+    omit?: ProsesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProsesInclude<ExtArgs> | null
+    where?: ProsesWhereInput
+  }
+
+  /**
+   * InventoryTxn.productionReport
+   */
+  export type InventoryTxn$productionReportArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductionReport
+     */
+    select?: ProductionReportSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductionReport
+     */
+    omit?: ProductionReportOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductionReportInclude<ExtArgs> | null
+    where?: ProductionReportWhereInput
+  }
+
+  /**
+   * InventoryTxn without action
+   */
+  export type InventoryTxnDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InventoryTxn
+     */
+    select?: InventoryTxnSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InventoryTxn
+     */
+    omit?: InventoryTxnOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InventoryTxnInclude<ExtArgs> | null
   }
 
 
@@ -11430,6 +14046,7 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     uom: 'uom',
+    type: 'type',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -11437,14 +14054,14 @@ export namespace Prisma {
   export type MaterialScalarFieldEnum = (typeof MaterialScalarFieldEnum)[keyof typeof MaterialScalarFieldEnum]
 
 
-  export const ProcessScalarFieldEnum: {
+  export const ProPrefixScalarFieldEnum: {
     id: 'id',
     code: 'code',
     name: 'name',
     type: 'type'
   };
 
-  export type ProcessScalarFieldEnum = (typeof ProcessScalarFieldEnum)[keyof typeof ProcessScalarFieldEnum]
+  export type ProPrefixScalarFieldEnum = (typeof ProPrefixScalarFieldEnum)[keyof typeof ProPrefixScalarFieldEnum]
 
 
   export const ProSequenceScalarFieldEnum: {
@@ -11459,12 +14076,13 @@ export namespace Prisma {
     id: 'id',
     proNumber: 'proNumber',
     productName: 'productName',
+    partNumber: 'partNumber',
     qtyPoPcs: 'qtyPoPcs',
     startDate: 'startDate',
     status: 'status',
     type: 'type',
     autoShiftExpansion: 'autoShiftExpansion',
-    processId: 'processId',
+    proPrefixId: 'proPrefixId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -11472,7 +14090,7 @@ export namespace Prisma {
   export type ProScalarFieldEnum = (typeof ProScalarFieldEnum)[keyof typeof ProScalarFieldEnum]
 
 
-  export const ProStepScalarFieldEnum: {
+  export const ProsesScalarFieldEnum: {
     id: 'id',
     proId: 'proId',
     orderNo: 'orderNo',
@@ -11484,22 +14102,22 @@ export namespace Prisma {
     batchNo: 'batchNo'
   };
 
-  export type ProStepScalarFieldEnum = (typeof ProStepScalarFieldEnum)[keyof typeof ProStepScalarFieldEnum]
+  export type ProsesScalarFieldEnum = (typeof ProsesScalarFieldEnum)[keyof typeof ProsesScalarFieldEnum]
 
 
-  export const ProStepMaterialScalarFieldEnum: {
+  export const ProsesMaterialScalarFieldEnum: {
     id: 'id',
-    stepId: 'stepId',
+    prosesId: 'prosesId',
     materialId: 'materialId',
     qtyReq: 'qtyReq'
   };
 
-  export type ProStepMaterialScalarFieldEnum = (typeof ProStepMaterialScalarFieldEnum)[keyof typeof ProStepMaterialScalarFieldEnum]
+  export type ProsesMaterialScalarFieldEnum = (typeof ProsesMaterialScalarFieldEnum)[keyof typeof ProsesMaterialScalarFieldEnum]
 
 
   export const ProductionReportScalarFieldEnum: {
     id: 'id',
-    proStepId: 'proStepId',
+    prosesId: 'prosesId',
     reportDate: 'reportDate',
     shift: 'shift',
     operatorName: 'operatorName',
@@ -11534,10 +14152,44 @@ export namespace Prisma {
     status: 'status',
     rejectionNote: 'rejectionNote',
     checkedById: 'checkedById',
-    checkedAt: 'checkedAt'
+    checkedAt: 'checkedAt',
+    voidedAt: 'voidedAt',
+    voidedById: 'voidedById',
+    voidReason: 'voidReason',
+    stockPostedAt: 'stockPostedAt',
+    inputWipQty: 'inputWipQty'
   };
 
   export type ProductionReportScalarFieldEnum = (typeof ProductionReportScalarFieldEnum)[keyof typeof ProductionReportScalarFieldEnum]
+
+
+  export const InventoryLocationScalarFieldEnum: {
+    id: 'id',
+    code: 'code',
+    name: 'name',
+    type: 'type',
+    machineId: 'machineId'
+  };
+
+  export type InventoryLocationScalarFieldEnum = (typeof InventoryLocationScalarFieldEnum)[keyof typeof InventoryLocationScalarFieldEnum]
+
+
+  export const InventoryTxnScalarFieldEnum: {
+    id: 'id',
+    groupId: 'groupId',
+    date: 'date',
+    type: 'type',
+    itemId: 'itemId',
+    qty: 'qty',
+    locationId: 'locationId',
+    proId: 'proId',
+    prosesId: 'prosesId',
+    productionReportId: 'productionReportId',
+    notes: 'notes',
+    createdAt: 'createdAt'
+  };
+
+  export type InventoryTxnScalarFieldEnum = (typeof InventoryTxnScalarFieldEnum)[keyof typeof InventoryTxnScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -11591,12 +14243,12 @@ export namespace Prisma {
   export type MaterialOrderByRelevanceFieldEnum = (typeof MaterialOrderByRelevanceFieldEnum)[keyof typeof MaterialOrderByRelevanceFieldEnum]
 
 
-  export const ProcessOrderByRelevanceFieldEnum: {
+  export const ProPrefixOrderByRelevanceFieldEnum: {
     code: 'code',
     name: 'name'
   };
 
-  export type ProcessOrderByRelevanceFieldEnum = (typeof ProcessOrderByRelevanceFieldEnum)[keyof typeof ProcessOrderByRelevanceFieldEnum]
+  export type ProPrefixOrderByRelevanceFieldEnum = (typeof ProPrefixOrderByRelevanceFieldEnum)[keyof typeof ProPrefixOrderByRelevanceFieldEnum]
 
 
   export const ProSequenceOrderByRelevanceFieldEnum: {
@@ -11608,18 +14260,19 @@ export namespace Prisma {
 
   export const ProOrderByRelevanceFieldEnum: {
     proNumber: 'proNumber',
-    productName: 'productName'
+    productName: 'productName',
+    partNumber: 'partNumber'
   };
 
   export type ProOrderByRelevanceFieldEnum = (typeof ProOrderByRelevanceFieldEnum)[keyof typeof ProOrderByRelevanceFieldEnum]
 
 
-  export const ProStepOrderByRelevanceFieldEnum: {
+  export const ProsesOrderByRelevanceFieldEnum: {
     partNumber: 'partNumber',
     batchNo: 'batchNo'
   };
 
-  export type ProStepOrderByRelevanceFieldEnum = (typeof ProStepOrderByRelevanceFieldEnum)[keyof typeof ProStepOrderByRelevanceFieldEnum]
+  export type ProsesOrderByRelevanceFieldEnum = (typeof ProsesOrderByRelevanceFieldEnum)[keyof typeof ProsesOrderByRelevanceFieldEnum]
 
 
   export const JsonNullValueFilter: {
@@ -11648,10 +14301,31 @@ export namespace Prisma {
     adminNote: 'adminNote',
     createdById: 'createdById',
     rejectionNote: 'rejectionNote',
-    checkedById: 'checkedById'
+    checkedById: 'checkedById',
+    voidedById: 'voidedById',
+    voidReason: 'voidReason'
   };
 
   export type ProductionReportOrderByRelevanceFieldEnum = (typeof ProductionReportOrderByRelevanceFieldEnum)[keyof typeof ProductionReportOrderByRelevanceFieldEnum]
+
+
+  export const InventoryLocationOrderByRelevanceFieldEnum: {
+    code: 'code',
+    name: 'name'
+  };
+
+  export type InventoryLocationOrderByRelevanceFieldEnum = (typeof InventoryLocationOrderByRelevanceFieldEnum)[keyof typeof InventoryLocationOrderByRelevanceFieldEnum]
+
+
+  export const InventoryTxnOrderByRelevanceFieldEnum: {
+    id: 'id',
+    groupId: 'groupId',
+    itemId: 'itemId',
+    productionReportId: 'productionReportId',
+    notes: 'notes'
+  };
+
+  export type InventoryTxnOrderByRelevanceFieldEnum = (typeof InventoryTxnOrderByRelevanceFieldEnum)[keyof typeof InventoryTxnOrderByRelevanceFieldEnum]
 
 
   /**
@@ -11709,6 +14383,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'MaterialType'
+   */
+  export type EnumMaterialTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MaterialType'>
+    
+
+
+  /**
    * Reference to a field of type 'ProType'
    */
   export type EnumProTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProType'>
@@ -11754,6 +14435,20 @@ export namespace Prisma {
    * Reference to a field of type 'ReportStatus'
    */
   export type EnumReportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReportStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'LocationType'
+   */
+  export type EnumLocationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LocationType'>
+    
+
+
+  /**
+   * Reference to a field of type 'TxnType'
+   */
+  export type EnumTxnTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TxnType'>
     
 
 
@@ -11855,7 +14550,8 @@ export namespace Prisma {
     workCenter?: StringNullableFilter<"Machine"> | string | null
     createdAt?: DateTimeFilter<"Machine"> | Date | string
     updatedAt?: DateTimeFilter<"Machine"> | Date | string
-    proSteps?: ProStepListRelationFilter
+    proses?: ProsesListRelationFilter
+    location?: XOR<InventoryLocationNullableScalarRelationFilter, InventoryLocationWhereInput> | null
   }
 
   export type MachineOrderByWithRelationInput = {
@@ -11874,7 +14570,8 @@ export namespace Prisma {
     workCenter?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    proSteps?: ProStepOrderByRelationAggregateInput
+    proses?: ProsesOrderByRelationAggregateInput
+    location?: InventoryLocationOrderByWithRelationInput
     _relevance?: MachineOrderByRelevanceInput
   }
 
@@ -11897,7 +14594,8 @@ export namespace Prisma {
     workCenter?: StringNullableFilter<"Machine"> | string | null
     createdAt?: DateTimeFilter<"Machine"> | Date | string
     updatedAt?: DateTimeFilter<"Machine"> | Date | string
-    proSteps?: ProStepListRelationFilter
+    proses?: ProsesListRelationFilter
+    location?: XOR<InventoryLocationNullableScalarRelationFilter, InventoryLocationWhereInput> | null
   }, "id">
 
   export type MachineOrderByWithAggregationInput = {
@@ -11951,18 +14649,20 @@ export namespace Prisma {
     id?: IntFilter<"Material"> | number
     name?: StringFilter<"Material"> | string
     uom?: StringFilter<"Material"> | string
+    type?: EnumMaterialTypeFilter<"Material"> | $Enums.MaterialType
     createdAt?: DateTimeFilter<"Material"> | Date | string
     updatedAt?: DateTimeFilter<"Material"> | Date | string
-    proStepMaterials?: ProStepMaterialListRelationFilter
+    prosesMaterials?: ProsesMaterialListRelationFilter
   }
 
   export type MaterialOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
     uom?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    proStepMaterials?: ProStepMaterialOrderByRelationAggregateInput
+    prosesMaterials?: ProsesMaterialOrderByRelationAggregateInput
     _relevance?: MaterialOrderByRelevanceInput
   }
 
@@ -11973,15 +14673,17 @@ export namespace Prisma {
     OR?: MaterialWhereInput[]
     NOT?: MaterialWhereInput | MaterialWhereInput[]
     uom?: StringFilter<"Material"> | string
+    type?: EnumMaterialTypeFilter<"Material"> | $Enums.MaterialType
     createdAt?: DateTimeFilter<"Material"> | Date | string
     updatedAt?: DateTimeFilter<"Material"> | Date | string
-    proStepMaterials?: ProStepMaterialListRelationFilter
+    prosesMaterials?: ProsesMaterialListRelationFilter
   }, "id" | "name">
 
   export type MaterialOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
     uom?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: MaterialCountOrderByAggregateInput
@@ -11998,61 +14700,62 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"Material"> | number
     name?: StringWithAggregatesFilter<"Material"> | string
     uom?: StringWithAggregatesFilter<"Material"> | string
+    type?: EnumMaterialTypeWithAggregatesFilter<"Material"> | $Enums.MaterialType
     createdAt?: DateTimeWithAggregatesFilter<"Material"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Material"> | Date | string
   }
 
-  export type ProcessWhereInput = {
-    AND?: ProcessWhereInput | ProcessWhereInput[]
-    OR?: ProcessWhereInput[]
-    NOT?: ProcessWhereInput | ProcessWhereInput[]
-    id?: IntFilter<"Process"> | number
-    code?: StringFilter<"Process"> | string
-    name?: StringFilter<"Process"> | string
-    type?: EnumProTypeFilter<"Process"> | $Enums.ProType
+  export type ProPrefixWhereInput = {
+    AND?: ProPrefixWhereInput | ProPrefixWhereInput[]
+    OR?: ProPrefixWhereInput[]
+    NOT?: ProPrefixWhereInput | ProPrefixWhereInput[]
+    id?: IntFilter<"ProPrefix"> | number
+    code?: StringFilter<"ProPrefix"> | string
+    name?: StringFilter<"ProPrefix"> | string
+    type?: EnumProTypeFilter<"ProPrefix"> | $Enums.ProType
     pros?: ProListRelationFilter
   }
 
-  export type ProcessOrderByWithRelationInput = {
+  export type ProPrefixOrderByWithRelationInput = {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
     type?: SortOrder
     pros?: ProOrderByRelationAggregateInput
-    _relevance?: ProcessOrderByRelevanceInput
+    _relevance?: ProPrefixOrderByRelevanceInput
   }
 
-  export type ProcessWhereUniqueInput = Prisma.AtLeast<{
+  export type ProPrefixWhereUniqueInput = Prisma.AtLeast<{
     id?: number
     code?: string
     name?: string
-    AND?: ProcessWhereInput | ProcessWhereInput[]
-    OR?: ProcessWhereInput[]
-    NOT?: ProcessWhereInput | ProcessWhereInput[]
-    type?: EnumProTypeFilter<"Process"> | $Enums.ProType
+    AND?: ProPrefixWhereInput | ProPrefixWhereInput[]
+    OR?: ProPrefixWhereInput[]
+    NOT?: ProPrefixWhereInput | ProPrefixWhereInput[]
+    type?: EnumProTypeFilter<"ProPrefix"> | $Enums.ProType
     pros?: ProListRelationFilter
   }, "id" | "code" | "name">
 
-  export type ProcessOrderByWithAggregationInput = {
+  export type ProPrefixOrderByWithAggregationInput = {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
     type?: SortOrder
-    _count?: ProcessCountOrderByAggregateInput
-    _avg?: ProcessAvgOrderByAggregateInput
-    _max?: ProcessMaxOrderByAggregateInput
-    _min?: ProcessMinOrderByAggregateInput
-    _sum?: ProcessSumOrderByAggregateInput
+    _count?: ProPrefixCountOrderByAggregateInput
+    _avg?: ProPrefixAvgOrderByAggregateInput
+    _max?: ProPrefixMaxOrderByAggregateInput
+    _min?: ProPrefixMinOrderByAggregateInput
+    _sum?: ProPrefixSumOrderByAggregateInput
   }
 
-  export type ProcessScalarWhereWithAggregatesInput = {
-    AND?: ProcessScalarWhereWithAggregatesInput | ProcessScalarWhereWithAggregatesInput[]
-    OR?: ProcessScalarWhereWithAggregatesInput[]
-    NOT?: ProcessScalarWhereWithAggregatesInput | ProcessScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"Process"> | number
-    code?: StringWithAggregatesFilter<"Process"> | string
-    name?: StringWithAggregatesFilter<"Process"> | string
-    type?: EnumProTypeWithAggregatesFilter<"Process"> | $Enums.ProType
+  export type ProPrefixScalarWhereWithAggregatesInput = {
+    AND?: ProPrefixScalarWhereWithAggregatesInput | ProPrefixScalarWhereWithAggregatesInput[]
+    OR?: ProPrefixScalarWhereWithAggregatesInput[]
+    NOT?: ProPrefixScalarWhereWithAggregatesInput | ProPrefixScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"ProPrefix"> | number
+    code?: StringWithAggregatesFilter<"ProPrefix"> | string
+    name?: StringWithAggregatesFilter<"ProPrefix"> | string
+    type?: EnumProTypeWithAggregatesFilter<"ProPrefix"> | $Enums.ProType
   }
 
   export type ProSequenceWhereInput = {
@@ -12102,32 +14805,36 @@ export namespace Prisma {
     id?: IntFilter<"Pro"> | number
     proNumber?: StringFilter<"Pro"> | string
     productName?: StringFilter<"Pro"> | string
+    partNumber?: StringNullableFilter<"Pro"> | string | null
     qtyPoPcs?: IntFilter<"Pro"> | number
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
     type?: EnumProTypeFilter<"Pro"> | $Enums.ProType
     autoShiftExpansion?: BoolFilter<"Pro"> | boolean
-    processId?: IntNullableFilter<"Pro"> | number | null
+    proPrefixId?: IntNullableFilter<"Pro"> | number | null
     createdAt?: DateTimeFilter<"Pro"> | Date | string
     updatedAt?: DateTimeFilter<"Pro"> | Date | string
-    process?: XOR<ProcessNullableScalarRelationFilter, ProcessWhereInput> | null
-    steps?: ProStepListRelationFilter
+    proPrefix?: XOR<ProPrefixNullableScalarRelationFilter, ProPrefixWhereInput> | null
+    proses?: ProsesListRelationFilter
+    inventoryTxns?: InventoryTxnListRelationFilter
   }
 
   export type ProOrderByWithRelationInput = {
     id?: SortOrder
     proNumber?: SortOrder
     productName?: SortOrder
+    partNumber?: SortOrderInput | SortOrder
     qtyPoPcs?: SortOrder
     startDate?: SortOrderInput | SortOrder
     status?: SortOrder
     type?: SortOrder
     autoShiftExpansion?: SortOrder
-    processId?: SortOrderInput | SortOrder
+    proPrefixId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    process?: ProcessOrderByWithRelationInput
-    steps?: ProStepOrderByRelationAggregateInput
+    proPrefix?: ProPrefixOrderByWithRelationInput
+    proses?: ProsesOrderByRelationAggregateInput
+    inventoryTxns?: InventoryTxnOrderByRelationAggregateInput
     _relevance?: ProOrderByRelevanceInput
   }
 
@@ -12138,28 +14845,31 @@ export namespace Prisma {
     OR?: ProWhereInput[]
     NOT?: ProWhereInput | ProWhereInput[]
     productName?: StringFilter<"Pro"> | string
+    partNumber?: StringNullableFilter<"Pro"> | string | null
     qtyPoPcs?: IntFilter<"Pro"> | number
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
     type?: EnumProTypeFilter<"Pro"> | $Enums.ProType
     autoShiftExpansion?: BoolFilter<"Pro"> | boolean
-    processId?: IntNullableFilter<"Pro"> | number | null
+    proPrefixId?: IntNullableFilter<"Pro"> | number | null
     createdAt?: DateTimeFilter<"Pro"> | Date | string
     updatedAt?: DateTimeFilter<"Pro"> | Date | string
-    process?: XOR<ProcessNullableScalarRelationFilter, ProcessWhereInput> | null
-    steps?: ProStepListRelationFilter
+    proPrefix?: XOR<ProPrefixNullableScalarRelationFilter, ProPrefixWhereInput> | null
+    proses?: ProsesListRelationFilter
+    inventoryTxns?: InventoryTxnListRelationFilter
   }, "id" | "proNumber">
 
   export type ProOrderByWithAggregationInput = {
     id?: SortOrder
     proNumber?: SortOrder
     productName?: SortOrder
+    partNumber?: SortOrderInput | SortOrder
     qtyPoPcs?: SortOrder
     startDate?: SortOrderInput | SortOrder
     status?: SortOrder
     type?: SortOrder
     autoShiftExpansion?: SortOrder
-    processId?: SortOrderInput | SortOrder
+    proPrefixId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ProCountOrderByAggregateInput
@@ -12176,36 +14886,38 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"Pro"> | number
     proNumber?: StringWithAggregatesFilter<"Pro"> | string
     productName?: StringWithAggregatesFilter<"Pro"> | string
+    partNumber?: StringNullableWithAggregatesFilter<"Pro"> | string | null
     qtyPoPcs?: IntWithAggregatesFilter<"Pro"> | number
     startDate?: DateTimeNullableWithAggregatesFilter<"Pro"> | Date | string | null
     status?: EnumProStatusWithAggregatesFilter<"Pro"> | $Enums.ProStatus
     type?: EnumProTypeWithAggregatesFilter<"Pro"> | $Enums.ProType
     autoShiftExpansion?: BoolWithAggregatesFilter<"Pro"> | boolean
-    processId?: IntNullableWithAggregatesFilter<"Pro"> | number | null
+    proPrefixId?: IntNullableWithAggregatesFilter<"Pro"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"Pro"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Pro"> | Date | string
   }
 
-  export type ProStepWhereInput = {
-    AND?: ProStepWhereInput | ProStepWhereInput[]
-    OR?: ProStepWhereInput[]
-    NOT?: ProStepWhereInput | ProStepWhereInput[]
-    id?: IntFilter<"ProStep"> | number
-    proId?: IntFilter<"ProStep"> | number
-    orderNo?: IntFilter<"ProStep"> | number
-    up?: IntNullableFilter<"ProStep"> | number | null
-    estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
-    startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
-    machineId?: IntNullableFilter<"ProStep"> | number | null
-    partNumber?: StringNullableFilter<"ProStep"> | string | null
-    batchNo?: StringNullableFilter<"ProStep"> | string | null
+  export type ProsesWhereInput = {
+    AND?: ProsesWhereInput | ProsesWhereInput[]
+    OR?: ProsesWhereInput[]
+    NOT?: ProsesWhereInput | ProsesWhereInput[]
+    id?: IntFilter<"Proses"> | number
+    proId?: IntFilter<"Proses"> | number
+    orderNo?: IntFilter<"Proses"> | number
+    up?: IntNullableFilter<"Proses"> | number | null
+    estimatedShifts?: IntNullableFilter<"Proses"> | number | null
+    startDate?: DateTimeNullableFilter<"Proses"> | Date | string | null
+    machineId?: IntNullableFilter<"Proses"> | number | null
+    partNumber?: StringNullableFilter<"Proses"> | string | null
+    batchNo?: StringNullableFilter<"Proses"> | string | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
     machine?: XOR<MachineNullableScalarRelationFilter, MachineWhereInput> | null
-    materials?: ProStepMaterialListRelationFilter
+    materials?: ProsesMaterialListRelationFilter
     productionReports?: ProductionReportListRelationFilter
+    inventoryTxns?: InventoryTxnListRelationFilter
   }
 
-  export type ProStepOrderByWithRelationInput = {
+  export type ProsesOrderByWithRelationInput = {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
@@ -12217,32 +14929,34 @@ export namespace Prisma {
     batchNo?: SortOrderInput | SortOrder
     pro?: ProOrderByWithRelationInput
     machine?: MachineOrderByWithRelationInput
-    materials?: ProStepMaterialOrderByRelationAggregateInput
+    materials?: ProsesMaterialOrderByRelationAggregateInput
     productionReports?: ProductionReportOrderByRelationAggregateInput
-    _relevance?: ProStepOrderByRelevanceInput
+    inventoryTxns?: InventoryTxnOrderByRelationAggregateInput
+    _relevance?: ProsesOrderByRelevanceInput
   }
 
-  export type ProStepWhereUniqueInput = Prisma.AtLeast<{
+  export type ProsesWhereUniqueInput = Prisma.AtLeast<{
     id?: number
-    proId_orderNo?: ProStepProIdOrderNoCompoundUniqueInput
-    AND?: ProStepWhereInput | ProStepWhereInput[]
-    OR?: ProStepWhereInput[]
-    NOT?: ProStepWhereInput | ProStepWhereInput[]
-    proId?: IntFilter<"ProStep"> | number
-    orderNo?: IntFilter<"ProStep"> | number
-    up?: IntNullableFilter<"ProStep"> | number | null
-    estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
-    startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
-    machineId?: IntNullableFilter<"ProStep"> | number | null
-    partNumber?: StringNullableFilter<"ProStep"> | string | null
-    batchNo?: StringNullableFilter<"ProStep"> | string | null
+    proId_orderNo?: ProsesProIdOrderNoCompoundUniqueInput
+    AND?: ProsesWhereInput | ProsesWhereInput[]
+    OR?: ProsesWhereInput[]
+    NOT?: ProsesWhereInput | ProsesWhereInput[]
+    proId?: IntFilter<"Proses"> | number
+    orderNo?: IntFilter<"Proses"> | number
+    up?: IntNullableFilter<"Proses"> | number | null
+    estimatedShifts?: IntNullableFilter<"Proses"> | number | null
+    startDate?: DateTimeNullableFilter<"Proses"> | Date | string | null
+    machineId?: IntNullableFilter<"Proses"> | number | null
+    partNumber?: StringNullableFilter<"Proses"> | string | null
+    batchNo?: StringNullableFilter<"Proses"> | string | null
     pro?: XOR<ProScalarRelationFilter, ProWhereInput>
     machine?: XOR<MachineNullableScalarRelationFilter, MachineWhereInput> | null
-    materials?: ProStepMaterialListRelationFilter
+    materials?: ProsesMaterialListRelationFilter
     productionReports?: ProductionReportListRelationFilter
+    inventoryTxns?: InventoryTxnListRelationFilter
   }, "id" | "proId_orderNo">
 
-  export type ProStepOrderByWithAggregationInput = {
+  export type ProsesOrderByWithAggregationInput = {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
@@ -12252,82 +14966,82 @@ export namespace Prisma {
     machineId?: SortOrderInput | SortOrder
     partNumber?: SortOrderInput | SortOrder
     batchNo?: SortOrderInput | SortOrder
-    _count?: ProStepCountOrderByAggregateInput
-    _avg?: ProStepAvgOrderByAggregateInput
-    _max?: ProStepMaxOrderByAggregateInput
-    _min?: ProStepMinOrderByAggregateInput
-    _sum?: ProStepSumOrderByAggregateInput
+    _count?: ProsesCountOrderByAggregateInput
+    _avg?: ProsesAvgOrderByAggregateInput
+    _max?: ProsesMaxOrderByAggregateInput
+    _min?: ProsesMinOrderByAggregateInput
+    _sum?: ProsesSumOrderByAggregateInput
   }
 
-  export type ProStepScalarWhereWithAggregatesInput = {
-    AND?: ProStepScalarWhereWithAggregatesInput | ProStepScalarWhereWithAggregatesInput[]
-    OR?: ProStepScalarWhereWithAggregatesInput[]
-    NOT?: ProStepScalarWhereWithAggregatesInput | ProStepScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"ProStep"> | number
-    proId?: IntWithAggregatesFilter<"ProStep"> | number
-    orderNo?: IntWithAggregatesFilter<"ProStep"> | number
-    up?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
-    estimatedShifts?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
-    startDate?: DateTimeNullableWithAggregatesFilter<"ProStep"> | Date | string | null
-    machineId?: IntNullableWithAggregatesFilter<"ProStep"> | number | null
-    partNumber?: StringNullableWithAggregatesFilter<"ProStep"> | string | null
-    batchNo?: StringNullableWithAggregatesFilter<"ProStep"> | string | null
+  export type ProsesScalarWhereWithAggregatesInput = {
+    AND?: ProsesScalarWhereWithAggregatesInput | ProsesScalarWhereWithAggregatesInput[]
+    OR?: ProsesScalarWhereWithAggregatesInput[]
+    NOT?: ProsesScalarWhereWithAggregatesInput | ProsesScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"Proses"> | number
+    proId?: IntWithAggregatesFilter<"Proses"> | number
+    orderNo?: IntWithAggregatesFilter<"Proses"> | number
+    up?: IntNullableWithAggregatesFilter<"Proses"> | number | null
+    estimatedShifts?: IntNullableWithAggregatesFilter<"Proses"> | number | null
+    startDate?: DateTimeNullableWithAggregatesFilter<"Proses"> | Date | string | null
+    machineId?: IntNullableWithAggregatesFilter<"Proses"> | number | null
+    partNumber?: StringNullableWithAggregatesFilter<"Proses"> | string | null
+    batchNo?: StringNullableWithAggregatesFilter<"Proses"> | string | null
   }
 
-  export type ProStepMaterialWhereInput = {
-    AND?: ProStepMaterialWhereInput | ProStepMaterialWhereInput[]
-    OR?: ProStepMaterialWhereInput[]
-    NOT?: ProStepMaterialWhereInput | ProStepMaterialWhereInput[]
-    id?: IntFilter<"ProStepMaterial"> | number
-    stepId?: IntFilter<"ProStepMaterial"> | number
-    materialId?: IntFilter<"ProStepMaterial"> | number
-    qtyReq?: DecimalFilter<"ProStepMaterial"> | Decimal | DecimalJsLike | number | string
-    step?: XOR<ProStepScalarRelationFilter, ProStepWhereInput>
+  export type ProsesMaterialWhereInput = {
+    AND?: ProsesMaterialWhereInput | ProsesMaterialWhereInput[]
+    OR?: ProsesMaterialWhereInput[]
+    NOT?: ProsesMaterialWhereInput | ProsesMaterialWhereInput[]
+    id?: IntFilter<"ProsesMaterial"> | number
+    prosesId?: IntFilter<"ProsesMaterial"> | number
+    materialId?: IntFilter<"ProsesMaterial"> | number
+    qtyReq?: DecimalFilter<"ProsesMaterial"> | Decimal | DecimalJsLike | number | string
+    proses?: XOR<ProsesScalarRelationFilter, ProsesWhereInput>
     material?: XOR<MaterialScalarRelationFilter, MaterialWhereInput>
   }
 
-  export type ProStepMaterialOrderByWithRelationInput = {
+  export type ProsesMaterialOrderByWithRelationInput = {
     id?: SortOrder
-    stepId?: SortOrder
+    prosesId?: SortOrder
     materialId?: SortOrder
     qtyReq?: SortOrder
-    step?: ProStepOrderByWithRelationInput
+    proses?: ProsesOrderByWithRelationInput
     material?: MaterialOrderByWithRelationInput
   }
 
-  export type ProStepMaterialWhereUniqueInput = Prisma.AtLeast<{
+  export type ProsesMaterialWhereUniqueInput = Prisma.AtLeast<{
     id?: number
-    stepId_materialId?: ProStepMaterialStepIdMaterialIdCompoundUniqueInput
-    AND?: ProStepMaterialWhereInput | ProStepMaterialWhereInput[]
-    OR?: ProStepMaterialWhereInput[]
-    NOT?: ProStepMaterialWhereInput | ProStepMaterialWhereInput[]
-    stepId?: IntFilter<"ProStepMaterial"> | number
-    materialId?: IntFilter<"ProStepMaterial"> | number
-    qtyReq?: DecimalFilter<"ProStepMaterial"> | Decimal | DecimalJsLike | number | string
-    step?: XOR<ProStepScalarRelationFilter, ProStepWhereInput>
+    prosesId_materialId?: ProsesMaterialProsesIdMaterialIdCompoundUniqueInput
+    AND?: ProsesMaterialWhereInput | ProsesMaterialWhereInput[]
+    OR?: ProsesMaterialWhereInput[]
+    NOT?: ProsesMaterialWhereInput | ProsesMaterialWhereInput[]
+    prosesId?: IntFilter<"ProsesMaterial"> | number
+    materialId?: IntFilter<"ProsesMaterial"> | number
+    qtyReq?: DecimalFilter<"ProsesMaterial"> | Decimal | DecimalJsLike | number | string
+    proses?: XOR<ProsesScalarRelationFilter, ProsesWhereInput>
     material?: XOR<MaterialScalarRelationFilter, MaterialWhereInput>
-  }, "id" | "stepId_materialId">
+  }, "id" | "prosesId_materialId">
 
-  export type ProStepMaterialOrderByWithAggregationInput = {
+  export type ProsesMaterialOrderByWithAggregationInput = {
     id?: SortOrder
-    stepId?: SortOrder
+    prosesId?: SortOrder
     materialId?: SortOrder
     qtyReq?: SortOrder
-    _count?: ProStepMaterialCountOrderByAggregateInput
-    _avg?: ProStepMaterialAvgOrderByAggregateInput
-    _max?: ProStepMaterialMaxOrderByAggregateInput
-    _min?: ProStepMaterialMinOrderByAggregateInput
-    _sum?: ProStepMaterialSumOrderByAggregateInput
+    _count?: ProsesMaterialCountOrderByAggregateInput
+    _avg?: ProsesMaterialAvgOrderByAggregateInput
+    _max?: ProsesMaterialMaxOrderByAggregateInput
+    _min?: ProsesMaterialMinOrderByAggregateInput
+    _sum?: ProsesMaterialSumOrderByAggregateInput
   }
 
-  export type ProStepMaterialScalarWhereWithAggregatesInput = {
-    AND?: ProStepMaterialScalarWhereWithAggregatesInput | ProStepMaterialScalarWhereWithAggregatesInput[]
-    OR?: ProStepMaterialScalarWhereWithAggregatesInput[]
-    NOT?: ProStepMaterialScalarWhereWithAggregatesInput | ProStepMaterialScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"ProStepMaterial"> | number
-    stepId?: IntWithAggregatesFilter<"ProStepMaterial"> | number
-    materialId?: IntWithAggregatesFilter<"ProStepMaterial"> | number
-    qtyReq?: DecimalWithAggregatesFilter<"ProStepMaterial"> | Decimal | DecimalJsLike | number | string
+  export type ProsesMaterialScalarWhereWithAggregatesInput = {
+    AND?: ProsesMaterialScalarWhereWithAggregatesInput | ProsesMaterialScalarWhereWithAggregatesInput[]
+    OR?: ProsesMaterialScalarWhereWithAggregatesInput[]
+    NOT?: ProsesMaterialScalarWhereWithAggregatesInput | ProsesMaterialScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"ProsesMaterial"> | number
+    prosesId?: IntWithAggregatesFilter<"ProsesMaterial"> | number
+    materialId?: IntWithAggregatesFilter<"ProsesMaterial"> | number
+    qtyReq?: DecimalWithAggregatesFilter<"ProsesMaterial"> | Decimal | DecimalJsLike | number | string
   }
 
   export type ProductionReportWhereInput = {
@@ -12335,7 +15049,7 @@ export namespace Prisma {
     OR?: ProductionReportWhereInput[]
     NOT?: ProductionReportWhereInput | ProductionReportWhereInput[]
     id?: StringFilter<"ProductionReport"> | string
-    proStepId?: IntFilter<"ProductionReport"> | number
+    prosesId?: IntFilter<"ProductionReport"> | number
     reportDate?: DateTimeFilter<"ProductionReport"> | Date | string
     shift?: IntFilter<"ProductionReport"> | number
     operatorName?: StringFilter<"ProductionReport"> | string
@@ -12371,14 +15085,20 @@ export namespace Prisma {
     rejectionNote?: StringNullableFilter<"ProductionReport"> | string | null
     checkedById?: StringNullableFilter<"ProductionReport"> | string | null
     checkedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
-    step?: XOR<ProStepScalarRelationFilter, ProStepWhereInput>
+    voidedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    voidedById?: StringNullableFilter<"ProductionReport"> | string | null
+    voidReason?: StringNullableFilter<"ProductionReport"> | string | null
+    stockPostedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    inputWipQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    proses?: XOR<ProsesScalarRelationFilter, ProsesWhereInput>
     createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     checkedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    inventoryTxns?: InventoryTxnListRelationFilter
   }
 
   export type ProductionReportOrderByWithRelationInput = {
     id?: SortOrder
-    proStepId?: SortOrder
+    prosesId?: SortOrder
     reportDate?: SortOrder
     shift?: SortOrder
     operatorName?: SortOrder
@@ -12414,9 +15134,15 @@ export namespace Prisma {
     rejectionNote?: SortOrderInput | SortOrder
     checkedById?: SortOrderInput | SortOrder
     checkedAt?: SortOrderInput | SortOrder
-    step?: ProStepOrderByWithRelationInput
+    voidedAt?: SortOrderInput | SortOrder
+    voidedById?: SortOrderInput | SortOrder
+    voidReason?: SortOrderInput | SortOrder
+    stockPostedAt?: SortOrderInput | SortOrder
+    inputWipQty?: SortOrderInput | SortOrder
+    proses?: ProsesOrderByWithRelationInput
     createdBy?: UserOrderByWithRelationInput
     checkedBy?: UserOrderByWithRelationInput
+    inventoryTxns?: InventoryTxnOrderByRelationAggregateInput
     _relevance?: ProductionReportOrderByRelevanceInput
   }
 
@@ -12425,7 +15151,7 @@ export namespace Prisma {
     AND?: ProductionReportWhereInput | ProductionReportWhereInput[]
     OR?: ProductionReportWhereInput[]
     NOT?: ProductionReportWhereInput | ProductionReportWhereInput[]
-    proStepId?: IntFilter<"ProductionReport"> | number
+    prosesId?: IntFilter<"ProductionReport"> | number
     reportDate?: DateTimeFilter<"ProductionReport"> | Date | string
     shift?: IntFilter<"ProductionReport"> | number
     operatorName?: StringFilter<"ProductionReport"> | string
@@ -12461,14 +15187,20 @@ export namespace Prisma {
     rejectionNote?: StringNullableFilter<"ProductionReport"> | string | null
     checkedById?: StringNullableFilter<"ProductionReport"> | string | null
     checkedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
-    step?: XOR<ProStepScalarRelationFilter, ProStepWhereInput>
+    voidedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    voidedById?: StringNullableFilter<"ProductionReport"> | string | null
+    voidReason?: StringNullableFilter<"ProductionReport"> | string | null
+    stockPostedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    inputWipQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+    proses?: XOR<ProsesScalarRelationFilter, ProsesWhereInput>
     createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     checkedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    inventoryTxns?: InventoryTxnListRelationFilter
   }, "id">
 
   export type ProductionReportOrderByWithAggregationInput = {
     id?: SortOrder
-    proStepId?: SortOrder
+    prosesId?: SortOrder
     reportDate?: SortOrder
     shift?: SortOrder
     operatorName?: SortOrder
@@ -12504,6 +15236,11 @@ export namespace Prisma {
     rejectionNote?: SortOrderInput | SortOrder
     checkedById?: SortOrderInput | SortOrder
     checkedAt?: SortOrderInput | SortOrder
+    voidedAt?: SortOrderInput | SortOrder
+    voidedById?: SortOrderInput | SortOrder
+    voidReason?: SortOrderInput | SortOrder
+    stockPostedAt?: SortOrderInput | SortOrder
+    inputWipQty?: SortOrderInput | SortOrder
     _count?: ProductionReportCountOrderByAggregateInput
     _avg?: ProductionReportAvgOrderByAggregateInput
     _max?: ProductionReportMaxOrderByAggregateInput
@@ -12516,7 +15253,7 @@ export namespace Prisma {
     OR?: ProductionReportScalarWhereWithAggregatesInput[]
     NOT?: ProductionReportScalarWhereWithAggregatesInput | ProductionReportScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"ProductionReport"> | string
-    proStepId?: IntWithAggregatesFilter<"ProductionReport"> | number
+    prosesId?: IntWithAggregatesFilter<"ProductionReport"> | number
     reportDate?: DateTimeWithAggregatesFilter<"ProductionReport"> | Date | string
     shift?: IntWithAggregatesFilter<"ProductionReport"> | number
     operatorName?: StringWithAggregatesFilter<"ProductionReport"> | string
@@ -12552,6 +15289,175 @@ export namespace Prisma {
     rejectionNote?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
     checkedById?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
     checkedAt?: DateTimeNullableWithAggregatesFilter<"ProductionReport"> | Date | string | null
+    voidedAt?: DateTimeNullableWithAggregatesFilter<"ProductionReport"> | Date | string | null
+    voidedById?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
+    voidReason?: StringNullableWithAggregatesFilter<"ProductionReport"> | string | null
+    stockPostedAt?: DateTimeNullableWithAggregatesFilter<"ProductionReport"> | Date | string | null
+    inputWipQty?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type InventoryLocationWhereInput = {
+    AND?: InventoryLocationWhereInput | InventoryLocationWhereInput[]
+    OR?: InventoryLocationWhereInput[]
+    NOT?: InventoryLocationWhereInput | InventoryLocationWhereInput[]
+    id?: IntFilter<"InventoryLocation"> | number
+    code?: StringFilter<"InventoryLocation"> | string
+    name?: StringFilter<"InventoryLocation"> | string
+    type?: EnumLocationTypeFilter<"InventoryLocation"> | $Enums.LocationType
+    machineId?: IntNullableFilter<"InventoryLocation"> | number | null
+    machine?: XOR<MachineNullableScalarRelationFilter, MachineWhereInput> | null
+    txns?: InventoryTxnListRelationFilter
+  }
+
+  export type InventoryLocationOrderByWithRelationInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    type?: SortOrder
+    machineId?: SortOrderInput | SortOrder
+    machine?: MachineOrderByWithRelationInput
+    txns?: InventoryTxnOrderByRelationAggregateInput
+    _relevance?: InventoryLocationOrderByRelevanceInput
+  }
+
+  export type InventoryLocationWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    code?: string
+    machineId?: number
+    AND?: InventoryLocationWhereInput | InventoryLocationWhereInput[]
+    OR?: InventoryLocationWhereInput[]
+    NOT?: InventoryLocationWhereInput | InventoryLocationWhereInput[]
+    name?: StringFilter<"InventoryLocation"> | string
+    type?: EnumLocationTypeFilter<"InventoryLocation"> | $Enums.LocationType
+    machine?: XOR<MachineNullableScalarRelationFilter, MachineWhereInput> | null
+    txns?: InventoryTxnListRelationFilter
+  }, "id" | "code" | "machineId">
+
+  export type InventoryLocationOrderByWithAggregationInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    type?: SortOrder
+    machineId?: SortOrderInput | SortOrder
+    _count?: InventoryLocationCountOrderByAggregateInput
+    _avg?: InventoryLocationAvgOrderByAggregateInput
+    _max?: InventoryLocationMaxOrderByAggregateInput
+    _min?: InventoryLocationMinOrderByAggregateInput
+    _sum?: InventoryLocationSumOrderByAggregateInput
+  }
+
+  export type InventoryLocationScalarWhereWithAggregatesInput = {
+    AND?: InventoryLocationScalarWhereWithAggregatesInput | InventoryLocationScalarWhereWithAggregatesInput[]
+    OR?: InventoryLocationScalarWhereWithAggregatesInput[]
+    NOT?: InventoryLocationScalarWhereWithAggregatesInput | InventoryLocationScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"InventoryLocation"> | number
+    code?: StringWithAggregatesFilter<"InventoryLocation"> | string
+    name?: StringWithAggregatesFilter<"InventoryLocation"> | string
+    type?: EnumLocationTypeWithAggregatesFilter<"InventoryLocation"> | $Enums.LocationType
+    machineId?: IntNullableWithAggregatesFilter<"InventoryLocation"> | number | null
+  }
+
+  export type InventoryTxnWhereInput = {
+    AND?: InventoryTxnWhereInput | InventoryTxnWhereInput[]
+    OR?: InventoryTxnWhereInput[]
+    NOT?: InventoryTxnWhereInput | InventoryTxnWhereInput[]
+    id?: StringFilter<"InventoryTxn"> | string
+    groupId?: StringFilter<"InventoryTxn"> | string
+    date?: DateTimeFilter<"InventoryTxn"> | Date | string
+    type?: EnumTxnTypeFilter<"InventoryTxn"> | $Enums.TxnType
+    itemId?: StringFilter<"InventoryTxn"> | string
+    qty?: DecimalFilter<"InventoryTxn"> | Decimal | DecimalJsLike | number | string
+    locationId?: IntFilter<"InventoryTxn"> | number
+    proId?: IntNullableFilter<"InventoryTxn"> | number | null
+    prosesId?: IntNullableFilter<"InventoryTxn"> | number | null
+    productionReportId?: StringNullableFilter<"InventoryTxn"> | string | null
+    notes?: StringNullableFilter<"InventoryTxn"> | string | null
+    createdAt?: DateTimeFilter<"InventoryTxn"> | Date | string
+    location?: XOR<InventoryLocationScalarRelationFilter, InventoryLocationWhereInput>
+    pro?: XOR<ProNullableScalarRelationFilter, ProWhereInput> | null
+    proses?: XOR<ProsesNullableScalarRelationFilter, ProsesWhereInput> | null
+    productionReport?: XOR<ProductionReportNullableScalarRelationFilter, ProductionReportWhereInput> | null
+  }
+
+  export type InventoryTxnOrderByWithRelationInput = {
+    id?: SortOrder
+    groupId?: SortOrder
+    date?: SortOrder
+    type?: SortOrder
+    itemId?: SortOrder
+    qty?: SortOrder
+    locationId?: SortOrder
+    proId?: SortOrderInput | SortOrder
+    prosesId?: SortOrderInput | SortOrder
+    productionReportId?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    location?: InventoryLocationOrderByWithRelationInput
+    pro?: ProOrderByWithRelationInput
+    proses?: ProsesOrderByWithRelationInput
+    productionReport?: ProductionReportOrderByWithRelationInput
+    _relevance?: InventoryTxnOrderByRelevanceInput
+  }
+
+  export type InventoryTxnWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    productionReportId_itemId_type_locationId?: InventoryTxnProductionReportIdItemIdTypeLocationIdCompoundUniqueInput
+    AND?: InventoryTxnWhereInput | InventoryTxnWhereInput[]
+    OR?: InventoryTxnWhereInput[]
+    NOT?: InventoryTxnWhereInput | InventoryTxnWhereInput[]
+    groupId?: StringFilter<"InventoryTxn"> | string
+    date?: DateTimeFilter<"InventoryTxn"> | Date | string
+    type?: EnumTxnTypeFilter<"InventoryTxn"> | $Enums.TxnType
+    itemId?: StringFilter<"InventoryTxn"> | string
+    qty?: DecimalFilter<"InventoryTxn"> | Decimal | DecimalJsLike | number | string
+    locationId?: IntFilter<"InventoryTxn"> | number
+    proId?: IntNullableFilter<"InventoryTxn"> | number | null
+    prosesId?: IntNullableFilter<"InventoryTxn"> | number | null
+    productionReportId?: StringNullableFilter<"InventoryTxn"> | string | null
+    notes?: StringNullableFilter<"InventoryTxn"> | string | null
+    createdAt?: DateTimeFilter<"InventoryTxn"> | Date | string
+    location?: XOR<InventoryLocationScalarRelationFilter, InventoryLocationWhereInput>
+    pro?: XOR<ProNullableScalarRelationFilter, ProWhereInput> | null
+    proses?: XOR<ProsesNullableScalarRelationFilter, ProsesWhereInput> | null
+    productionReport?: XOR<ProductionReportNullableScalarRelationFilter, ProductionReportWhereInput> | null
+  }, "id" | "productionReportId_itemId_type_locationId">
+
+  export type InventoryTxnOrderByWithAggregationInput = {
+    id?: SortOrder
+    groupId?: SortOrder
+    date?: SortOrder
+    type?: SortOrder
+    itemId?: SortOrder
+    qty?: SortOrder
+    locationId?: SortOrder
+    proId?: SortOrderInput | SortOrder
+    prosesId?: SortOrderInput | SortOrder
+    productionReportId?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: InventoryTxnCountOrderByAggregateInput
+    _avg?: InventoryTxnAvgOrderByAggregateInput
+    _max?: InventoryTxnMaxOrderByAggregateInput
+    _min?: InventoryTxnMinOrderByAggregateInput
+    _sum?: InventoryTxnSumOrderByAggregateInput
+  }
+
+  export type InventoryTxnScalarWhereWithAggregatesInput = {
+    AND?: InventoryTxnScalarWhereWithAggregatesInput | InventoryTxnScalarWhereWithAggregatesInput[]
+    OR?: InventoryTxnScalarWhereWithAggregatesInput[]
+    NOT?: InventoryTxnScalarWhereWithAggregatesInput | InventoryTxnScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"InventoryTxn"> | string
+    groupId?: StringWithAggregatesFilter<"InventoryTxn"> | string
+    date?: DateTimeWithAggregatesFilter<"InventoryTxn"> | Date | string
+    type?: EnumTxnTypeWithAggregatesFilter<"InventoryTxn"> | $Enums.TxnType
+    itemId?: StringWithAggregatesFilter<"InventoryTxn"> | string
+    qty?: DecimalWithAggregatesFilter<"InventoryTxn"> | Decimal | DecimalJsLike | number | string
+    locationId?: IntWithAggregatesFilter<"InventoryTxn"> | number
+    proId?: IntNullableWithAggregatesFilter<"InventoryTxn"> | number | null
+    prosesId?: IntNullableWithAggregatesFilter<"InventoryTxn"> | number | null
+    productionReportId?: StringNullableWithAggregatesFilter<"InventoryTxn"> | string | null
+    notes?: StringNullableWithAggregatesFilter<"InventoryTxn"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"InventoryTxn"> | Date | string
   }
 
   export type UserCreateInput = {
@@ -12647,7 +15553,8 @@ export namespace Prisma {
     workCenter?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    proSteps?: ProStepCreateNestedManyWithoutMachineInput
+    proses?: ProsesCreateNestedManyWithoutMachineInput
+    location?: InventoryLocationCreateNestedOneWithoutMachineInput
   }
 
   export type MachineUncheckedCreateInput = {
@@ -12666,7 +15573,8 @@ export namespace Prisma {
     workCenter?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    proSteps?: ProStepUncheckedCreateNestedManyWithoutMachineInput
+    proses?: ProsesUncheckedCreateNestedManyWithoutMachineInput
+    location?: InventoryLocationUncheckedCreateNestedOneWithoutMachineInput
   }
 
   export type MachineUpdateInput = {
@@ -12684,7 +15592,8 @@ export namespace Prisma {
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    proSteps?: ProStepUpdateManyWithoutMachineNestedInput
+    proses?: ProsesUpdateManyWithoutMachineNestedInput
+    location?: InventoryLocationUpdateOneWithoutMachineNestedInput
   }
 
   export type MachineUncheckedUpdateInput = {
@@ -12703,7 +15612,8 @@ export namespace Prisma {
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    proSteps?: ProStepUncheckedUpdateManyWithoutMachineNestedInput
+    proses?: ProsesUncheckedUpdateManyWithoutMachineNestedInput
+    location?: InventoryLocationUncheckedUpdateOneWithoutMachineNestedInput
   }
 
   export type MachineCreateManyInput = {
@@ -12762,41 +15672,46 @@ export namespace Prisma {
   export type MaterialCreateInput = {
     name: string
     uom: string
+    type?: $Enums.MaterialType
     createdAt?: Date | string
     updatedAt?: Date | string
-    proStepMaterials?: ProStepMaterialCreateNestedManyWithoutMaterialInput
+    prosesMaterials?: ProsesMaterialCreateNestedManyWithoutMaterialInput
   }
 
   export type MaterialUncheckedCreateInput = {
     id?: number
     name: string
     uom: string
+    type?: $Enums.MaterialType
     createdAt?: Date | string
     updatedAt?: Date | string
-    proStepMaterials?: ProStepMaterialUncheckedCreateNestedManyWithoutMaterialInput
+    prosesMaterials?: ProsesMaterialUncheckedCreateNestedManyWithoutMaterialInput
   }
 
   export type MaterialUpdateInput = {
     name?: StringFieldUpdateOperationsInput | string
     uom?: StringFieldUpdateOperationsInput | string
+    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    proStepMaterials?: ProStepMaterialUpdateManyWithoutMaterialNestedInput
+    prosesMaterials?: ProsesMaterialUpdateManyWithoutMaterialNestedInput
   }
 
   export type MaterialUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     uom?: StringFieldUpdateOperationsInput | string
+    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    proStepMaterials?: ProStepMaterialUncheckedUpdateManyWithoutMaterialNestedInput
+    prosesMaterials?: ProsesMaterialUncheckedUpdateManyWithoutMaterialNestedInput
   }
 
   export type MaterialCreateManyInput = {
     id?: number
     name: string
     uom: string
+    type?: $Enums.MaterialType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12804,6 +15719,7 @@ export namespace Prisma {
   export type MaterialUpdateManyMutationInput = {
     name?: StringFieldUpdateOperationsInput | string
     uom?: StringFieldUpdateOperationsInput | string
+    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12812,54 +15728,55 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     uom?: StringFieldUpdateOperationsInput | string
+    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ProcessCreateInput = {
+  export type ProPrefixCreateInput = {
     code: string
     name: string
     type?: $Enums.ProType
-    pros?: ProCreateNestedManyWithoutProcessInput
+    pros?: ProCreateNestedManyWithoutProPrefixInput
   }
 
-  export type ProcessUncheckedCreateInput = {
+  export type ProPrefixUncheckedCreateInput = {
     id?: number
     code: string
     name: string
     type?: $Enums.ProType
-    pros?: ProUncheckedCreateNestedManyWithoutProcessInput
+    pros?: ProUncheckedCreateNestedManyWithoutProPrefixInput
   }
 
-  export type ProcessUpdateInput = {
+  export type ProPrefixUpdateInput = {
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
-    pros?: ProUpdateManyWithoutProcessNestedInput
+    pros?: ProUpdateManyWithoutProPrefixNestedInput
   }
 
-  export type ProcessUncheckedUpdateInput = {
+  export type ProPrefixUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
-    pros?: ProUncheckedUpdateManyWithoutProcessNestedInput
+    pros?: ProUncheckedUpdateManyWithoutProPrefixNestedInput
   }
 
-  export type ProcessCreateManyInput = {
+  export type ProPrefixCreateManyInput = {
     id?: number
     code: string
     name: string
     type?: $Enums.ProType
   }
 
-  export type ProcessUpdateManyMutationInput = {
+  export type ProPrefixUpdateManyMutationInput = {
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
   }
 
-  export type ProcessUncheckedUpdateManyInput = {
+  export type ProPrefixUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -12904,6 +15821,7 @@ export namespace Prisma {
   export type ProCreateInput = {
     proNumber: string
     productName: string
+    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -12911,28 +15829,32 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    process?: ProcessCreateNestedOneWithoutProsInput
-    steps?: ProStepCreateNestedManyWithoutProInput
+    proPrefix?: ProPrefixCreateNestedOneWithoutProsInput
+    proses?: ProsesCreateNestedManyWithoutProInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProInput
   }
 
   export type ProUncheckedCreateInput = {
     id?: number
     proNumber: string
     productName: string
+    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     type?: $Enums.ProType
     autoShiftExpansion?: boolean
-    processId?: number | null
+    proPrefixId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    steps?: ProStepUncheckedCreateNestedManyWithoutProInput
+    proses?: ProsesUncheckedCreateNestedManyWithoutProInput
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProInput
   }
 
   export type ProUpdateInput = {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -12940,35 +15862,39 @@ export namespace Prisma {
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    process?: ProcessUpdateOneWithoutProsNestedInput
-    steps?: ProStepUpdateManyWithoutProNestedInput
+    proPrefix?: ProPrefixUpdateOneWithoutProsNestedInput
+    proses?: ProsesUpdateManyWithoutProNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProNestedInput
   }
 
   export type ProUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
-    processId?: NullableIntFieldUpdateOperationsInput | number | null
+    proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    steps?: ProStepUncheckedUpdateManyWithoutProNestedInput
+    proses?: ProsesUncheckedUpdateManyWithoutProNestedInput
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProNestedInput
   }
 
   export type ProCreateManyInput = {
     id?: number
     proNumber: string
     productName: string
+    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     type?: $Enums.ProType
     autoShiftExpansion?: boolean
-    processId?: number | null
+    proPrefixId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12976,6 +15902,7 @@ export namespace Prisma {
   export type ProUpdateManyMutationInput = {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -12989,30 +15916,32 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
-    processId?: NullableIntFieldUpdateOperationsInput | number | null
+    proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ProStepCreateInput = {
+  export type ProsesCreateInput = {
     orderNo: number
     up?: number | null
     estimatedShifts?: number | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
-    pro: ProCreateNestedOneWithoutStepsInput
-    machine?: MachineCreateNestedOneWithoutProStepsInput
-    materials?: ProStepMaterialCreateNestedManyWithoutStepInput
-    productionReports?: ProductionReportCreateNestedManyWithoutStepInput
+    pro: ProCreateNestedOneWithoutProsesInput
+    machine?: MachineCreateNestedOneWithoutProsesInput
+    materials?: ProsesMaterialCreateNestedManyWithoutProsesInput
+    productionReports?: ProductionReportCreateNestedManyWithoutProsesInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProsesInput
   }
 
-  export type ProStepUncheckedCreateInput = {
+  export type ProsesUncheckedCreateInput = {
     id?: number
     proId: number
     orderNo: number
@@ -13022,24 +15951,26 @@ export namespace Prisma {
     machineId?: number | null
     partNumber?: string | null
     batchNo?: string | null
-    materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
-    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutStepInput
+    materials?: ProsesMaterialUncheckedCreateNestedManyWithoutProsesInput
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutProsesInput
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProsesInput
   }
 
-  export type ProStepUpdateInput = {
+  export type ProsesUpdateInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
-    pro?: ProUpdateOneRequiredWithoutStepsNestedInput
-    machine?: MachineUpdateOneWithoutProStepsNestedInput
-    materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
-    productionReports?: ProductionReportUpdateManyWithoutStepNestedInput
+    pro?: ProUpdateOneRequiredWithoutProsesNestedInput
+    machine?: MachineUpdateOneWithoutProsesNestedInput
+    materials?: ProsesMaterialUpdateManyWithoutProsesNestedInput
+    productionReports?: ProductionReportUpdateManyWithoutProsesNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProsesNestedInput
   }
 
-  export type ProStepUncheckedUpdateInput = {
+  export type ProsesUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
@@ -13049,11 +15980,12 @@ export namespace Prisma {
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
-    materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
-    productionReports?: ProductionReportUncheckedUpdateManyWithoutStepNestedInput
+    materials?: ProsesMaterialUncheckedUpdateManyWithoutProsesNestedInput
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutProsesNestedInput
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProsesNestedInput
   }
 
-  export type ProStepCreateManyInput = {
+  export type ProsesCreateManyInput = {
     id?: number
     proId: number
     orderNo: number
@@ -13065,7 +15997,7 @@ export namespace Prisma {
     batchNo?: string | null
   }
 
-  export type ProStepUpdateManyMutationInput = {
+  export type ProsesUpdateManyMutationInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -13074,7 +16006,7 @@ export namespace Prisma {
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type ProStepUncheckedUpdateManyInput = {
+  export type ProsesUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
@@ -13086,46 +16018,46 @@ export namespace Prisma {
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type ProStepMaterialCreateInput = {
+  export type ProsesMaterialCreateInput = {
     qtyReq: Decimal | DecimalJsLike | number | string
-    step: ProStepCreateNestedOneWithoutMaterialsInput
-    material: MaterialCreateNestedOneWithoutProStepMaterialsInput
+    proses: ProsesCreateNestedOneWithoutMaterialsInput
+    material: MaterialCreateNestedOneWithoutProsesMaterialsInput
   }
 
-  export type ProStepMaterialUncheckedCreateInput = {
+  export type ProsesMaterialUncheckedCreateInput = {
     id?: number
-    stepId: number
+    prosesId: number
     materialId: number
     qtyReq: Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepMaterialUpdateInput = {
+  export type ProsesMaterialUpdateInput = {
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    step?: ProStepUpdateOneRequiredWithoutMaterialsNestedInput
-    material?: MaterialUpdateOneRequiredWithoutProStepMaterialsNestedInput
+    proses?: ProsesUpdateOneRequiredWithoutMaterialsNestedInput
+    material?: MaterialUpdateOneRequiredWithoutProsesMaterialsNestedInput
   }
 
-  export type ProStepMaterialUncheckedUpdateInput = {
+  export type ProsesMaterialUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
-    stepId?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
     materialId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepMaterialCreateManyInput = {
+  export type ProsesMaterialCreateManyInput = {
     id?: number
-    stepId: number
+    prosesId: number
     materialId: number
     qtyReq: Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepMaterialUpdateManyMutationInput = {
+  export type ProsesMaterialUpdateManyMutationInput = {
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepMaterialUncheckedUpdateManyInput = {
+  export type ProsesMaterialUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
-    stepId?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
     materialId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
@@ -13165,14 +16097,20 @@ export namespace Prisma {
     status?: $Enums.ReportStatus
     rejectionNote?: string | null
     checkedAt?: Date | string | null
-    step: ProStepCreateNestedOneWithoutProductionReportsInput
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
+    proses: ProsesCreateNestedOneWithoutProductionReportsInput
     createdBy?: UserCreateNestedOneWithoutProductionReportsInput
     checkedBy?: UserCreateNestedOneWithoutCheckedProductionReportsInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProductionReportInput
   }
 
   export type ProductionReportUncheckedCreateInput = {
     id?: string
-    proStepId: number
+    prosesId: number
     reportDate: Date | string
     shift: number
     operatorName: string
@@ -13208,6 +16146,12 @@ export namespace Prisma {
     rejectionNote?: string | null
     checkedById?: string | null
     checkedAt?: Date | string | null
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProductionReportInput
   }
 
   export type ProductionReportUpdateInput = {
@@ -13245,14 +16189,20 @@ export namespace Prisma {
     status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    step?: ProStepUpdateOneRequiredWithoutProductionReportsNestedInput
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    proses?: ProsesUpdateOneRequiredWithoutProductionReportsNestedInput
     createdBy?: UserUpdateOneWithoutProductionReportsNestedInput
     checkedBy?: UserUpdateOneWithoutCheckedProductionReportsNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProductionReportNestedInput
   }
 
   export type ProductionReportUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    proStepId?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     shift?: IntFieldUpdateOperationsInput | number
     operatorName?: StringFieldUpdateOperationsInput | string
@@ -13288,11 +16238,17 @@ export namespace Prisma {
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedById?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProductionReportNestedInput
   }
 
   export type ProductionReportCreateManyInput = {
     id?: string
-    proStepId: number
+    prosesId: number
     reportDate: Date | string
     shift: number
     operatorName: string
@@ -13328,6 +16284,11 @@ export namespace Prisma {
     rejectionNote?: string | null
     checkedById?: string | null
     checkedAt?: Date | string | null
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
   }
 
   export type ProductionReportUpdateManyMutationInput = {
@@ -13365,11 +16326,16 @@ export namespace Prisma {
     status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
   }
 
   export type ProductionReportUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    proStepId?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     shift?: IntFieldUpdateOperationsInput | number
     operatorName?: StringFieldUpdateOperationsInput | string
@@ -13405,6 +16371,168 @@ export namespace Prisma {
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedById?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type InventoryLocationCreateInput = {
+    code: string
+    name: string
+    type: $Enums.LocationType
+    machine?: MachineCreateNestedOneWithoutLocationInput
+    txns?: InventoryTxnCreateNestedManyWithoutLocationInput
+  }
+
+  export type InventoryLocationUncheckedCreateInput = {
+    id?: number
+    code: string
+    name: string
+    type: $Enums.LocationType
+    machineId?: number | null
+    txns?: InventoryTxnUncheckedCreateNestedManyWithoutLocationInput
+  }
+
+  export type InventoryLocationUpdateInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    machine?: MachineUpdateOneWithoutLocationNestedInput
+    txns?: InventoryTxnUpdateManyWithoutLocationNestedInput
+  }
+
+  export type InventoryLocationUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    machineId?: NullableIntFieldUpdateOperationsInput | number | null
+    txns?: InventoryTxnUncheckedUpdateManyWithoutLocationNestedInput
+  }
+
+  export type InventoryLocationCreateManyInput = {
+    id?: number
+    code: string
+    name: string
+    type: $Enums.LocationType
+    machineId?: number | null
+  }
+
+  export type InventoryLocationUpdateManyMutationInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+  }
+
+  export type InventoryLocationUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    machineId?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type InventoryTxnCreateInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    notes?: string | null
+    createdAt?: Date | string
+    location: InventoryLocationCreateNestedOneWithoutTxnsInput
+    pro?: ProCreateNestedOneWithoutInventoryTxnsInput
+    proses?: ProsesCreateNestedOneWithoutInventoryTxnsInput
+    productionReport?: ProductionReportCreateNestedOneWithoutInventoryTxnsInput
+  }
+
+  export type InventoryTxnUncheckedCreateInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    locationId: number
+    proId?: number | null
+    prosesId?: number | null
+    productionReportId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type InventoryTxnUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: InventoryLocationUpdateOneRequiredWithoutTxnsNestedInput
+    pro?: ProUpdateOneWithoutInventoryTxnsNestedInput
+    proses?: ProsesUpdateOneWithoutInventoryTxnsNestedInput
+    productionReport?: ProductionReportUpdateOneWithoutInventoryTxnsNestedInput
+  }
+
+  export type InventoryTxnUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    locationId?: IntFieldUpdateOperationsInput | number
+    proId?: NullableIntFieldUpdateOperationsInput | number | null
+    prosesId?: NullableIntFieldUpdateOperationsInput | number | null
+    productionReportId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InventoryTxnCreateManyInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    locationId: number
+    proId?: number | null
+    prosesId?: number | null
+    productionReportId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type InventoryTxnUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InventoryTxnUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    locationId?: IntFieldUpdateOperationsInput | number
+    proId?: NullableIntFieldUpdateOperationsInput | number | null
+    prosesId?: NullableIntFieldUpdateOperationsInput | number | null
+    productionReportId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -13613,13 +16741,18 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
-  export type ProStepListRelationFilter = {
-    every?: ProStepWhereInput
-    some?: ProStepWhereInput
-    none?: ProStepWhereInput
+  export type ProsesListRelationFilter = {
+    every?: ProsesWhereInput
+    some?: ProsesWhereInput
+    none?: ProsesWhereInput
   }
 
-  export type ProStepOrderByRelationAggregateInput = {
+  export type InventoryLocationNullableScalarRelationFilter = {
+    is?: InventoryLocationWhereInput | null
+    isNot?: InventoryLocationWhereInput | null
+  }
+
+  export type ProsesOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -13773,13 +16906,20 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
-  export type ProStepMaterialListRelationFilter = {
-    every?: ProStepMaterialWhereInput
-    some?: ProStepMaterialWhereInput
-    none?: ProStepMaterialWhereInput
+  export type EnumMaterialTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.MaterialType | EnumMaterialTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MaterialType[]
+    notIn?: $Enums.MaterialType[]
+    not?: NestedEnumMaterialTypeFilter<$PrismaModel> | $Enums.MaterialType
   }
 
-  export type ProStepMaterialOrderByRelationAggregateInput = {
+  export type ProsesMaterialListRelationFilter = {
+    every?: ProsesMaterialWhereInput
+    some?: ProsesMaterialWhereInput
+    none?: ProsesMaterialWhereInput
+  }
+
+  export type ProsesMaterialOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -13793,6 +16933,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     uom?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13805,6 +16946,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     uom?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13813,12 +16955,23 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     uom?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type MaterialSumOrderByAggregateInput = {
     id?: SortOrder
+  }
+
+  export type EnumMaterialTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MaterialType | EnumMaterialTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MaterialType[]
+    notIn?: $Enums.MaterialType[]
+    not?: NestedEnumMaterialTypeWithAggregatesFilter<$PrismaModel> | $Enums.MaterialType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMaterialTypeFilter<$PrismaModel>
+    _max?: NestedEnumMaterialTypeFilter<$PrismaModel>
   }
 
   export type EnumProTypeFilter<$PrismaModel = never> = {
@@ -13838,38 +16991,38 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type ProcessOrderByRelevanceInput = {
-    fields: ProcessOrderByRelevanceFieldEnum | ProcessOrderByRelevanceFieldEnum[]
+  export type ProPrefixOrderByRelevanceInput = {
+    fields: ProPrefixOrderByRelevanceFieldEnum | ProPrefixOrderByRelevanceFieldEnum[]
     sort: SortOrder
     search: string
   }
 
-  export type ProcessCountOrderByAggregateInput = {
+  export type ProPrefixCountOrderByAggregateInput = {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
     type?: SortOrder
   }
 
-  export type ProcessAvgOrderByAggregateInput = {
+  export type ProPrefixAvgOrderByAggregateInput = {
     id?: SortOrder
   }
 
-  export type ProcessMaxOrderByAggregateInput = {
-    id?: SortOrder
-    code?: SortOrder
-    name?: SortOrder
-    type?: SortOrder
-  }
-
-  export type ProcessMinOrderByAggregateInput = {
+  export type ProPrefixMaxOrderByAggregateInput = {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
     type?: SortOrder
   }
 
-  export type ProcessSumOrderByAggregateInput = {
+  export type ProPrefixMinOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    type?: SortOrder
+  }
+
+  export type ProPrefixSumOrderByAggregateInput = {
     id?: SortOrder
   }
 
@@ -13935,9 +17088,19 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
-  export type ProcessNullableScalarRelationFilter = {
-    is?: ProcessWhereInput | null
-    isNot?: ProcessWhereInput | null
+  export type ProPrefixNullableScalarRelationFilter = {
+    is?: ProPrefixWhereInput | null
+    isNot?: ProPrefixWhereInput | null
+  }
+
+  export type InventoryTxnListRelationFilter = {
+    every?: InventoryTxnWhereInput
+    some?: InventoryTxnWhereInput
+    none?: InventoryTxnWhereInput
+  }
+
+  export type InventoryTxnOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type ProOrderByRelevanceInput = {
@@ -13950,12 +17113,13 @@ export namespace Prisma {
     id?: SortOrder
     proNumber?: SortOrder
     productName?: SortOrder
+    partNumber?: SortOrder
     qtyPoPcs?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
     type?: SortOrder
     autoShiftExpansion?: SortOrder
-    processId?: SortOrder
+    proPrefixId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13963,19 +17127,20 @@ export namespace Prisma {
   export type ProAvgOrderByAggregateInput = {
     id?: SortOrder
     qtyPoPcs?: SortOrder
-    processId?: SortOrder
+    proPrefixId?: SortOrder
   }
 
   export type ProMaxOrderByAggregateInput = {
     id?: SortOrder
     proNumber?: SortOrder
     productName?: SortOrder
+    partNumber?: SortOrder
     qtyPoPcs?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
     type?: SortOrder
     autoShiftExpansion?: SortOrder
-    processId?: SortOrder
+    proPrefixId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13984,12 +17149,13 @@ export namespace Prisma {
     id?: SortOrder
     proNumber?: SortOrder
     productName?: SortOrder
+    partNumber?: SortOrder
     qtyPoPcs?: SortOrder
     startDate?: SortOrder
     status?: SortOrder
     type?: SortOrder
     autoShiftExpansion?: SortOrder
-    processId?: SortOrder
+    proPrefixId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -13997,7 +17163,7 @@ export namespace Prisma {
   export type ProSumOrderByAggregateInput = {
     id?: SortOrder
     qtyPoPcs?: SortOrder
-    processId?: SortOrder
+    proPrefixId?: SortOrder
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -14042,18 +17208,18 @@ export namespace Prisma {
     isNot?: MachineWhereInput | null
   }
 
-  export type ProStepOrderByRelevanceInput = {
-    fields: ProStepOrderByRelevanceFieldEnum | ProStepOrderByRelevanceFieldEnum[]
+  export type ProsesOrderByRelevanceInput = {
+    fields: ProsesOrderByRelevanceFieldEnum | ProsesOrderByRelevanceFieldEnum[]
     sort: SortOrder
     search: string
   }
 
-  export type ProStepProIdOrderNoCompoundUniqueInput = {
+  export type ProsesProIdOrderNoCompoundUniqueInput = {
     proId: number
     orderNo: number
   }
 
-  export type ProStepCountOrderByAggregateInput = {
+  export type ProsesCountOrderByAggregateInput = {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
@@ -14065,7 +17231,7 @@ export namespace Prisma {
     batchNo?: SortOrder
   }
 
-  export type ProStepAvgOrderByAggregateInput = {
+  export type ProsesAvgOrderByAggregateInput = {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
@@ -14074,19 +17240,7 @@ export namespace Prisma {
     machineId?: SortOrder
   }
 
-  export type ProStepMaxOrderByAggregateInput = {
-    id?: SortOrder
-    proId?: SortOrder
-    orderNo?: SortOrder
-    up?: SortOrder
-    estimatedShifts?: SortOrder
-    startDate?: SortOrder
-    machineId?: SortOrder
-    partNumber?: SortOrder
-    batchNo?: SortOrder
-  }
-
-  export type ProStepMinOrderByAggregateInput = {
+  export type ProsesMaxOrderByAggregateInput = {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
@@ -14098,7 +17252,19 @@ export namespace Prisma {
     batchNo?: SortOrder
   }
 
-  export type ProStepSumOrderByAggregateInput = {
+  export type ProsesMinOrderByAggregateInput = {
+    id?: SortOrder
+    proId?: SortOrder
+    orderNo?: SortOrder
+    up?: SortOrder
+    estimatedShifts?: SortOrder
+    startDate?: SortOrder
+    machineId?: SortOrder
+    partNumber?: SortOrder
+    batchNo?: SortOrder
+  }
+
+  export type ProsesSumOrderByAggregateInput = {
     id?: SortOrder
     proId?: SortOrder
     orderNo?: SortOrder
@@ -14118,9 +17284,9 @@ export namespace Prisma {
     not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepScalarRelationFilter = {
-    is?: ProStepWhereInput
-    isNot?: ProStepWhereInput
+  export type ProsesScalarRelationFilter = {
+    is?: ProsesWhereInput
+    isNot?: ProsesWhereInput
   }
 
   export type MaterialScalarRelationFilter = {
@@ -14128,42 +17294,42 @@ export namespace Prisma {
     isNot?: MaterialWhereInput
   }
 
-  export type ProStepMaterialStepIdMaterialIdCompoundUniqueInput = {
-    stepId: number
+  export type ProsesMaterialProsesIdMaterialIdCompoundUniqueInput = {
+    prosesId: number
     materialId: number
   }
 
-  export type ProStepMaterialCountOrderByAggregateInput = {
+  export type ProsesMaterialCountOrderByAggregateInput = {
     id?: SortOrder
-    stepId?: SortOrder
+    prosesId?: SortOrder
     materialId?: SortOrder
     qtyReq?: SortOrder
   }
 
-  export type ProStepMaterialAvgOrderByAggregateInput = {
+  export type ProsesMaterialAvgOrderByAggregateInput = {
     id?: SortOrder
-    stepId?: SortOrder
+    prosesId?: SortOrder
     materialId?: SortOrder
     qtyReq?: SortOrder
   }
 
-  export type ProStepMaterialMaxOrderByAggregateInput = {
+  export type ProsesMaterialMaxOrderByAggregateInput = {
     id?: SortOrder
-    stepId?: SortOrder
+    prosesId?: SortOrder
     materialId?: SortOrder
     qtyReq?: SortOrder
   }
 
-  export type ProStepMaterialMinOrderByAggregateInput = {
+  export type ProsesMaterialMinOrderByAggregateInput = {
     id?: SortOrder
-    stepId?: SortOrder
+    prosesId?: SortOrder
     materialId?: SortOrder
     qtyReq?: SortOrder
   }
 
-  export type ProStepMaterialSumOrderByAggregateInput = {
+  export type ProsesMaterialSumOrderByAggregateInput = {
     id?: SortOrder
-    stepId?: SortOrder
+    prosesId?: SortOrder
     materialId?: SortOrder
     qtyReq?: SortOrder
   }
@@ -14234,7 +17400,7 @@ export namespace Prisma {
 
   export type ProductionReportCountOrderByAggregateInput = {
     id?: SortOrder
-    proStepId?: SortOrder
+    prosesId?: SortOrder
     reportDate?: SortOrder
     shift?: SortOrder
     operatorName?: SortOrder
@@ -14270,10 +17436,15 @@ export namespace Prisma {
     rejectionNote?: SortOrder
     checkedById?: SortOrder
     checkedAt?: SortOrder
+    voidedAt?: SortOrder
+    voidedById?: SortOrder
+    voidReason?: SortOrder
+    stockPostedAt?: SortOrder
+    inputWipQty?: SortOrder
   }
 
   export type ProductionReportAvgOrderByAggregateInput = {
-    proStepId?: SortOrder
+    prosesId?: SortOrder
     shift?: SortOrder
     manPowerStd?: SortOrder
     manPowerAct?: SortOrder
@@ -14290,11 +17461,12 @@ export namespace Prisma {
     qtyGood?: SortOrder
     qtyReject?: SortOrder
     totalDowntime?: SortOrder
+    inputWipQty?: SortOrder
   }
 
   export type ProductionReportMaxOrderByAggregateInput = {
     id?: SortOrder
-    proStepId?: SortOrder
+    prosesId?: SortOrder
     reportDate?: SortOrder
     shift?: SortOrder
     operatorName?: SortOrder
@@ -14327,11 +17499,16 @@ export namespace Prisma {
     rejectionNote?: SortOrder
     checkedById?: SortOrder
     checkedAt?: SortOrder
+    voidedAt?: SortOrder
+    voidedById?: SortOrder
+    voidReason?: SortOrder
+    stockPostedAt?: SortOrder
+    inputWipQty?: SortOrder
   }
 
   export type ProductionReportMinOrderByAggregateInput = {
     id?: SortOrder
-    proStepId?: SortOrder
+    prosesId?: SortOrder
     reportDate?: SortOrder
     shift?: SortOrder
     operatorName?: SortOrder
@@ -14364,10 +17541,15 @@ export namespace Prisma {
     rejectionNote?: SortOrder
     checkedById?: SortOrder
     checkedAt?: SortOrder
+    voidedAt?: SortOrder
+    voidedById?: SortOrder
+    voidReason?: SortOrder
+    stockPostedAt?: SortOrder
+    inputWipQty?: SortOrder
   }
 
   export type ProductionReportSumOrderByAggregateInput = {
-    proStepId?: SortOrder
+    prosesId?: SortOrder
     shift?: SortOrder
     manPowerStd?: SortOrder
     manPowerAct?: SortOrder
@@ -14384,6 +17566,7 @@ export namespace Prisma {
     qtyGood?: SortOrder
     qtyReject?: SortOrder
     totalDowntime?: SortOrder
+    inputWipQty?: SortOrder
   }
 
   export type EnumLphTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -14430,6 +17613,172 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumReportStatusFilter<$PrismaModel>
     _max?: NestedEnumReportStatusFilter<$PrismaModel>
+  }
+
+  export type EnumLocationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.LocationType | EnumLocationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LocationType[]
+    notIn?: $Enums.LocationType[]
+    not?: NestedEnumLocationTypeFilter<$PrismaModel> | $Enums.LocationType
+  }
+
+  export type InventoryLocationOrderByRelevanceInput = {
+    fields: InventoryLocationOrderByRelevanceFieldEnum | InventoryLocationOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type InventoryLocationCountOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    type?: SortOrder
+    machineId?: SortOrder
+  }
+
+  export type InventoryLocationAvgOrderByAggregateInput = {
+    id?: SortOrder
+    machineId?: SortOrder
+  }
+
+  export type InventoryLocationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    type?: SortOrder
+    machineId?: SortOrder
+  }
+
+  export type InventoryLocationMinOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    type?: SortOrder
+    machineId?: SortOrder
+  }
+
+  export type InventoryLocationSumOrderByAggregateInput = {
+    id?: SortOrder
+    machineId?: SortOrder
+  }
+
+  export type EnumLocationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LocationType | EnumLocationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LocationType[]
+    notIn?: $Enums.LocationType[]
+    not?: NestedEnumLocationTypeWithAggregatesFilter<$PrismaModel> | $Enums.LocationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLocationTypeFilter<$PrismaModel>
+    _max?: NestedEnumLocationTypeFilter<$PrismaModel>
+  }
+
+  export type EnumTxnTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.TxnType | EnumTxnTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TxnType[]
+    notIn?: $Enums.TxnType[]
+    not?: NestedEnumTxnTypeFilter<$PrismaModel> | $Enums.TxnType
+  }
+
+  export type InventoryLocationScalarRelationFilter = {
+    is?: InventoryLocationWhereInput
+    isNot?: InventoryLocationWhereInput
+  }
+
+  export type ProNullableScalarRelationFilter = {
+    is?: ProWhereInput | null
+    isNot?: ProWhereInput | null
+  }
+
+  export type ProsesNullableScalarRelationFilter = {
+    is?: ProsesWhereInput | null
+    isNot?: ProsesWhereInput | null
+  }
+
+  export type ProductionReportNullableScalarRelationFilter = {
+    is?: ProductionReportWhereInput | null
+    isNot?: ProductionReportWhereInput | null
+  }
+
+  export type InventoryTxnOrderByRelevanceInput = {
+    fields: InventoryTxnOrderByRelevanceFieldEnum | InventoryTxnOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type InventoryTxnProductionReportIdItemIdTypeLocationIdCompoundUniqueInput = {
+    productionReportId: string
+    itemId: string
+    type: $Enums.TxnType
+    locationId: number
+  }
+
+  export type InventoryTxnCountOrderByAggregateInput = {
+    id?: SortOrder
+    groupId?: SortOrder
+    date?: SortOrder
+    type?: SortOrder
+    itemId?: SortOrder
+    qty?: SortOrder
+    locationId?: SortOrder
+    proId?: SortOrder
+    prosesId?: SortOrder
+    productionReportId?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type InventoryTxnAvgOrderByAggregateInput = {
+    qty?: SortOrder
+    locationId?: SortOrder
+    proId?: SortOrder
+    prosesId?: SortOrder
+  }
+
+  export type InventoryTxnMaxOrderByAggregateInput = {
+    id?: SortOrder
+    groupId?: SortOrder
+    date?: SortOrder
+    type?: SortOrder
+    itemId?: SortOrder
+    qty?: SortOrder
+    locationId?: SortOrder
+    proId?: SortOrder
+    prosesId?: SortOrder
+    productionReportId?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type InventoryTxnMinOrderByAggregateInput = {
+    id?: SortOrder
+    groupId?: SortOrder
+    date?: SortOrder
+    type?: SortOrder
+    itemId?: SortOrder
+    qty?: SortOrder
+    locationId?: SortOrder
+    proId?: SortOrder
+    prosesId?: SortOrder
+    productionReportId?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type InventoryTxnSumOrderByAggregateInput = {
+    qty?: SortOrder
+    locationId?: SortOrder
+    proId?: SortOrder
+    prosesId?: SortOrder
+  }
+
+  export type EnumTxnTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TxnType | EnumTxnTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TxnType[]
+    notIn?: $Enums.TxnType[]
+    not?: NestedEnumTxnTypeWithAggregatesFilter<$PrismaModel> | $Enums.TxnType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTxnTypeFilter<$PrismaModel>
+    _max?: NestedEnumTxnTypeFilter<$PrismaModel>
   }
 
   export type ProductionReportCreateNestedManyWithoutCreatedByInput = {
@@ -14532,18 +17881,30 @@ export namespace Prisma {
     deleteMany?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
   }
 
-  export type ProStepCreateNestedManyWithoutMachineInput = {
-    create?: XOR<ProStepCreateWithoutMachineInput, ProStepUncheckedCreateWithoutMachineInput> | ProStepCreateWithoutMachineInput[] | ProStepUncheckedCreateWithoutMachineInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutMachineInput | ProStepCreateOrConnectWithoutMachineInput[]
-    createMany?: ProStepCreateManyMachineInputEnvelope
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
+  export type ProsesCreateNestedManyWithoutMachineInput = {
+    create?: XOR<ProsesCreateWithoutMachineInput, ProsesUncheckedCreateWithoutMachineInput> | ProsesCreateWithoutMachineInput[] | ProsesUncheckedCreateWithoutMachineInput[]
+    connectOrCreate?: ProsesCreateOrConnectWithoutMachineInput | ProsesCreateOrConnectWithoutMachineInput[]
+    createMany?: ProsesCreateManyMachineInputEnvelope
+    connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
   }
 
-  export type ProStepUncheckedCreateNestedManyWithoutMachineInput = {
-    create?: XOR<ProStepCreateWithoutMachineInput, ProStepUncheckedCreateWithoutMachineInput> | ProStepCreateWithoutMachineInput[] | ProStepUncheckedCreateWithoutMachineInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutMachineInput | ProStepCreateOrConnectWithoutMachineInput[]
-    createMany?: ProStepCreateManyMachineInputEnvelope
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
+  export type InventoryLocationCreateNestedOneWithoutMachineInput = {
+    create?: XOR<InventoryLocationCreateWithoutMachineInput, InventoryLocationUncheckedCreateWithoutMachineInput>
+    connectOrCreate?: InventoryLocationCreateOrConnectWithoutMachineInput
+    connect?: InventoryLocationWhereUniqueInput
+  }
+
+  export type ProsesUncheckedCreateNestedManyWithoutMachineInput = {
+    create?: XOR<ProsesCreateWithoutMachineInput, ProsesUncheckedCreateWithoutMachineInput> | ProsesCreateWithoutMachineInput[] | ProsesUncheckedCreateWithoutMachineInput[]
+    connectOrCreate?: ProsesCreateOrConnectWithoutMachineInput | ProsesCreateOrConnectWithoutMachineInput[]
+    createMany?: ProsesCreateManyMachineInputEnvelope
+    connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+  }
+
+  export type InventoryLocationUncheckedCreateNestedOneWithoutMachineInput = {
+    create?: XOR<InventoryLocationCreateWithoutMachineInput, InventoryLocationUncheckedCreateWithoutMachineInput>
+    connectOrCreate?: InventoryLocationCreateOrConnectWithoutMachineInput
+    connect?: InventoryLocationWhereUniqueInput
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -14578,87 +17939,111 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type ProStepUpdateManyWithoutMachineNestedInput = {
-    create?: XOR<ProStepCreateWithoutMachineInput, ProStepUncheckedCreateWithoutMachineInput> | ProStepCreateWithoutMachineInput[] | ProStepUncheckedCreateWithoutMachineInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutMachineInput | ProStepCreateOrConnectWithoutMachineInput[]
-    upsert?: ProStepUpsertWithWhereUniqueWithoutMachineInput | ProStepUpsertWithWhereUniqueWithoutMachineInput[]
-    createMany?: ProStepCreateManyMachineInputEnvelope
-    set?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    disconnect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    delete?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    update?: ProStepUpdateWithWhereUniqueWithoutMachineInput | ProStepUpdateWithWhereUniqueWithoutMachineInput[]
-    updateMany?: ProStepUpdateManyWithWhereWithoutMachineInput | ProStepUpdateManyWithWhereWithoutMachineInput[]
-    deleteMany?: ProStepScalarWhereInput | ProStepScalarWhereInput[]
+  export type ProsesUpdateManyWithoutMachineNestedInput = {
+    create?: XOR<ProsesCreateWithoutMachineInput, ProsesUncheckedCreateWithoutMachineInput> | ProsesCreateWithoutMachineInput[] | ProsesUncheckedCreateWithoutMachineInput[]
+    connectOrCreate?: ProsesCreateOrConnectWithoutMachineInput | ProsesCreateOrConnectWithoutMachineInput[]
+    upsert?: ProsesUpsertWithWhereUniqueWithoutMachineInput | ProsesUpsertWithWhereUniqueWithoutMachineInput[]
+    createMany?: ProsesCreateManyMachineInputEnvelope
+    set?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    disconnect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    delete?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    update?: ProsesUpdateWithWhereUniqueWithoutMachineInput | ProsesUpdateWithWhereUniqueWithoutMachineInput[]
+    updateMany?: ProsesUpdateManyWithWhereWithoutMachineInput | ProsesUpdateManyWithWhereWithoutMachineInput[]
+    deleteMany?: ProsesScalarWhereInput | ProsesScalarWhereInput[]
   }
 
-  export type ProStepUncheckedUpdateManyWithoutMachineNestedInput = {
-    create?: XOR<ProStepCreateWithoutMachineInput, ProStepUncheckedCreateWithoutMachineInput> | ProStepCreateWithoutMachineInput[] | ProStepUncheckedCreateWithoutMachineInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutMachineInput | ProStepCreateOrConnectWithoutMachineInput[]
-    upsert?: ProStepUpsertWithWhereUniqueWithoutMachineInput | ProStepUpsertWithWhereUniqueWithoutMachineInput[]
-    createMany?: ProStepCreateManyMachineInputEnvelope
-    set?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    disconnect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    delete?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    update?: ProStepUpdateWithWhereUniqueWithoutMachineInput | ProStepUpdateWithWhereUniqueWithoutMachineInput[]
-    updateMany?: ProStepUpdateManyWithWhereWithoutMachineInput | ProStepUpdateManyWithWhereWithoutMachineInput[]
-    deleteMany?: ProStepScalarWhereInput | ProStepScalarWhereInput[]
+  export type InventoryLocationUpdateOneWithoutMachineNestedInput = {
+    create?: XOR<InventoryLocationCreateWithoutMachineInput, InventoryLocationUncheckedCreateWithoutMachineInput>
+    connectOrCreate?: InventoryLocationCreateOrConnectWithoutMachineInput
+    upsert?: InventoryLocationUpsertWithoutMachineInput
+    disconnect?: InventoryLocationWhereInput | boolean
+    delete?: InventoryLocationWhereInput | boolean
+    connect?: InventoryLocationWhereUniqueInput
+    update?: XOR<XOR<InventoryLocationUpdateToOneWithWhereWithoutMachineInput, InventoryLocationUpdateWithoutMachineInput>, InventoryLocationUncheckedUpdateWithoutMachineInput>
   }
 
-  export type ProStepMaterialCreateNestedManyWithoutMaterialInput = {
-    create?: XOR<ProStepMaterialCreateWithoutMaterialInput, ProStepMaterialUncheckedCreateWithoutMaterialInput> | ProStepMaterialCreateWithoutMaterialInput[] | ProStepMaterialUncheckedCreateWithoutMaterialInput[]
-    connectOrCreate?: ProStepMaterialCreateOrConnectWithoutMaterialInput | ProStepMaterialCreateOrConnectWithoutMaterialInput[]
-    createMany?: ProStepMaterialCreateManyMaterialInputEnvelope
-    connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
+  export type ProsesUncheckedUpdateManyWithoutMachineNestedInput = {
+    create?: XOR<ProsesCreateWithoutMachineInput, ProsesUncheckedCreateWithoutMachineInput> | ProsesCreateWithoutMachineInput[] | ProsesUncheckedCreateWithoutMachineInput[]
+    connectOrCreate?: ProsesCreateOrConnectWithoutMachineInput | ProsesCreateOrConnectWithoutMachineInput[]
+    upsert?: ProsesUpsertWithWhereUniqueWithoutMachineInput | ProsesUpsertWithWhereUniqueWithoutMachineInput[]
+    createMany?: ProsesCreateManyMachineInputEnvelope
+    set?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    disconnect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    delete?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    update?: ProsesUpdateWithWhereUniqueWithoutMachineInput | ProsesUpdateWithWhereUniqueWithoutMachineInput[]
+    updateMany?: ProsesUpdateManyWithWhereWithoutMachineInput | ProsesUpdateManyWithWhereWithoutMachineInput[]
+    deleteMany?: ProsesScalarWhereInput | ProsesScalarWhereInput[]
   }
 
-  export type ProStepMaterialUncheckedCreateNestedManyWithoutMaterialInput = {
-    create?: XOR<ProStepMaterialCreateWithoutMaterialInput, ProStepMaterialUncheckedCreateWithoutMaterialInput> | ProStepMaterialCreateWithoutMaterialInput[] | ProStepMaterialUncheckedCreateWithoutMaterialInput[]
-    connectOrCreate?: ProStepMaterialCreateOrConnectWithoutMaterialInput | ProStepMaterialCreateOrConnectWithoutMaterialInput[]
-    createMany?: ProStepMaterialCreateManyMaterialInputEnvelope
-    connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
+  export type InventoryLocationUncheckedUpdateOneWithoutMachineNestedInput = {
+    create?: XOR<InventoryLocationCreateWithoutMachineInput, InventoryLocationUncheckedCreateWithoutMachineInput>
+    connectOrCreate?: InventoryLocationCreateOrConnectWithoutMachineInput
+    upsert?: InventoryLocationUpsertWithoutMachineInput
+    disconnect?: InventoryLocationWhereInput | boolean
+    delete?: InventoryLocationWhereInput | boolean
+    connect?: InventoryLocationWhereUniqueInput
+    update?: XOR<XOR<InventoryLocationUpdateToOneWithWhereWithoutMachineInput, InventoryLocationUpdateWithoutMachineInput>, InventoryLocationUncheckedUpdateWithoutMachineInput>
   }
 
-  export type ProStepMaterialUpdateManyWithoutMaterialNestedInput = {
-    create?: XOR<ProStepMaterialCreateWithoutMaterialInput, ProStepMaterialUncheckedCreateWithoutMaterialInput> | ProStepMaterialCreateWithoutMaterialInput[] | ProStepMaterialUncheckedCreateWithoutMaterialInput[]
-    connectOrCreate?: ProStepMaterialCreateOrConnectWithoutMaterialInput | ProStepMaterialCreateOrConnectWithoutMaterialInput[]
-    upsert?: ProStepMaterialUpsertWithWhereUniqueWithoutMaterialInput | ProStepMaterialUpsertWithWhereUniqueWithoutMaterialInput[]
-    createMany?: ProStepMaterialCreateManyMaterialInputEnvelope
-    set?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    disconnect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    delete?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    update?: ProStepMaterialUpdateWithWhereUniqueWithoutMaterialInput | ProStepMaterialUpdateWithWhereUniqueWithoutMaterialInput[]
-    updateMany?: ProStepMaterialUpdateManyWithWhereWithoutMaterialInput | ProStepMaterialUpdateManyWithWhereWithoutMaterialInput[]
-    deleteMany?: ProStepMaterialScalarWhereInput | ProStepMaterialScalarWhereInput[]
+  export type ProsesMaterialCreateNestedManyWithoutMaterialInput = {
+    create?: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput> | ProsesMaterialCreateWithoutMaterialInput[] | ProsesMaterialUncheckedCreateWithoutMaterialInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutMaterialInput | ProsesMaterialCreateOrConnectWithoutMaterialInput[]
+    createMany?: ProsesMaterialCreateManyMaterialInputEnvelope
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
   }
 
-  export type ProStepMaterialUncheckedUpdateManyWithoutMaterialNestedInput = {
-    create?: XOR<ProStepMaterialCreateWithoutMaterialInput, ProStepMaterialUncheckedCreateWithoutMaterialInput> | ProStepMaterialCreateWithoutMaterialInput[] | ProStepMaterialUncheckedCreateWithoutMaterialInput[]
-    connectOrCreate?: ProStepMaterialCreateOrConnectWithoutMaterialInput | ProStepMaterialCreateOrConnectWithoutMaterialInput[]
-    upsert?: ProStepMaterialUpsertWithWhereUniqueWithoutMaterialInput | ProStepMaterialUpsertWithWhereUniqueWithoutMaterialInput[]
-    createMany?: ProStepMaterialCreateManyMaterialInputEnvelope
-    set?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    disconnect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    delete?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    update?: ProStepMaterialUpdateWithWhereUniqueWithoutMaterialInput | ProStepMaterialUpdateWithWhereUniqueWithoutMaterialInput[]
-    updateMany?: ProStepMaterialUpdateManyWithWhereWithoutMaterialInput | ProStepMaterialUpdateManyWithWhereWithoutMaterialInput[]
-    deleteMany?: ProStepMaterialScalarWhereInput | ProStepMaterialScalarWhereInput[]
+  export type ProsesMaterialUncheckedCreateNestedManyWithoutMaterialInput = {
+    create?: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput> | ProsesMaterialCreateWithoutMaterialInput[] | ProsesMaterialUncheckedCreateWithoutMaterialInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutMaterialInput | ProsesMaterialCreateOrConnectWithoutMaterialInput[]
+    createMany?: ProsesMaterialCreateManyMaterialInputEnvelope
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
   }
 
-  export type ProCreateNestedManyWithoutProcessInput = {
-    create?: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput> | ProCreateWithoutProcessInput[] | ProUncheckedCreateWithoutProcessInput[]
-    connectOrCreate?: ProCreateOrConnectWithoutProcessInput | ProCreateOrConnectWithoutProcessInput[]
-    createMany?: ProCreateManyProcessInputEnvelope
+  export type EnumMaterialTypeFieldUpdateOperationsInput = {
+    set?: $Enums.MaterialType
+  }
+
+  export type ProsesMaterialUpdateManyWithoutMaterialNestedInput = {
+    create?: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput> | ProsesMaterialCreateWithoutMaterialInput[] | ProsesMaterialUncheckedCreateWithoutMaterialInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutMaterialInput | ProsesMaterialCreateOrConnectWithoutMaterialInput[]
+    upsert?: ProsesMaterialUpsertWithWhereUniqueWithoutMaterialInput | ProsesMaterialUpsertWithWhereUniqueWithoutMaterialInput[]
+    createMany?: ProsesMaterialCreateManyMaterialInputEnvelope
+    set?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    disconnect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    delete?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    update?: ProsesMaterialUpdateWithWhereUniqueWithoutMaterialInput | ProsesMaterialUpdateWithWhereUniqueWithoutMaterialInput[]
+    updateMany?: ProsesMaterialUpdateManyWithWhereWithoutMaterialInput | ProsesMaterialUpdateManyWithWhereWithoutMaterialInput[]
+    deleteMany?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
+  }
+
+  export type ProsesMaterialUncheckedUpdateManyWithoutMaterialNestedInput = {
+    create?: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput> | ProsesMaterialCreateWithoutMaterialInput[] | ProsesMaterialUncheckedCreateWithoutMaterialInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutMaterialInput | ProsesMaterialCreateOrConnectWithoutMaterialInput[]
+    upsert?: ProsesMaterialUpsertWithWhereUniqueWithoutMaterialInput | ProsesMaterialUpsertWithWhereUniqueWithoutMaterialInput[]
+    createMany?: ProsesMaterialCreateManyMaterialInputEnvelope
+    set?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    disconnect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    delete?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    update?: ProsesMaterialUpdateWithWhereUniqueWithoutMaterialInput | ProsesMaterialUpdateWithWhereUniqueWithoutMaterialInput[]
+    updateMany?: ProsesMaterialUpdateManyWithWhereWithoutMaterialInput | ProsesMaterialUpdateManyWithWhereWithoutMaterialInput[]
+    deleteMany?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
+  }
+
+  export type ProCreateNestedManyWithoutProPrefixInput = {
+    create?: XOR<ProCreateWithoutProPrefixInput, ProUncheckedCreateWithoutProPrefixInput> | ProCreateWithoutProPrefixInput[] | ProUncheckedCreateWithoutProPrefixInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutProPrefixInput | ProCreateOrConnectWithoutProPrefixInput[]
+    createMany?: ProCreateManyProPrefixInputEnvelope
     connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
   }
 
-  export type ProUncheckedCreateNestedManyWithoutProcessInput = {
-    create?: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput> | ProCreateWithoutProcessInput[] | ProUncheckedCreateWithoutProcessInput[]
-    connectOrCreate?: ProCreateOrConnectWithoutProcessInput | ProCreateOrConnectWithoutProcessInput[]
-    createMany?: ProCreateManyProcessInputEnvelope
+  export type ProUncheckedCreateNestedManyWithoutProPrefixInput = {
+    create?: XOR<ProCreateWithoutProPrefixInput, ProUncheckedCreateWithoutProPrefixInput> | ProCreateWithoutProPrefixInput[] | ProUncheckedCreateWithoutProPrefixInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutProPrefixInput | ProCreateOrConnectWithoutProPrefixInput[]
+    createMany?: ProCreateManyProPrefixInputEnvelope
     connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
   }
 
@@ -14666,52 +18051,66 @@ export namespace Prisma {
     set?: $Enums.ProType
   }
 
-  export type ProUpdateManyWithoutProcessNestedInput = {
-    create?: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput> | ProCreateWithoutProcessInput[] | ProUncheckedCreateWithoutProcessInput[]
-    connectOrCreate?: ProCreateOrConnectWithoutProcessInput | ProCreateOrConnectWithoutProcessInput[]
-    upsert?: ProUpsertWithWhereUniqueWithoutProcessInput | ProUpsertWithWhereUniqueWithoutProcessInput[]
-    createMany?: ProCreateManyProcessInputEnvelope
+  export type ProUpdateManyWithoutProPrefixNestedInput = {
+    create?: XOR<ProCreateWithoutProPrefixInput, ProUncheckedCreateWithoutProPrefixInput> | ProCreateWithoutProPrefixInput[] | ProUncheckedCreateWithoutProPrefixInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutProPrefixInput | ProCreateOrConnectWithoutProPrefixInput[]
+    upsert?: ProUpsertWithWhereUniqueWithoutProPrefixInput | ProUpsertWithWhereUniqueWithoutProPrefixInput[]
+    createMany?: ProCreateManyProPrefixInputEnvelope
     set?: ProWhereUniqueInput | ProWhereUniqueInput[]
     disconnect?: ProWhereUniqueInput | ProWhereUniqueInput[]
     delete?: ProWhereUniqueInput | ProWhereUniqueInput[]
     connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
-    update?: ProUpdateWithWhereUniqueWithoutProcessInput | ProUpdateWithWhereUniqueWithoutProcessInput[]
-    updateMany?: ProUpdateManyWithWhereWithoutProcessInput | ProUpdateManyWithWhereWithoutProcessInput[]
+    update?: ProUpdateWithWhereUniqueWithoutProPrefixInput | ProUpdateWithWhereUniqueWithoutProPrefixInput[]
+    updateMany?: ProUpdateManyWithWhereWithoutProPrefixInput | ProUpdateManyWithWhereWithoutProPrefixInput[]
     deleteMany?: ProScalarWhereInput | ProScalarWhereInput[]
   }
 
-  export type ProUncheckedUpdateManyWithoutProcessNestedInput = {
-    create?: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput> | ProCreateWithoutProcessInput[] | ProUncheckedCreateWithoutProcessInput[]
-    connectOrCreate?: ProCreateOrConnectWithoutProcessInput | ProCreateOrConnectWithoutProcessInput[]
-    upsert?: ProUpsertWithWhereUniqueWithoutProcessInput | ProUpsertWithWhereUniqueWithoutProcessInput[]
-    createMany?: ProCreateManyProcessInputEnvelope
+  export type ProUncheckedUpdateManyWithoutProPrefixNestedInput = {
+    create?: XOR<ProCreateWithoutProPrefixInput, ProUncheckedCreateWithoutProPrefixInput> | ProCreateWithoutProPrefixInput[] | ProUncheckedCreateWithoutProPrefixInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutProPrefixInput | ProCreateOrConnectWithoutProPrefixInput[]
+    upsert?: ProUpsertWithWhereUniqueWithoutProPrefixInput | ProUpsertWithWhereUniqueWithoutProPrefixInput[]
+    createMany?: ProCreateManyProPrefixInputEnvelope
     set?: ProWhereUniqueInput | ProWhereUniqueInput[]
     disconnect?: ProWhereUniqueInput | ProWhereUniqueInput[]
     delete?: ProWhereUniqueInput | ProWhereUniqueInput[]
     connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
-    update?: ProUpdateWithWhereUniqueWithoutProcessInput | ProUpdateWithWhereUniqueWithoutProcessInput[]
-    updateMany?: ProUpdateManyWithWhereWithoutProcessInput | ProUpdateManyWithWhereWithoutProcessInput[]
+    update?: ProUpdateWithWhereUniqueWithoutProPrefixInput | ProUpdateWithWhereUniqueWithoutProPrefixInput[]
+    updateMany?: ProUpdateManyWithWhereWithoutProPrefixInput | ProUpdateManyWithWhereWithoutProPrefixInput[]
     deleteMany?: ProScalarWhereInput | ProScalarWhereInput[]
   }
 
-  export type ProcessCreateNestedOneWithoutProsInput = {
-    create?: XOR<ProcessCreateWithoutProsInput, ProcessUncheckedCreateWithoutProsInput>
-    connectOrCreate?: ProcessCreateOrConnectWithoutProsInput
-    connect?: ProcessWhereUniqueInput
+  export type ProPrefixCreateNestedOneWithoutProsInput = {
+    create?: XOR<ProPrefixCreateWithoutProsInput, ProPrefixUncheckedCreateWithoutProsInput>
+    connectOrCreate?: ProPrefixCreateOrConnectWithoutProsInput
+    connect?: ProPrefixWhereUniqueInput
   }
 
-  export type ProStepCreateNestedManyWithoutProInput = {
-    create?: XOR<ProStepCreateWithoutProInput, ProStepUncheckedCreateWithoutProInput> | ProStepCreateWithoutProInput[] | ProStepUncheckedCreateWithoutProInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutProInput | ProStepCreateOrConnectWithoutProInput[]
-    createMany?: ProStepCreateManyProInputEnvelope
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
+  export type ProsesCreateNestedManyWithoutProInput = {
+    create?: XOR<ProsesCreateWithoutProInput, ProsesUncheckedCreateWithoutProInput> | ProsesCreateWithoutProInput[] | ProsesUncheckedCreateWithoutProInput[]
+    connectOrCreate?: ProsesCreateOrConnectWithoutProInput | ProsesCreateOrConnectWithoutProInput[]
+    createMany?: ProsesCreateManyProInputEnvelope
+    connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
   }
 
-  export type ProStepUncheckedCreateNestedManyWithoutProInput = {
-    create?: XOR<ProStepCreateWithoutProInput, ProStepUncheckedCreateWithoutProInput> | ProStepCreateWithoutProInput[] | ProStepUncheckedCreateWithoutProInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutProInput | ProStepCreateOrConnectWithoutProInput[]
-    createMany?: ProStepCreateManyProInputEnvelope
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
+  export type InventoryTxnCreateNestedManyWithoutProInput = {
+    create?: XOR<InventoryTxnCreateWithoutProInput, InventoryTxnUncheckedCreateWithoutProInput> | InventoryTxnCreateWithoutProInput[] | InventoryTxnUncheckedCreateWithoutProInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProInput | InventoryTxnCreateOrConnectWithoutProInput[]
+    createMany?: InventoryTxnCreateManyProInputEnvelope
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+  }
+
+  export type ProsesUncheckedCreateNestedManyWithoutProInput = {
+    create?: XOR<ProsesCreateWithoutProInput, ProsesUncheckedCreateWithoutProInput> | ProsesCreateWithoutProInput[] | ProsesUncheckedCreateWithoutProInput[]
+    connectOrCreate?: ProsesCreateOrConnectWithoutProInput | ProsesCreateOrConnectWithoutProInput[]
+    createMany?: ProsesCreateManyProInputEnvelope
+    connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+  }
+
+  export type InventoryTxnUncheckedCreateNestedManyWithoutProInput = {
+    create?: XOR<InventoryTxnCreateWithoutProInput, InventoryTxnUncheckedCreateWithoutProInput> | InventoryTxnCreateWithoutProInput[] | InventoryTxnUncheckedCreateWithoutProInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProInput | InventoryTxnCreateOrConnectWithoutProInput[]
+    createMany?: InventoryTxnCreateManyProInputEnvelope
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -14726,167 +18125,237 @@ export namespace Prisma {
     set?: boolean
   }
 
-  export type ProcessUpdateOneWithoutProsNestedInput = {
-    create?: XOR<ProcessCreateWithoutProsInput, ProcessUncheckedCreateWithoutProsInput>
-    connectOrCreate?: ProcessCreateOrConnectWithoutProsInput
-    upsert?: ProcessUpsertWithoutProsInput
-    disconnect?: ProcessWhereInput | boolean
-    delete?: ProcessWhereInput | boolean
-    connect?: ProcessWhereUniqueInput
-    update?: XOR<XOR<ProcessUpdateToOneWithWhereWithoutProsInput, ProcessUpdateWithoutProsInput>, ProcessUncheckedUpdateWithoutProsInput>
+  export type ProPrefixUpdateOneWithoutProsNestedInput = {
+    create?: XOR<ProPrefixCreateWithoutProsInput, ProPrefixUncheckedCreateWithoutProsInput>
+    connectOrCreate?: ProPrefixCreateOrConnectWithoutProsInput
+    upsert?: ProPrefixUpsertWithoutProsInput
+    disconnect?: ProPrefixWhereInput | boolean
+    delete?: ProPrefixWhereInput | boolean
+    connect?: ProPrefixWhereUniqueInput
+    update?: XOR<XOR<ProPrefixUpdateToOneWithWhereWithoutProsInput, ProPrefixUpdateWithoutProsInput>, ProPrefixUncheckedUpdateWithoutProsInput>
   }
 
-  export type ProStepUpdateManyWithoutProNestedInput = {
-    create?: XOR<ProStepCreateWithoutProInput, ProStepUncheckedCreateWithoutProInput> | ProStepCreateWithoutProInput[] | ProStepUncheckedCreateWithoutProInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutProInput | ProStepCreateOrConnectWithoutProInput[]
-    upsert?: ProStepUpsertWithWhereUniqueWithoutProInput | ProStepUpsertWithWhereUniqueWithoutProInput[]
-    createMany?: ProStepCreateManyProInputEnvelope
-    set?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    disconnect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    delete?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    update?: ProStepUpdateWithWhereUniqueWithoutProInput | ProStepUpdateWithWhereUniqueWithoutProInput[]
-    updateMany?: ProStepUpdateManyWithWhereWithoutProInput | ProStepUpdateManyWithWhereWithoutProInput[]
-    deleteMany?: ProStepScalarWhereInput | ProStepScalarWhereInput[]
+  export type ProsesUpdateManyWithoutProNestedInput = {
+    create?: XOR<ProsesCreateWithoutProInput, ProsesUncheckedCreateWithoutProInput> | ProsesCreateWithoutProInput[] | ProsesUncheckedCreateWithoutProInput[]
+    connectOrCreate?: ProsesCreateOrConnectWithoutProInput | ProsesCreateOrConnectWithoutProInput[]
+    upsert?: ProsesUpsertWithWhereUniqueWithoutProInput | ProsesUpsertWithWhereUniqueWithoutProInput[]
+    createMany?: ProsesCreateManyProInputEnvelope
+    set?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    disconnect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    delete?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    update?: ProsesUpdateWithWhereUniqueWithoutProInput | ProsesUpdateWithWhereUniqueWithoutProInput[]
+    updateMany?: ProsesUpdateManyWithWhereWithoutProInput | ProsesUpdateManyWithWhereWithoutProInput[]
+    deleteMany?: ProsesScalarWhereInput | ProsesScalarWhereInput[]
   }
 
-  export type ProStepUncheckedUpdateManyWithoutProNestedInput = {
-    create?: XOR<ProStepCreateWithoutProInput, ProStepUncheckedCreateWithoutProInput> | ProStepCreateWithoutProInput[] | ProStepUncheckedCreateWithoutProInput[]
-    connectOrCreate?: ProStepCreateOrConnectWithoutProInput | ProStepCreateOrConnectWithoutProInput[]
-    upsert?: ProStepUpsertWithWhereUniqueWithoutProInput | ProStepUpsertWithWhereUniqueWithoutProInput[]
-    createMany?: ProStepCreateManyProInputEnvelope
-    set?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    disconnect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    delete?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    connect?: ProStepWhereUniqueInput | ProStepWhereUniqueInput[]
-    update?: ProStepUpdateWithWhereUniqueWithoutProInput | ProStepUpdateWithWhereUniqueWithoutProInput[]
-    updateMany?: ProStepUpdateManyWithWhereWithoutProInput | ProStepUpdateManyWithWhereWithoutProInput[]
-    deleteMany?: ProStepScalarWhereInput | ProStepScalarWhereInput[]
+  export type InventoryTxnUpdateManyWithoutProNestedInput = {
+    create?: XOR<InventoryTxnCreateWithoutProInput, InventoryTxnUncheckedCreateWithoutProInput> | InventoryTxnCreateWithoutProInput[] | InventoryTxnUncheckedCreateWithoutProInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProInput | InventoryTxnCreateOrConnectWithoutProInput[]
+    upsert?: InventoryTxnUpsertWithWhereUniqueWithoutProInput | InventoryTxnUpsertWithWhereUniqueWithoutProInput[]
+    createMany?: InventoryTxnCreateManyProInputEnvelope
+    set?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    disconnect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    delete?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    update?: InventoryTxnUpdateWithWhereUniqueWithoutProInput | InventoryTxnUpdateWithWhereUniqueWithoutProInput[]
+    updateMany?: InventoryTxnUpdateManyWithWhereWithoutProInput | InventoryTxnUpdateManyWithWhereWithoutProInput[]
+    deleteMany?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
   }
 
-  export type ProCreateNestedOneWithoutStepsInput = {
-    create?: XOR<ProCreateWithoutStepsInput, ProUncheckedCreateWithoutStepsInput>
-    connectOrCreate?: ProCreateOrConnectWithoutStepsInput
+  export type ProsesUncheckedUpdateManyWithoutProNestedInput = {
+    create?: XOR<ProsesCreateWithoutProInput, ProsesUncheckedCreateWithoutProInput> | ProsesCreateWithoutProInput[] | ProsesUncheckedCreateWithoutProInput[]
+    connectOrCreate?: ProsesCreateOrConnectWithoutProInput | ProsesCreateOrConnectWithoutProInput[]
+    upsert?: ProsesUpsertWithWhereUniqueWithoutProInput | ProsesUpsertWithWhereUniqueWithoutProInput[]
+    createMany?: ProsesCreateManyProInputEnvelope
+    set?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    disconnect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    delete?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+    update?: ProsesUpdateWithWhereUniqueWithoutProInput | ProsesUpdateWithWhereUniqueWithoutProInput[]
+    updateMany?: ProsesUpdateManyWithWhereWithoutProInput | ProsesUpdateManyWithWhereWithoutProInput[]
+    deleteMany?: ProsesScalarWhereInput | ProsesScalarWhereInput[]
+  }
+
+  export type InventoryTxnUncheckedUpdateManyWithoutProNestedInput = {
+    create?: XOR<InventoryTxnCreateWithoutProInput, InventoryTxnUncheckedCreateWithoutProInput> | InventoryTxnCreateWithoutProInput[] | InventoryTxnUncheckedCreateWithoutProInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProInput | InventoryTxnCreateOrConnectWithoutProInput[]
+    upsert?: InventoryTxnUpsertWithWhereUniqueWithoutProInput | InventoryTxnUpsertWithWhereUniqueWithoutProInput[]
+    createMany?: InventoryTxnCreateManyProInputEnvelope
+    set?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    disconnect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    delete?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    update?: InventoryTxnUpdateWithWhereUniqueWithoutProInput | InventoryTxnUpdateWithWhereUniqueWithoutProInput[]
+    updateMany?: InventoryTxnUpdateManyWithWhereWithoutProInput | InventoryTxnUpdateManyWithWhereWithoutProInput[]
+    deleteMany?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
+  }
+
+  export type ProCreateNestedOneWithoutProsesInput = {
+    create?: XOR<ProCreateWithoutProsesInput, ProUncheckedCreateWithoutProsesInput>
+    connectOrCreate?: ProCreateOrConnectWithoutProsesInput
     connect?: ProWhereUniqueInput
   }
 
-  export type MachineCreateNestedOneWithoutProStepsInput = {
-    create?: XOR<MachineCreateWithoutProStepsInput, MachineUncheckedCreateWithoutProStepsInput>
-    connectOrCreate?: MachineCreateOrConnectWithoutProStepsInput
+  export type MachineCreateNestedOneWithoutProsesInput = {
+    create?: XOR<MachineCreateWithoutProsesInput, MachineUncheckedCreateWithoutProsesInput>
+    connectOrCreate?: MachineCreateOrConnectWithoutProsesInput
     connect?: MachineWhereUniqueInput
   }
 
-  export type ProStepMaterialCreateNestedManyWithoutStepInput = {
-    create?: XOR<ProStepMaterialCreateWithoutStepInput, ProStepMaterialUncheckedCreateWithoutStepInput> | ProStepMaterialCreateWithoutStepInput[] | ProStepMaterialUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProStepMaterialCreateOrConnectWithoutStepInput | ProStepMaterialCreateOrConnectWithoutStepInput[]
-    createMany?: ProStepMaterialCreateManyStepInputEnvelope
-    connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
+  export type ProsesMaterialCreateNestedManyWithoutProsesInput = {
+    create?: XOR<ProsesMaterialCreateWithoutProsesInput, ProsesMaterialUncheckedCreateWithoutProsesInput> | ProsesMaterialCreateWithoutProsesInput[] | ProsesMaterialUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutProsesInput | ProsesMaterialCreateOrConnectWithoutProsesInput[]
+    createMany?: ProsesMaterialCreateManyProsesInputEnvelope
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
   }
 
-  export type ProductionReportCreateNestedManyWithoutStepInput = {
-    create?: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput> | ProductionReportCreateWithoutStepInput[] | ProductionReportUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProductionReportCreateOrConnectWithoutStepInput | ProductionReportCreateOrConnectWithoutStepInput[]
-    createMany?: ProductionReportCreateManyStepInputEnvelope
+  export type ProductionReportCreateNestedManyWithoutProsesInput = {
+    create?: XOR<ProductionReportCreateWithoutProsesInput, ProductionReportUncheckedCreateWithoutProsesInput> | ProductionReportCreateWithoutProsesInput[] | ProductionReportUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutProsesInput | ProductionReportCreateOrConnectWithoutProsesInput[]
+    createMany?: ProductionReportCreateManyProsesInputEnvelope
     connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
   }
 
-  export type ProStepMaterialUncheckedCreateNestedManyWithoutStepInput = {
-    create?: XOR<ProStepMaterialCreateWithoutStepInput, ProStepMaterialUncheckedCreateWithoutStepInput> | ProStepMaterialCreateWithoutStepInput[] | ProStepMaterialUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProStepMaterialCreateOrConnectWithoutStepInput | ProStepMaterialCreateOrConnectWithoutStepInput[]
-    createMany?: ProStepMaterialCreateManyStepInputEnvelope
-    connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
+  export type InventoryTxnCreateNestedManyWithoutProsesInput = {
+    create?: XOR<InventoryTxnCreateWithoutProsesInput, InventoryTxnUncheckedCreateWithoutProsesInput> | InventoryTxnCreateWithoutProsesInput[] | InventoryTxnUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProsesInput | InventoryTxnCreateOrConnectWithoutProsesInput[]
+    createMany?: InventoryTxnCreateManyProsesInputEnvelope
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
   }
 
-  export type ProductionReportUncheckedCreateNestedManyWithoutStepInput = {
-    create?: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput> | ProductionReportCreateWithoutStepInput[] | ProductionReportUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProductionReportCreateOrConnectWithoutStepInput | ProductionReportCreateOrConnectWithoutStepInput[]
-    createMany?: ProductionReportCreateManyStepInputEnvelope
+  export type ProsesMaterialUncheckedCreateNestedManyWithoutProsesInput = {
+    create?: XOR<ProsesMaterialCreateWithoutProsesInput, ProsesMaterialUncheckedCreateWithoutProsesInput> | ProsesMaterialCreateWithoutProsesInput[] | ProsesMaterialUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutProsesInput | ProsesMaterialCreateOrConnectWithoutProsesInput[]
+    createMany?: ProsesMaterialCreateManyProsesInputEnvelope
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+  }
+
+  export type ProductionReportUncheckedCreateNestedManyWithoutProsesInput = {
+    create?: XOR<ProductionReportCreateWithoutProsesInput, ProductionReportUncheckedCreateWithoutProsesInput> | ProductionReportCreateWithoutProsesInput[] | ProductionReportUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutProsesInput | ProductionReportCreateOrConnectWithoutProsesInput[]
+    createMany?: ProductionReportCreateManyProsesInputEnvelope
     connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
   }
 
-  export type ProUpdateOneRequiredWithoutStepsNestedInput = {
-    create?: XOR<ProCreateWithoutStepsInput, ProUncheckedCreateWithoutStepsInput>
-    connectOrCreate?: ProCreateOrConnectWithoutStepsInput
-    upsert?: ProUpsertWithoutStepsInput
+  export type InventoryTxnUncheckedCreateNestedManyWithoutProsesInput = {
+    create?: XOR<InventoryTxnCreateWithoutProsesInput, InventoryTxnUncheckedCreateWithoutProsesInput> | InventoryTxnCreateWithoutProsesInput[] | InventoryTxnUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProsesInput | InventoryTxnCreateOrConnectWithoutProsesInput[]
+    createMany?: InventoryTxnCreateManyProsesInputEnvelope
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+  }
+
+  export type ProUpdateOneRequiredWithoutProsesNestedInput = {
+    create?: XOR<ProCreateWithoutProsesInput, ProUncheckedCreateWithoutProsesInput>
+    connectOrCreate?: ProCreateOrConnectWithoutProsesInput
+    upsert?: ProUpsertWithoutProsesInput
     connect?: ProWhereUniqueInput
-    update?: XOR<XOR<ProUpdateToOneWithWhereWithoutStepsInput, ProUpdateWithoutStepsInput>, ProUncheckedUpdateWithoutStepsInput>
+    update?: XOR<XOR<ProUpdateToOneWithWhereWithoutProsesInput, ProUpdateWithoutProsesInput>, ProUncheckedUpdateWithoutProsesInput>
   }
 
-  export type MachineUpdateOneWithoutProStepsNestedInput = {
-    create?: XOR<MachineCreateWithoutProStepsInput, MachineUncheckedCreateWithoutProStepsInput>
-    connectOrCreate?: MachineCreateOrConnectWithoutProStepsInput
-    upsert?: MachineUpsertWithoutProStepsInput
+  export type MachineUpdateOneWithoutProsesNestedInput = {
+    create?: XOR<MachineCreateWithoutProsesInput, MachineUncheckedCreateWithoutProsesInput>
+    connectOrCreate?: MachineCreateOrConnectWithoutProsesInput
+    upsert?: MachineUpsertWithoutProsesInput
     disconnect?: MachineWhereInput | boolean
     delete?: MachineWhereInput | boolean
     connect?: MachineWhereUniqueInput
-    update?: XOR<XOR<MachineUpdateToOneWithWhereWithoutProStepsInput, MachineUpdateWithoutProStepsInput>, MachineUncheckedUpdateWithoutProStepsInput>
+    update?: XOR<XOR<MachineUpdateToOneWithWhereWithoutProsesInput, MachineUpdateWithoutProsesInput>, MachineUncheckedUpdateWithoutProsesInput>
   }
 
-  export type ProStepMaterialUpdateManyWithoutStepNestedInput = {
-    create?: XOR<ProStepMaterialCreateWithoutStepInput, ProStepMaterialUncheckedCreateWithoutStepInput> | ProStepMaterialCreateWithoutStepInput[] | ProStepMaterialUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProStepMaterialCreateOrConnectWithoutStepInput | ProStepMaterialCreateOrConnectWithoutStepInput[]
-    upsert?: ProStepMaterialUpsertWithWhereUniqueWithoutStepInput | ProStepMaterialUpsertWithWhereUniqueWithoutStepInput[]
-    createMany?: ProStepMaterialCreateManyStepInputEnvelope
-    set?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    disconnect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    delete?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    update?: ProStepMaterialUpdateWithWhereUniqueWithoutStepInput | ProStepMaterialUpdateWithWhereUniqueWithoutStepInput[]
-    updateMany?: ProStepMaterialUpdateManyWithWhereWithoutStepInput | ProStepMaterialUpdateManyWithWhereWithoutStepInput[]
-    deleteMany?: ProStepMaterialScalarWhereInput | ProStepMaterialScalarWhereInput[]
+  export type ProsesMaterialUpdateManyWithoutProsesNestedInput = {
+    create?: XOR<ProsesMaterialCreateWithoutProsesInput, ProsesMaterialUncheckedCreateWithoutProsesInput> | ProsesMaterialCreateWithoutProsesInput[] | ProsesMaterialUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutProsesInput | ProsesMaterialCreateOrConnectWithoutProsesInput[]
+    upsert?: ProsesMaterialUpsertWithWhereUniqueWithoutProsesInput | ProsesMaterialUpsertWithWhereUniqueWithoutProsesInput[]
+    createMany?: ProsesMaterialCreateManyProsesInputEnvelope
+    set?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    disconnect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    delete?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    update?: ProsesMaterialUpdateWithWhereUniqueWithoutProsesInput | ProsesMaterialUpdateWithWhereUniqueWithoutProsesInput[]
+    updateMany?: ProsesMaterialUpdateManyWithWhereWithoutProsesInput | ProsesMaterialUpdateManyWithWhereWithoutProsesInput[]
+    deleteMany?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
   }
 
-  export type ProductionReportUpdateManyWithoutStepNestedInput = {
-    create?: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput> | ProductionReportCreateWithoutStepInput[] | ProductionReportUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProductionReportCreateOrConnectWithoutStepInput | ProductionReportCreateOrConnectWithoutStepInput[]
-    upsert?: ProductionReportUpsertWithWhereUniqueWithoutStepInput | ProductionReportUpsertWithWhereUniqueWithoutStepInput[]
-    createMany?: ProductionReportCreateManyStepInputEnvelope
+  export type ProductionReportUpdateManyWithoutProsesNestedInput = {
+    create?: XOR<ProductionReportCreateWithoutProsesInput, ProductionReportUncheckedCreateWithoutProsesInput> | ProductionReportCreateWithoutProsesInput[] | ProductionReportUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutProsesInput | ProductionReportCreateOrConnectWithoutProsesInput[]
+    upsert?: ProductionReportUpsertWithWhereUniqueWithoutProsesInput | ProductionReportUpsertWithWhereUniqueWithoutProsesInput[]
+    createMany?: ProductionReportCreateManyProsesInputEnvelope
     set?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
     disconnect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
     delete?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
     connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
-    update?: ProductionReportUpdateWithWhereUniqueWithoutStepInput | ProductionReportUpdateWithWhereUniqueWithoutStepInput[]
-    updateMany?: ProductionReportUpdateManyWithWhereWithoutStepInput | ProductionReportUpdateManyWithWhereWithoutStepInput[]
+    update?: ProductionReportUpdateWithWhereUniqueWithoutProsesInput | ProductionReportUpdateWithWhereUniqueWithoutProsesInput[]
+    updateMany?: ProductionReportUpdateManyWithWhereWithoutProsesInput | ProductionReportUpdateManyWithWhereWithoutProsesInput[]
     deleteMany?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
   }
 
-  export type ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput = {
-    create?: XOR<ProStepMaterialCreateWithoutStepInput, ProStepMaterialUncheckedCreateWithoutStepInput> | ProStepMaterialCreateWithoutStepInput[] | ProStepMaterialUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProStepMaterialCreateOrConnectWithoutStepInput | ProStepMaterialCreateOrConnectWithoutStepInput[]
-    upsert?: ProStepMaterialUpsertWithWhereUniqueWithoutStepInput | ProStepMaterialUpsertWithWhereUniqueWithoutStepInput[]
-    createMany?: ProStepMaterialCreateManyStepInputEnvelope
-    set?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    disconnect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    delete?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    connect?: ProStepMaterialWhereUniqueInput | ProStepMaterialWhereUniqueInput[]
-    update?: ProStepMaterialUpdateWithWhereUniqueWithoutStepInput | ProStepMaterialUpdateWithWhereUniqueWithoutStepInput[]
-    updateMany?: ProStepMaterialUpdateManyWithWhereWithoutStepInput | ProStepMaterialUpdateManyWithWhereWithoutStepInput[]
-    deleteMany?: ProStepMaterialScalarWhereInput | ProStepMaterialScalarWhereInput[]
+  export type InventoryTxnUpdateManyWithoutProsesNestedInput = {
+    create?: XOR<InventoryTxnCreateWithoutProsesInput, InventoryTxnUncheckedCreateWithoutProsesInput> | InventoryTxnCreateWithoutProsesInput[] | InventoryTxnUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProsesInput | InventoryTxnCreateOrConnectWithoutProsesInput[]
+    upsert?: InventoryTxnUpsertWithWhereUniqueWithoutProsesInput | InventoryTxnUpsertWithWhereUniqueWithoutProsesInput[]
+    createMany?: InventoryTxnCreateManyProsesInputEnvelope
+    set?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    disconnect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    delete?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    update?: InventoryTxnUpdateWithWhereUniqueWithoutProsesInput | InventoryTxnUpdateWithWhereUniqueWithoutProsesInput[]
+    updateMany?: InventoryTxnUpdateManyWithWhereWithoutProsesInput | InventoryTxnUpdateManyWithWhereWithoutProsesInput[]
+    deleteMany?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
   }
 
-  export type ProductionReportUncheckedUpdateManyWithoutStepNestedInput = {
-    create?: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput> | ProductionReportCreateWithoutStepInput[] | ProductionReportUncheckedCreateWithoutStepInput[]
-    connectOrCreate?: ProductionReportCreateOrConnectWithoutStepInput | ProductionReportCreateOrConnectWithoutStepInput[]
-    upsert?: ProductionReportUpsertWithWhereUniqueWithoutStepInput | ProductionReportUpsertWithWhereUniqueWithoutStepInput[]
-    createMany?: ProductionReportCreateManyStepInputEnvelope
+  export type ProsesMaterialUncheckedUpdateManyWithoutProsesNestedInput = {
+    create?: XOR<ProsesMaterialCreateWithoutProsesInput, ProsesMaterialUncheckedCreateWithoutProsesInput> | ProsesMaterialCreateWithoutProsesInput[] | ProsesMaterialUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutProsesInput | ProsesMaterialCreateOrConnectWithoutProsesInput[]
+    upsert?: ProsesMaterialUpsertWithWhereUniqueWithoutProsesInput | ProsesMaterialUpsertWithWhereUniqueWithoutProsesInput[]
+    createMany?: ProsesMaterialCreateManyProsesInputEnvelope
+    set?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    disconnect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    delete?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    update?: ProsesMaterialUpdateWithWhereUniqueWithoutProsesInput | ProsesMaterialUpdateWithWhereUniqueWithoutProsesInput[]
+    updateMany?: ProsesMaterialUpdateManyWithWhereWithoutProsesInput | ProsesMaterialUpdateManyWithWhereWithoutProsesInput[]
+    deleteMany?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
+  }
+
+  export type ProductionReportUncheckedUpdateManyWithoutProsesNestedInput = {
+    create?: XOR<ProductionReportCreateWithoutProsesInput, ProductionReportUncheckedCreateWithoutProsesInput> | ProductionReportCreateWithoutProsesInput[] | ProductionReportUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutProsesInput | ProductionReportCreateOrConnectWithoutProsesInput[]
+    upsert?: ProductionReportUpsertWithWhereUniqueWithoutProsesInput | ProductionReportUpsertWithWhereUniqueWithoutProsesInput[]
+    createMany?: ProductionReportCreateManyProsesInputEnvelope
     set?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
     disconnect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
     delete?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
     connect?: ProductionReportWhereUniqueInput | ProductionReportWhereUniqueInput[]
-    update?: ProductionReportUpdateWithWhereUniqueWithoutStepInput | ProductionReportUpdateWithWhereUniqueWithoutStepInput[]
-    updateMany?: ProductionReportUpdateManyWithWhereWithoutStepInput | ProductionReportUpdateManyWithWhereWithoutStepInput[]
+    update?: ProductionReportUpdateWithWhereUniqueWithoutProsesInput | ProductionReportUpdateWithWhereUniqueWithoutProsesInput[]
+    updateMany?: ProductionReportUpdateManyWithWhereWithoutProsesInput | ProductionReportUpdateManyWithWhereWithoutProsesInput[]
     deleteMany?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
   }
 
-  export type ProStepCreateNestedOneWithoutMaterialsInput = {
-    create?: XOR<ProStepCreateWithoutMaterialsInput, ProStepUncheckedCreateWithoutMaterialsInput>
-    connectOrCreate?: ProStepCreateOrConnectWithoutMaterialsInput
-    connect?: ProStepWhereUniqueInput
+  export type InventoryTxnUncheckedUpdateManyWithoutProsesNestedInput = {
+    create?: XOR<InventoryTxnCreateWithoutProsesInput, InventoryTxnUncheckedCreateWithoutProsesInput> | InventoryTxnCreateWithoutProsesInput[] | InventoryTxnUncheckedCreateWithoutProsesInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProsesInput | InventoryTxnCreateOrConnectWithoutProsesInput[]
+    upsert?: InventoryTxnUpsertWithWhereUniqueWithoutProsesInput | InventoryTxnUpsertWithWhereUniqueWithoutProsesInput[]
+    createMany?: InventoryTxnCreateManyProsesInputEnvelope
+    set?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    disconnect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    delete?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    update?: InventoryTxnUpdateWithWhereUniqueWithoutProsesInput | InventoryTxnUpdateWithWhereUniqueWithoutProsesInput[]
+    updateMany?: InventoryTxnUpdateManyWithWhereWithoutProsesInput | InventoryTxnUpdateManyWithWhereWithoutProsesInput[]
+    deleteMany?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
   }
 
-  export type MaterialCreateNestedOneWithoutProStepMaterialsInput = {
-    create?: XOR<MaterialCreateWithoutProStepMaterialsInput, MaterialUncheckedCreateWithoutProStepMaterialsInput>
-    connectOrCreate?: MaterialCreateOrConnectWithoutProStepMaterialsInput
+  export type ProsesCreateNestedOneWithoutMaterialsInput = {
+    create?: XOR<ProsesCreateWithoutMaterialsInput, ProsesUncheckedCreateWithoutMaterialsInput>
+    connectOrCreate?: ProsesCreateOrConnectWithoutMaterialsInput
+    connect?: ProsesWhereUniqueInput
+  }
+
+  export type MaterialCreateNestedOneWithoutProsesMaterialsInput = {
+    create?: XOR<MaterialCreateWithoutProsesMaterialsInput, MaterialUncheckedCreateWithoutProsesMaterialsInput>
+    connectOrCreate?: MaterialCreateOrConnectWithoutProsesMaterialsInput
     connect?: MaterialWhereUniqueInput
   }
 
@@ -14898,26 +18367,26 @@ export namespace Prisma {
     divide?: Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepUpdateOneRequiredWithoutMaterialsNestedInput = {
-    create?: XOR<ProStepCreateWithoutMaterialsInput, ProStepUncheckedCreateWithoutMaterialsInput>
-    connectOrCreate?: ProStepCreateOrConnectWithoutMaterialsInput
-    upsert?: ProStepUpsertWithoutMaterialsInput
-    connect?: ProStepWhereUniqueInput
-    update?: XOR<XOR<ProStepUpdateToOneWithWhereWithoutMaterialsInput, ProStepUpdateWithoutMaterialsInput>, ProStepUncheckedUpdateWithoutMaterialsInput>
+  export type ProsesUpdateOneRequiredWithoutMaterialsNestedInput = {
+    create?: XOR<ProsesCreateWithoutMaterialsInput, ProsesUncheckedCreateWithoutMaterialsInput>
+    connectOrCreate?: ProsesCreateOrConnectWithoutMaterialsInput
+    upsert?: ProsesUpsertWithoutMaterialsInput
+    connect?: ProsesWhereUniqueInput
+    update?: XOR<XOR<ProsesUpdateToOneWithWhereWithoutMaterialsInput, ProsesUpdateWithoutMaterialsInput>, ProsesUncheckedUpdateWithoutMaterialsInput>
   }
 
-  export type MaterialUpdateOneRequiredWithoutProStepMaterialsNestedInput = {
-    create?: XOR<MaterialCreateWithoutProStepMaterialsInput, MaterialUncheckedCreateWithoutProStepMaterialsInput>
-    connectOrCreate?: MaterialCreateOrConnectWithoutProStepMaterialsInput
-    upsert?: MaterialUpsertWithoutProStepMaterialsInput
+  export type MaterialUpdateOneRequiredWithoutProsesMaterialsNestedInput = {
+    create?: XOR<MaterialCreateWithoutProsesMaterialsInput, MaterialUncheckedCreateWithoutProsesMaterialsInput>
+    connectOrCreate?: MaterialCreateOrConnectWithoutProsesMaterialsInput
+    upsert?: MaterialUpsertWithoutProsesMaterialsInput
     connect?: MaterialWhereUniqueInput
-    update?: XOR<XOR<MaterialUpdateToOneWithWhereWithoutProStepMaterialsInput, MaterialUpdateWithoutProStepMaterialsInput>, MaterialUncheckedUpdateWithoutProStepMaterialsInput>
+    update?: XOR<XOR<MaterialUpdateToOneWithWhereWithoutProsesMaterialsInput, MaterialUpdateWithoutProsesMaterialsInput>, MaterialUncheckedUpdateWithoutProsesMaterialsInput>
   }
 
-  export type ProStepCreateNestedOneWithoutProductionReportsInput = {
-    create?: XOR<ProStepCreateWithoutProductionReportsInput, ProStepUncheckedCreateWithoutProductionReportsInput>
-    connectOrCreate?: ProStepCreateOrConnectWithoutProductionReportsInput
-    connect?: ProStepWhereUniqueInput
+  export type ProsesCreateNestedOneWithoutProductionReportsInput = {
+    create?: XOR<ProsesCreateWithoutProductionReportsInput, ProsesUncheckedCreateWithoutProductionReportsInput>
+    connectOrCreate?: ProsesCreateOrConnectWithoutProductionReportsInput
+    connect?: ProsesWhereUniqueInput
   }
 
   export type UserCreateNestedOneWithoutProductionReportsInput = {
@@ -14932,6 +18401,20 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type InventoryTxnCreateNestedManyWithoutProductionReportInput = {
+    create?: XOR<InventoryTxnCreateWithoutProductionReportInput, InventoryTxnUncheckedCreateWithoutProductionReportInput> | InventoryTxnCreateWithoutProductionReportInput[] | InventoryTxnUncheckedCreateWithoutProductionReportInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProductionReportInput | InventoryTxnCreateOrConnectWithoutProductionReportInput[]
+    createMany?: InventoryTxnCreateManyProductionReportInputEnvelope
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+  }
+
+  export type InventoryTxnUncheckedCreateNestedManyWithoutProductionReportInput = {
+    create?: XOR<InventoryTxnCreateWithoutProductionReportInput, InventoryTxnUncheckedCreateWithoutProductionReportInput> | InventoryTxnCreateWithoutProductionReportInput[] | InventoryTxnUncheckedCreateWithoutProductionReportInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProductionReportInput | InventoryTxnCreateOrConnectWithoutProductionReportInput[]
+    createMany?: InventoryTxnCreateManyProductionReportInputEnvelope
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+  }
+
   export type EnumLphTypeFieldUpdateOperationsInput = {
     set?: $Enums.LphType
   }
@@ -14940,12 +18423,12 @@ export namespace Prisma {
     set?: $Enums.ReportStatus
   }
 
-  export type ProStepUpdateOneRequiredWithoutProductionReportsNestedInput = {
-    create?: XOR<ProStepCreateWithoutProductionReportsInput, ProStepUncheckedCreateWithoutProductionReportsInput>
-    connectOrCreate?: ProStepCreateOrConnectWithoutProductionReportsInput
-    upsert?: ProStepUpsertWithoutProductionReportsInput
-    connect?: ProStepWhereUniqueInput
-    update?: XOR<XOR<ProStepUpdateToOneWithWhereWithoutProductionReportsInput, ProStepUpdateWithoutProductionReportsInput>, ProStepUncheckedUpdateWithoutProductionReportsInput>
+  export type ProsesUpdateOneRequiredWithoutProductionReportsNestedInput = {
+    create?: XOR<ProsesCreateWithoutProductionReportsInput, ProsesUncheckedCreateWithoutProductionReportsInput>
+    connectOrCreate?: ProsesCreateOrConnectWithoutProductionReportsInput
+    upsert?: ProsesUpsertWithoutProductionReportsInput
+    connect?: ProsesWhereUniqueInput
+    update?: XOR<XOR<ProsesUpdateToOneWithWhereWithoutProductionReportsInput, ProsesUpdateWithoutProductionReportsInput>, ProsesUncheckedUpdateWithoutProductionReportsInput>
   }
 
   export type UserUpdateOneWithoutProductionReportsNestedInput = {
@@ -14966,6 +18449,162 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCheckedProductionReportsInput, UserUpdateWithoutCheckedProductionReportsInput>, UserUncheckedUpdateWithoutCheckedProductionReportsInput>
+  }
+
+  export type InventoryTxnUpdateManyWithoutProductionReportNestedInput = {
+    create?: XOR<InventoryTxnCreateWithoutProductionReportInput, InventoryTxnUncheckedCreateWithoutProductionReportInput> | InventoryTxnCreateWithoutProductionReportInput[] | InventoryTxnUncheckedCreateWithoutProductionReportInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProductionReportInput | InventoryTxnCreateOrConnectWithoutProductionReportInput[]
+    upsert?: InventoryTxnUpsertWithWhereUniqueWithoutProductionReportInput | InventoryTxnUpsertWithWhereUniqueWithoutProductionReportInput[]
+    createMany?: InventoryTxnCreateManyProductionReportInputEnvelope
+    set?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    disconnect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    delete?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    update?: InventoryTxnUpdateWithWhereUniqueWithoutProductionReportInput | InventoryTxnUpdateWithWhereUniqueWithoutProductionReportInput[]
+    updateMany?: InventoryTxnUpdateManyWithWhereWithoutProductionReportInput | InventoryTxnUpdateManyWithWhereWithoutProductionReportInput[]
+    deleteMany?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
+  }
+
+  export type InventoryTxnUncheckedUpdateManyWithoutProductionReportNestedInput = {
+    create?: XOR<InventoryTxnCreateWithoutProductionReportInput, InventoryTxnUncheckedCreateWithoutProductionReportInput> | InventoryTxnCreateWithoutProductionReportInput[] | InventoryTxnUncheckedCreateWithoutProductionReportInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutProductionReportInput | InventoryTxnCreateOrConnectWithoutProductionReportInput[]
+    upsert?: InventoryTxnUpsertWithWhereUniqueWithoutProductionReportInput | InventoryTxnUpsertWithWhereUniqueWithoutProductionReportInput[]
+    createMany?: InventoryTxnCreateManyProductionReportInputEnvelope
+    set?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    disconnect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    delete?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    update?: InventoryTxnUpdateWithWhereUniqueWithoutProductionReportInput | InventoryTxnUpdateWithWhereUniqueWithoutProductionReportInput[]
+    updateMany?: InventoryTxnUpdateManyWithWhereWithoutProductionReportInput | InventoryTxnUpdateManyWithWhereWithoutProductionReportInput[]
+    deleteMany?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
+  }
+
+  export type MachineCreateNestedOneWithoutLocationInput = {
+    create?: XOR<MachineCreateWithoutLocationInput, MachineUncheckedCreateWithoutLocationInput>
+    connectOrCreate?: MachineCreateOrConnectWithoutLocationInput
+    connect?: MachineWhereUniqueInput
+  }
+
+  export type InventoryTxnCreateNestedManyWithoutLocationInput = {
+    create?: XOR<InventoryTxnCreateWithoutLocationInput, InventoryTxnUncheckedCreateWithoutLocationInput> | InventoryTxnCreateWithoutLocationInput[] | InventoryTxnUncheckedCreateWithoutLocationInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutLocationInput | InventoryTxnCreateOrConnectWithoutLocationInput[]
+    createMany?: InventoryTxnCreateManyLocationInputEnvelope
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+  }
+
+  export type InventoryTxnUncheckedCreateNestedManyWithoutLocationInput = {
+    create?: XOR<InventoryTxnCreateWithoutLocationInput, InventoryTxnUncheckedCreateWithoutLocationInput> | InventoryTxnCreateWithoutLocationInput[] | InventoryTxnUncheckedCreateWithoutLocationInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutLocationInput | InventoryTxnCreateOrConnectWithoutLocationInput[]
+    createMany?: InventoryTxnCreateManyLocationInputEnvelope
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+  }
+
+  export type EnumLocationTypeFieldUpdateOperationsInput = {
+    set?: $Enums.LocationType
+  }
+
+  export type MachineUpdateOneWithoutLocationNestedInput = {
+    create?: XOR<MachineCreateWithoutLocationInput, MachineUncheckedCreateWithoutLocationInput>
+    connectOrCreate?: MachineCreateOrConnectWithoutLocationInput
+    upsert?: MachineUpsertWithoutLocationInput
+    disconnect?: MachineWhereInput | boolean
+    delete?: MachineWhereInput | boolean
+    connect?: MachineWhereUniqueInput
+    update?: XOR<XOR<MachineUpdateToOneWithWhereWithoutLocationInput, MachineUpdateWithoutLocationInput>, MachineUncheckedUpdateWithoutLocationInput>
+  }
+
+  export type InventoryTxnUpdateManyWithoutLocationNestedInput = {
+    create?: XOR<InventoryTxnCreateWithoutLocationInput, InventoryTxnUncheckedCreateWithoutLocationInput> | InventoryTxnCreateWithoutLocationInput[] | InventoryTxnUncheckedCreateWithoutLocationInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutLocationInput | InventoryTxnCreateOrConnectWithoutLocationInput[]
+    upsert?: InventoryTxnUpsertWithWhereUniqueWithoutLocationInput | InventoryTxnUpsertWithWhereUniqueWithoutLocationInput[]
+    createMany?: InventoryTxnCreateManyLocationInputEnvelope
+    set?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    disconnect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    delete?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    update?: InventoryTxnUpdateWithWhereUniqueWithoutLocationInput | InventoryTxnUpdateWithWhereUniqueWithoutLocationInput[]
+    updateMany?: InventoryTxnUpdateManyWithWhereWithoutLocationInput | InventoryTxnUpdateManyWithWhereWithoutLocationInput[]
+    deleteMany?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
+  }
+
+  export type InventoryTxnUncheckedUpdateManyWithoutLocationNestedInput = {
+    create?: XOR<InventoryTxnCreateWithoutLocationInput, InventoryTxnUncheckedCreateWithoutLocationInput> | InventoryTxnCreateWithoutLocationInput[] | InventoryTxnUncheckedCreateWithoutLocationInput[]
+    connectOrCreate?: InventoryTxnCreateOrConnectWithoutLocationInput | InventoryTxnCreateOrConnectWithoutLocationInput[]
+    upsert?: InventoryTxnUpsertWithWhereUniqueWithoutLocationInput | InventoryTxnUpsertWithWhereUniqueWithoutLocationInput[]
+    createMany?: InventoryTxnCreateManyLocationInputEnvelope
+    set?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    disconnect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    delete?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
+    update?: InventoryTxnUpdateWithWhereUniqueWithoutLocationInput | InventoryTxnUpdateWithWhereUniqueWithoutLocationInput[]
+    updateMany?: InventoryTxnUpdateManyWithWhereWithoutLocationInput | InventoryTxnUpdateManyWithWhereWithoutLocationInput[]
+    deleteMany?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
+  }
+
+  export type InventoryLocationCreateNestedOneWithoutTxnsInput = {
+    create?: XOR<InventoryLocationCreateWithoutTxnsInput, InventoryLocationUncheckedCreateWithoutTxnsInput>
+    connectOrCreate?: InventoryLocationCreateOrConnectWithoutTxnsInput
+    connect?: InventoryLocationWhereUniqueInput
+  }
+
+  export type ProCreateNestedOneWithoutInventoryTxnsInput = {
+    create?: XOR<ProCreateWithoutInventoryTxnsInput, ProUncheckedCreateWithoutInventoryTxnsInput>
+    connectOrCreate?: ProCreateOrConnectWithoutInventoryTxnsInput
+    connect?: ProWhereUniqueInput
+  }
+
+  export type ProsesCreateNestedOneWithoutInventoryTxnsInput = {
+    create?: XOR<ProsesCreateWithoutInventoryTxnsInput, ProsesUncheckedCreateWithoutInventoryTxnsInput>
+    connectOrCreate?: ProsesCreateOrConnectWithoutInventoryTxnsInput
+    connect?: ProsesWhereUniqueInput
+  }
+
+  export type ProductionReportCreateNestedOneWithoutInventoryTxnsInput = {
+    create?: XOR<ProductionReportCreateWithoutInventoryTxnsInput, ProductionReportUncheckedCreateWithoutInventoryTxnsInput>
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutInventoryTxnsInput
+    connect?: ProductionReportWhereUniqueInput
+  }
+
+  export type EnumTxnTypeFieldUpdateOperationsInput = {
+    set?: $Enums.TxnType
+  }
+
+  export type InventoryLocationUpdateOneRequiredWithoutTxnsNestedInput = {
+    create?: XOR<InventoryLocationCreateWithoutTxnsInput, InventoryLocationUncheckedCreateWithoutTxnsInput>
+    connectOrCreate?: InventoryLocationCreateOrConnectWithoutTxnsInput
+    upsert?: InventoryLocationUpsertWithoutTxnsInput
+    connect?: InventoryLocationWhereUniqueInput
+    update?: XOR<XOR<InventoryLocationUpdateToOneWithWhereWithoutTxnsInput, InventoryLocationUpdateWithoutTxnsInput>, InventoryLocationUncheckedUpdateWithoutTxnsInput>
+  }
+
+  export type ProUpdateOneWithoutInventoryTxnsNestedInput = {
+    create?: XOR<ProCreateWithoutInventoryTxnsInput, ProUncheckedCreateWithoutInventoryTxnsInput>
+    connectOrCreate?: ProCreateOrConnectWithoutInventoryTxnsInput
+    upsert?: ProUpsertWithoutInventoryTxnsInput
+    disconnect?: ProWhereInput | boolean
+    delete?: ProWhereInput | boolean
+    connect?: ProWhereUniqueInput
+    update?: XOR<XOR<ProUpdateToOneWithWhereWithoutInventoryTxnsInput, ProUpdateWithoutInventoryTxnsInput>, ProUncheckedUpdateWithoutInventoryTxnsInput>
+  }
+
+  export type ProsesUpdateOneWithoutInventoryTxnsNestedInput = {
+    create?: XOR<ProsesCreateWithoutInventoryTxnsInput, ProsesUncheckedCreateWithoutInventoryTxnsInput>
+    connectOrCreate?: ProsesCreateOrConnectWithoutInventoryTxnsInput
+    upsert?: ProsesUpsertWithoutInventoryTxnsInput
+    disconnect?: ProsesWhereInput | boolean
+    delete?: ProsesWhereInput | boolean
+    connect?: ProsesWhereUniqueInput
+    update?: XOR<XOR<ProsesUpdateToOneWithWhereWithoutInventoryTxnsInput, ProsesUpdateWithoutInventoryTxnsInput>, ProsesUncheckedUpdateWithoutInventoryTxnsInput>
+  }
+
+  export type ProductionReportUpdateOneWithoutInventoryTxnsNestedInput = {
+    create?: XOR<ProductionReportCreateWithoutInventoryTxnsInput, ProductionReportUncheckedCreateWithoutInventoryTxnsInput>
+    connectOrCreate?: ProductionReportCreateOrConnectWithoutInventoryTxnsInput
+    upsert?: ProductionReportUpsertWithoutInventoryTxnsInput
+    disconnect?: ProductionReportWhereInput | boolean
+    delete?: ProductionReportWhereInput | boolean
+    connect?: ProductionReportWhereUniqueInput
+    update?: XOR<XOR<ProductionReportUpdateToOneWithWhereWithoutInventoryTxnsInput, ProductionReportUpdateWithoutInventoryTxnsInput>, ProductionReportUncheckedUpdateWithoutInventoryTxnsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -15213,6 +18852,23 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedEnumMaterialTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.MaterialType | EnumMaterialTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MaterialType[]
+    notIn?: $Enums.MaterialType[]
+    not?: NestedEnumMaterialTypeFilter<$PrismaModel> | $Enums.MaterialType
+  }
+
+  export type NestedEnumMaterialTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MaterialType | EnumMaterialTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MaterialType[]
+    notIn?: $Enums.MaterialType[]
+    not?: NestedEnumMaterialTypeWithAggregatesFilter<$PrismaModel> | $Enums.MaterialType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMaterialTypeFilter<$PrismaModel>
+    _max?: NestedEnumMaterialTypeFilter<$PrismaModel>
+  }
+
   export type NestedEnumProTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.ProType | EnumProTypeFieldRefInput<$PrismaModel>
     in?: $Enums.ProType[]
@@ -15369,6 +19025,40 @@ export namespace Prisma {
     _max?: NestedEnumReportStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumLocationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.LocationType | EnumLocationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LocationType[]
+    notIn?: $Enums.LocationType[]
+    not?: NestedEnumLocationTypeFilter<$PrismaModel> | $Enums.LocationType
+  }
+
+  export type NestedEnumLocationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LocationType | EnumLocationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.LocationType[]
+    notIn?: $Enums.LocationType[]
+    not?: NestedEnumLocationTypeWithAggregatesFilter<$PrismaModel> | $Enums.LocationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLocationTypeFilter<$PrismaModel>
+    _max?: NestedEnumLocationTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumTxnTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.TxnType | EnumTxnTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TxnType[]
+    notIn?: $Enums.TxnType[]
+    not?: NestedEnumTxnTypeFilter<$PrismaModel> | $Enums.TxnType
+  }
+
+  export type NestedEnumTxnTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TxnType | EnumTxnTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.TxnType[]
+    notIn?: $Enums.TxnType[]
+    not?: NestedEnumTxnTypeWithAggregatesFilter<$PrismaModel> | $Enums.TxnType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTxnTypeFilter<$PrismaModel>
+    _max?: NestedEnumTxnTypeFilter<$PrismaModel>
+  }
+
   export type ProductionReportCreateWithoutCreatedByInput = {
     id?: string
     reportDate: Date | string
@@ -15404,13 +19094,19 @@ export namespace Prisma {
     status?: $Enums.ReportStatus
     rejectionNote?: string | null
     checkedAt?: Date | string | null
-    step: ProStepCreateNestedOneWithoutProductionReportsInput
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
+    proses: ProsesCreateNestedOneWithoutProductionReportsInput
     checkedBy?: UserCreateNestedOneWithoutCheckedProductionReportsInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProductionReportInput
   }
 
   export type ProductionReportUncheckedCreateWithoutCreatedByInput = {
     id?: string
-    proStepId: number
+    prosesId: number
     reportDate: Date | string
     shift: number
     operatorName: string
@@ -15445,6 +19141,12 @@ export namespace Prisma {
     rejectionNote?: string | null
     checkedById?: string | null
     checkedAt?: Date | string | null
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProductionReportInput
   }
 
   export type ProductionReportCreateOrConnectWithoutCreatedByInput = {
@@ -15492,13 +19194,19 @@ export namespace Prisma {
     status?: $Enums.ReportStatus
     rejectionNote?: string | null
     checkedAt?: Date | string | null
-    step: ProStepCreateNestedOneWithoutProductionReportsInput
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
+    proses: ProsesCreateNestedOneWithoutProductionReportsInput
     createdBy?: UserCreateNestedOneWithoutProductionReportsInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProductionReportInput
   }
 
   export type ProductionReportUncheckedCreateWithoutCheckedByInput = {
     id?: string
-    proStepId: number
+    prosesId: number
     reportDate: Date | string
     shift: number
     operatorName: string
@@ -15533,6 +19241,12 @@ export namespace Prisma {
     status?: $Enums.ReportStatus
     rejectionNote?: string | null
     checkedAt?: Date | string | null
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProductionReportInput
   }
 
   export type ProductionReportCreateOrConnectWithoutCheckedByInput = {
@@ -15566,7 +19280,7 @@ export namespace Prisma {
     OR?: ProductionReportScalarWhereInput[]
     NOT?: ProductionReportScalarWhereInput | ProductionReportScalarWhereInput[]
     id?: StringFilter<"ProductionReport"> | string
-    proStepId?: IntFilter<"ProductionReport"> | number
+    prosesId?: IntFilter<"ProductionReport"> | number
     reportDate?: DateTimeFilter<"ProductionReport"> | Date | string
     shift?: IntFilter<"ProductionReport"> | number
     operatorName?: StringFilter<"ProductionReport"> | string
@@ -15602,6 +19316,11 @@ export namespace Prisma {
     rejectionNote?: StringNullableFilter<"ProductionReport"> | string | null
     checkedById?: StringNullableFilter<"ProductionReport"> | string | null
     checkedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    voidedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    voidedById?: StringNullableFilter<"ProductionReport"> | string | null
+    voidReason?: StringNullableFilter<"ProductionReport"> | string | null
+    stockPostedAt?: DateTimeNullableFilter<"ProductionReport"> | Date | string | null
+    inputWipQty?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
   }
 
   export type ProductionReportUpsertWithWhereUniqueWithoutCheckedByInput = {
@@ -15620,19 +19339,20 @@ export namespace Prisma {
     data: XOR<ProductionReportUpdateManyMutationInput, ProductionReportUncheckedUpdateManyWithoutCheckedByInput>
   }
 
-  export type ProStepCreateWithoutMachineInput = {
+  export type ProsesCreateWithoutMachineInput = {
     orderNo: number
     up?: number | null
     estimatedShifts?: number | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
-    pro: ProCreateNestedOneWithoutStepsInput
-    materials?: ProStepMaterialCreateNestedManyWithoutStepInput
-    productionReports?: ProductionReportCreateNestedManyWithoutStepInput
+    pro: ProCreateNestedOneWithoutProsesInput
+    materials?: ProsesMaterialCreateNestedManyWithoutProsesInput
+    productionReports?: ProductionReportCreateNestedManyWithoutProsesInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProsesInput
   }
 
-  export type ProStepUncheckedCreateWithoutMachineInput = {
+  export type ProsesUncheckedCreateWithoutMachineInput = {
     id?: number
     proId: number
     orderNo: number
@@ -15641,101 +19361,149 @@ export namespace Prisma {
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
-    materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
-    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutStepInput
+    materials?: ProsesMaterialUncheckedCreateNestedManyWithoutProsesInput
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutProsesInput
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProsesInput
   }
 
-  export type ProStepCreateOrConnectWithoutMachineInput = {
-    where: ProStepWhereUniqueInput
-    create: XOR<ProStepCreateWithoutMachineInput, ProStepUncheckedCreateWithoutMachineInput>
+  export type ProsesCreateOrConnectWithoutMachineInput = {
+    where: ProsesWhereUniqueInput
+    create: XOR<ProsesCreateWithoutMachineInput, ProsesUncheckedCreateWithoutMachineInput>
   }
 
-  export type ProStepCreateManyMachineInputEnvelope = {
-    data: ProStepCreateManyMachineInput | ProStepCreateManyMachineInput[]
+  export type ProsesCreateManyMachineInputEnvelope = {
+    data: ProsesCreateManyMachineInput | ProsesCreateManyMachineInput[]
     skipDuplicates?: boolean
   }
 
-  export type ProStepUpsertWithWhereUniqueWithoutMachineInput = {
-    where: ProStepWhereUniqueInput
-    update: XOR<ProStepUpdateWithoutMachineInput, ProStepUncheckedUpdateWithoutMachineInput>
-    create: XOR<ProStepCreateWithoutMachineInput, ProStepUncheckedCreateWithoutMachineInput>
+  export type InventoryLocationCreateWithoutMachineInput = {
+    code: string
+    name: string
+    type: $Enums.LocationType
+    txns?: InventoryTxnCreateNestedManyWithoutLocationInput
   }
 
-  export type ProStepUpdateWithWhereUniqueWithoutMachineInput = {
-    where: ProStepWhereUniqueInput
-    data: XOR<ProStepUpdateWithoutMachineInput, ProStepUncheckedUpdateWithoutMachineInput>
-  }
-
-  export type ProStepUpdateManyWithWhereWithoutMachineInput = {
-    where: ProStepScalarWhereInput
-    data: XOR<ProStepUpdateManyMutationInput, ProStepUncheckedUpdateManyWithoutMachineInput>
-  }
-
-  export type ProStepScalarWhereInput = {
-    AND?: ProStepScalarWhereInput | ProStepScalarWhereInput[]
-    OR?: ProStepScalarWhereInput[]
-    NOT?: ProStepScalarWhereInput | ProStepScalarWhereInput[]
-    id?: IntFilter<"ProStep"> | number
-    proId?: IntFilter<"ProStep"> | number
-    orderNo?: IntFilter<"ProStep"> | number
-    up?: IntNullableFilter<"ProStep"> | number | null
-    estimatedShifts?: IntNullableFilter<"ProStep"> | number | null
-    startDate?: DateTimeNullableFilter<"ProStep"> | Date | string | null
-    machineId?: IntNullableFilter<"ProStep"> | number | null
-    partNumber?: StringNullableFilter<"ProStep"> | string | null
-    batchNo?: StringNullableFilter<"ProStep"> | string | null
-  }
-
-  export type ProStepMaterialCreateWithoutMaterialInput = {
-    qtyReq: Decimal | DecimalJsLike | number | string
-    step: ProStepCreateNestedOneWithoutMaterialsInput
-  }
-
-  export type ProStepMaterialUncheckedCreateWithoutMaterialInput = {
+  export type InventoryLocationUncheckedCreateWithoutMachineInput = {
     id?: number
-    stepId: number
+    code: string
+    name: string
+    type: $Enums.LocationType
+    txns?: InventoryTxnUncheckedCreateNestedManyWithoutLocationInput
+  }
+
+  export type InventoryLocationCreateOrConnectWithoutMachineInput = {
+    where: InventoryLocationWhereUniqueInput
+    create: XOR<InventoryLocationCreateWithoutMachineInput, InventoryLocationUncheckedCreateWithoutMachineInput>
+  }
+
+  export type ProsesUpsertWithWhereUniqueWithoutMachineInput = {
+    where: ProsesWhereUniqueInput
+    update: XOR<ProsesUpdateWithoutMachineInput, ProsesUncheckedUpdateWithoutMachineInput>
+    create: XOR<ProsesCreateWithoutMachineInput, ProsesUncheckedCreateWithoutMachineInput>
+  }
+
+  export type ProsesUpdateWithWhereUniqueWithoutMachineInput = {
+    where: ProsesWhereUniqueInput
+    data: XOR<ProsesUpdateWithoutMachineInput, ProsesUncheckedUpdateWithoutMachineInput>
+  }
+
+  export type ProsesUpdateManyWithWhereWithoutMachineInput = {
+    where: ProsesScalarWhereInput
+    data: XOR<ProsesUpdateManyMutationInput, ProsesUncheckedUpdateManyWithoutMachineInput>
+  }
+
+  export type ProsesScalarWhereInput = {
+    AND?: ProsesScalarWhereInput | ProsesScalarWhereInput[]
+    OR?: ProsesScalarWhereInput[]
+    NOT?: ProsesScalarWhereInput | ProsesScalarWhereInput[]
+    id?: IntFilter<"Proses"> | number
+    proId?: IntFilter<"Proses"> | number
+    orderNo?: IntFilter<"Proses"> | number
+    up?: IntNullableFilter<"Proses"> | number | null
+    estimatedShifts?: IntNullableFilter<"Proses"> | number | null
+    startDate?: DateTimeNullableFilter<"Proses"> | Date | string | null
+    machineId?: IntNullableFilter<"Proses"> | number | null
+    partNumber?: StringNullableFilter<"Proses"> | string | null
+    batchNo?: StringNullableFilter<"Proses"> | string | null
+  }
+
+  export type InventoryLocationUpsertWithoutMachineInput = {
+    update: XOR<InventoryLocationUpdateWithoutMachineInput, InventoryLocationUncheckedUpdateWithoutMachineInput>
+    create: XOR<InventoryLocationCreateWithoutMachineInput, InventoryLocationUncheckedCreateWithoutMachineInput>
+    where?: InventoryLocationWhereInput
+  }
+
+  export type InventoryLocationUpdateToOneWithWhereWithoutMachineInput = {
+    where?: InventoryLocationWhereInput
+    data: XOR<InventoryLocationUpdateWithoutMachineInput, InventoryLocationUncheckedUpdateWithoutMachineInput>
+  }
+
+  export type InventoryLocationUpdateWithoutMachineInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    txns?: InventoryTxnUpdateManyWithoutLocationNestedInput
+  }
+
+  export type InventoryLocationUncheckedUpdateWithoutMachineInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    txns?: InventoryTxnUncheckedUpdateManyWithoutLocationNestedInput
+  }
+
+  export type ProsesMaterialCreateWithoutMaterialInput = {
+    qtyReq: Decimal | DecimalJsLike | number | string
+    proses: ProsesCreateNestedOneWithoutMaterialsInput
+  }
+
+  export type ProsesMaterialUncheckedCreateWithoutMaterialInput = {
+    id?: number
+    prosesId: number
     qtyReq: Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepMaterialCreateOrConnectWithoutMaterialInput = {
-    where: ProStepMaterialWhereUniqueInput
-    create: XOR<ProStepMaterialCreateWithoutMaterialInput, ProStepMaterialUncheckedCreateWithoutMaterialInput>
+  export type ProsesMaterialCreateOrConnectWithoutMaterialInput = {
+    where: ProsesMaterialWhereUniqueInput
+    create: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput>
   }
 
-  export type ProStepMaterialCreateManyMaterialInputEnvelope = {
-    data: ProStepMaterialCreateManyMaterialInput | ProStepMaterialCreateManyMaterialInput[]
+  export type ProsesMaterialCreateManyMaterialInputEnvelope = {
+    data: ProsesMaterialCreateManyMaterialInput | ProsesMaterialCreateManyMaterialInput[]
     skipDuplicates?: boolean
   }
 
-  export type ProStepMaterialUpsertWithWhereUniqueWithoutMaterialInput = {
-    where: ProStepMaterialWhereUniqueInput
-    update: XOR<ProStepMaterialUpdateWithoutMaterialInput, ProStepMaterialUncheckedUpdateWithoutMaterialInput>
-    create: XOR<ProStepMaterialCreateWithoutMaterialInput, ProStepMaterialUncheckedCreateWithoutMaterialInput>
+  export type ProsesMaterialUpsertWithWhereUniqueWithoutMaterialInput = {
+    where: ProsesMaterialWhereUniqueInput
+    update: XOR<ProsesMaterialUpdateWithoutMaterialInput, ProsesMaterialUncheckedUpdateWithoutMaterialInput>
+    create: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput>
   }
 
-  export type ProStepMaterialUpdateWithWhereUniqueWithoutMaterialInput = {
-    where: ProStepMaterialWhereUniqueInput
-    data: XOR<ProStepMaterialUpdateWithoutMaterialInput, ProStepMaterialUncheckedUpdateWithoutMaterialInput>
+  export type ProsesMaterialUpdateWithWhereUniqueWithoutMaterialInput = {
+    where: ProsesMaterialWhereUniqueInput
+    data: XOR<ProsesMaterialUpdateWithoutMaterialInput, ProsesMaterialUncheckedUpdateWithoutMaterialInput>
   }
 
-  export type ProStepMaterialUpdateManyWithWhereWithoutMaterialInput = {
-    where: ProStepMaterialScalarWhereInput
-    data: XOR<ProStepMaterialUpdateManyMutationInput, ProStepMaterialUncheckedUpdateManyWithoutMaterialInput>
+  export type ProsesMaterialUpdateManyWithWhereWithoutMaterialInput = {
+    where: ProsesMaterialScalarWhereInput
+    data: XOR<ProsesMaterialUpdateManyMutationInput, ProsesMaterialUncheckedUpdateManyWithoutMaterialInput>
   }
 
-  export type ProStepMaterialScalarWhereInput = {
-    AND?: ProStepMaterialScalarWhereInput | ProStepMaterialScalarWhereInput[]
-    OR?: ProStepMaterialScalarWhereInput[]
-    NOT?: ProStepMaterialScalarWhereInput | ProStepMaterialScalarWhereInput[]
-    id?: IntFilter<"ProStepMaterial"> | number
-    stepId?: IntFilter<"ProStepMaterial"> | number
-    materialId?: IntFilter<"ProStepMaterial"> | number
-    qtyReq?: DecimalFilter<"ProStepMaterial"> | Decimal | DecimalJsLike | number | string
+  export type ProsesMaterialScalarWhereInput = {
+    AND?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
+    OR?: ProsesMaterialScalarWhereInput[]
+    NOT?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
+    id?: IntFilter<"ProsesMaterial"> | number
+    prosesId?: IntFilter<"ProsesMaterial"> | number
+    materialId?: IntFilter<"ProsesMaterial"> | number
+    qtyReq?: DecimalFilter<"ProsesMaterial"> | Decimal | DecimalJsLike | number | string
   }
 
-  export type ProCreateWithoutProcessInput = {
+  export type ProCreateWithoutProPrefixInput = {
     proNumber: string
     productName: string
+    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -15743,13 +19511,15 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    steps?: ProStepCreateNestedManyWithoutProInput
+    proses?: ProsesCreateNestedManyWithoutProInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProInput
   }
 
-  export type ProUncheckedCreateWithoutProcessInput = {
+  export type ProUncheckedCreateWithoutProPrefixInput = {
     id?: number
     proNumber: string
     productName: string
+    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -15757,33 +19527,34 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    steps?: ProStepUncheckedCreateNestedManyWithoutProInput
+    proses?: ProsesUncheckedCreateNestedManyWithoutProInput
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProInput
   }
 
-  export type ProCreateOrConnectWithoutProcessInput = {
+  export type ProCreateOrConnectWithoutProPrefixInput = {
     where: ProWhereUniqueInput
-    create: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput>
+    create: XOR<ProCreateWithoutProPrefixInput, ProUncheckedCreateWithoutProPrefixInput>
   }
 
-  export type ProCreateManyProcessInputEnvelope = {
-    data: ProCreateManyProcessInput | ProCreateManyProcessInput[]
+  export type ProCreateManyProPrefixInputEnvelope = {
+    data: ProCreateManyProPrefixInput | ProCreateManyProPrefixInput[]
     skipDuplicates?: boolean
   }
 
-  export type ProUpsertWithWhereUniqueWithoutProcessInput = {
+  export type ProUpsertWithWhereUniqueWithoutProPrefixInput = {
     where: ProWhereUniqueInput
-    update: XOR<ProUpdateWithoutProcessInput, ProUncheckedUpdateWithoutProcessInput>
-    create: XOR<ProCreateWithoutProcessInput, ProUncheckedCreateWithoutProcessInput>
+    update: XOR<ProUpdateWithoutProPrefixInput, ProUncheckedUpdateWithoutProPrefixInput>
+    create: XOR<ProCreateWithoutProPrefixInput, ProUncheckedCreateWithoutProPrefixInput>
   }
 
-  export type ProUpdateWithWhereUniqueWithoutProcessInput = {
+  export type ProUpdateWithWhereUniqueWithoutProPrefixInput = {
     where: ProWhereUniqueInput
-    data: XOR<ProUpdateWithoutProcessInput, ProUncheckedUpdateWithoutProcessInput>
+    data: XOR<ProUpdateWithoutProPrefixInput, ProUncheckedUpdateWithoutProPrefixInput>
   }
 
-  export type ProUpdateManyWithWhereWithoutProcessInput = {
+  export type ProUpdateManyWithWhereWithoutProPrefixInput = {
     where: ProScalarWhereInput
-    data: XOR<ProUpdateManyMutationInput, ProUncheckedUpdateManyWithoutProcessInput>
+    data: XOR<ProUpdateManyMutationInput, ProUncheckedUpdateManyWithoutProPrefixInput>
   }
 
   export type ProScalarWhereInput = {
@@ -15793,47 +19564,49 @@ export namespace Prisma {
     id?: IntFilter<"Pro"> | number
     proNumber?: StringFilter<"Pro"> | string
     productName?: StringFilter<"Pro"> | string
+    partNumber?: StringNullableFilter<"Pro"> | string | null
     qtyPoPcs?: IntFilter<"Pro"> | number
     startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
     status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
     type?: EnumProTypeFilter<"Pro"> | $Enums.ProType
     autoShiftExpansion?: BoolFilter<"Pro"> | boolean
-    processId?: IntNullableFilter<"Pro"> | number | null
+    proPrefixId?: IntNullableFilter<"Pro"> | number | null
     createdAt?: DateTimeFilter<"Pro"> | Date | string
     updatedAt?: DateTimeFilter<"Pro"> | Date | string
   }
 
-  export type ProcessCreateWithoutProsInput = {
+  export type ProPrefixCreateWithoutProsInput = {
     code: string
     name: string
     type?: $Enums.ProType
   }
 
-  export type ProcessUncheckedCreateWithoutProsInput = {
+  export type ProPrefixUncheckedCreateWithoutProsInput = {
     id?: number
     code: string
     name: string
     type?: $Enums.ProType
   }
 
-  export type ProcessCreateOrConnectWithoutProsInput = {
-    where: ProcessWhereUniqueInput
-    create: XOR<ProcessCreateWithoutProsInput, ProcessUncheckedCreateWithoutProsInput>
+  export type ProPrefixCreateOrConnectWithoutProsInput = {
+    where: ProPrefixWhereUniqueInput
+    create: XOR<ProPrefixCreateWithoutProsInput, ProPrefixUncheckedCreateWithoutProsInput>
   }
 
-  export type ProStepCreateWithoutProInput = {
+  export type ProsesCreateWithoutProInput = {
     orderNo: number
     up?: number | null
     estimatedShifts?: number | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
-    machine?: MachineCreateNestedOneWithoutProStepsInput
-    materials?: ProStepMaterialCreateNestedManyWithoutStepInput
-    productionReports?: ProductionReportCreateNestedManyWithoutStepInput
+    machine?: MachineCreateNestedOneWithoutProsesInput
+    materials?: ProsesMaterialCreateNestedManyWithoutProsesInput
+    productionReports?: ProductionReportCreateNestedManyWithoutProsesInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProsesInput
   }
 
-  export type ProStepUncheckedCreateWithoutProInput = {
+  export type ProsesUncheckedCreateWithoutProInput = {
     id?: number
     orderNo: number
     up?: number | null
@@ -15842,63 +19615,137 @@ export namespace Prisma {
     machineId?: number | null
     partNumber?: string | null
     batchNo?: string | null
-    materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
-    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutStepInput
+    materials?: ProsesMaterialUncheckedCreateNestedManyWithoutProsesInput
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutProsesInput
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProsesInput
   }
 
-  export type ProStepCreateOrConnectWithoutProInput = {
-    where: ProStepWhereUniqueInput
-    create: XOR<ProStepCreateWithoutProInput, ProStepUncheckedCreateWithoutProInput>
+  export type ProsesCreateOrConnectWithoutProInput = {
+    where: ProsesWhereUniqueInput
+    create: XOR<ProsesCreateWithoutProInput, ProsesUncheckedCreateWithoutProInput>
   }
 
-  export type ProStepCreateManyProInputEnvelope = {
-    data: ProStepCreateManyProInput | ProStepCreateManyProInput[]
+  export type ProsesCreateManyProInputEnvelope = {
+    data: ProsesCreateManyProInput | ProsesCreateManyProInput[]
     skipDuplicates?: boolean
   }
 
-  export type ProcessUpsertWithoutProsInput = {
-    update: XOR<ProcessUpdateWithoutProsInput, ProcessUncheckedUpdateWithoutProsInput>
-    create: XOR<ProcessCreateWithoutProsInput, ProcessUncheckedCreateWithoutProsInput>
-    where?: ProcessWhereInput
+  export type InventoryTxnCreateWithoutProInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    notes?: string | null
+    createdAt?: Date | string
+    location: InventoryLocationCreateNestedOneWithoutTxnsInput
+    proses?: ProsesCreateNestedOneWithoutInventoryTxnsInput
+    productionReport?: ProductionReportCreateNestedOneWithoutInventoryTxnsInput
   }
 
-  export type ProcessUpdateToOneWithWhereWithoutProsInput = {
-    where?: ProcessWhereInput
-    data: XOR<ProcessUpdateWithoutProsInput, ProcessUncheckedUpdateWithoutProsInput>
+  export type InventoryTxnUncheckedCreateWithoutProInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    locationId: number
+    prosesId?: number | null
+    productionReportId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
   }
 
-  export type ProcessUpdateWithoutProsInput = {
+  export type InventoryTxnCreateOrConnectWithoutProInput = {
+    where: InventoryTxnWhereUniqueInput
+    create: XOR<InventoryTxnCreateWithoutProInput, InventoryTxnUncheckedCreateWithoutProInput>
+  }
+
+  export type InventoryTxnCreateManyProInputEnvelope = {
+    data: InventoryTxnCreateManyProInput | InventoryTxnCreateManyProInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ProPrefixUpsertWithoutProsInput = {
+    update: XOR<ProPrefixUpdateWithoutProsInput, ProPrefixUncheckedUpdateWithoutProsInput>
+    create: XOR<ProPrefixCreateWithoutProsInput, ProPrefixUncheckedCreateWithoutProsInput>
+    where?: ProPrefixWhereInput
+  }
+
+  export type ProPrefixUpdateToOneWithWhereWithoutProsInput = {
+    where?: ProPrefixWhereInput
+    data: XOR<ProPrefixUpdateWithoutProsInput, ProPrefixUncheckedUpdateWithoutProsInput>
+  }
+
+  export type ProPrefixUpdateWithoutProsInput = {
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
   }
 
-  export type ProcessUncheckedUpdateWithoutProsInput = {
+  export type ProPrefixUncheckedUpdateWithoutProsInput = {
     id?: IntFieldUpdateOperationsInput | number
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
   }
 
-  export type ProStepUpsertWithWhereUniqueWithoutProInput = {
-    where: ProStepWhereUniqueInput
-    update: XOR<ProStepUpdateWithoutProInput, ProStepUncheckedUpdateWithoutProInput>
-    create: XOR<ProStepCreateWithoutProInput, ProStepUncheckedCreateWithoutProInput>
+  export type ProsesUpsertWithWhereUniqueWithoutProInput = {
+    where: ProsesWhereUniqueInput
+    update: XOR<ProsesUpdateWithoutProInput, ProsesUncheckedUpdateWithoutProInput>
+    create: XOR<ProsesCreateWithoutProInput, ProsesUncheckedCreateWithoutProInput>
   }
 
-  export type ProStepUpdateWithWhereUniqueWithoutProInput = {
-    where: ProStepWhereUniqueInput
-    data: XOR<ProStepUpdateWithoutProInput, ProStepUncheckedUpdateWithoutProInput>
+  export type ProsesUpdateWithWhereUniqueWithoutProInput = {
+    where: ProsesWhereUniqueInput
+    data: XOR<ProsesUpdateWithoutProInput, ProsesUncheckedUpdateWithoutProInput>
   }
 
-  export type ProStepUpdateManyWithWhereWithoutProInput = {
-    where: ProStepScalarWhereInput
-    data: XOR<ProStepUpdateManyMutationInput, ProStepUncheckedUpdateManyWithoutProInput>
+  export type ProsesUpdateManyWithWhereWithoutProInput = {
+    where: ProsesScalarWhereInput
+    data: XOR<ProsesUpdateManyMutationInput, ProsesUncheckedUpdateManyWithoutProInput>
   }
 
-  export type ProCreateWithoutStepsInput = {
+  export type InventoryTxnUpsertWithWhereUniqueWithoutProInput = {
+    where: InventoryTxnWhereUniqueInput
+    update: XOR<InventoryTxnUpdateWithoutProInput, InventoryTxnUncheckedUpdateWithoutProInput>
+    create: XOR<InventoryTxnCreateWithoutProInput, InventoryTxnUncheckedCreateWithoutProInput>
+  }
+
+  export type InventoryTxnUpdateWithWhereUniqueWithoutProInput = {
+    where: InventoryTxnWhereUniqueInput
+    data: XOR<InventoryTxnUpdateWithoutProInput, InventoryTxnUncheckedUpdateWithoutProInput>
+  }
+
+  export type InventoryTxnUpdateManyWithWhereWithoutProInput = {
+    where: InventoryTxnScalarWhereInput
+    data: XOR<InventoryTxnUpdateManyMutationInput, InventoryTxnUncheckedUpdateManyWithoutProInput>
+  }
+
+  export type InventoryTxnScalarWhereInput = {
+    AND?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
+    OR?: InventoryTxnScalarWhereInput[]
+    NOT?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
+    id?: StringFilter<"InventoryTxn"> | string
+    groupId?: StringFilter<"InventoryTxn"> | string
+    date?: DateTimeFilter<"InventoryTxn"> | Date | string
+    type?: EnumTxnTypeFilter<"InventoryTxn"> | $Enums.TxnType
+    itemId?: StringFilter<"InventoryTxn"> | string
+    qty?: DecimalFilter<"InventoryTxn"> | Decimal | DecimalJsLike | number | string
+    locationId?: IntFilter<"InventoryTxn"> | number
+    proId?: IntNullableFilter<"InventoryTxn"> | number | null
+    prosesId?: IntNullableFilter<"InventoryTxn"> | number | null
+    productionReportId?: StringNullableFilter<"InventoryTxn"> | string | null
+    notes?: StringNullableFilter<"InventoryTxn"> | string | null
+    createdAt?: DateTimeFilter<"InventoryTxn"> | Date | string
+  }
+
+  export type ProCreateWithoutProsesInput = {
     proNumber: string
     productName: string
+    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -15906,29 +19753,32 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    process?: ProcessCreateNestedOneWithoutProsInput
+    proPrefix?: ProPrefixCreateNestedOneWithoutProsInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProInput
   }
 
-  export type ProUncheckedCreateWithoutStepsInput = {
+  export type ProUncheckedCreateWithoutProsesInput = {
     id?: number
     proNumber: string
     productName: string
+    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
     type?: $Enums.ProType
     autoShiftExpansion?: boolean
-    processId?: number | null
+    proPrefixId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProInput
   }
 
-  export type ProCreateOrConnectWithoutStepsInput = {
+  export type ProCreateOrConnectWithoutProsesInput = {
     where: ProWhereUniqueInput
-    create: XOR<ProCreateWithoutStepsInput, ProUncheckedCreateWithoutStepsInput>
+    create: XOR<ProCreateWithoutProsesInput, ProUncheckedCreateWithoutProsesInput>
   }
 
-  export type MachineCreateWithoutProStepsInput = {
+  export type MachineCreateWithoutProsesInput = {
     name: string
     stdOutputPerHour: number
     stdOutputPerShift: number
@@ -15943,9 +19793,10 @@ export namespace Prisma {
     workCenter?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    location?: InventoryLocationCreateNestedOneWithoutMachineInput
   }
 
-  export type MachineUncheckedCreateWithoutProStepsInput = {
+  export type MachineUncheckedCreateWithoutProsesInput = {
     id?: number
     name: string
     stdOutputPerHour: number
@@ -15961,35 +19812,36 @@ export namespace Prisma {
     workCenter?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    location?: InventoryLocationUncheckedCreateNestedOneWithoutMachineInput
   }
 
-  export type MachineCreateOrConnectWithoutProStepsInput = {
+  export type MachineCreateOrConnectWithoutProsesInput = {
     where: MachineWhereUniqueInput
-    create: XOR<MachineCreateWithoutProStepsInput, MachineUncheckedCreateWithoutProStepsInput>
+    create: XOR<MachineCreateWithoutProsesInput, MachineUncheckedCreateWithoutProsesInput>
   }
 
-  export type ProStepMaterialCreateWithoutStepInput = {
+  export type ProsesMaterialCreateWithoutProsesInput = {
     qtyReq: Decimal | DecimalJsLike | number | string
-    material: MaterialCreateNestedOneWithoutProStepMaterialsInput
+    material: MaterialCreateNestedOneWithoutProsesMaterialsInput
   }
 
-  export type ProStepMaterialUncheckedCreateWithoutStepInput = {
+  export type ProsesMaterialUncheckedCreateWithoutProsesInput = {
     id?: number
     materialId: number
     qtyReq: Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepMaterialCreateOrConnectWithoutStepInput = {
-    where: ProStepMaterialWhereUniqueInput
-    create: XOR<ProStepMaterialCreateWithoutStepInput, ProStepMaterialUncheckedCreateWithoutStepInput>
+  export type ProsesMaterialCreateOrConnectWithoutProsesInput = {
+    where: ProsesMaterialWhereUniqueInput
+    create: XOR<ProsesMaterialCreateWithoutProsesInput, ProsesMaterialUncheckedCreateWithoutProsesInput>
   }
 
-  export type ProStepMaterialCreateManyStepInputEnvelope = {
-    data: ProStepMaterialCreateManyStepInput | ProStepMaterialCreateManyStepInput[]
+  export type ProsesMaterialCreateManyProsesInputEnvelope = {
+    data: ProsesMaterialCreateManyProsesInput | ProsesMaterialCreateManyProsesInput[]
     skipDuplicates?: boolean
   }
 
-  export type ProductionReportCreateWithoutStepInput = {
+  export type ProductionReportCreateWithoutProsesInput = {
     id?: string
     reportDate: Date | string
     shift: number
@@ -16024,11 +19876,17 @@ export namespace Prisma {
     status?: $Enums.ReportStatus
     rejectionNote?: string | null
     checkedAt?: Date | string | null
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
     createdBy?: UserCreateNestedOneWithoutProductionReportsInput
     checkedBy?: UserCreateNestedOneWithoutCheckedProductionReportsInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProductionReportInput
   }
 
-  export type ProductionReportUncheckedCreateWithoutStepInput = {
+  export type ProductionReportUncheckedCreateWithoutProsesInput = {
     id?: string
     reportDate: Date | string
     shift: number
@@ -16065,32 +19923,77 @@ export namespace Prisma {
     rejectionNote?: string | null
     checkedById?: string | null
     checkedAt?: Date | string | null
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProductionReportInput
   }
 
-  export type ProductionReportCreateOrConnectWithoutStepInput = {
+  export type ProductionReportCreateOrConnectWithoutProsesInput = {
     where: ProductionReportWhereUniqueInput
-    create: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput>
+    create: XOR<ProductionReportCreateWithoutProsesInput, ProductionReportUncheckedCreateWithoutProsesInput>
   }
 
-  export type ProductionReportCreateManyStepInputEnvelope = {
-    data: ProductionReportCreateManyStepInput | ProductionReportCreateManyStepInput[]
+  export type ProductionReportCreateManyProsesInputEnvelope = {
+    data: ProductionReportCreateManyProsesInput | ProductionReportCreateManyProsesInput[]
     skipDuplicates?: boolean
   }
 
-  export type ProUpsertWithoutStepsInput = {
-    update: XOR<ProUpdateWithoutStepsInput, ProUncheckedUpdateWithoutStepsInput>
-    create: XOR<ProCreateWithoutStepsInput, ProUncheckedCreateWithoutStepsInput>
+  export type InventoryTxnCreateWithoutProsesInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    notes?: string | null
+    createdAt?: Date | string
+    location: InventoryLocationCreateNestedOneWithoutTxnsInput
+    pro?: ProCreateNestedOneWithoutInventoryTxnsInput
+    productionReport?: ProductionReportCreateNestedOneWithoutInventoryTxnsInput
+  }
+
+  export type InventoryTxnUncheckedCreateWithoutProsesInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    locationId: number
+    proId?: number | null
+    productionReportId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type InventoryTxnCreateOrConnectWithoutProsesInput = {
+    where: InventoryTxnWhereUniqueInput
+    create: XOR<InventoryTxnCreateWithoutProsesInput, InventoryTxnUncheckedCreateWithoutProsesInput>
+  }
+
+  export type InventoryTxnCreateManyProsesInputEnvelope = {
+    data: InventoryTxnCreateManyProsesInput | InventoryTxnCreateManyProsesInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ProUpsertWithoutProsesInput = {
+    update: XOR<ProUpdateWithoutProsesInput, ProUncheckedUpdateWithoutProsesInput>
+    create: XOR<ProCreateWithoutProsesInput, ProUncheckedCreateWithoutProsesInput>
     where?: ProWhereInput
   }
 
-  export type ProUpdateToOneWithWhereWithoutStepsInput = {
+  export type ProUpdateToOneWithWhereWithoutProsesInput = {
     where?: ProWhereInput
-    data: XOR<ProUpdateWithoutStepsInput, ProUncheckedUpdateWithoutStepsInput>
+    data: XOR<ProUpdateWithoutProsesInput, ProUncheckedUpdateWithoutProsesInput>
   }
 
-  export type ProUpdateWithoutStepsInput = {
+  export type ProUpdateWithoutProsesInput = {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -16098,35 +20001,38 @@ export namespace Prisma {
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    process?: ProcessUpdateOneWithoutProsNestedInput
+    proPrefix?: ProPrefixUpdateOneWithoutProsNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProNestedInput
   }
 
-  export type ProUncheckedUpdateWithoutStepsInput = {
+  export type ProUncheckedUpdateWithoutProsesInput = {
     id?: IntFieldUpdateOperationsInput | number
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
-    processId?: NullableIntFieldUpdateOperationsInput | number | null
+    proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProNestedInput
   }
 
-  export type MachineUpsertWithoutProStepsInput = {
-    update: XOR<MachineUpdateWithoutProStepsInput, MachineUncheckedUpdateWithoutProStepsInput>
-    create: XOR<MachineCreateWithoutProStepsInput, MachineUncheckedCreateWithoutProStepsInput>
+  export type MachineUpsertWithoutProsesInput = {
+    update: XOR<MachineUpdateWithoutProsesInput, MachineUncheckedUpdateWithoutProsesInput>
+    create: XOR<MachineCreateWithoutProsesInput, MachineUncheckedCreateWithoutProsesInput>
     where?: MachineWhereInput
   }
 
-  export type MachineUpdateToOneWithWhereWithoutProStepsInput = {
+  export type MachineUpdateToOneWithWhereWithoutProsesInput = {
     where?: MachineWhereInput
-    data: XOR<MachineUpdateWithoutProStepsInput, MachineUncheckedUpdateWithoutProStepsInput>
+    data: XOR<MachineUpdateWithoutProsesInput, MachineUncheckedUpdateWithoutProsesInput>
   }
 
-  export type MachineUpdateWithoutProStepsInput = {
+  export type MachineUpdateWithoutProsesInput = {
     name?: StringFieldUpdateOperationsInput | string
     stdOutputPerHour?: IntFieldUpdateOperationsInput | number
     stdOutputPerShift?: IntFieldUpdateOperationsInput | number
@@ -16141,9 +20047,10 @@ export namespace Prisma {
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: InventoryLocationUpdateOneWithoutMachineNestedInput
   }
 
-  export type MachineUncheckedUpdateWithoutProStepsInput = {
+  export type MachineUncheckedUpdateWithoutProsesInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     stdOutputPerHour?: IntFieldUpdateOperationsInput | number
@@ -16159,53 +20066,71 @@ export namespace Prisma {
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: InventoryLocationUncheckedUpdateOneWithoutMachineNestedInput
   }
 
-  export type ProStepMaterialUpsertWithWhereUniqueWithoutStepInput = {
-    where: ProStepMaterialWhereUniqueInput
-    update: XOR<ProStepMaterialUpdateWithoutStepInput, ProStepMaterialUncheckedUpdateWithoutStepInput>
-    create: XOR<ProStepMaterialCreateWithoutStepInput, ProStepMaterialUncheckedCreateWithoutStepInput>
+  export type ProsesMaterialUpsertWithWhereUniqueWithoutProsesInput = {
+    where: ProsesMaterialWhereUniqueInput
+    update: XOR<ProsesMaterialUpdateWithoutProsesInput, ProsesMaterialUncheckedUpdateWithoutProsesInput>
+    create: XOR<ProsesMaterialCreateWithoutProsesInput, ProsesMaterialUncheckedCreateWithoutProsesInput>
   }
 
-  export type ProStepMaterialUpdateWithWhereUniqueWithoutStepInput = {
-    where: ProStepMaterialWhereUniqueInput
-    data: XOR<ProStepMaterialUpdateWithoutStepInput, ProStepMaterialUncheckedUpdateWithoutStepInput>
+  export type ProsesMaterialUpdateWithWhereUniqueWithoutProsesInput = {
+    where: ProsesMaterialWhereUniqueInput
+    data: XOR<ProsesMaterialUpdateWithoutProsesInput, ProsesMaterialUncheckedUpdateWithoutProsesInput>
   }
 
-  export type ProStepMaterialUpdateManyWithWhereWithoutStepInput = {
-    where: ProStepMaterialScalarWhereInput
-    data: XOR<ProStepMaterialUpdateManyMutationInput, ProStepMaterialUncheckedUpdateManyWithoutStepInput>
+  export type ProsesMaterialUpdateManyWithWhereWithoutProsesInput = {
+    where: ProsesMaterialScalarWhereInput
+    data: XOR<ProsesMaterialUpdateManyMutationInput, ProsesMaterialUncheckedUpdateManyWithoutProsesInput>
   }
 
-  export type ProductionReportUpsertWithWhereUniqueWithoutStepInput = {
+  export type ProductionReportUpsertWithWhereUniqueWithoutProsesInput = {
     where: ProductionReportWhereUniqueInput
-    update: XOR<ProductionReportUpdateWithoutStepInput, ProductionReportUncheckedUpdateWithoutStepInput>
-    create: XOR<ProductionReportCreateWithoutStepInput, ProductionReportUncheckedCreateWithoutStepInput>
+    update: XOR<ProductionReportUpdateWithoutProsesInput, ProductionReportUncheckedUpdateWithoutProsesInput>
+    create: XOR<ProductionReportCreateWithoutProsesInput, ProductionReportUncheckedCreateWithoutProsesInput>
   }
 
-  export type ProductionReportUpdateWithWhereUniqueWithoutStepInput = {
+  export type ProductionReportUpdateWithWhereUniqueWithoutProsesInput = {
     where: ProductionReportWhereUniqueInput
-    data: XOR<ProductionReportUpdateWithoutStepInput, ProductionReportUncheckedUpdateWithoutStepInput>
+    data: XOR<ProductionReportUpdateWithoutProsesInput, ProductionReportUncheckedUpdateWithoutProsesInput>
   }
 
-  export type ProductionReportUpdateManyWithWhereWithoutStepInput = {
+  export type ProductionReportUpdateManyWithWhereWithoutProsesInput = {
     where: ProductionReportScalarWhereInput
-    data: XOR<ProductionReportUpdateManyMutationInput, ProductionReportUncheckedUpdateManyWithoutStepInput>
+    data: XOR<ProductionReportUpdateManyMutationInput, ProductionReportUncheckedUpdateManyWithoutProsesInput>
   }
 
-  export type ProStepCreateWithoutMaterialsInput = {
+  export type InventoryTxnUpsertWithWhereUniqueWithoutProsesInput = {
+    where: InventoryTxnWhereUniqueInput
+    update: XOR<InventoryTxnUpdateWithoutProsesInput, InventoryTxnUncheckedUpdateWithoutProsesInput>
+    create: XOR<InventoryTxnCreateWithoutProsesInput, InventoryTxnUncheckedCreateWithoutProsesInput>
+  }
+
+  export type InventoryTxnUpdateWithWhereUniqueWithoutProsesInput = {
+    where: InventoryTxnWhereUniqueInput
+    data: XOR<InventoryTxnUpdateWithoutProsesInput, InventoryTxnUncheckedUpdateWithoutProsesInput>
+  }
+
+  export type InventoryTxnUpdateManyWithWhereWithoutProsesInput = {
+    where: InventoryTxnScalarWhereInput
+    data: XOR<InventoryTxnUpdateManyMutationInput, InventoryTxnUncheckedUpdateManyWithoutProsesInput>
+  }
+
+  export type ProsesCreateWithoutMaterialsInput = {
     orderNo: number
     up?: number | null
     estimatedShifts?: number | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
-    pro: ProCreateNestedOneWithoutStepsInput
-    machine?: MachineCreateNestedOneWithoutProStepsInput
-    productionReports?: ProductionReportCreateNestedManyWithoutStepInput
+    pro: ProCreateNestedOneWithoutProsesInput
+    machine?: MachineCreateNestedOneWithoutProsesInput
+    productionReports?: ProductionReportCreateNestedManyWithoutProsesInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProsesInput
   }
 
-  export type ProStepUncheckedCreateWithoutMaterialsInput = {
+  export type ProsesUncheckedCreateWithoutMaterialsInput = {
     id?: number
     proId: number
     orderNo: number
@@ -16215,58 +20140,62 @@ export namespace Prisma {
     machineId?: number | null
     partNumber?: string | null
     batchNo?: string | null
-    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutStepInput
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutProsesInput
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProsesInput
   }
 
-  export type ProStepCreateOrConnectWithoutMaterialsInput = {
-    where: ProStepWhereUniqueInput
-    create: XOR<ProStepCreateWithoutMaterialsInput, ProStepUncheckedCreateWithoutMaterialsInput>
+  export type ProsesCreateOrConnectWithoutMaterialsInput = {
+    where: ProsesWhereUniqueInput
+    create: XOR<ProsesCreateWithoutMaterialsInput, ProsesUncheckedCreateWithoutMaterialsInput>
   }
 
-  export type MaterialCreateWithoutProStepMaterialsInput = {
+  export type MaterialCreateWithoutProsesMaterialsInput = {
     name: string
     uom: string
+    type?: $Enums.MaterialType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
-  export type MaterialUncheckedCreateWithoutProStepMaterialsInput = {
+  export type MaterialUncheckedCreateWithoutProsesMaterialsInput = {
     id?: number
     name: string
     uom: string
+    type?: $Enums.MaterialType
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
-  export type MaterialCreateOrConnectWithoutProStepMaterialsInput = {
+  export type MaterialCreateOrConnectWithoutProsesMaterialsInput = {
     where: MaterialWhereUniqueInput
-    create: XOR<MaterialCreateWithoutProStepMaterialsInput, MaterialUncheckedCreateWithoutProStepMaterialsInput>
+    create: XOR<MaterialCreateWithoutProsesMaterialsInput, MaterialUncheckedCreateWithoutProsesMaterialsInput>
   }
 
-  export type ProStepUpsertWithoutMaterialsInput = {
-    update: XOR<ProStepUpdateWithoutMaterialsInput, ProStepUncheckedUpdateWithoutMaterialsInput>
-    create: XOR<ProStepCreateWithoutMaterialsInput, ProStepUncheckedCreateWithoutMaterialsInput>
-    where?: ProStepWhereInput
+  export type ProsesUpsertWithoutMaterialsInput = {
+    update: XOR<ProsesUpdateWithoutMaterialsInput, ProsesUncheckedUpdateWithoutMaterialsInput>
+    create: XOR<ProsesCreateWithoutMaterialsInput, ProsesUncheckedCreateWithoutMaterialsInput>
+    where?: ProsesWhereInput
   }
 
-  export type ProStepUpdateToOneWithWhereWithoutMaterialsInput = {
-    where?: ProStepWhereInput
-    data: XOR<ProStepUpdateWithoutMaterialsInput, ProStepUncheckedUpdateWithoutMaterialsInput>
+  export type ProsesUpdateToOneWithWhereWithoutMaterialsInput = {
+    where?: ProsesWhereInput
+    data: XOR<ProsesUpdateWithoutMaterialsInput, ProsesUncheckedUpdateWithoutMaterialsInput>
   }
 
-  export type ProStepUpdateWithoutMaterialsInput = {
+  export type ProsesUpdateWithoutMaterialsInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
-    pro?: ProUpdateOneRequiredWithoutStepsNestedInput
-    machine?: MachineUpdateOneWithoutProStepsNestedInput
-    productionReports?: ProductionReportUpdateManyWithoutStepNestedInput
+    pro?: ProUpdateOneRequiredWithoutProsesNestedInput
+    machine?: MachineUpdateOneWithoutProsesNestedInput
+    productionReports?: ProductionReportUpdateManyWithoutProsesNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProsesNestedInput
   }
 
-  export type ProStepUncheckedUpdateWithoutMaterialsInput = {
+  export type ProsesUncheckedUpdateWithoutMaterialsInput = {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
@@ -16276,48 +20205,52 @@ export namespace Prisma {
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
-    productionReports?: ProductionReportUncheckedUpdateManyWithoutStepNestedInput
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutProsesNestedInput
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProsesNestedInput
   }
 
-  export type MaterialUpsertWithoutProStepMaterialsInput = {
-    update: XOR<MaterialUpdateWithoutProStepMaterialsInput, MaterialUncheckedUpdateWithoutProStepMaterialsInput>
-    create: XOR<MaterialCreateWithoutProStepMaterialsInput, MaterialUncheckedCreateWithoutProStepMaterialsInput>
+  export type MaterialUpsertWithoutProsesMaterialsInput = {
+    update: XOR<MaterialUpdateWithoutProsesMaterialsInput, MaterialUncheckedUpdateWithoutProsesMaterialsInput>
+    create: XOR<MaterialCreateWithoutProsesMaterialsInput, MaterialUncheckedCreateWithoutProsesMaterialsInput>
     where?: MaterialWhereInput
   }
 
-  export type MaterialUpdateToOneWithWhereWithoutProStepMaterialsInput = {
+  export type MaterialUpdateToOneWithWhereWithoutProsesMaterialsInput = {
     where?: MaterialWhereInput
-    data: XOR<MaterialUpdateWithoutProStepMaterialsInput, MaterialUncheckedUpdateWithoutProStepMaterialsInput>
+    data: XOR<MaterialUpdateWithoutProsesMaterialsInput, MaterialUncheckedUpdateWithoutProsesMaterialsInput>
   }
 
-  export type MaterialUpdateWithoutProStepMaterialsInput = {
+  export type MaterialUpdateWithoutProsesMaterialsInput = {
     name?: StringFieldUpdateOperationsInput | string
     uom?: StringFieldUpdateOperationsInput | string
+    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type MaterialUncheckedUpdateWithoutProStepMaterialsInput = {
+  export type MaterialUncheckedUpdateWithoutProsesMaterialsInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     uom?: StringFieldUpdateOperationsInput | string
+    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ProStepCreateWithoutProductionReportsInput = {
+  export type ProsesCreateWithoutProductionReportsInput = {
     orderNo: number
     up?: number | null
     estimatedShifts?: number | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
-    pro: ProCreateNestedOneWithoutStepsInput
-    machine?: MachineCreateNestedOneWithoutProStepsInput
-    materials?: ProStepMaterialCreateNestedManyWithoutStepInput
+    pro: ProCreateNestedOneWithoutProsesInput
+    machine?: MachineCreateNestedOneWithoutProsesInput
+    materials?: ProsesMaterialCreateNestedManyWithoutProsesInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProsesInput
   }
 
-  export type ProStepUncheckedCreateWithoutProductionReportsInput = {
+  export type ProsesUncheckedCreateWithoutProductionReportsInput = {
     id?: number
     proId: number
     orderNo: number
@@ -16327,12 +20260,13 @@ export namespace Prisma {
     machineId?: number | null
     partNumber?: string | null
     batchNo?: string | null
-    materials?: ProStepMaterialUncheckedCreateNestedManyWithoutStepInput
+    materials?: ProsesMaterialUncheckedCreateNestedManyWithoutProsesInput
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProsesInput
   }
 
-  export type ProStepCreateOrConnectWithoutProductionReportsInput = {
-    where: ProStepWhereUniqueInput
-    create: XOR<ProStepCreateWithoutProductionReportsInput, ProStepUncheckedCreateWithoutProductionReportsInput>
+  export type ProsesCreateOrConnectWithoutProductionReportsInput = {
+    where: ProsesWhereUniqueInput
+    create: XOR<ProsesCreateWithoutProductionReportsInput, ProsesUncheckedCreateWithoutProductionReportsInput>
   }
 
   export type UserCreateWithoutProductionReportsInput = {
@@ -16389,30 +20323,69 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutCheckedProductionReportsInput, UserUncheckedCreateWithoutCheckedProductionReportsInput>
   }
 
-  export type ProStepUpsertWithoutProductionReportsInput = {
-    update: XOR<ProStepUpdateWithoutProductionReportsInput, ProStepUncheckedUpdateWithoutProductionReportsInput>
-    create: XOR<ProStepCreateWithoutProductionReportsInput, ProStepUncheckedCreateWithoutProductionReportsInput>
-    where?: ProStepWhereInput
+  export type InventoryTxnCreateWithoutProductionReportInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    notes?: string | null
+    createdAt?: Date | string
+    location: InventoryLocationCreateNestedOneWithoutTxnsInput
+    pro?: ProCreateNestedOneWithoutInventoryTxnsInput
+    proses?: ProsesCreateNestedOneWithoutInventoryTxnsInput
   }
 
-  export type ProStepUpdateToOneWithWhereWithoutProductionReportsInput = {
-    where?: ProStepWhereInput
-    data: XOR<ProStepUpdateWithoutProductionReportsInput, ProStepUncheckedUpdateWithoutProductionReportsInput>
+  export type InventoryTxnUncheckedCreateWithoutProductionReportInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    locationId: number
+    proId?: number | null
+    prosesId?: number | null
+    notes?: string | null
+    createdAt?: Date | string
   }
 
-  export type ProStepUpdateWithoutProductionReportsInput = {
+  export type InventoryTxnCreateOrConnectWithoutProductionReportInput = {
+    where: InventoryTxnWhereUniqueInput
+    create: XOR<InventoryTxnCreateWithoutProductionReportInput, InventoryTxnUncheckedCreateWithoutProductionReportInput>
+  }
+
+  export type InventoryTxnCreateManyProductionReportInputEnvelope = {
+    data: InventoryTxnCreateManyProductionReportInput | InventoryTxnCreateManyProductionReportInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ProsesUpsertWithoutProductionReportsInput = {
+    update: XOR<ProsesUpdateWithoutProductionReportsInput, ProsesUncheckedUpdateWithoutProductionReportsInput>
+    create: XOR<ProsesCreateWithoutProductionReportsInput, ProsesUncheckedCreateWithoutProductionReportsInput>
+    where?: ProsesWhereInput
+  }
+
+  export type ProsesUpdateToOneWithWhereWithoutProductionReportsInput = {
+    where?: ProsesWhereInput
+    data: XOR<ProsesUpdateWithoutProductionReportsInput, ProsesUncheckedUpdateWithoutProductionReportsInput>
+  }
+
+  export type ProsesUpdateWithoutProductionReportsInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
-    pro?: ProUpdateOneRequiredWithoutStepsNestedInput
-    machine?: MachineUpdateOneWithoutProStepsNestedInput
-    materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
+    pro?: ProUpdateOneRequiredWithoutProsesNestedInput
+    machine?: MachineUpdateOneWithoutProsesNestedInput
+    materials?: ProsesMaterialUpdateManyWithoutProsesNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProsesNestedInput
   }
 
-  export type ProStepUncheckedUpdateWithoutProductionReportsInput = {
+  export type ProsesUncheckedUpdateWithoutProductionReportsInput = {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
@@ -16422,7 +20395,8 @@ export namespace Prisma {
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
-    materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
+    materials?: ProsesMaterialUncheckedUpdateManyWithoutProsesNestedInput
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProsesNestedInput
   }
 
   export type UserUpsertWithoutProductionReportsInput = {
@@ -16491,9 +20465,559 @@ export namespace Prisma {
     productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
+  export type InventoryTxnUpsertWithWhereUniqueWithoutProductionReportInput = {
+    where: InventoryTxnWhereUniqueInput
+    update: XOR<InventoryTxnUpdateWithoutProductionReportInput, InventoryTxnUncheckedUpdateWithoutProductionReportInput>
+    create: XOR<InventoryTxnCreateWithoutProductionReportInput, InventoryTxnUncheckedCreateWithoutProductionReportInput>
+  }
+
+  export type InventoryTxnUpdateWithWhereUniqueWithoutProductionReportInput = {
+    where: InventoryTxnWhereUniqueInput
+    data: XOR<InventoryTxnUpdateWithoutProductionReportInput, InventoryTxnUncheckedUpdateWithoutProductionReportInput>
+  }
+
+  export type InventoryTxnUpdateManyWithWhereWithoutProductionReportInput = {
+    where: InventoryTxnScalarWhereInput
+    data: XOR<InventoryTxnUpdateManyMutationInput, InventoryTxnUncheckedUpdateManyWithoutProductionReportInput>
+  }
+
+  export type MachineCreateWithoutLocationInput = {
+    name: string
+    stdOutputPerHour: number
+    stdOutputPerShift: number
+    uom: $Enums.Uom
+    type?: $Enums.MachineType
+    remark?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    proses?: ProsesCreateNestedManyWithoutMachineInput
+  }
+
+  export type MachineUncheckedCreateWithoutLocationInput = {
+    id?: number
+    name: string
+    stdOutputPerHour: number
+    stdOutputPerShift: number
+    uom: $Enums.Uom
+    type?: $Enums.MachineType
+    remark?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    proses?: ProsesUncheckedCreateNestedManyWithoutMachineInput
+  }
+
+  export type MachineCreateOrConnectWithoutLocationInput = {
+    where: MachineWhereUniqueInput
+    create: XOR<MachineCreateWithoutLocationInput, MachineUncheckedCreateWithoutLocationInput>
+  }
+
+  export type InventoryTxnCreateWithoutLocationInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    notes?: string | null
+    createdAt?: Date | string
+    pro?: ProCreateNestedOneWithoutInventoryTxnsInput
+    proses?: ProsesCreateNestedOneWithoutInventoryTxnsInput
+    productionReport?: ProductionReportCreateNestedOneWithoutInventoryTxnsInput
+  }
+
+  export type InventoryTxnUncheckedCreateWithoutLocationInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    proId?: number | null
+    prosesId?: number | null
+    productionReportId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type InventoryTxnCreateOrConnectWithoutLocationInput = {
+    where: InventoryTxnWhereUniqueInput
+    create: XOR<InventoryTxnCreateWithoutLocationInput, InventoryTxnUncheckedCreateWithoutLocationInput>
+  }
+
+  export type InventoryTxnCreateManyLocationInputEnvelope = {
+    data: InventoryTxnCreateManyLocationInput | InventoryTxnCreateManyLocationInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type MachineUpsertWithoutLocationInput = {
+    update: XOR<MachineUpdateWithoutLocationInput, MachineUncheckedUpdateWithoutLocationInput>
+    create: XOR<MachineCreateWithoutLocationInput, MachineUncheckedCreateWithoutLocationInput>
+    where?: MachineWhereInput
+  }
+
+  export type MachineUpdateToOneWithWhereWithoutLocationInput = {
+    where?: MachineWhereInput
+    data: XOR<MachineUpdateWithoutLocationInput, MachineUncheckedUpdateWithoutLocationInput>
+  }
+
+  export type MachineUpdateWithoutLocationInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    stdOutputPerHour?: IntFieldUpdateOperationsInput | number
+    stdOutputPerShift?: IntFieldUpdateOperationsInput | number
+    uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
+    remark?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    proses?: ProsesUpdateManyWithoutMachineNestedInput
+  }
+
+  export type MachineUncheckedUpdateWithoutLocationInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    stdOutputPerHour?: IntFieldUpdateOperationsInput | number
+    stdOutputPerShift?: IntFieldUpdateOperationsInput | number
+    uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
+    remark?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    proses?: ProsesUncheckedUpdateManyWithoutMachineNestedInput
+  }
+
+  export type InventoryTxnUpsertWithWhereUniqueWithoutLocationInput = {
+    where: InventoryTxnWhereUniqueInput
+    update: XOR<InventoryTxnUpdateWithoutLocationInput, InventoryTxnUncheckedUpdateWithoutLocationInput>
+    create: XOR<InventoryTxnCreateWithoutLocationInput, InventoryTxnUncheckedCreateWithoutLocationInput>
+  }
+
+  export type InventoryTxnUpdateWithWhereUniqueWithoutLocationInput = {
+    where: InventoryTxnWhereUniqueInput
+    data: XOR<InventoryTxnUpdateWithoutLocationInput, InventoryTxnUncheckedUpdateWithoutLocationInput>
+  }
+
+  export type InventoryTxnUpdateManyWithWhereWithoutLocationInput = {
+    where: InventoryTxnScalarWhereInput
+    data: XOR<InventoryTxnUpdateManyMutationInput, InventoryTxnUncheckedUpdateManyWithoutLocationInput>
+  }
+
+  export type InventoryLocationCreateWithoutTxnsInput = {
+    code: string
+    name: string
+    type: $Enums.LocationType
+    machine?: MachineCreateNestedOneWithoutLocationInput
+  }
+
+  export type InventoryLocationUncheckedCreateWithoutTxnsInput = {
+    id?: number
+    code: string
+    name: string
+    type: $Enums.LocationType
+    machineId?: number | null
+  }
+
+  export type InventoryLocationCreateOrConnectWithoutTxnsInput = {
+    where: InventoryLocationWhereUniqueInput
+    create: XOR<InventoryLocationCreateWithoutTxnsInput, InventoryLocationUncheckedCreateWithoutTxnsInput>
+  }
+
+  export type ProCreateWithoutInventoryTxnsInput = {
+    proNumber: string
+    productName: string
+    partNumber?: string | null
+    qtyPoPcs: number
+    startDate?: Date | string | null
+    status?: $Enums.ProStatus
+    type?: $Enums.ProType
+    autoShiftExpansion?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    proPrefix?: ProPrefixCreateNestedOneWithoutProsInput
+    proses?: ProsesCreateNestedManyWithoutProInput
+  }
+
+  export type ProUncheckedCreateWithoutInventoryTxnsInput = {
+    id?: number
+    proNumber: string
+    productName: string
+    partNumber?: string | null
+    qtyPoPcs: number
+    startDate?: Date | string | null
+    status?: $Enums.ProStatus
+    type?: $Enums.ProType
+    autoShiftExpansion?: boolean
+    proPrefixId?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    proses?: ProsesUncheckedCreateNestedManyWithoutProInput
+  }
+
+  export type ProCreateOrConnectWithoutInventoryTxnsInput = {
+    where: ProWhereUniqueInput
+    create: XOR<ProCreateWithoutInventoryTxnsInput, ProUncheckedCreateWithoutInventoryTxnsInput>
+  }
+
+  export type ProsesCreateWithoutInventoryTxnsInput = {
+    orderNo: number
+    up?: number | null
+    estimatedShifts?: number | null
+    startDate?: Date | string | null
+    partNumber?: string | null
+    batchNo?: string | null
+    pro: ProCreateNestedOneWithoutProsesInput
+    machine?: MachineCreateNestedOneWithoutProsesInput
+    materials?: ProsesMaterialCreateNestedManyWithoutProsesInput
+    productionReports?: ProductionReportCreateNestedManyWithoutProsesInput
+  }
+
+  export type ProsesUncheckedCreateWithoutInventoryTxnsInput = {
+    id?: number
+    proId: number
+    orderNo: number
+    up?: number | null
+    estimatedShifts?: number | null
+    startDate?: Date | string | null
+    machineId?: number | null
+    partNumber?: string | null
+    batchNo?: string | null
+    materials?: ProsesMaterialUncheckedCreateNestedManyWithoutProsesInput
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutProsesInput
+  }
+
+  export type ProsesCreateOrConnectWithoutInventoryTxnsInput = {
+    where: ProsesWhereUniqueInput
+    create: XOR<ProsesCreateWithoutInventoryTxnsInput, ProsesUncheckedCreateWithoutInventoryTxnsInput>
+  }
+
+  export type ProductionReportCreateWithoutInventoryTxnsInput = {
+    id?: string
+    reportDate: Date | string
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    batchNo?: string | null
+    manPowerStd?: number | null
+    manPowerAct?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    cavityAct?: number | null
+    inputMaterialQty?: Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: Decimal | DecimalJsLike | number | string | null
+    qtyHold?: Decimal | DecimalJsLike | number | string | null
+    qtyWip?: Decimal | DecimalJsLike | number | string | null
+    qtyGood?: Decimal | DecimalJsLike | number | string
+    qtyReject?: Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: number
+    notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedAt?: Date | string | null
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
+    proses: ProsesCreateNestedOneWithoutProductionReportsInput
+    createdBy?: UserCreateNestedOneWithoutProductionReportsInput
+    checkedBy?: UserCreateNestedOneWithoutCheckedProductionReportsInput
+  }
+
+  export type ProductionReportUncheckedCreateWithoutInventoryTxnsInput = {
+    id?: string
+    prosesId: number
+    reportDate: Date | string
+    shift: number
+    operatorName: string
+    reportType: $Enums.LphType
+    startTime?: Date | string | null
+    endTime?: Date | string | null
+    batchNo?: string | null
+    manPowerStd?: number | null
+    manPowerAct?: number | null
+    cycleTimeStd?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: Decimal | DecimalJsLike | number | string | null
+    cavityStd?: number | null
+    cavityAct?: number | null
+    inputMaterialQty?: Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: Decimal | DecimalJsLike | number | string | null
+    qtyHold?: Decimal | DecimalJsLike | number | string | null
+    qtyWip?: Decimal | DecimalJsLike | number | string | null
+    qtyGood?: Decimal | DecimalJsLike | number | string
+    qtyReject?: Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: number
+    notes?: string | null
+    othersNote?: string | null
+    adminNote?: string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.ReportStatus
+    rejectionNote?: string | null
+    checkedById?: string | null
+    checkedAt?: Date | string | null
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type ProductionReportCreateOrConnectWithoutInventoryTxnsInput = {
+    where: ProductionReportWhereUniqueInput
+    create: XOR<ProductionReportCreateWithoutInventoryTxnsInput, ProductionReportUncheckedCreateWithoutInventoryTxnsInput>
+  }
+
+  export type InventoryLocationUpsertWithoutTxnsInput = {
+    update: XOR<InventoryLocationUpdateWithoutTxnsInput, InventoryLocationUncheckedUpdateWithoutTxnsInput>
+    create: XOR<InventoryLocationCreateWithoutTxnsInput, InventoryLocationUncheckedCreateWithoutTxnsInput>
+    where?: InventoryLocationWhereInput
+  }
+
+  export type InventoryLocationUpdateToOneWithWhereWithoutTxnsInput = {
+    where?: InventoryLocationWhereInput
+    data: XOR<InventoryLocationUpdateWithoutTxnsInput, InventoryLocationUncheckedUpdateWithoutTxnsInput>
+  }
+
+  export type InventoryLocationUpdateWithoutTxnsInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    machine?: MachineUpdateOneWithoutLocationNestedInput
+  }
+
+  export type InventoryLocationUncheckedUpdateWithoutTxnsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumLocationTypeFieldUpdateOperationsInput | $Enums.LocationType
+    machineId?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type ProUpsertWithoutInventoryTxnsInput = {
+    update: XOR<ProUpdateWithoutInventoryTxnsInput, ProUncheckedUpdateWithoutInventoryTxnsInput>
+    create: XOR<ProCreateWithoutInventoryTxnsInput, ProUncheckedCreateWithoutInventoryTxnsInput>
+    where?: ProWhereInput
+  }
+
+  export type ProUpdateToOneWithWhereWithoutInventoryTxnsInput = {
+    where?: ProWhereInput
+    data: XOR<ProUpdateWithoutInventoryTxnsInput, ProUncheckedUpdateWithoutInventoryTxnsInput>
+  }
+
+  export type ProUpdateWithoutInventoryTxnsInput = {
+    proNumber?: StringFieldUpdateOperationsInput | string
+    productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    qtyPoPcs?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    proPrefix?: ProPrefixUpdateOneWithoutProsNestedInput
+    proses?: ProsesUpdateManyWithoutProNestedInput
+  }
+
+  export type ProUncheckedUpdateWithoutInventoryTxnsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    proNumber?: StringFieldUpdateOperationsInput | string
+    productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    qtyPoPcs?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
+    proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    proses?: ProsesUncheckedUpdateManyWithoutProNestedInput
+  }
+
+  export type ProsesUpsertWithoutInventoryTxnsInput = {
+    update: XOR<ProsesUpdateWithoutInventoryTxnsInput, ProsesUncheckedUpdateWithoutInventoryTxnsInput>
+    create: XOR<ProsesCreateWithoutInventoryTxnsInput, ProsesUncheckedCreateWithoutInventoryTxnsInput>
+    where?: ProsesWhereInput
+  }
+
+  export type ProsesUpdateToOneWithWhereWithoutInventoryTxnsInput = {
+    where?: ProsesWhereInput
+    data: XOR<ProsesUpdateWithoutInventoryTxnsInput, ProsesUncheckedUpdateWithoutInventoryTxnsInput>
+  }
+
+  export type ProsesUpdateWithoutInventoryTxnsInput = {
+    orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    pro?: ProUpdateOneRequiredWithoutProsesNestedInput
+    machine?: MachineUpdateOneWithoutProsesNestedInput
+    materials?: ProsesMaterialUpdateManyWithoutProsesNestedInput
+    productionReports?: ProductionReportUpdateManyWithoutProsesNestedInput
+  }
+
+  export type ProsesUncheckedUpdateWithoutInventoryTxnsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    proId?: IntFieldUpdateOperationsInput | number
+    orderNo?: IntFieldUpdateOperationsInput | number
+    up?: NullableIntFieldUpdateOperationsInput | number | null
+    estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    machineId?: NullableIntFieldUpdateOperationsInput | number | null
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    materials?: ProsesMaterialUncheckedUpdateManyWithoutProsesNestedInput
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutProsesNestedInput
+  }
+
+  export type ProductionReportUpsertWithoutInventoryTxnsInput = {
+    update: XOR<ProductionReportUpdateWithoutInventoryTxnsInput, ProductionReportUncheckedUpdateWithoutInventoryTxnsInput>
+    create: XOR<ProductionReportCreateWithoutInventoryTxnsInput, ProductionReportUncheckedCreateWithoutInventoryTxnsInput>
+    where?: ProductionReportWhereInput
+  }
+
+  export type ProductionReportUpdateToOneWithWhereWithoutInventoryTxnsInput = {
+    where?: ProductionReportWhereInput
+    data: XOR<ProductionReportUpdateWithoutInventoryTxnsInput, ProductionReportUncheckedUpdateWithoutInventoryTxnsInput>
+  }
+
+  export type ProductionReportUpdateWithoutInventoryTxnsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    proses?: ProsesUpdateOneRequiredWithoutProductionReportsNestedInput
+    createdBy?: UserUpdateOneWithoutProductionReportsNestedInput
+    checkedBy?: UserUpdateOneWithoutCheckedProductionReportsNestedInput
+  }
+
+  export type ProductionReportUncheckedUpdateWithoutInventoryTxnsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    prosesId?: IntFieldUpdateOperationsInput | number
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    shift?: IntFieldUpdateOperationsInput | number
+    operatorName?: StringFieldUpdateOperationsInput | string
+    reportType?: EnumLphTypeFieldUpdateOperationsInput | $Enums.LphType
+    startTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+    manPowerStd?: NullableIntFieldUpdateOperationsInput | number | null
+    manPowerAct?: NullableIntFieldUpdateOperationsInput | number | null
+    cycleTimeStd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeAct?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavityStd?: NullableIntFieldUpdateOperationsInput | number | null
+    cavityAct?: NullableIntFieldUpdateOperationsInput | number | null
+    inputMaterialQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialRunnerQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    materialPurgeQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
+    totalDowntime?: IntFieldUpdateOperationsInput | number
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    othersNote?: NullableStringFieldUpdateOperationsInput | string | null
+    adminNote?: NullableStringFieldUpdateOperationsInput | string | null
+    metaData?: NullableJsonNullValueInput | InputJsonValue
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
+    rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedById?: NullableStringFieldUpdateOperationsInput | string | null
+    checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+  }
+
   export type ProductionReportCreateManyCreatedByInput = {
     id?: string
-    proStepId: number
+    prosesId: number
     reportDate: Date | string
     shift: number
     operatorName: string
@@ -16528,11 +21052,16 @@ export namespace Prisma {
     rejectionNote?: string | null
     checkedById?: string | null
     checkedAt?: Date | string | null
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
   }
 
   export type ProductionReportCreateManyCheckedByInput = {
     id?: string
-    proStepId: number
+    prosesId: number
     reportDate: Date | string
     shift: number
     operatorName: string
@@ -16567,6 +21096,11 @@ export namespace Prisma {
     status?: $Enums.ReportStatus
     rejectionNote?: string | null
     checkedAt?: Date | string | null
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
   }
 
   export type ProductionReportUpdateWithoutCreatedByInput = {
@@ -16604,13 +21138,19 @@ export namespace Prisma {
     status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    step?: ProStepUpdateOneRequiredWithoutProductionReportsNestedInput
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    proses?: ProsesUpdateOneRequiredWithoutProductionReportsNestedInput
     checkedBy?: UserUpdateOneWithoutCheckedProductionReportsNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProductionReportNestedInput
   }
 
   export type ProductionReportUncheckedUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    proStepId?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     shift?: IntFieldUpdateOperationsInput | number
     operatorName?: StringFieldUpdateOperationsInput | string
@@ -16645,11 +21185,17 @@ export namespace Prisma {
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedById?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProductionReportNestedInput
   }
 
   export type ProductionReportUncheckedUpdateManyWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    proStepId?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     shift?: IntFieldUpdateOperationsInput | number
     operatorName?: StringFieldUpdateOperationsInput | string
@@ -16684,6 +21230,11 @@ export namespace Prisma {
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedById?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
   }
 
   export type ProductionReportUpdateWithoutCheckedByInput = {
@@ -16721,13 +21272,19 @@ export namespace Prisma {
     status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    step?: ProStepUpdateOneRequiredWithoutProductionReportsNestedInput
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    proses?: ProsesUpdateOneRequiredWithoutProductionReportsNestedInput
     createdBy?: UserUpdateOneWithoutProductionReportsNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProductionReportNestedInput
   }
 
   export type ProductionReportUncheckedUpdateWithoutCheckedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    proStepId?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     shift?: IntFieldUpdateOperationsInput | number
     operatorName?: StringFieldUpdateOperationsInput | string
@@ -16762,11 +21319,17 @@ export namespace Prisma {
     status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProductionReportNestedInput
   }
 
   export type ProductionReportUncheckedUpdateManyWithoutCheckedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    proStepId?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     shift?: IntFieldUpdateOperationsInput | number
     operatorName?: StringFieldUpdateOperationsInput | string
@@ -16801,9 +21364,14 @@ export namespace Prisma {
     status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
   }
 
-  export type ProStepCreateManyMachineInput = {
+  export type ProsesCreateManyMachineInput = {
     id?: number
     proId: number
     orderNo: number
@@ -16814,19 +21382,20 @@ export namespace Prisma {
     batchNo?: string | null
   }
 
-  export type ProStepUpdateWithoutMachineInput = {
+  export type ProsesUpdateWithoutMachineInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
-    pro?: ProUpdateOneRequiredWithoutStepsNestedInput
-    materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
-    productionReports?: ProductionReportUpdateManyWithoutStepNestedInput
+    pro?: ProUpdateOneRequiredWithoutProsesNestedInput
+    materials?: ProsesMaterialUpdateManyWithoutProsesNestedInput
+    productionReports?: ProductionReportUpdateManyWithoutProsesNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProsesNestedInput
   }
 
-  export type ProStepUncheckedUpdateWithoutMachineInput = {
+  export type ProsesUncheckedUpdateWithoutMachineInput = {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
@@ -16835,11 +21404,12 @@ export namespace Prisma {
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
-    materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
-    productionReports?: ProductionReportUncheckedUpdateManyWithoutStepNestedInput
+    materials?: ProsesMaterialUncheckedUpdateManyWithoutProsesNestedInput
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutProsesNestedInput
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProsesNestedInput
   }
 
-  export type ProStepUncheckedUpdateManyWithoutMachineInput = {
+  export type ProsesUncheckedUpdateManyWithoutMachineInput = {
     id?: IntFieldUpdateOperationsInput | number
     proId?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
@@ -16850,33 +21420,34 @@ export namespace Prisma {
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type ProStepMaterialCreateManyMaterialInput = {
+  export type ProsesMaterialCreateManyMaterialInput = {
     id?: number
-    stepId: number
+    prosesId: number
     qtyReq: Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepMaterialUpdateWithoutMaterialInput = {
+  export type ProsesMaterialUpdateWithoutMaterialInput = {
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    step?: ProStepUpdateOneRequiredWithoutMaterialsNestedInput
+    proses?: ProsesUpdateOneRequiredWithoutMaterialsNestedInput
   }
 
-  export type ProStepMaterialUncheckedUpdateWithoutMaterialInput = {
+  export type ProsesMaterialUncheckedUpdateWithoutMaterialInput = {
     id?: IntFieldUpdateOperationsInput | number
-    stepId?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepMaterialUncheckedUpdateManyWithoutMaterialInput = {
+  export type ProsesMaterialUncheckedUpdateManyWithoutMaterialInput = {
     id?: IntFieldUpdateOperationsInput | number
-    stepId?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
-  export type ProCreateManyProcessInput = {
+  export type ProCreateManyProPrefixInput = {
     id?: number
     proNumber: string
     productName: string
+    partNumber?: string | null
     qtyPoPcs: number
     startDate?: Date | string | null
     status?: $Enums.ProStatus
@@ -16886,9 +21457,10 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type ProUpdateWithoutProcessInput = {
+  export type ProUpdateWithoutProPrefixInput = {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -16896,13 +21468,15 @@ export namespace Prisma {
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    steps?: ProStepUpdateManyWithoutProNestedInput
+    proses?: ProsesUpdateManyWithoutProNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProNestedInput
   }
 
-  export type ProUncheckedUpdateWithoutProcessInput = {
+  export type ProUncheckedUpdateWithoutProPrefixInput = {
     id?: IntFieldUpdateOperationsInput | number
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -16910,13 +21484,15 @@ export namespace Prisma {
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    steps?: ProStepUncheckedUpdateManyWithoutProNestedInput
+    proses?: ProsesUncheckedUpdateManyWithoutProNestedInput
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProNestedInput
   }
 
-  export type ProUncheckedUpdateManyWithoutProcessInput = {
+  export type ProUncheckedUpdateManyWithoutProPrefixInput = {
     id?: IntFieldUpdateOperationsInput | number
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     qtyPoPcs?: IntFieldUpdateOperationsInput | number
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
@@ -16926,7 +21502,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ProStepCreateManyProInput = {
+  export type ProsesCreateManyProInput = {
     id?: number
     orderNo: number
     up?: number | null
@@ -16937,19 +21513,34 @@ export namespace Prisma {
     batchNo?: string | null
   }
 
-  export type ProStepUpdateWithoutProInput = {
+  export type InventoryTxnCreateManyProInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    locationId: number
+    prosesId?: number | null
+    productionReportId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type ProsesUpdateWithoutProInput = {
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
-    machine?: MachineUpdateOneWithoutProStepsNestedInput
-    materials?: ProStepMaterialUpdateManyWithoutStepNestedInput
-    productionReports?: ProductionReportUpdateManyWithoutStepNestedInput
+    machine?: MachineUpdateOneWithoutProsesNestedInput
+    materials?: ProsesMaterialUpdateManyWithoutProsesNestedInput
+    productionReports?: ProductionReportUpdateManyWithoutProsesNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProsesNestedInput
   }
 
-  export type ProStepUncheckedUpdateWithoutProInput = {
+  export type ProsesUncheckedUpdateWithoutProInput = {
     id?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
@@ -16958,11 +21549,12 @@ export namespace Prisma {
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
-    materials?: ProStepMaterialUncheckedUpdateManyWithoutStepNestedInput
-    productionReports?: ProductionReportUncheckedUpdateManyWithoutStepNestedInput
+    materials?: ProsesMaterialUncheckedUpdateManyWithoutProsesNestedInput
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutProsesNestedInput
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProsesNestedInput
   }
 
-  export type ProStepUncheckedUpdateManyWithoutProInput = {
+  export type ProsesUncheckedUpdateManyWithoutProInput = {
     id?: IntFieldUpdateOperationsInput | number
     orderNo?: IntFieldUpdateOperationsInput | number
     up?: NullableIntFieldUpdateOperationsInput | number | null
@@ -16973,13 +21565,55 @@ export namespace Prisma {
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type ProStepMaterialCreateManyStepInput = {
+  export type InventoryTxnUpdateWithoutProInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: InventoryLocationUpdateOneRequiredWithoutTxnsNestedInput
+    proses?: ProsesUpdateOneWithoutInventoryTxnsNestedInput
+    productionReport?: ProductionReportUpdateOneWithoutInventoryTxnsNestedInput
+  }
+
+  export type InventoryTxnUncheckedUpdateWithoutProInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    locationId?: IntFieldUpdateOperationsInput | number
+    prosesId?: NullableIntFieldUpdateOperationsInput | number | null
+    productionReportId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InventoryTxnUncheckedUpdateManyWithoutProInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    locationId?: IntFieldUpdateOperationsInput | number
+    prosesId?: NullableIntFieldUpdateOperationsInput | number | null
+    productionReportId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProsesMaterialCreateManyProsesInput = {
     id?: number
     materialId: number
     qtyReq: Decimal | DecimalJsLike | number | string
   }
 
-  export type ProductionReportCreateManyStepInput = {
+  export type ProductionReportCreateManyProsesInput = {
     id?: string
     reportDate: Date | string
     shift: number
@@ -17016,26 +21650,45 @@ export namespace Prisma {
     rejectionNote?: string | null
     checkedById?: string | null
     checkedAt?: Date | string | null
+    voidedAt?: Date | string | null
+    voidedById?: string | null
+    voidReason?: string | null
+    stockPostedAt?: Date | string | null
+    inputWipQty?: Decimal | DecimalJsLike | number | string | null
   }
 
-  export type ProStepMaterialUpdateWithoutStepInput = {
+  export type InventoryTxnCreateManyProsesInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    locationId: number
+    proId?: number | null
+    productionReportId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type ProsesMaterialUpdateWithoutProsesInput = {
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    material?: MaterialUpdateOneRequiredWithoutProStepMaterialsNestedInput
+    material?: MaterialUpdateOneRequiredWithoutProsesMaterialsNestedInput
   }
 
-  export type ProStepMaterialUncheckedUpdateWithoutStepInput = {
+  export type ProsesMaterialUncheckedUpdateWithoutProsesInput = {
     id?: IntFieldUpdateOperationsInput | number
     materialId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
-  export type ProStepMaterialUncheckedUpdateManyWithoutStepInput = {
+  export type ProsesMaterialUncheckedUpdateManyWithoutProsesInput = {
     id?: IntFieldUpdateOperationsInput | number
     materialId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
-  export type ProductionReportUpdateWithoutStepInput = {
+  export type ProductionReportUpdateWithoutProsesInput = {
     id?: StringFieldUpdateOperationsInput | string
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     shift?: IntFieldUpdateOperationsInput | number
@@ -17070,11 +21723,17 @@ export namespace Prisma {
     status?: EnumReportStatusFieldUpdateOperationsInput | $Enums.ReportStatus
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     createdBy?: UserUpdateOneWithoutProductionReportsNestedInput
     checkedBy?: UserUpdateOneWithoutCheckedProductionReportsNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProductionReportNestedInput
   }
 
-  export type ProductionReportUncheckedUpdateWithoutStepInput = {
+  export type ProductionReportUncheckedUpdateWithoutProsesInput = {
     id?: StringFieldUpdateOperationsInput | string
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     shift?: IntFieldUpdateOperationsInput | number
@@ -17111,9 +21770,15 @@ export namespace Prisma {
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedById?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProductionReportNestedInput
   }
 
-  export type ProductionReportUncheckedUpdateManyWithoutStepInput = {
+  export type ProductionReportUncheckedUpdateManyWithoutProsesInput = {
     id?: StringFieldUpdateOperationsInput | string
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     shift?: IntFieldUpdateOperationsInput | number
@@ -17150,6 +21815,165 @@ export namespace Prisma {
     rejectionNote?: NullableStringFieldUpdateOperationsInput | string | null
     checkedById?: NullableStringFieldUpdateOperationsInput | string | null
     checkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    voidedById?: NullableStringFieldUpdateOperationsInput | string | null
+    voidReason?: NullableStringFieldUpdateOperationsInput | string | null
+    stockPostedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inputWipQty?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type InventoryTxnUpdateWithoutProsesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: InventoryLocationUpdateOneRequiredWithoutTxnsNestedInput
+    pro?: ProUpdateOneWithoutInventoryTxnsNestedInput
+    productionReport?: ProductionReportUpdateOneWithoutInventoryTxnsNestedInput
+  }
+
+  export type InventoryTxnUncheckedUpdateWithoutProsesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    locationId?: IntFieldUpdateOperationsInput | number
+    proId?: NullableIntFieldUpdateOperationsInput | number | null
+    productionReportId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InventoryTxnUncheckedUpdateManyWithoutProsesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    locationId?: IntFieldUpdateOperationsInput | number
+    proId?: NullableIntFieldUpdateOperationsInput | number | null
+    productionReportId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InventoryTxnCreateManyProductionReportInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    locationId: number
+    proId?: number | null
+    prosesId?: number | null
+    notes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type InventoryTxnUpdateWithoutProductionReportInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    location?: InventoryLocationUpdateOneRequiredWithoutTxnsNestedInput
+    pro?: ProUpdateOneWithoutInventoryTxnsNestedInput
+    proses?: ProsesUpdateOneWithoutInventoryTxnsNestedInput
+  }
+
+  export type InventoryTxnUncheckedUpdateWithoutProductionReportInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    locationId?: IntFieldUpdateOperationsInput | number
+    proId?: NullableIntFieldUpdateOperationsInput | number | null
+    prosesId?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InventoryTxnUncheckedUpdateManyWithoutProductionReportInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    locationId?: IntFieldUpdateOperationsInput | number
+    proId?: NullableIntFieldUpdateOperationsInput | number | null
+    prosesId?: NullableIntFieldUpdateOperationsInput | number | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InventoryTxnCreateManyLocationInput = {
+    id?: string
+    groupId?: string
+    date?: Date | string
+    type: $Enums.TxnType
+    itemId: string
+    qty: Decimal | DecimalJsLike | number | string
+    proId?: number | null
+    prosesId?: number | null
+    productionReportId?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type InventoryTxnUpdateWithoutLocationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    pro?: ProUpdateOneWithoutInventoryTxnsNestedInput
+    proses?: ProsesUpdateOneWithoutInventoryTxnsNestedInput
+    productionReport?: ProductionReportUpdateOneWithoutInventoryTxnsNestedInput
+  }
+
+  export type InventoryTxnUncheckedUpdateWithoutLocationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    proId?: NullableIntFieldUpdateOperationsInput | number | null
+    prosesId?: NullableIntFieldUpdateOperationsInput | number | null
+    productionReportId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InventoryTxnUncheckedUpdateManyWithoutLocationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    type?: EnumTxnTypeFieldUpdateOperationsInput | $Enums.TxnType
+    itemId?: StringFieldUpdateOperationsInput | string
+    qty?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    proId?: NullableIntFieldUpdateOperationsInput | number | null
+    prosesId?: NullableIntFieldUpdateOperationsInput | number | null
+    productionReportId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

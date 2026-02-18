@@ -33,7 +33,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 
-type Status = "OPEN" | "IN_PROGRESS" | "CLOSED" | "CANCELLED";
+type Status = "OPEN" | "IN_PROGRESS" | "COMPLETE" | "CLOSED" | "CANCELLED";
 
 function fmtDate(d?: Date | string | null) {
   if (!d) return "-";
@@ -323,6 +323,7 @@ export default function ProList({
   const [proTypeDraft, setProTypeDraft] = React.useState<
     "PAPER" | "RIGID" | "OTHER"
   >("PAPER"); // Added
+  const [partNumberDraft, setPartNumberDraft] = React.useState(""); // Added
 
   const openAddStep = () => {
     setEditingStepKey(null);
@@ -565,13 +566,14 @@ export default function ProList({
           {
             ...previousDetail,
             productName: variables.productName,
+            partNumber: variables.partNumber, // Added
             qtyPoPcs: variables.qtyPoPcs,
             startDate: variables.startDate ?? previousDetail.startDate,
             status: variables.status ?? previousDetail.status,
-            processId: variables.processId,
-            steps: variables.steps
+            proPrefixId: variables.proPrefixId, // Updated
+            proses: variables.proses
               .map((stepInput: any, idx: number) => {
-                const existingStep = previousDetail.steps[idx];
+                const existingStep = previousDetail.proses[idx];
                 if (!existingStep) return null;
                 return {
                   ...existingStep,
@@ -599,7 +601,8 @@ export default function ProList({
                     qtyPoPcs: variables.qtyPoPcs,
                     startDate: variables.startDate ?? pro.startDate,
                     status: variables.status ?? pro.status,
-                    type: variables.type ?? (pro as any).type, // Added
+                    type: variables.type ?? (pro as any).type,
+                    proPrefixId: variables.proPrefixId, // Updated
                   }
                 : pro,
             ),
@@ -677,9 +680,11 @@ export default function ProList({
     setQtyPoPcs(String(detail.data.qtyPoPcs ?? ""));
     // Get batch no from first step if available (assuming all same for RIGID)
     // Get batch no from first step if available (assuming all same for RIGID)
-    const firstStep = detail.data.steps.find((s) => (s as any).batchNo);
+    // Get batch no from first step if available (assuming all same for RIGID)
+    const firstStep = detail.data.proses.find((s) => (s as any).batchNo);
     const firstBatch = firstStep ? (firstStep as any).batchNo : "";
     setBatchNo(firstBatch ?? "");
+    setPartNumberDraft((detail.data as any).partNumber ?? ""); // Added
   }, [detail.data]);
 
   const [err, setErr] = React.useState<string | null>(null);
@@ -702,7 +707,7 @@ export default function ProList({
 
   const toDraftSteps = React.useCallback((): StepDraft[] => {
     if (!detail.data) return [];
-    return detail.data.steps.map((s) => {
+    return detail.data.proses.map((s) => {
       const dt = s.startDate ? new Date(s.startDate) : null;
       return {
         key: String(s.id),
@@ -731,8 +736,9 @@ export default function ProList({
     setStepDrafts(toDraftSteps());
     setStatusDraft((detail.data?.status as Status) ?? "OPEN");
     setExpandDraft(false);
-    setProcessDraftId(detail.data?.processId ?? null);
-    setProTypeDraft((detail.data as any).type ?? "PAPER"); // Added
+    setProcessDraftId(detail.data?.proPrefixId ?? null); // Updated
+    setProTypeDraft((detail.data as any).type ?? "PAPER");
+    setPartNumberDraft((detail.data as any).partNumber ?? ""); // Added
   };
 
   const cancelEdit = () => {
@@ -743,7 +749,7 @@ export default function ProList({
     setProductName(detail.data.productName ?? "");
     setQtyPoPcs(String(detail.data.qtyPoPcs ?? ""));
     setQtyPoPcs(String(detail.data.qtyPoPcs ?? ""));
-    const firstStep = detail.data.steps.find((s) => (s as any).batchNo);
+    const firstStep = detail.data.proses.find((s) => (s as any).batchNo);
     const firstBatch = firstStep ? (firstStep as any).batchNo : "";
     setBatchNo(firstBatch ?? "");
   };
@@ -792,11 +798,12 @@ export default function ProList({
     await update.mutateAsync({
       id: selectedId,
       productName: prod,
+      partNumber: partNumberDraft, // Added
       qtyPoPcs: qty,
-      startDate: newStartDate, // Sync PRO start date with first step
+      startDate: newStartDate,
       status: statusDraft,
-      processId: processDraftId,
-      steps: drafts
+      proPrefixId: processDraftId, // Updated
+      proses: drafts
         .slice()
         .sort((a, b) => a.orderNo - b.orderNo)
         .map((s) => ({
@@ -885,6 +892,13 @@ export default function ProList({
             )}
           </div>
         </div>
+
+        {err && (
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/50 dark:text-red-300">
+            {err}
+          </div>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>Detail PRO</CardTitle>
@@ -926,20 +940,20 @@ export default function ProList({
 
               {!editing ? (
                 <Info
-                  label="Proses (Prefix)"
+                  label="Prefix / Kategori"
                   value={
                     processDraftId
                       ? (processes.data?.find(
                           (x: any) => x.id === processDraftId,
                         )?.name ?? "-")
-                      : p.process
-                        ? `${p.process.code} - ${p.process.name}`
+                      : p.proPrefix
+                        ? `${p.proPrefix.code} - ${p.proPrefix.name}`
                         : "-"
                   }
                 />
               ) : (
                 <div className="space-y-2">
-                  <div className="text-sm font-medium">Proses (Prefix)</div>
+                  <div className="text-sm font-medium">Prefix / Kategori</div>
                   <select
                     value={processDraftId ?? ""}
                     onChange={(e) => {
@@ -991,6 +1005,16 @@ export default function ProList({
               </div>
 
               <div className="space-y-2">
+                <div className="text-sm font-medium">Part Number (FG)</div>
+                <Input
+                  value={partNumberDraft}
+                  onChange={(e) => setPartNumberDraft(e.target.value)}
+                  disabled={!editing}
+                  placeholder="Part Number (FG)"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <div className="text-sm font-medium">Qty PO</div>
                 <Input
                   type="number"
@@ -1030,233 +1054,412 @@ export default function ProList({
             </div>
 
             {err ? <p className="text-destructive text-sm">{err}</p> : null}
+          </CardContent>
 
-            <Separator />
+          <Separator />
 
-            <div className="overflow-x-auto rounded-md border">
-              <div className="min-w-[900px]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Machine</TableHead>
-                      <TableHead className="w-24 text-right">
-                        UP / CAV
+          <div className="w-full max-w-full overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table className="w-full">
+                <TableHeader>
+                  <TableRow className="bg-background hover:bg-background sticky top-0 z-10">
+                    <TableHead className="min-w-[150px] px-2 text-xs">
+                      Machine
+                    </TableHead>
+                    <TableHead className="w-16 px-2 text-right text-xs">
+                      UP/CAV
+                    </TableHead>
+                    <TableHead className="w-24 px-2 text-xs">
+                      Part No.
+                    </TableHead>
+                    <TableHead className="min-w-[120px] px-2 text-xs">
+                      Material
+                    </TableHead>
+                    <TableHead className="w-16 px-2 text-right text-xs">
+                      Qty Mat
+                    </TableHead>
+                    <TableHead className="w-14 px-2 text-xs">UoM</TableHead>
+                    <TableHead className="w-20 px-2 text-right text-xs">
+                      Target
+                    </TableHead>
+                    <TableHead className="w-16 px-2 text-xs">Shift</TableHead>
+                    <TableHead className="w-24 px-2 text-xs">Jadwal</TableHead>
+                    {editing && (
+                      <TableHead className="w-20 px-2 text-xs">
+                        Action
                       </TableHead>
-                      <TableHead className="w-32">Part No.</TableHead>
-                      <TableHead>Material</TableHead>
-                      <TableHead className="w-24 text-right">Qty Mat</TableHead>
-                      <TableHead className="w-20">UoM</TableHead>
-                      <TableHead className="w-32">Urutan Shift</TableHead>
-                      <TableHead className="w-40">Jadwal</TableHead>
-                      {editing && (
-                        <TableHead className="w-32">Action</TableHead>
-                      )}
-                    </TableRow>
-                  </TableHeader>
+                    )}
+                  </TableRow>
+                </TableHeader>
 
-                  <TableBody>
-                    {(() => {
-                      const list = (editing ? stepDrafts : p.steps)
-                        .slice()
-                        .sort((a, b) => a.orderNo - b.orderNo);
+                <TableBody>
+                  {(() => {
+                    const list = (editing ? stepDrafts : p.proses)
+                      .slice()
+                      .sort((a, b) => a.orderNo - b.orderNo);
 
-                      return list.map((item: any, idx: number) => {
-                        const isDraft = editing;
+                    return list.map((item: any, idx: number) => {
+                      const isDraft = editing;
 
-                        let machineName = "-";
-                        let stdOutputPerShift: number | null | undefined = null;
-                        let machineUom: string | null | undefined = null;
-                        let startDateVal: Date | string | undefined | null =
-                          null;
+                      let machineName = "-";
+                      let stdOutputPerShift: number | null | undefined = null;
+                      let machineUom: string | null | undefined = null;
+                      let startDateVal: Date | string | undefined | null = null;
 
-                        if (!isDraft) {
-                          const s = item as (typeof p.steps)[number];
-                          machineName = s.machine?.name ?? "-";
-                          stdOutputPerShift = s.machine?.stdOutputPerShift;
-                          machineUom = s.machine?.uom;
-                          startDateVal = (s as any).startDate;
-                        } else {
-                          const d = item as StepDraft;
-                          const m = machines.data?.find(
-                            (x) => x.id === d.machineId,
-                          );
-                          machineName = m?.name ?? "-";
-                          stdOutputPerShift = m?.stdOutputPerShift;
-                          machineUom = m?.uom;
-                          startDateVal = d.startDate;
-                        }
+                      if (!isDraft) {
+                        const s = item as (typeof p.proses)[number];
+                        machineName = s.machine?.name ?? "-";
+                        stdOutputPerShift = s.machine?.stdOutputPerShift;
+                        machineUom = s.machine?.uom;
+                        startDateVal = (s as any).startDate;
+                      } else {
+                        const d = item as StepDraft;
+                        const m = machines.data?.find(
+                          (x) => x.id === d.machineId,
+                        );
+                        machineName = m?.name ?? "-";
+                        stdOutputPerShift = m?.stdOutputPerShift;
+                        machineUom = m?.uom;
+                        startDateVal = d.startDate;
+                      }
 
-                        const upVal = isDraft
-                          ? (item as StepDraft).up
-                          : (item as any).up;
+                      const upVal = isDraft
+                        ? (item as StepDraft).up
+                        : (item as any).up;
 
-                        const materialsDisplay = isDraft
-                          ? (item as StepDraft).materials.map((m) => {
-                              const mat = materials.data?.find(
-                                (x) => x.id === m.materialId,
-                              );
-                              return {
-                                name: mat?.name ?? "-",
-                                qtyReq: m.qtyReq,
-                                uom: mat?.uom ?? "-",
-                              };
-                            })
-                          : (item as any).materials.map((m: any) => ({
-                              name: m.material?.name ?? "-",
-                              qtyReq: String(m.qtyReq),
-                              uom: m.material?.uom ?? "-",
-                            }));
+                      const materialsDisplay = isDraft
+                        ? (item as StepDraft).materials.map((m) => {
+                            const mat = materials.data?.find(
+                              (x) => x.id === m.materialId,
+                            );
+                            return {
+                              name: mat?.name ?? "-",
+                              qtyReq: m.qtyReq,
+                              uom: mat?.uom ?? "-",
+                            };
+                          })
+                        : (item as any).materials.map((m: any) => ({
+                            name: m.material?.name ?? "-",
+                            qtyReq: String(m.qtyReq),
+                            uom: m.material?.uom ?? "-",
+                          }));
 
-                        const firstQtyReq = materialsDisplay[0]?.qtyReq ?? "0";
-                        const matQ = Number(firstQtyReq);
-                        const poQ = Number(qtyPoPcs);
+                      const firstQtyReq = materialsDisplay[0]?.qtyReq ?? "0";
+                      const matQ = Number(firstQtyReq);
+                      const poQ = Number(qtyPoPcs);
 
-                        const baseQty = matQ > 0 ? matQ : poQ;
-                        const baseUp = matQ > 0 ? 1 : Number(upVal) || 1;
-                        const std = stdOutputPerShift || 1000;
+                      const baseQty = matQ > 0 ? matQ : poQ;
+                      const baseUp = matQ > 0 ? 1 : Number(upVal) || 1;
+                      const std = stdOutputPerShift || 1000;
 
-                        const actualQty =
-                          baseUp > 0 ? baseQty / baseUp : baseQty;
-                        const totalShifts = isDraft
-                          ? machineUom === "sheet"
-                            ? Math.max(1, Math.ceil(actualQty / std))
-                            : 1
-                          : (item as any).estimatedShifts || 1;
+                      const actualQty = baseUp > 0 ? baseQty / baseUp : baseQty;
+                      const totalShifts = isDraft
+                        ? machineUom === "sheet"
+                          ? Math.max(1, Math.ceil(actualQty / std))
+                          : 1
+                        : (item as any).estimatedShifts || 1;
 
-                        const scheduleList = [];
-                        const shouldExpand = editing && expandDraft;
+                      const scheduleList = [];
+                      const shouldExpand = editing && expandDraft;
 
-                        if (startDateVal && shouldExpand) {
-                          let currentDate = new Date(startDateVal);
-                          let currentShift = isDraft
-                            ? (item as StepDraft).shift
-                            : shiftFromDate(currentDate);
+                      if (startDateVal && shouldExpand) {
+                        let currentDate = new Date(startDateVal);
+                        let currentShift = isDraft
+                          ? (item as StepDraft).shift
+                          : shiftFromDate(currentDate);
 
-                          for (let i = 0; i < totalShifts; i++) {
-                            scheduleList.push({
-                              date: new Date(currentDate),
-                              shift: currentShift,
-                            });
-
-                            if (currentShift < 3) {
-                              currentShift++;
-                            } else {
-                              currentShift = 1;
-                              currentDate.setDate(currentDate.getDate() + 1);
-                            }
-                          }
-                        } else {
+                        for (let i = 0; i < totalShifts; i++) {
                           scheduleList.push({
-                            date: startDateVal ? new Date(startDateVal) : null,
-                            shift: isDraft
-                              ? (item as StepDraft).shift
-                              : startDateVal
-                                ? shiftFromDate(new Date(startDateVal))
-                                : 1,
+                            date: new Date(currentDate),
+                            shift: currentShift,
                           });
+
+                          if (currentShift < 3) {
+                            currentShift++;
+                          } else {
+                            currentShift = 1;
+                            currentDate.setDate(currentDate.getDate() + 1);
+                          }
                         }
+                      } else {
+                        scheduleList.push({
+                          date: startDateVal ? new Date(startDateVal) : null,
+                          shift: isDraft
+                            ? (item as StepDraft).shift
+                            : startDateVal
+                              ? shiftFromDate(new Date(startDateVal))
+                              : 1,
+                        });
+                      }
 
-                        return (
-                          <React.Fragment
-                            key={
-                              isDraft
-                                ? (item as StepDraft).key
-                                : (item as any).id
-                            }
-                          >
-                            {scheduleList.map((sch, sIdx) => {
-                              const isMainRow = sIdx === 0;
+                      return (
+                        <React.Fragment
+                          key={
+                            isDraft ? (item as StepDraft).key : (item as any).id
+                          }
+                        >
+                          {scheduleList.map((sch, sIdx) => {
+                            const isMainRow = sIdx === 0;
 
-                              return (
-                                <TableRow
-                                  key={`${isDraft ? (item as StepDraft).key : (item as any).id}-${sIdx}`}
-                                  className={
-                                    !isMainRow ? "bg-muted/30 border-none" : ""
-                                  }
-                                >
-                                  <TableCell>
-                                    {isMainRow && editing ? (
-                                      <select
-                                        value={
-                                          (item as StepDraft).machineId ?? ""
-                                        }
-                                        onChange={(e) => {
-                                          const val = e.target.value
-                                            ? Number(e.target.value)
-                                            : null;
-                                          const selectedMachine =
-                                            machines.data?.find(
-                                              (m: any) => m.id === val,
-                                            );
-
-                                          setStepDrafts((prev) =>
-                                            prev.map((x: any) => {
-                                              if (
-                                                x.key !==
-                                                (item as StepDraft).key
-                                              )
-                                                return x;
-
-                                              return {
-                                                ...x,
-                                                machineId: val,
-                                                up: selectedMachine?.stdOutputPerShift
-                                                  ? String(
-                                                      selectedMachine.stdOutputPerShift,
-                                                    )
-                                                  : x.up,
-                                                // Don't recalc materials here
-                                              };
-                                            }),
+                            return (
+                              <TableRow
+                                key={`${isDraft ? (item as StepDraft).key : (item as any).id}-${sIdx}`}
+                                className={
+                                  !isMainRow ? "bg-muted/30 border-none" : ""
+                                }
+                              >
+                                <TableCell className="px-2">
+                                  {isMainRow && editing ? (
+                                    <select
+                                      value={
+                                        (item as StepDraft).machineId ?? ""
+                                      }
+                                      onChange={(e) => {
+                                        const val = e.target.value
+                                          ? Number(e.target.value)
+                                          : null;
+                                        const selectedMachine =
+                                          machines.data?.find(
+                                            (m: any) => m.id === val,
                                           );
-                                        }}
-                                        className="border-input bg-background h-8 w-full rounded border px-2 text-xs"
-                                      >
-                                        <option value="">(Optional)</option>
-                                        {(machines.data ?? []).map((m: any) => (
-                                          <option key={m.id} value={m.id}>
-                                            {m.name}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    ) : (
-                                      <div className="text-foreground text-xs font-medium">
+
+                                        setStepDrafts((prev) =>
+                                          prev.map((x: any) => {
+                                            if (
+                                              x.key !== (item as StepDraft).key
+                                            )
+                                              return x;
+
+                                            return {
+                                              ...x,
+                                              machineId: val,
+                                              up: selectedMachine?.stdOutputPerShift
+                                                ? String(
+                                                    selectedMachine.stdOutputPerShift,
+                                                  )
+                                                : x.up,
+                                              // Don't recalc materials here
+                                            };
+                                          }),
+                                        );
+                                      }}
+                                      className="border-input bg-background h-8 w-full rounded border px-2 text-xs"
+                                    >
+                                      <option value="">(Optional)</option>
+                                      {(machines.data ?? []).map((m: any) => (
+                                        <option key={m.id} value={m.id}>
+                                          {m.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <div className="max-w-[150px]">
+                                      <div className="text-foreground truncate text-xs font-medium">
                                         {machineName}
-                                        <div className="text-muted-foreground mt-0.5 text-[10px] font-normal">
-                                          {p.productName}
-                                        </div>
                                       </div>
-                                    )}
-                                  </TableCell>
+                                      <div className="text-muted-foreground truncate text-[10px] font-normal">
+                                        {p.productName}
+                                      </div>
+                                    </div>
+                                  )}
+                                </TableCell>
 
-                                  <TableCell className="text-right text-xs">
-                                    {isMainRow && editing ? (
-                                      <Input
-                                        className="bg-background border-input h-8 w-16 text-right text-xs"
-                                        value={(item as StepDraft).up}
-                                        onChange={(e) => {
-                                          setStepDrafts((prev) =>
-                                            prev.map((x) =>
-                                              x.key === (item as StepDraft).key
-                                                ? { ...x, up: e.target.value }
-                                                : x,
-                                            ),
+                                <TableCell className="px-2 text-right text-xs">
+                                  {isMainRow && editing ? (
+                                    <Input
+                                      className="bg-background border-input h-8 w-16 text-right text-xs"
+                                      value={(item as StepDraft).up}
+                                      onChange={(e) => {
+                                        setStepDrafts((prev) =>
+                                          prev.map((x) =>
+                                            x.key === (item as StepDraft).key
+                                              ? { ...x, up: e.target.value }
+                                              : x,
+                                          ),
+                                        );
+                                      }}
+                                    />
+                                  ) : upVal ? (
+                                    Number(upVal).toLocaleString("id-ID")
+                                  ) : (
+                                    "-"
+                                  )}
+                                </TableCell>
+
+                                <TableCell className="px-2 text-xs">
+                                  {isMainRow && editing ? (
+                                    <Input
+                                      className="bg-background border-input h-8 w-full min-w-[80px] text-xs"
+                                      value={
+                                        (item as StepDraft).partNumber || ""
+                                      }
+                                      onChange={(e) => {
+                                        setStepDrafts((prev) =>
+                                          prev.map((x) =>
+                                            x.key === (item as StepDraft).key
+                                              ? {
+                                                  ...x,
+                                                  partNumber: e.target.value,
+                                                }
+                                              : x,
+                                          ),
+                                        );
+                                      }}
+                                    />
+                                  ) : (
+                                    (isDraft
+                                      ? (item as StepDraft).partNumber
+                                      : (item as any).partNumber) || "-"
+                                  )}
+                                </TableCell>
+
+                                <TableCell className="px-2">
+                                  <div className="flex min-w-[100px] flex-col gap-1">
+                                    {materialsDisplay.map(
+                                      (m: any, mIdx: number) => (
+                                        <div
+                                          key={mIdx}
+                                          className="text-foreground truncate border-b pb-0.5 text-[10px] last:border-0"
+                                          title={m.name}
+                                        >
+                                          {m.name}
+                                        </div>
+                                      ),
+                                    )}
+                                    {materialsDisplay.length === 0 && (
+                                      <span className="text-muted-foreground/50">
+                                        -
+                                      </span>
+                                    )}
+                                  </div>
+                                </TableCell>
+
+                                <TableCell className="px-2 text-right">
+                                  <div className="flex flex-col gap-1">
+                                    {materialsDisplay.map(
+                                      (m: any, mIdx: number) => {
+                                        const val = m.qtyReq;
+                                        if (isMainRow && editing) {
+                                          return (
+                                            <div
+                                              key={mIdx}
+                                              className="border-b pb-0.5 text-[10px] font-bold last:border-0"
+                                            >
+                                              {val
+                                                ? Number(val).toLocaleString(
+                                                    "id-ID",
+                                                  )
+                                                : "-"}
+                                            </div>
                                           );
-                                        }}
-                                      />
-                                    ) : upVal ? (
-                                      Number(upVal).toLocaleString("id-ID")
-                                    ) : (
-                                      "-"
-                                    )}
-                                  </TableCell>
+                                        } else {
+                                          const remainingWorkInSheets =
+                                            Math.max(
+                                              0,
+                                              Math.min(
+                                                actualQty - sIdx * std,
+                                                std,
+                                              ),
+                                            );
+                                          const portion =
+                                            actualQty > 0
+                                              ? remainingWorkInSheets /
+                                                actualQty
+                                              : 1;
+                                          const perShift = Math.round(
+                                            Number(val || 0) * portion,
+                                          );
 
-                                  <TableCell className="text-xs">
-                                    {isMainRow && editing ? (
+                                          return (
+                                            <div
+                                              key={mIdx}
+                                              className="border-b pb-0.5 text-[10px] last:border-0"
+                                            >
+                                              {perShift > 0
+                                                ? perShift.toLocaleString(
+                                                    "id-ID",
+                                                  )
+                                                : val || "-"}
+                                            </div>
+                                          );
+                                        }
+                                      },
+                                    )}
+                                  </div>
+                                </TableCell>
+
+                                <TableCell className="px-2">
+                                  <div className="flex flex-col gap-1">
+                                    {materialsDisplay.map(
+                                      (m: any, mIdx: number) => (
+                                        <div
+                                          key={mIdx}
+                                          className="text-muted-foreground border-b pb-0.5 text-[10px] last:border-0"
+                                        >
+                                          {m.uom}
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </TableCell>
+
+                                <TableCell className="px-2 py-4 text-right text-xs font-medium">
+                                  0 / {p.qtyPoPcs.toLocaleString("id-ID")}
+                                </TableCell>
+
+                                <TableCell className="px-2 py-4 text-xs font-medium">
+                                  {isMainRow && editing ? (
+                                    <div className="flex flex-col gap-1.5">
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-muted-foreground hidden w-6 text-[10px] lg:inline">
+                                          Shift:
+                                        </span>
+                                        <select
+                                          value={(item as StepDraft).shift ?? 1}
+                                          onChange={(e) => {
+                                            const val = Number(e.target.value);
+                                            setStepDrafts((prev) =>
+                                              prev.map((x) =>
+                                                x.key ===
+                                                (item as StepDraft).key
+                                                  ? { ...x, shift: val }
+                                                  : x,
+                                              ),
+                                            );
+                                          }}
+                                          className="border-input bg-background h-7 w-16 rounded-md border px-1 text-xs"
+                                        >
+                                          <option value={1}>I</option>
+                                          <option value={2}>II</option>
+                                          <option value={3}>III</option>
+                                        </select>
+                                      </div>
+
+                                      {totalShifts > 1 && (
+                                        <div className="text-[10px] font-bold text-blue-600">
+                                          (+{totalShifts - 1})
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : null}
+
+                                  {!(isMainRow && editing) && (
+                                    <div
+                                      className={`text-foreground text-xs font-semibold ${isMainRow && editing ? "mt-2 pl-[42px]" : "mt-1"}`}
+                                    >
+                                      Shift {sch.shift}
+                                    </div>
+                                  )}
+                                </TableCell>
+
+                                <TableCell className="text-xs">
+                                  {isMainRow && editing ? (
+                                    <div className="flex flex-col gap-1">
                                       <Input
-                                        className="bg-background border-input h-8 w-32 text-xs"
+                                        type="date"
+                                        className="bg-background border-input h-8 w-full min-w-[100px] text-xs"
                                         value={
-                                          (item as StepDraft).partNumber || ""
+                                          (item as StepDraft).startDate ?? ""
                                         }
                                         onChange={(e) => {
                                           setStepDrafts((prev) =>
@@ -1264,238 +1467,67 @@ export default function ProList({
                                               x.key === (item as StepDraft).key
                                                 ? {
                                                     ...x,
-                                                    partNumber: e.target.value,
+                                                    startDate:
+                                                      e.target.value || null,
                                                   }
                                                 : x,
                                             ),
                                           );
                                         }}
                                       />
-                                    ) : (
-                                      (isDraft
-                                        ? (item as StepDraft).partNumber
-                                        : (item as any).partNumber) || "-"
-                                    )}
-                                  </TableCell>
-
-                                  <TableCell>
-                                    <div className="flex min-w-[120px] flex-col gap-1">
-                                      {materialsDisplay.map(
-                                        (m: any, mIdx: number) => (
-                                          <div
-                                            key={mIdx}
-                                            className="text-foreground truncate border-b pb-0.5 text-[10px] last:border-0"
-                                            title={m.name}
-                                          >
-                                            {m.name}
-                                          </div>
-                                        ),
-                                      )}
-                                      {materialsDisplay.length === 0 && (
-                                        <span className="text-muted-foreground/50">
-                                          -
-                                        </span>
-                                      )}
                                     </div>
-                                  </TableCell>
-
-                                  <TableCell className="text-right">
-                                    <div className="flex flex-col gap-1">
-                                      {materialsDisplay.map(
-                                        (m: any, mIdx: number) => {
-                                          const val = m.qtyReq;
-                                          if (isMainRow && editing) {
-                                            return (
-                                              <div
-                                                key={mIdx}
-                                                className="border-b pb-0.5 text-[10px] font-bold last:border-0"
-                                              >
-                                                {val
-                                                  ? Number(val).toLocaleString(
-                                                      "id-ID",
-                                                    )
-                                                  : "-"}
-                                              </div>
-                                            );
-                                          } else {
-                                            // Hitung porsi qty material untuk shift ini berdasarkan kapasitas mesin
-                                            // actualQty = Total Lembar (sheets)
-                                            // std = Kapasitas Lembar per Shift
-                                            const remainingWorkInSheets =
-                                              Math.max(
-                                                0,
-                                                Math.min(
-                                                  actualQty - sIdx * std,
-                                                  std,
-                                                ),
-                                              );
-                                            const portion =
-                                              actualQty > 0
-                                                ? remainingWorkInSheets /
-                                                  actualQty
-                                                : 1;
-                                            const perShift = Math.round(
-                                              Number(val || 0) * portion,
-                                            );
-
-                                            return (
-                                              <div
-                                                key={mIdx}
-                                                className="border-b pb-0.5 text-[10px] last:border-0"
-                                              >
-                                                {perShift > 0
-                                                  ? perShift.toLocaleString(
-                                                      "id-ID",
-                                                    )
-                                                  : val || "-"}
-                                              </div>
-                                            );
-                                          }
-                                        },
-                                      )}
+                                  ) : (
+                                    <div className="text-foreground font-medium">
+                                      {sch.date?.toLocaleDateString("id-ID", {
+                                        weekday: "short",
+                                        day: "2-digit",
+                                        month: "short",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }) ?? "-"}
                                     </div>
-                                  </TableCell>
+                                  )}
+                                </TableCell>
 
-                                  <TableCell>
-                                    <div className="flex flex-col gap-1">
-                                      {materialsDisplay.map(
-                                        (m: any, mIdx: number) => (
-                                          <div
-                                            key={mIdx}
-                                            className="text-muted-foreground border-b pb-0.5 text-[10px] last:border-0"
-                                          >
-                                            {m.uom}
-                                          </div>
-                                        ),
-                                      )}
-                                    </div>
-                                  </TableCell>
-
-                                  <TableCell className="py-4 text-xs font-medium">
-                                    {isMainRow && editing ? (
-                                      <div className="flex flex-col gap-1.5">
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-muted-foreground w-8 text-[10px]">
-                                            Mulai:
-                                          </span>
-                                          <select
-                                            value={
-                                              (item as StepDraft).shift ?? 1
-                                            }
-                                            onChange={(e) => {
-                                              const val = Number(
-                                                e.target.value,
-                                              );
-                                              setStepDrafts((prev) =>
-                                                prev.map((x) =>
-                                                  x.key ===
-                                                  (item as StepDraft).key
-                                                    ? { ...x, shift: val }
-                                                    : x,
-                                                ),
-                                              );
-                                            }}
-                                            className="border-input bg-background h-7 w-20 rounded-md border px-2 text-xs"
-                                          >
-                                            <option value={1}>Shift 1</option>
-                                            <option value={2}>Shift 2</option>
-                                            <option value={3}>Shift 3</option>
-                                          </select>
-                                        </div>
-
-                                        {totalShifts > 1 && (
-                                          <div className="ml-[42px] text-[10px] font-bold text-blue-600">
-                                            (+{totalShifts - 1} next)
-                                          </div>
-                                        )}
-                                      </div>
-                                    ) : null}
-
-                                    {!(isMainRow && editing) && (
-                                      <div
-                                        className={`text-foreground text-xs font-semibold ${isMainRow && editing ? "mt-2 pl-[42px]" : "mt-1"}`}
+                                <TableCell>
+                                  {isMainRow && editing && (
+                                    <div className="flex gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 px-2 text-xs"
+                                        onClick={() =>
+                                          openEditStep(item as StepDraft)
+                                        }
                                       >
-                                        Shift {sch.shift}
-                                      </div>
-                                    )}
-                                  </TableCell>
-
-                                  <TableCell className="text-xs">
-                                    {isMainRow && editing ? (
-                                      <div className="flex flex-col gap-1">
-                                        <Input
-                                          type="date"
-                                          className="bg-background border-input h-8 w-32 text-xs"
-                                          value={
-                                            (item as StepDraft).startDate ?? ""
-                                          }
-                                          onChange={(e) => {
-                                            setStepDrafts((prev) =>
-                                              prev.map((x) =>
-                                                x.key ===
-                                                (item as StepDraft).key
-                                                  ? {
-                                                      ...x,
-                                                      startDate:
-                                                        e.target.value || null,
-                                                    }
-                                                  : x,
-                                              ),
-                                            );
-                                          }}
-                                        />
-                                      </div>
-                                    ) : (
-                                      <div className="text-foreground font-medium">
-                                        {sch.date?.toLocaleDateString("id-ID", {
-                                          weekday: "short",
-                                          day: "2-digit",
-                                          month: "short",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        }) ?? "-"}
-                                      </div>
-                                    )}
-                                  </TableCell>
-
-                                  <TableCell>
-                                    {isMainRow && editing && (
-                                      <div className="flex gap-1">
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-7 px-2 text-xs"
-                                          onClick={() =>
-                                            openEditStep(item as StepDraft)
-                                          }
-                                        >
-                                          Edit
-                                        </Button>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="text-destructive hover:text-destructive h-7 px-2 text-xs"
-                                          onClick={() =>
-                                            removeStep((item as StepDraft).key)
-                                          }
-                                        >
-                                          Hapus
-                                        </Button>
-                                      </div>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })}
-                          </React.Fragment>
-                        );
-                      });
-                    })()}
-                  </TableBody>
-                </Table>
-              </div>
+                                        Edit
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-destructive hover:text-destructive h-7 px-2 text-xs"
+                                        onClick={() =>
+                                          removeStep((item as StepDraft).key)
+                                        }
+                                      >
+                                        Hapus
+                                      </Button>
+                                    </div>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </React.Fragment>
+                      );
+                    });
+                  })()}
+                </TableBody>
+              </Table>
             </div>
+          </div>
 
+          <CardContent>
             {editing && (
               <div className="mt-3 flex gap-2">
                 <Button
@@ -1810,10 +1842,10 @@ export default function ProList({
                   <TableHead className="w-44">No. PRO</TableHead>
                   <TableHead className="w-24">Tipe</TableHead>
                   <TableHead>Produk</TableHead>
-                  <TableHead className="w-32 text-right">Qty PO</TableHead>
+                  <TableHead className="w-32 text-right">Target</TableHead>
                   <TableHead className="w-28">Mulai</TableHead>
                   <TableHead className="w-28">Status</TableHead>
-                  <TableHead className="w-24 text-right">Steps</TableHead>
+                  <TableHead className="w-24 text-right">Proses</TableHead>
                   <TableHead className="w-40 text-right">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
@@ -1822,7 +1854,7 @@ export default function ProList({
                 {list.isLoading ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={8}
                       className="py-10 text-center text-sm opacity-70"
                     >
                       Loading...
@@ -1831,7 +1863,7 @@ export default function ProList({
                 ) : list.error ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={8}
                       className="text-destructive py-10 text-center text-sm"
                     >
                       {list.error.message}
@@ -1858,18 +1890,18 @@ export default function ProList({
                       </TableCell>
                       <TableCell>{p.productName}</TableCell>
                       <TableCell className="text-right">
-                        {p.qtyPoPcs.toLocaleString("id-ID")}
+                        0 / {p.qtyPoPcs.toLocaleString("id-ID")}
                       </TableCell>
                       <TableCell>
                         {(() => {
-                          const firstStep = p.steps?.[0];
+                          const firstStep = p.proses?.[0];
                           const d = firstStep?.startDate ?? p.startDate;
                           return fmtDate(d);
                         })()}
                       </TableCell>
                       <TableCell>{p.status}</TableCell>
                       <TableCell className="text-right">
-                        {p.steps?.length ?? 0}
+                        {p.proses?.length ?? 0}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="inline-flex justify-end gap-2">
@@ -1893,7 +1925,7 @@ export default function ProList({
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={8}
                       className="py-10 text-center text-sm opacity-70"
                     >
                       Tidak ada data PRO.

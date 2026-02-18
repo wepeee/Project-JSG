@@ -67,9 +67,12 @@ model Machine {
   stdOutputPerDay Int?
   workCenter      String?
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  proSteps  ProStep[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  proses    Proses[]
+
+  // Inventory Link
+  location InventoryLocation?
 }
 
 // model MachineCapability {
@@ -94,13 +97,21 @@ model Machine {
 
 // material / bahan baku
 
+enum MaterialType {
+  RAW
+  WIP
+  CONSUMABLE
+}
+
 model Material {
-  id               Int               @id @default(autoincrement())
-  name             String            @unique
-  uom              String
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  proStepMaterials ProStepMaterial[]
+  id              Int              @id @default(autoincrement())
+  name            String           @unique
+  uom             String
+  type            MaterialType     @default(RAW)
+  // stock removed, track via InventoryTxn
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  prosesMaterials ProsesMaterial[]
 }
 
 enum ProStatus {
@@ -110,7 +121,7 @@ enum ProStatus {
   CANCELLED
 }
 
-model Process {
+model ProPrefix {
   id   Int    @id @default(autoincrement())
   code String @unique @db.VarChar(2) // WAJIB 2 digit: "11"
   name String @unique
@@ -136,6 +147,7 @@ model Pro {
   id          Int       @id @default(autoincrement())
   proNumber   String    @unique @db.VarChar(9)
   productName String
+  partNumber  String? // New: FG (Final) Part Number
   qtyPoPcs    Int
   startDate   DateTime?
   status      ProStatus @default(OPEN)
@@ -145,22 +157,25 @@ model Pro {
 
   // Flag untuk menandai PRO dibuat dengan otomatisasi shift
 
-  processId Int?
-  process   Process? @relation(fields: [processId], references: [id])
+  proPrefixId Int?
+  proPrefix   ProPrefix? @relation(fields: [proPrefixId], references: [id])
 
-  steps ProStep[]
+  proses Proses[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  inventoryTxns InventoryTxn[]
 }
 
 enum ReportStatus {
   PENDING
   APPROVED
   REJECTED
+  VOID
 }
 
-model ProStep {
+model Proses {
   id    Int @id @default(autoincrement())
   proId Int
   pro   Pro @relation(fields: [proId], references: [id], onDelete: Cascade)
@@ -180,17 +195,18 @@ model ProStep {
 
   // --- Target / Standards (for Reporting) ---
 
-  materials         ProStepMaterial[]
+  materials         ProsesMaterial[]
   productionReports ProductionReport[]
+  inventoryTxns     InventoryTxn[]
 
   @@unique([proId, orderNo])
   @@index([proId])
 }
 
-model ProStepMaterial {
-  id     Int     @id @default(autoincrement())
-  stepId Int
-  step   ProStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+model ProsesMaterial {
+  id       Int    @id @default(autoincrement())
+  prosesId Int
+  proses   Proses @relation(fields: [prosesId], references: [id], onDelete: Cascade)
 
   materialId Int
   material   Material @relation(fields: [materialId], references: [id])
@@ -198,8 +214,8 @@ model ProStepMaterial {
   qtyReq Decimal @db.Decimal(12, 3)
   // --- Laporan Produksi Harian (LPH) ---
 
-  @@unique([stepId, materialId])
-  @@index([stepId])
+  @@unique([prosesId, materialId])
+  @@index([prosesId])
 }
 
 enum LphType {
@@ -214,8 +230,8 @@ model ProductionReport {
   id String @id @default(cuid())
 
   // Header Info
-  proStepId Int
-  step      ProStep @relation(fields: [proStepId], references: [id])
+  prosesId Int
+  proses   Proses @relation(fields: [prosesId], references: [id])
 
   reportDate DateTime // Tanggal Laporan
   shift      Int // 1, 2, 3
@@ -289,6 +305,77 @@ model ProductionReport {
   checkedById   String?
   checkedAt     DateTime?
 
-  @@index([proStepId])
+  // Void Audit
+  voidedAt   DateTime?
+  voidedById String?
+  voidReason String?
+
+  // --- Inventory & Traceability ---
+  stockPostedAt DateTime? // Tanggal posting stok (jika sudah approved & posted)
+  inputWipQty   Decimal?  @default(0) // Qty WIP yang dikonsumsi (optional tracking)
+
+  inventoryTxns InventoryTxn[]
+
+  @@index([prosesId])
   @@index([reportDate])
+}
+
+// --- Inventory System ---
+
+enum LocationType {
+  WIP
+  FG
+  RAW
+  HOLD
+  SCRAP
+}
+
+enum TxnType {
+  IN
+  OUT
+  ADJUST
+}
+
+model InventoryLocation {
+  id   Int          @id @default(autoincrement())
+  code String       @unique // WIP_M_1, FG_WH, HOLD_QA
+  name String
+  type LocationType
+
+  machineId Int?     @unique // Link 1-to-1 dengan mesin untuk WIP Bin
+  machine   Machine? @relation(fields: [machineId], references: [id])
+
+  txns InventoryTxn[]
+}
+
+model InventoryTxn {
+  id      String   @id @default(cuid())
+  groupId String   @default(cuid()) // Atomic transaction Group ID
+  date    DateTime @default(now())
+  type    TxnType
+
+  itemId String // Part Number / Material Name
+  qty    Decimal @db.Decimal(12, 3)
+
+  locationId Int
+  location   InventoryLocation @relation(fields: [locationId], references: [id])
+
+  // Traceability Links
+  proId              Int?
+  pro                Pro?              @relation(fields: [proId], references: [id])
+  prosesId           Int?
+  proses             Proses?           @relation(fields: [prosesId], references: [id])
+  productionReportId String?
+  productionReport   ProductionReport? @relation(fields: [productionReportId], references: [id])
+
+  notes String?
+
+  createdAt DateTime @default(now())
+
+  // Prevent double posting of same item/type/location for a report
+  @@unique([productionReportId, itemId, type, locationId])
+  @@index([itemId])
+  @@index([date])
+  @@index([groupId])
+  @@index([locationId])
 }

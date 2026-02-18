@@ -124,6 +124,7 @@ function parseCSV(text: string) {
 export default function ProPlanner() {
   // Header PRO
   const [productName, setProductName] = React.useState("");
+  const [partNumber, setPartNumber] = React.useState(""); // Added
   const [processId, setProcessId] = React.useState<number | null>(null);
   const [qtyPoPcs, setQtyPoPcs] = React.useState<string>("");
   const [proType, setProType] = React.useState<"PAPER" | "RIGID" | "OTHER">(
@@ -146,6 +147,7 @@ export default function ProPlanner() {
       await utils.pros.getSchedule.invalidate();
       setOk(`PRO dibuat: ${created.proNumber}`);
       setProductName("");
+      setPartNumber(""); // Reset
       // setProcessId(null);
       // setProType("PAPER"); // Keep selected type for convenience
       setQtyPoPcs("");
@@ -535,7 +537,7 @@ export default function ProPlanner() {
       }
 
       setSteps((prev) => [...prev, ...newSteps]);
-      setOk(`Berhasil import ${newSteps.length} steps.`);
+      setOk(`Berhasil import ${newSteps.length} proses.`);
     } catch (err: any) {
       setErr("Gagal import: " + err.message);
     } finally {
@@ -622,16 +624,16 @@ export default function ProPlanner() {
       return setErr("Jumlah PO (pcs) wajib > 0");
     }
 
-    if (steps.length === 0) return setErr("Minimal 1 step harus ditambahkan");
+    if (steps.length === 0) return setErr("Minimal 1 proses harus ditambahkan");
 
     const payload = {
       productName: prod,
-      partNumber: undefined,
+      partNumber: partNumber.trim() || undefined, // Added
       qtyPoPcs: qty,
-      processId: processId,
+      proPrefixId: processId, // Updated
       type: proType, // Added
       proNumber: manualProNumber ? manualProNumber.trim() : undefined,
-      steps: steps.map((s) => ({
+      proses: steps.map((s) => ({
         up: Number(s.up),
         machineId: s.machineId ?? null,
         startDate: s.startDate ? new Date(s.startDate) : undefined,
@@ -691,6 +693,17 @@ export default function ProPlanner() {
                 />
               </div>
 
+              <div className="space-y-2 lg:col-span-3">
+                <div className="text-sm font-medium">
+                  FG Part Number (Final)
+                </div>
+                <Input
+                  value={partNumber}
+                  onChange={(e) => setPartNumber(e.target.value)}
+                  placeholder="Part No. FG"
+                />
+              </div>
+
               {/* Type Selector (Paper/Rigid) */}
               <div className="space-y-2 lg:col-span-4">
                 <div className="text-sm font-medium">Tipe Box</div>
@@ -732,7 +745,7 @@ export default function ProPlanner() {
             <div className="grid grid-cols-1 gap-4 border-b pb-6 lg:grid-cols-12 lg:items-end">
               <div className="space-y-2 lg:col-span-4">
                 <div className="flex justify-between text-sm font-medium">
-                  <span>Proses (Prefix PRO)</span>
+                  <span>Prefix PRO</span>
                   {headerProcess && (
                     <span className="text-muted-foreground text-xs font-normal">
                       Prefix: {headerProcess.code}
@@ -786,7 +799,7 @@ export default function ProPlanner() {
                   onClick={openAdd}
                   disabled={loadingMaster}
                 >
-                  + Tambah Step
+                  + Tambah Proses
                 </Button>
 
                 <Button
@@ -807,7 +820,7 @@ export default function ProPlanner() {
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setHeaderBatchNo(e.target.value)
                     }
-                    placeholder="Batch No (untuk semua step)"
+                    placeholder="Batch No (untuk semua proses)"
                   />
                 </div>
               </div>
@@ -838,8 +851,7 @@ export default function ProPlanner() {
                     <TableRow>
                       <TableHead className="w-10"></TableHead>
                       <TableHead className="w-16">No.</TableHead>
-
-                      <TableHead className="w-32">Part No.</TableHead>
+                      <TableHead className="w-32">Output PN (Step)</TableHead>
                       <TableHead>Machine</TableHead>
                       <TableHead className="w-28">Tanggal</TableHead>
                       <TableHead className="w-24">UP / CAV</TableHead>
@@ -860,9 +872,9 @@ export default function ProPlanner() {
                           className="text-muted-foreground py-12 text-center"
                         >
                           <div className="flex flex-col items-center gap-1">
-                            <p className="font-semibold">Belum ada step</p>
+                            <p className="font-semibold">Belum ada proses</p>
                             <p className="text-sm">
-                              Klik "Import CSV" atau "+ Tambah Step" untuk
+                              Klik "Import CSV" atau "+ Tambah Proses" untuk
                               memulai.
                             </p>
                           </div>
@@ -899,7 +911,9 @@ export default function ProPlanner() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>{editKey ? "Edit Step" : "Tambah Step"}</DialogTitle>
+            <DialogTitle>
+              {editKey ? "Edit Proses" : "Tambah Proses"}
+            </DialogTitle>
             <DialogDescription>
               Proses diambil dari header:{" "}
               {headerProcess
@@ -946,7 +960,9 @@ export default function ProPlanner() {
               </div>
 
               <div className="space-y-2">
-                <div className="text-sm font-medium">Part Number (Step)</div>
+                <div className="text-sm font-medium">
+                  Output Part Number (Step)
+                </div>
                 <Input
                   value={draft.partNumber || ""}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -955,7 +971,7 @@ export default function ProPlanner() {
                       partNumber: e.target.value,
                     }))
                   }
-                  placeholder="Part Number for this step"
+                  placeholder="Part Number untuk proses ini"
                 />
               </div>
 
