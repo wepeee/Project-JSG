@@ -43,8 +43,7 @@ export default function MaterialManager() {
   // CREATE form state
   const [name, setName] = React.useState("");
   const [uom, setUom] = React.useState<Uom>("sheet");
-  const [type, setType] = React.useState("BAHAN BAKU");
-  const [stock, setStock] = React.useState<string>("0");
+  const [type, setType] = React.useState("RAW");
 
   // SEARCH state
   const [q, setQ] = React.useState("");
@@ -54,7 +53,6 @@ export default function MaterialManager() {
   const [editingName, setEditingName] = React.useState("");
   const [editingUom, setEditingUom] = React.useState<Uom>("sheet");
   const [editingType, setEditingType] = React.useState("");
-  const [editingStock, setEditingStock] = React.useState("0");
 
   const [err, setErr] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
@@ -86,15 +84,13 @@ export default function MaterialManager() {
       await createMat.mutateAsync({
         name: n,
         uom,
-        type,
-        stock: Number(stock) || 0,
+        type: type as any,
       });
 
       setOk("Material berhasil ditambahkan");
       setName("");
       setUom("sheet");
-      setType("BAHAN BAKU");
-      setStock("0");
+      setType("RAW");
     } catch (e: any) {
       setErr(e?.message ?? "Gagal menambah material");
     }
@@ -104,9 +100,8 @@ export default function MaterialManager() {
     resetMessages();
     setEditingId(m.id);
     setEditingName(m.name);
-    setEditingUom(m.uom);
-    setEditingType(m.type ?? "");
-    setEditingStock(m.stock?.toString() ?? "0");
+    setEditingUom(m.uom as Uom);
+    setEditingType(m.type ?? "RAW");
   };
 
   const cancelEdit = () => {
@@ -127,8 +122,7 @@ export default function MaterialManager() {
         id: editingId,
         name: n,
         uom: editingUom,
-        type: editingType,
-        stock: Number(editingStock) || 0,
+        type: editingType as any,
       });
 
       setOk("Material berhasil diupdate");
@@ -195,19 +189,10 @@ export default function MaterialManager() {
                 onChange={(e) => setType(e.target.value)}
                 className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
               >
-                <option value="BAHAN BAKU">BAHAN BAKU</option>
+                <option value="RAW">BAHAN BAKU (RAW)</option>
                 <option value="WIP">WIP</option>
+                <option value="CONSUMABLE">BAHAN PENOLONG</option>
               </select>
-            </div>
-            <div className="space-y-2 sm:col-span-1">
-              <Label htmlFor="mat-stock">Stok Awal</Label>
-              <Input
-                id="mat-stock"
-                type="number"
-                value={stock}
-                onChange={(e) => setStock(e.target.value)}
-                placeholder="0"
-              />
             </div>
           </div>
 
@@ -257,7 +242,6 @@ export default function MaterialManager() {
                     <TableHead>Nama</TableHead>
                     <TableHead>UoM</TableHead>
                     <TableHead>Tipe</TableHead>
-                    <TableHead className="text-right">Stok</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -317,26 +301,14 @@ export default function MaterialManager() {
                                 onChange={(e) => setEditingType(e.target.value)}
                                 className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
                               >
-                                <option value="BAHAN BAKU">BAHAN BAKU</option>
+                                <option value="RAW">BAHAN BAKU (RAW)</option>
                                 <option value="WIP">WIP</option>
+                                <option value="CONSUMABLE">
+                                  BAHAN PENOLONG
+                                </option>
                               </select>
                             ) : (
                               (m as any).type || "-"
-                            )}
-                          </TableCell>
-
-                          <TableCell className="text-right">
-                            {isEdit ? (
-                              <Input
-                                type="number"
-                                value={editingStock}
-                                onChange={(e) =>
-                                  setEditingStock(e.target.value)
-                                }
-                                className="text-right"
-                              />
-                            ) : (
-                              ((m as any).stock?.toString() ?? "0")
                             )}
                           </TableCell>
 

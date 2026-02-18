@@ -1,4 +1,3 @@
-import { postRouter } from "~/server/api/routers/post";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { authRouter } from "./routers/auth";
 import { adminUsersRouter } from "./routers/superadmin/users";
@@ -17,7 +16,6 @@ import { inventoryRouter } from "./routers/ppic/inventory";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  post: postRouter,
   auth: authRouter,
   adminUsers: adminUsersRouter,
   machines: machinesRouter,

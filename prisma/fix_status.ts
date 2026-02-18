@@ -7,10 +7,10 @@ async function main() {
 
   const pros = await db.pro.findMany({
     include: {
-      steps: {
+      proses: {
         include: {
           productionReports: {
-            select: { 
+            select: {
               id: true,
               status: true,
             },
@@ -28,14 +28,14 @@ async function main() {
     // Skip CANCELLED PROs
     if (pro.status === "CANCELLED") continue;
 
-    const totalSteps = pro.steps.length;
+    const totalSteps = pro.proses.length;
     let stepsWithApprovedReport = 0;
     let stepsWithAnyReport = 0;
 
-    for (const step of pro.steps) {
-      const hasAnyReport = step.productionReports.length > 0;
-      const hasApprovedReport = step.productionReports.some(
-        (r) => r.status === "APPROVED"
+    for (const proses of pro.proses) {
+      const hasAnyReport = proses.productionReports.length > 0;
+      const hasApprovedReport = proses.productionReports.some(
+        (r) => r.status === "APPROVED",
       );
 
       if (hasAnyReport) stepsWithAnyReport++;
@@ -59,7 +59,7 @@ async function main() {
 
     if (newStatus !== pro.status) {
       console.log(
-        `Updating PRO ${pro.proNumber}: ${pro.status} -> ${newStatus} (Approved: ${stepsWithApprovedReport}/${totalSteps}, Any: ${stepsWithAnyReport}/${totalSteps})`
+        `Updating PRO ${pro.proNumber}: ${pro.status} -> ${newStatus} (Approved: ${stepsWithApprovedReport}/${totalSteps}, Any: ${stepsWithAnyReport}/${totalSteps})`,
       );
       await db.pro.update({
         where: { id: pro.id },
