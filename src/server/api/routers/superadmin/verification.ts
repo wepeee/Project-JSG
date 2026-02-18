@@ -533,61 +533,61 @@ export const verificationRouter = createTRPCRouter({
         });
 
         if (freshPro) {
-            let newStatus = freshPro.status;
-            let hasActivity = false;
-            let totalOutput = 0;
+          let newStatus = freshPro.status;
+          let hasActivity = false;
+          let totalOutput = 0;
 
-            // Check activity across all steps
-            for (const s of freshPro.proses) {
-              if (s.productionReports.length > 0) {
-                hasActivity = true;
-              }
+          // Check activity across all steps
+          for (const s of freshPro.proses) {
+            if (s.productionReports.length > 0) {
+              hasActivity = true;
             }
+          }
 
-            // Calculate Total Output from LAST PROCESS (Passed On + Good)
-            // Assuming Last Step produces the Finished Good
-            if (freshPro.proses.length > 0) {
-              const lastStep = freshPro.proses[freshPro.proses.length - 1];
-              if (lastStep) {
-                // Sum only APPROVED reports
-                totalOutput = lastStep.productionReports
-                  .filter((r) => r.status === ReportStatus.APPROVED)
-                  .reduce((acc, r) => {
-                    return (
-                      acc +
-                      Number(r.qtyPassOn?.toString() ?? "0") +
-                      Number(r.qtyGood?.toString() ?? "0")
-                    );
-                  }, 0);
-              }
+          // Calculate Total Output from LAST PROCESS (Passed On + Good)
+          // Assuming Last Step produces the Finished Good
+          if (freshPro.proses.length > 0) {
+            const lastStep = freshPro.proses[freshPro.proses.length - 1];
+            if (lastStep) {
+              // Sum only APPROVED reports
+              totalOutput = lastStep.productionReports
+                .filter((r) => r.status === ReportStatus.APPROVED)
+                .reduce((acc, r) => {
+                  return (
+                    acc +
+                    Number(r.qtyPassOn?.toString() ?? "0") +
+                    Number(r.qtyGood?.toString() ?? "0")
+                  );
+                }, 0);
             }
+          }
 
-            // Target Check
-            if (totalOutput >= freshPro.qtyPoPcs) {
-              // CHANGE REQ: User wants COMPLETE not CLOSED/COMPLETE confusion.
-              // Assuming "COMPLETE" is a valid enum status in schema.
-              // Current Enum likely: OPEN, IN_PROGRESS, COMPLETE, CLOSED, CANCELLED
-              newStatus = "COMPLETE" as any;
-            } else if (hasActivity) {
-              newStatus = "IN_PROGRESS";
-            } else {
-              newStatus = "OPEN";
-            }
+          // Target Check
+          if (totalOutput >= freshPro.qtyPoPcs) {
+            // CHANGE REQ: User wants COMPLETE not CLOSED/COMPLETE confusion.
+            // Assuming "COMPLETE" is a valid enum status in schema.
+            // Current Enum likely: OPEN, IN_PROGRESS, COMPLETE, CLOSED, CANCELLED
+            newStatus = "COMPLETE" as any;
+          } else if (hasActivity) {
+            newStatus = "IN_PROGRESS";
+          } else {
+            newStatus = "OPEN";
+          }
 
-            // Guard: Handle Transitions
-            let allowUpdate = true;
-            if (freshPro.status === "CANCELLED") allowUpdate = false;
-            // Only allow CLOSED -> COMPLETE (Fix correction), otherwise keep CLOSED (Short Close)
-            if (freshPro.status === "CLOSED" && newStatus !== "COMPLETE")
-              allowUpdate = false;
+          // Guard: Handle Transitions
+          let allowUpdate = true;
+          if (freshPro.status === "CANCELLED") allowUpdate = false;
+          // Only allow CLOSED -> COMPLETE (Fix correction), otherwise keep CLOSED (Short Close)
+          if (freshPro.status === "CLOSED" && newStatus !== "COMPLETE")
+            allowUpdate = false;
 
-            // Update if changed
-            if (allowUpdate && newStatus !== freshPro.status) {
-              await tx.pro.update({
-                where: { id: freshPro.id },
-                data: { status: newStatus as any },
-              });
-            }
+          // Update if changed
+          if (allowUpdate && newStatus !== freshPro.status) {
+            await tx.pro.update({
+              where: { id: freshPro.id },
+              data: { status: newStatus as any },
+            });
+          }
         }
 
         return report;
@@ -660,9 +660,9 @@ export const verificationRouter = createTRPCRouter({
                 // Link to original context
                 proId: txn.proId,
                 prosesId: txn.prosesId,
-                productionReportId: report.id, // Still link to same report for audit history
+                productionReportId: null, // Set to null to avoid unique constraint violation with original txn (e.g. if flipping IN->OUT clashes with existing OUT)
 
-                notes: `VOID Reversal: ${input.reason}`,
+                notes: `VOID Reversal for Report ${report.id}: ${input.reason}`,
               },
             });
           }
@@ -703,62 +703,62 @@ export const verificationRouter = createTRPCRouter({
         });
 
         if (freshPro) {
-            let newStatus = freshPro.status;
-            let hasActivity = false;
-            let totalOutput = 0;
+          let newStatus = freshPro.status;
+          let hasActivity = false;
+          let totalOutput = 0;
 
-            // Check activity
-            for (const s of freshPro.proses) {
-              // Valid reports only
-              const validReports = s.productionReports.filter(
-                (r) =>
-                  r.status !== ReportStatus.VOID &&
-                  r.status !== ReportStatus.REJECTED,
-              );
-              if (validReports.length > 0) hasActivity = true;
+          // Check activity
+          for (const s of freshPro.proses) {
+            // Valid reports only
+            const validReports = s.productionReports.filter(
+              (r) =>
+                r.status !== ReportStatus.VOID &&
+                r.status !== ReportStatus.REJECTED,
+            );
+            if (validReports.length > 0) hasActivity = true;
+          }
+
+          // Calculate Total Output from LAST PROCESS
+          if (freshPro.proses.length > 0) {
+            const lastStep = freshPro.proses[freshPro.proses.length - 1];
+            if (lastStep) {
+              totalOutput = lastStep.productionReports
+                .filter((r) => r.status === ReportStatus.APPROVED)
+                .reduce((acc, r) => {
+                  return (
+                    acc +
+                    Number(r.qtyPassOn?.toString() ?? "0") +
+                    Number(r.qtyGood?.toString() ?? "0")
+                  );
+                }, 0);
             }
+          }
 
-            // Calculate Total Output from LAST PROCESS
-            if (freshPro.proses.length > 0) {
-              const lastStep = freshPro.proses[freshPro.proses.length - 1];
-              if (lastStep) {
-                totalOutput = lastStep.productionReports
-                  .filter((r) => r.status === ReportStatus.APPROVED)
-                  .reduce((acc, r) => {
-                    return (
-                      acc +
-                      Number(r.qtyPassOn?.toString() ?? "0") +
-                      Number(r.qtyGood?.toString() ?? "0")
-                    );
-                  }, 0);
-              }
-            }
+          // Target Check
+          if (totalOutput >= freshPro.qtyPoPcs) {
+            // CHANGE REQ: User wants COMPLETE not CLOSED/COMPLETE confusion.
+            // Assuming "COMPLETE" is a valid enum status in schema.
+            // Current Enum likely: OPEN, IN_PROGRESS, COMPLETE, CLOSED, CANCELLED
+            newStatus = "COMPLETE" as any;
+          } else if (hasActivity) {
+            newStatus = "IN_PROGRESS";
+          } else {
+            newStatus = "OPEN";
+          }
 
-            // Target Check
-            if (totalOutput >= freshPro.qtyPoPcs) {
-              // CHANGE REQ: User wants COMPLETE not CLOSED/COMPLETE confusion.
-              // Assuming "COMPLETE" is a valid enum status in schema.
-              // Current Enum likely: OPEN, IN_PROGRESS, COMPLETE, CLOSED, CANCELLED
-              newStatus = "COMPLETE" as any;
-            } else if (hasActivity) {
-              newStatus = "IN_PROGRESS";
-            } else {
-              newStatus = "OPEN";
-            }
+          // Guard: Handle Transitions
+          let allowUpdate = true;
+          if (freshPro.status === "CANCELLED") allowUpdate = false;
+          // Only allow CLOSED -> COMPLETE (Fix correction), otherwise keep CLOSED (Short Close)
+          if (freshPro.status === "CLOSED" && newStatus !== "COMPLETE")
+            allowUpdate = false;
 
-            // Guard: Handle Transitions
-            let allowUpdate = true;
-            if (freshPro.status === "CANCELLED") allowUpdate = false;
-            // Only allow CLOSED -> COMPLETE (Fix correction), otherwise keep CLOSED (Short Close)
-            if (freshPro.status === "CLOSED" && newStatus !== "COMPLETE")
-              allowUpdate = false;
-
-            if (allowUpdate && newStatus !== freshPro.status) {
-              await tx.pro.update({
-                where: { id: freshPro.id },
-                data: { status: newStatus as any },
-              });
-            }
+          if (allowUpdate && newStatus !== freshPro.status) {
+            await tx.pro.update({
+              where: { id: freshPro.id },
+              data: { status: newStatus as any },
+            });
+          }
         }
 
         return updatedReport;
@@ -822,64 +822,64 @@ export const verificationRouter = createTRPCRouter({
 
         // If manually CLOSED or CANCELLED, do not auto-update
         // EXCEPTION: Allow CLOSED -> COMPLETE correction
-        
-          let newStatus = pro.status;
-          let hasActivity = false;
-          let totalOutput = 0;
 
-          // Check activity
-          for (const s of pro.proses) {
-            const validReports = s.productionReports.filter(
-              (r) =>
-                r.status !== ReportStatus.VOID &&
-                r.status !== ReportStatus.REJECTED,
-            );
-            if (validReports.length > 0) hasActivity = true;
+        let newStatus = pro.status;
+        let hasActivity = false;
+        let totalOutput = 0;
+
+        // Check activity
+        for (const s of pro.proses) {
+          const validReports = s.productionReports.filter(
+            (r) =>
+              r.status !== ReportStatus.VOID &&
+              r.status !== ReportStatus.REJECTED,
+          );
+          if (validReports.length > 0) hasActivity = true;
+        }
+
+        // Calculate Total Output from LAST PROCESS
+        if (pro.proses.length > 0) {
+          // Sort processes manually
+          const sortedSteps = [...pro.proses].sort(
+            (a, b) => a.orderNo - b.orderNo,
+          );
+          const lastStep = sortedSteps[sortedSteps.length - 1];
+
+          if (lastStep) {
+            totalOutput = lastStep.productionReports
+              .filter((r) => r.status === ReportStatus.APPROVED)
+              .reduce((acc, r) => {
+                return (
+                  acc +
+                  Number(r.qtyPassOn?.toString() ?? "0") +
+                  Number(r.qtyGood?.toString() ?? "0")
+                );
+              }, 0);
           }
+        }
 
-          // Calculate Total Output from LAST PROCESS
-          if (pro.proses.length > 0) {
-            // Sort processes manually
-            const sortedSteps = [...pro.proses].sort(
-              (a, b) => a.orderNo - b.orderNo,
-            );
-            const lastStep = sortedSteps[sortedSteps.length - 1];
+        // Target Check
+        if (totalOutput >= pro.qtyPoPcs) {
+          newStatus = "COMPLETE" as any;
+        } else if (hasActivity) {
+          newStatus = "IN_PROGRESS" as any;
+        } else {
+          newStatus = "OPEN" as any;
+        }
 
-            if (lastStep) {
-              totalOutput = lastStep.productionReports
-                .filter((r) => r.status === ReportStatus.APPROVED)
-                .reduce((acc, r) => {
-                  return (
-                    acc +
-                    Number(r.qtyPassOn?.toString() ?? "0") +
-                    Number(r.qtyGood?.toString() ?? "0")
-                  );
-                }, 0);
-            }
-          }
+        // Guard: Handle Transitions
+        let allowUpdate = true;
+        if (pro.status === "CANCELLED") allowUpdate = false;
+        // Only allow CLOSED -> COMPLETE (Fix correction), otherwise keep CLOSED (Short Close)
+        if (pro.status === "CLOSED" && newStatus !== "COMPLETE")
+          allowUpdate = false;
 
-          // Target Check
-          if (totalOutput >= pro.qtyPoPcs) {
-            newStatus = "COMPLETE" as any;
-          } else if (hasActivity) {
-            newStatus = "IN_PROGRESS" as any;
-          } else {
-            newStatus = "OPEN" as any;
-          }
-
-          // Guard: Handle Transitions
-          let allowUpdate = true;
-          if (pro.status === "CANCELLED") allowUpdate = false;
-          // Only allow CLOSED -> COMPLETE (Fix correction), otherwise keep CLOSED (Short Close)
-          if (pro.status === "CLOSED" && newStatus !== "COMPLETE")
-            allowUpdate = false;
-
-          if (allowUpdate && newStatus !== pro.status) {
-            await ctx.db.pro.update({
-              where: { id: pro.id },
-              data: { status: newStatus },
-            });
-          }
+        if (allowUpdate && newStatus !== pro.status) {
+          await ctx.db.pro.update({
+            where: { id: pro.id },
+            data: { status: newStatus },
+          });
+        }
       }
 
       return report;
