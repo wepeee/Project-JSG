@@ -48,13 +48,16 @@ function uid() {
 export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
   const utils = api.useUtils();
 
-  const machines = api.machines.list.useQuery();
-  const materials = api.materials.list.useQuery();
+  const machines = api.machines.list.useQuery(); // Filter machines later if needed
 
   const pro = api.pros.getById.useQuery(
     { id: proId ?? 0 },
     { enabled: !!proId },
   );
+
+  const materials = api.materials.list.useQuery({
+    type: pro.data?.type as "PAPER" | "RIGID" | "OTHER" | undefined,
+  });
 
   // Filter processes by PRO type from server side
   const processes = api.processes.list.useQuery(
@@ -365,11 +368,34 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
                             className={control}
                           >
                             <option value="">(optional) pilih material</option>
-                            {(materials.data ?? []).map((m) => (
-                              <option key={m.id} value={m.id}>
-                                {m.name} ({String(m.uom)})
-                              </option>
-                            ))}
+
+                            {/* Group 1: Raw Materials & Consumables */}
+                            <optgroup label="Bahan Baku & Consumable">
+                              {(materials.data ?? [])
+                                .filter((m) => m.type !== "WIP")
+                                .map((m) => (
+                                  <option key={m.id} value={m.id}>
+                                    {m.name} ({String(m.uom)})
+                                  </option>
+                                ))}
+                            </optgroup>
+
+                            {/* Group 2: WIP (Work In Process) */}
+                            <optgroup label="Barang Setengah Jadi (WIP)">
+                              {(materials.data ?? [])
+                                .filter((m) => m.type === "WIP")
+                                .map((m) => {
+                                  const stock = (m as any).wipStock || 0;
+                                  return (
+                                    <option key={m.id} value={m.id}>
+                                      {m.name}{" "}
+                                      {stock > 0
+                                        ? `- Stock: ${stock.toLocaleString("id-ID")}`
+                                        : ""}
+                                    </option>
+                                  );
+                                })}
+                            </optgroup>
                           </select>
                         </TableCell>
 

@@ -139,7 +139,9 @@ export default function ProPlanner() {
     // @ts-ignore
     type: proType === "OTHER" ? undefined : proType,
   });
-  const materials = api.materials.list.useQuery();
+  const materials = api.materials.list.useQuery({
+    type: proType === "OTHER" ? undefined : proType,
+  });
 
   const createPro = api.pros.create.useMutation({
     onSuccess: async (created) => {
@@ -1103,11 +1105,34 @@ export default function ProPlanner() {
                         disabled={loadingMaster}
                       >
                         <option value="">(pilih)</option>
-                        {(materials.data ?? []).map((m: any) => (
-                          <option key={m.id} value={m.id}>
-                            {m.name}
-                          </option>
-                        ))}
+
+                        <optgroup label="Bahan Baku & Consumable">
+                          {(materials.data ?? [])
+                            // @ts-ignore
+                            .filter((m) => m.type !== "WIP")
+                            .map((m: any) => (
+                              <option key={m.id} value={m.id}>
+                                {m.name}
+                              </option>
+                            ))}
+                        </optgroup>
+
+                        <optgroup label="Barang Setengah Jadi (WIP)">
+                          {(materials.data ?? [])
+                            // @ts-ignore
+                            .filter((m) => m.type === "WIP")
+                            .map((m: any) => {
+                              const stock = m.wipStock || 0;
+                              return (
+                                <option key={m.id} value={m.id}>
+                                  {m.name}{" "}
+                                  {stock > 0
+                                    ? `- Stock: ${stock.toLocaleString("id-ID")}`
+                                    : ""}
+                                </option>
+                              );
+                            })}
+                        </optgroup>
                       </select>
                     </div>
 

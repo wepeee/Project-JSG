@@ -82,7 +82,9 @@ function groupBy<T>(list: T[], keyGetter: (item: T) => string) {
 }
 
 function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
-  const [groupMode, setGroupMode] = React.useState<"PRO" | "MACHINE">("PRO");
+  const [groupMode, setGroupMode] = React.useState<"PRO" | "MACHINE" | "ITEM">(
+    "PRO",
+  );
 
   // Filters
   const [activeCategory, setActiveCategory] = React.useState<"PAPER" | "RIGID">(
@@ -133,8 +135,10 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
     if (!data) return null;
     if (groupMode === "PRO") {
       return groupBy(data, (item) => `${item.proNumber} (${item.proType})`);
-    } else {
+    } else if (groupMode === "MACHINE") {
       return groupBy(data, (item) => item.machineName || "Unassigned");
+    } else {
+      return groupBy(data, (item) => item.itemId);
     }
   }, [data, groupMode]);
 
@@ -267,6 +271,7 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
               <SelectContent>
                 <SelectItem value="PRO">View by PRO</SelectItem>
                 <SelectItem value="MACHINE">View by Machine</SelectItem>
+                <SelectItem value="ITEM">View by Item</SelectItem>
               </SelectContent>
             </Select>
             <Button
@@ -299,19 +304,34 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
             <div className="space-y-6">
               {sortedKeys.map((key) => {
                 const items = groupedData!.get(key)!;
+                const totalQty = items.reduce((acc, curr) => acc + curr.qty, 0);
 
                 return (
                   <div key={key} className="bg-muted/20 rounded-md border p-4">
-                    <div className="mb-2 flex items-center gap-2 text-lg font-semibold">
-                      <Badge variant="outline">
-                        {groupMode === "PRO" ? "PRO" : "Machine"}
-                      </Badge>
-                      {key}
-                      {groupMode === "PRO" && items[0]?.proQty ? (
-                        <span className="text-muted-foreground ml-2 text-sm font-normal">
-                          (Target: {items[0].proQty.toLocaleString("id-ID")})
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-lg font-semibold">
+                        <Badge variant="outline">
+                          {groupMode === "PRO"
+                            ? "PRO"
+                            : groupMode === "MACHINE"
+                              ? "Machine"
+                              : "Item"}
+                        </Badge>
+                        {key}
+                        {groupMode === "PRO" && items[0]?.proQty ? (
+                          <span className="text-muted-foreground ml-2 text-sm font-normal">
+                            (Target: {items[0].proQty.toLocaleString("id-ID")})
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-slate-500">
+                          Total:
                         </span>
-                      ) : null}
+                        <span className="text-lg font-bold">
+                          {totalQty.toLocaleString("id-ID")}
+                        </span>
+                      </div>
                     </div>
 
                     <Table>
@@ -320,10 +340,14 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                           <TableHead className="w-[400px]">
                             {groupMode === "PRO"
                               ? "Machine / Location"
-                              : "PRO Number"}
+                              : groupMode === "MACHINE"
+                                ? "PRO Number"
+                                : "Machine / Location"}
                           </TableHead>
-                          <TableHead className="w-[300px]">Item Name</TableHead>
-                          <TableHead className="text-right w-[150px]">
+                          <TableHead className="w-[300px]">
+                            {groupMode === "ITEM" ? "PRO Number" : "Item Name"}
+                          </TableHead>
+                          <TableHead className="w-[150px] text-right">
                             Qty (Stok)
                           </TableHead>
                           <TableHead className="w-[50px]"></TableHead>
@@ -337,10 +361,14 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                             <TableCell>
                               {groupMode === "PRO"
                                 ? item.machineName
-                                : `${item.proNumber} (${item.proType})`}
+                                : groupMode === "MACHINE"
+                                  ? `${item.proNumber} (${item.proType})`
+                                  : item.machineName}
                             </TableCell>
                             <TableCell className="font-medium">
-                              {item.itemId}
+                              {groupMode === "ITEM"
+                                ? item.proNumber
+                                : item.itemId}
                             </TableCell>
                             <TableCell className="text-right text-base font-semibold">
                               {item.qty.toLocaleString("id-ID")}
