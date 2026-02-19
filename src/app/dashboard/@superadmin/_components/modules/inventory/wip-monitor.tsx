@@ -112,6 +112,11 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
   // Queries
   const { data: filters } = api.inventory.getFilterOptions.useQuery();
 
+  // View Mode
+  const [viewMode, setViewMode] = React.useState<"INVENTORY" | "PROGRESS">(
+    "INVENTORY",
+  );
+
   const queryInput = React.useMemo(() => {
     const pVal = filterProId !== "ALL" ? parseInt(filterProId, 10) : undefined;
     const mVal =
@@ -120,14 +125,22 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
     return {
       proId: pVal && !isNaN(pVal) ? pVal : undefined,
       machineId: mVal && !isNaN(mVal) ? mVal : undefined,
-      includeZero,
+      includeZero: viewMode === "INVENTORY" ? includeZero : true, // Progress usually wants to see non-zero output
       locationTypes:
         filterType === "ALL"
           ? ["WIP", "HOLD", "SCRAP", "FG", "RAW"]
           : [filterType as any],
       type: activeCategory as any,
+      mode: viewMode,
     };
-  }, [filterProId, filterMachineId, includeZero, filterType, activeCategory]);
+  }, [
+    filterProId,
+    filterMachineId,
+    includeZero,
+    filterType,
+    activeCategory,
+    viewMode,
+  ]);
 
   const { data, isLoading, refetch, isRefetching } =
     api.inventory.getWipMonitor.useQuery(queryInput);
@@ -149,7 +162,14 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
     return Array.from(groupedData.keys()).sort();
   }, [groupedData]);
 
-  const handleOpenCard = (item: WipMonitorItem, siblings: WipMonitorItem[], index: number) => {
+  const handleOpenCard = (
+    item: WipMonitorItem,
+    siblings: WipMonitorItem[],
+    index: number,
+  ) => {
+    // Only open for Inventory Mode or FG items in Progress which have real locationId
+    if (viewMode === "PROGRESS" && item.locationId <= 0) return;
+
     setSelectedRow({
       itemId: item.itemId,
       locationId: item.locationId,
@@ -162,65 +182,99 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
   };
 
   const handleNextItem = () => {
-      setSelectedRow((prev) => {
-        if (!prev || !prev.siblings) return prev;
-        const nextIdx = prev.currentIndex + 1;
-        
-        // Boundary check
-        if (nextIdx >= prev.siblings.length) return prev;
+    setSelectedRow((prev) => {
+      if (!prev || !prev.siblings) return prev;
+      const nextIdx = prev.currentIndex + 1;
 
-        const nextItem = prev.siblings[nextIdx];
-        return {
-            ...prev,
-            itemId: nextItem.itemId,
-            locationId: nextItem.locationId,
-            locationName: nextItem.locationName ?? "Unknown",
-            proNumber: nextItem.proNumber,
-            currentIndex: nextIdx,
-        };
-      });
+      // Boundary check
+      if (nextIdx >= prev.siblings.length) return prev;
+
+      const nextItem = prev.siblings[nextIdx];
+      return {
+        ...prev,
+        itemId: nextItem.itemId,
+        locationId: nextItem.locationId,
+        locationName: nextItem.locationName ?? "Unknown",
+        proNumber: nextItem.proNumber,
+        currentIndex: nextIdx,
+      };
+    });
   };
 
   const handlePrevItem = () => {
-      setSelectedRow((prev) => {
-        if (!prev || !prev.siblings) return prev;
-        const prevIdx = prev.currentIndex - 1;
+    setSelectedRow((prev) => {
+      if (!prev || !prev.siblings) return prev;
+      const prevIdx = prev.currentIndex - 1;
 
-        // Boundary check
-        if (prevIdx < 0) return prev;
+      // Boundary check
+      if (prevIdx < 0) return prev;
 
-        const prevItem = prev.siblings[prevIdx];
-        return {
-            ...prev,
-            itemId: prevItem.itemId,
-            locationId: prevItem.locationId,
-            locationName: prevItem.locationName ?? "Unknown",
-            proNumber: prevItem.proNumber,
-            currentIndex: prevIdx,
-        };
-      });
+      const prevItem = prev.siblings[prevIdx];
+      return {
+        ...prev,
+        itemId: prevItem.itemId,
+        locationId: prevItem.locationId,
+        locationName: prevItem.locationName ?? "Unknown",
+        proNumber: prevItem.proNumber,
+        currentIndex: prevIdx,
+      };
+    });
   };
 
-  const prevItemLabel = selectedRow && selectedRow.currentIndex > 0 
-    ? (selectedRow.siblings[selectedRow.currentIndex - 1]?.itemId ?? "Prev") 
-    : undefined;
+  const prevItemLabel =
+    selectedRow && selectedRow.currentIndex > 0
+      ? (selectedRow.siblings[selectedRow.currentIndex - 1]?.itemId ?? "Prev")
+      : undefined;
 
-  const nextItemLabel = selectedRow && selectedRow.siblings && selectedRow.currentIndex < selectedRow.siblings.length - 1
-    ? (selectedRow.siblings[selectedRow.currentIndex + 1]?.itemId ?? "Next")
-    : undefined;
+  const nextItemLabel =
+    selectedRow &&
+    selectedRow.siblings &&
+    selectedRow.currentIndex < selectedRow.siblings.length - 1
+      ? (selectedRow.siblings[selectedRow.currentIndex + 1]?.itemId ?? "Next")
+      : undefined;
 
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader className="flex flex-col items-start justify-between space-y-2 pb-2 lg:flex-row lg:items-center lg:space-y-0">
           <div className="space-y-1">
-            <CardTitle>Inventory WIP (Saldo IN - OUT)</CardTitle>
+            <CardTitle>
+              {viewMode === "INVENTORY"
+                ? "Inventory Monitor (On-Hand)"
+                : "Production Progress (Output)"}
+            </CardTitle>
             <CardDescription>
-              Data ini adalah saldo real-time (IN - OUT) per lokasi dan Item.
+              {viewMode === "INVENTORY"
+                ? "Saldo real-time (IN - OUT) di setiap lokasi produksi / mesin."
+                : "Total akumulasi output yang APPROVED per step/mesin."}
             </CardDescription>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {/* View Mode Toggle */}
+            <div className="mr-4 flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+              <button
+                onClick={() => setViewMode("INVENTORY")}
+                className={`flex items-center gap-2 rounded-md px-3 py-1 text-xs font-bold transition-all ${
+                  viewMode === "INVENTORY"
+                    ? "bg-white text-blue-600 shadow dark:bg-slate-700 dark:text-blue-400"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                Inventory (Stock)
+              </button>
+              <button
+                onClick={() => setViewMode("PROGRESS")}
+                className={`flex items-center gap-2 rounded-md px-3 py-1 text-xs font-bold transition-all ${
+                  viewMode === "PROGRESS"
+                    ? "bg-white text-green-600 shadow dark:bg-slate-700 dark:text-green-400"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                Progress (Produced)
+              </button>
+            </div>
+
             {/* Category Switcher - Only show if NO department restriction */}
             {!userDepartment && (
               <div className="mr-2 flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
@@ -281,35 +335,39 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
               </Select>
             </div>
 
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="h-8 w-[110px] text-xs">
-                <SelectValue placeholder="Tipe Lokasi" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="WIP">WIP</SelectItem>
-                <SelectItem value="HOLD">HOLD (QA)</SelectItem>
-                <SelectItem value="SCRAP">SCRAP</SelectItem>
-                <SelectItem value="FG">FG</SelectItem>
-                <SelectItem value="RAW">RAW</SelectItem>
-                <SelectItem value="ALL">Semua</SelectItem>
-              </SelectContent>
-            </Select>
+            {viewMode === "INVENTORY" && (
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="h-8 w-[110px] text-xs">
+                  <SelectValue placeholder="Tipe Lokasi" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="WIP">WIP</SelectItem>
+                  <SelectItem value="HOLD">HOLD (QA)</SelectItem>
+                  <SelectItem value="SCRAP">SCRAP</SelectItem>
+                  <SelectItem value="FG">FG</SelectItem>
+                  <SelectItem value="RAW">RAW</SelectItem>
+                  <SelectItem value="ALL">Semua</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
 
-            <div className="flex items-center space-x-2 px-2">
-              <input
-                type="checkbox"
-                id="includeZero"
-                checked={includeZero}
-                onChange={(e) => setIncludeZero(e.target.checked)}
-                className="text-primary focus:ring-primary h-4 w-4 cursor-pointer rounded border-gray-300"
-              />
-              <label
-                htmlFor="includeZero"
-                className="cursor-pointer text-xs leading-none font-medium select-none"
-              >
-                Include Zero
-              </label>
-            </div>
+            {viewMode === "INVENTORY" && (
+              <div className="flex items-center space-x-2 px-2">
+                <input
+                  type="checkbox"
+                  id="includeZero"
+                  checked={includeZero}
+                  onChange={(e) => setIncludeZero(e.target.checked)}
+                  className="text-primary focus:ring-primary h-4 w-4 cursor-pointer rounded border-gray-300"
+                />
+                <label
+                  htmlFor="includeZero"
+                  className="cursor-pointer text-xs leading-none font-medium select-none"
+                >
+                  Include Zero
+                </label>
+              </div>
+            )}
 
             <div className="bg-border mx-1 h-6 w-px" />
 
@@ -347,9 +405,9 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
           ) : !data || data.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center justify-center py-12 text-center">
               <FileText className="mb-4 h-12 w-12 opacity-20" />
-              <p className="text-lg font-medium">Data Inventory Kosong</p>
+              <p className="text-lg font-medium">Data Kosong</p>
               <p className="text-sm opacity-80">
-                Belum ada transaksi yang sesuai dengan filter lokasi/PRO ini.
+                Belum ada data yang sesuai filter.
               </p>
             </div>
           ) : (
@@ -358,10 +416,12 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                 const itemsRaw = groupedData!.get(key)!;
                 // Sort items by Step Order (Ascending)
                 const items = [...itemsRaw].sort((a, b) => {
-                    const orderA = (a as any).stepOrder ?? 999;
-                    const orderB = (b as any).stepOrder ?? 999;
-                    if (orderA !== orderB) return orderA - orderB;
-                    return (a.machineName ?? "").localeCompare(b.machineName ?? "");
+                  const orderA = (a as any).stepOrder ?? 999;
+                  const orderB = (b as any).stepOrder ?? 999;
+                  if (orderA !== orderB) return orderA - orderB;
+                  return (a.machineName ?? "").localeCompare(
+                    b.machineName ?? "",
+                  );
                 });
 
                 const totalQty = items.reduce((acc, curr) => acc + curr.qty, 0);
@@ -374,8 +434,8 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                           {groupMode === "PRO"
                             ? "PRO"
                             : groupMode === "MACHINE"
-                                ? "Machine"
-                                : "Item"}
+                              ? "Machine"
+                              : "Item"}
                         </Badge>
                         {key}
                         {groupMode === "PRO" && items[0]?.proQty ? (
@@ -386,9 +446,11 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-slate-500">
-                          Total:
+                          Total {viewMode === "INVENTORY" ? "Stok" : "Output"}:
                         </span>
-                        <span className="text-lg font-bold">
+                        <span
+                          className={`text-lg font-bold ${viewMode === "INVENTORY" ? "text-blue-700" : "text-green-700"}`}
+                        >
                           {totalQty.toLocaleString("id-ID")}
                         </span>
                       </div>
@@ -399,7 +461,7 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                         <TableRow>
                           <TableHead className="w-[400px]">
                             {groupMode === "PRO"
-                              ? "Machine / Location"
+                              ? "Machine / Process"
                               : groupMode === "MACHINE"
                                 ? "PRO Number"
                                 : "Machine / Location"}
@@ -408,7 +470,9 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                             {groupMode === "ITEM" ? "PRO Number" : "Item Name"}
                           </TableHead>
                           <TableHead className="w-[150px] text-right">
-                            Qty (Stok)
+                            {viewMode === "INVENTORY"
+                              ? "Qty (On-Hand)"
+                              : "Qty (Produced)"}
                           </TableHead>
                           <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
@@ -430,19 +494,26 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                                 ? item.proNumber
                                 : item.itemId}
                             </TableCell>
-                            <TableCell className="text-right text-base font-semibold">
+                            <TableCell
+                              className={`text-right text-base font-semibold ${viewMode === "INVENTORY" ? "text-blue-700" : "text-green-700"}`}
+                            >
                               {item.qty.toLocaleString("id-ID")}
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0"
-                                onClick={() => handleOpenCard(item, items, idx)}
-                                title="Lihat Kartu Stok"
-                              >
-                                <FileText className="h-4 w-4" />
-                              </Button>
+                              {(viewMode === "INVENTORY" ||
+                                item.locationId > 0) && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0"
+                                  onClick={() =>
+                                    handleOpenCard(item, items, idx)
+                                  }
+                                  title="Lihat Kartu Stok"
+                                >
+                                  <FileText className="h-4 w-4" />
+                                </Button>
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -465,8 +536,17 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
           locationName={selectedRow.locationName}
           proNumber={selectedRow.proNumber}
           // Navigation Props (Check stock-card-dialog.tsx for types)
-          onNextItem={selectedRow.siblings && selectedRow.currentIndex < selectedRow.siblings.length - 1 ? handleNextItem : undefined}
-          onPrevItem={selectedRow.siblings && selectedRow.currentIndex > 0 ? handlePrevItem : undefined}
+          onNextItem={
+            selectedRow.siblings &&
+            selectedRow.currentIndex < selectedRow.siblings.length - 1
+              ? handleNextItem
+              : undefined
+          }
+          onPrevItem={
+            selectedRow.siblings && selectedRow.currentIndex > 0
+              ? handlePrevItem
+              : undefined
+          }
           nextItemLabel={nextItemLabel}
           prevItemLabel={prevItemLabel}
           currentItemIndex={selectedRow.currentIndex}

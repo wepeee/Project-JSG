@@ -67,6 +67,27 @@ export const materialsRouter = createTRPCRouter({
         existingMaterials.map((m) => normalize(m.name)),
       );
 
+      // 2b. Fetch Related PROs (if material name matches ProNumber)
+      const potentialProNumbers = existingMaterials.map((m) => m.name);
+      const pros = await ctx.db.pro.findMany({
+        where: { proNumber: { in: potentialProNumbers } },
+        select: {
+          proNumber: true,
+          productName: true,
+          proses: {
+            select: {
+              machine: { select: { name: true } },
+            },
+            orderBy: { orderNo: "asc" },
+          },
+        },
+      });
+
+      const proMap = new Map<string, (typeof pros)[number]>();
+      for (const p of pros) {
+        proMap.set(p.proNumber, p);
+      }
+
       // 3. Identify Missing WIP Items (in Stock but not in Material DB)
       const missingNormNames = Array.from(wipStockMap.keys()).filter(
         (normName) => !existingNames.has(normName),
@@ -95,17 +116,46 @@ export const materialsRouter = createTRPCRouter({
       }
 
       // 4. Merge Data (DB Materials + Virtual WIP Items)
-      const result = existingMaterials.map((m) => ({
-        ...m,
-        wipStock: wipStockMap.get(normalize(m.name)) || 0,
-      }));
+      const result = existingMaterials.map((m) => {
+        const pro = proMap.get(m.name);
+        const machineNames = pro
+          ? Array.from(
+              new Set(
+                pro.proses
+                  .map((p) => p.machine?.name)
+                  .filter((n): n is string => !!n),
+              ),
+            )
+          : [];
+
+        return {
+          ...m,
+          wipStock: wipStockMap.get(normalize(m.name)) || 0,
+          relatedPro: pro
+            ? {
+                proNumber: pro.proNumber,
+                productName: pro.productName,
+                machineNames,
+              }
+            : null,
+        };
+      });
 
       // Append virtual items that are missing from DB
       for (const normName of missingNormNames) {
         const originalName = wipNameMap.get(normName)!;
         const stock = wipStockMap.get(normName)!;
 
-        // Add as a virtual material object
+        // Try to find if this virtual item matches a PRO
+        // (We didn't fetch PROs for virtual items above, but usually virtual items ARE the PROs)
+        // For now, only map DB materials. If needed, we can do a second PRO fetch or include all names.
+        // Let's assume virtual items might be PROs too.
+
+        // Quick check if we already fetched it (unlikely if strictly subset)
+        // If we want to support virtual items mapping so PROs, we should have included missingOriginalNames in potentialProNumbers.
+        // But for simplicity/performance in this step, let's stick to DB materials first or
+        // we can assume the user has created the entries or auto-create will handle it next time.
+
         result.push({
           id: -1 * Math.floor(Math.random() * 100000),
           name: originalName,
@@ -113,8 +163,10 @@ export const materialsRouter = createTRPCRouter({
           type: MaterialType.WIP,
           createdAt: new Date(),
           updatedAt: new Date(),
+          prosesMaterials: [], // Mock relation
           wipStock: stock,
-        });
+          relatedPro: null, // Virtual items won't have it in this pass unless we expand the query
+        } as any);
       }
 
       // Final Sort

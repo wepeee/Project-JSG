@@ -123,8 +123,8 @@ export default function VerificationList({
         {/* Category Switcher */}
         <div className="flex flex-col items-end gap-2">
           {/* Main Level */}
-          <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
-            {(!userDepartment || userDepartment === "PAPER") && (
+          {!userDepartment && (
+            <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
               <button
                 onClick={() => setActiveCategory("PAPER")}
                 className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
@@ -135,8 +135,6 @@ export default function VerificationList({
               >
                 PAPER
               </button>
-            )}
-            {(!userDepartment || userDepartment === "RIGID") && (
               <button
                 onClick={() => {
                   if (!isRigidActive) setActiveCategory("INJECTION");
@@ -149,8 +147,8 @@ export default function VerificationList({
               >
                 RIGID
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Sub Level for Rigid */}
           {isRigidActive && (

@@ -56,10 +56,10 @@ export function HistoryList() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 dark:bg-slate-950/50">
+    <div className="bg-background min-h-screen pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-30 border-b border-white/20 bg-white/70 p-5 shadow-sm backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-900/70">
-        <h1 className="mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-2xl font-black tracking-tight text-transparent">
+      <div className="bg-background/80 sticky top-0 z-30 border-b p-5 shadow-sm backdrop-blur-xl">
+        <h1 className="from-brand-teal to-brand-pink mb-4 bg-gradient-to-r bg-clip-text text-2xl font-black tracking-tight text-transparent">
           Riwayat Laporan
         </h1>
 
@@ -69,7 +69,7 @@ export function HistoryList() {
           <input
             type="text"
             placeholder="Cari mesin atau produk..."
-            className="h-11 w-full rounded-2xl border-none bg-slate-100 pr-4 pl-10 text-sm font-medium transition-all focus:ring-2 focus:ring-blue-500 dark:bg-slate-800"
+            className="bg-muted focus:ring-primary h-11 w-full rounded-2xl border-none pr-4 pl-10 text-sm font-medium transition-all focus:ring-2"
             disabled // todo: implement filters
           />
         </div>
@@ -77,7 +77,7 @@ export function HistoryList() {
 
       {!isLoading && (!history || history.length === 0) && (
         <div className="text-muted-foreground/50 flex flex-col items-center justify-center p-4 py-32">
-          <div className="mb-4 rounded-full bg-slate-100 p-6 dark:bg-slate-900">
+          <div className="bg-muted mb-4 rounded-full p-6">
             <History className="h-12 w-12 opacity-20" />
           </div>
           <p className="text-sm font-bold tracking-widest uppercase">
@@ -94,18 +94,18 @@ export function HistoryList() {
         {history?.map((rpt) => (
           <div
             key={rpt.id}
-            className={`flex flex-col gap-3 rounded-2xl border bg-white p-4 dark:bg-slate-900 ${
+            className={`bg-card flex flex-col gap-3 rounded-2xl border p-4 ${
               rpt.status === "REJECTED"
-                ? "border-red-200 bg-red-50/50 dark:border-red-900/50 dark:bg-red-950/10"
-                : "border-slate-100 dark:border-slate-800"
+                ? "border-destructive/30 bg-destructive/5"
+                : "border-border"
             }`}
           >
             {/* Context Info (Only needed in general list) */}
-            <div className="mb-2 flex items-center gap-2 border-b border-dashed border-slate-200 pb-2 dark:border-slate-800">
-              <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+            <div className="border-border mb-2 flex items-center gap-2 border-b border-dashed pb-2">
+              <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[10px]">
                 {rpt.proses.pro.proNumber}
               </span>
-              <span className="line-clamp-1 text-xs font-bold text-slate-800 dark:text-slate-200">
+              <span className="text-foreground line-clamp-1 text-xs font-bold">
                 {rpt.proses.pro.productName}
               </span>
             </div>

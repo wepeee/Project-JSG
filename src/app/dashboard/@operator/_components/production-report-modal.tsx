@@ -377,14 +377,14 @@ function DropdownInput({
   );
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-      <Label className="mb-2 block text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+    <div className="bg-muted/30 rounded-xl border p-3">
+      <Label className="text-muted-foreground mb-2 block text-[10px] font-bold tracking-widest uppercase">
         {label}
       </Label>
       <div className="mb-3 flex gap-2">
         <div className="flex-1">
           <Select value={selected} onValueChange={setSelected}>
-            <SelectTrigger className="h-9 w-full border-slate-700 bg-slate-900 text-xs">
+            <SelectTrigger className="bg-background h-9 w-full text-xs">
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent className="pointer-events-auto z-[99999]">
@@ -398,7 +398,7 @@ function DropdownInput({
         </div>
         <Input
           type="number"
-          className="h-9 w-20 border-slate-700 bg-slate-900 text-right text-xs"
+          className="bg-background h-9 w-20 text-right text-xs"
           placeholder="0"
           value={val}
           onChange={(e) => setVal(e.target.value)}
@@ -414,7 +414,7 @@ function DropdownInput({
           onClick={handleAdd}
           disabled={!selected || !val}
           size="icon"
-          className="h-9 w-9 shrink-0 bg-blue-600 hover:bg-blue-700"
+          className="bg-primary hover:bg-primary/90 h-9 w-9 shrink-0"
         >
           <Plus className="h-4 w-4" />
         </Button>
@@ -425,20 +425,20 @@ function DropdownInput({
           {activeValues.map(([k, v]) => (
             <div
               key={k}
-              className="flex items-center justify-between rounded border border-slate-800 bg-slate-900 px-3 py-2 text-xs"
+              className="bg-background flex items-center justify-between rounded border px-3 py-2 text-xs"
             >
-              <span className="font-medium text-slate-300">{k}</span>
+              <span className="text-foreground font-medium">{k}</span>
               <div className="flex items-center gap-3">
-                <span className="font-mono font-bold text-slate-100">
+                <span className="text-foreground font-mono font-bold">
                   {v}{" "}
-                  <span className="font-sans text-[9px] text-slate-500">
+                  <span className="text-muted-foreground font-sans text-[9px]">
                     {unit}
                   </span>
                 </span>
                 <button
                   type="button"
                   onClick={() => onRemove(k)}
-                  className="text-red-500 transition-colors hover:text-red-400"
+                  className="text-destructive hover:text-destructive/80 transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>

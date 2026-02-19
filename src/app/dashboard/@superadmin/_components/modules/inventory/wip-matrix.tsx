@@ -48,6 +48,11 @@ export default function WipMatrix({
     machineName?: string;
   } | null>(null);
 
+  // View Mode
+  const [viewMode, setViewMode] = React.useState<"INVENTORY" | "PROGRESS">(
+    "PROGRESS",
+  );
+
   const queryInput = React.useMemo(() => {
     const sDate = startDate ? new Date(startDate) : undefined;
     const eDate = endDate ? new Date(endDate) : undefined;
@@ -63,8 +68,9 @@ export default function WipMatrix({
       endDate: eDate,
       status: statFilter,
       type: type !== "ALL" ? (type as "PAPER" | "RIGID") : undefined,
+      mode: viewMode,
     };
-  }, [startDate, endDate, status, type]);
+  }, [startDate, endDate, status, type, viewMode]);
 
   const { data, isLoading } = api.inventory.getWipMatrix.useQuery(queryInput);
 
@@ -77,7 +83,7 @@ export default function WipMatrix({
       "Type",
       "Status",
       ...data.columns.map((c) => c.name),
-      "FG Received",
+      viewMode === "INVENTORY" ? "FG On-Hand" : "FG Received",
       "% Fulfillment",
     ];
 
@@ -102,7 +108,7 @@ export default function WipMatrix({
     link.href = url;
     link.setAttribute(
       "download",
-      `wip_matrix_${format(new Date(), "yyyyMMdd")}.csv`,
+      `wip_matrix_${viewMode.toLowerCase()}_${format(new Date(), "yyyyMMdd")}.csv`,
     );
     document.body.appendChild(link);
     link.click();
@@ -114,6 +120,9 @@ export default function WipMatrix({
     colId?: number,
     colName?: string,
   ) => {
+    // Disable drilldown for INVENTORY mode as it's not based on Production Reports directly
+    if (viewMode === "INVENTORY") return;
+
     setSelectedCell({
       proId: row.id,
       proNumber: row.proNumber,
@@ -127,6 +136,30 @@ export default function WipMatrix({
     <Card className="flex h-full min-w-0 flex-col border-none shadow-none">
       {/* Filters */}
       <div className="mb-4 flex flex-wrap items-center gap-2 p-1">
+        {/* View Mode Toggle */}
+        <div className="mr-4 flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+          <button
+            onClick={() => setViewMode("PROGRESS")}
+            className={`flex items-center gap-2 rounded-md px-3 py-1 text-xs font-bold transition-all ${
+              viewMode === "PROGRESS"
+                ? "bg-white text-green-600 shadow dark:bg-slate-700 dark:text-green-400"
+                : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+            }`}
+          >
+            Progress (Flow)
+          </button>
+          <button
+            onClick={() => setViewMode("INVENTORY")}
+            className={`flex items-center gap-2 rounded-md px-3 py-1 text-xs font-bold transition-all ${
+              viewMode === "INVENTORY"
+                ? "bg-white text-blue-600 shadow dark:bg-slate-700 dark:text-blue-400"
+                : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+            }`}
+          >
+            Inventory (Stock)
+          </button>
+        </div>
+
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger className="h-8 w-[130px] text-xs">
             <SelectValue placeholder="Status" />
@@ -202,7 +235,7 @@ export default function WipMatrix({
                 </TableHead>
               ))}
               <TableHead className="sticky right-0 z-50 w-[120px] border-l bg-gray-100 text-right font-semibold text-gray-700 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] dark:bg-slate-800 dark:text-gray-200">
-                FG Received
+                {viewMode === "INVENTORY" ? "FG On-Hand" : "FG Received"}
               </TableHead>
               <TableHead className="z-40 w-[100px] bg-gray-100 text-right font-semibold text-gray-700 dark:bg-slate-800 dark:text-gray-200">
                 % Fulfilled

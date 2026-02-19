@@ -53,9 +53,9 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
   }, [reports]);
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 dark:bg-slate-950/50">
+    <div className="bg-background min-h-screen pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-30 border-b border-white/20 bg-white/70 px-4 pt-5 pb-4 shadow-sm backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-900/70">
+      <div className="bg-background/80 sticky top-0 z-30 border-b px-4 pt-5 pb-4 shadow-sm backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -78,7 +78,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
 
       <div className="space-y-6 p-4">
         {/* Task Info Card */}
-        <div className="rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="bg-card rounded-[2rem] border p-6 shadow-sm">
           <h2 className="mb-1 text-xl font-black">{task.pro.productName}</h2>
           <div className="text-muted-foreground mb-4 flex items-center gap-2 text-sm">
             <span className="font-bold">{task.step.machine?.name}</span>
@@ -87,7 +87,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+            <div className="bg-muted/40 rounded-2xl p-3">
               <div className="text-muted-foreground mb-1 text-[9px] font-bold tracking-widest uppercase">
                 Target
               </div>
@@ -95,11 +95,11 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
                 {task.pro.qtyPoPcs.toLocaleString("id-ID")}
               </div>
             </div>
-            <div className="rounded-2xl bg-blue-50 p-3 dark:bg-blue-900/20">
-              <div className="mb-1 text-[9px] font-bold tracking-widest text-blue-600 uppercase dark:text-blue-400">
+            <div className="bg-primary/10 rounded-2xl p-3">
+              <div className="text-primary mb-1 text-[9px] font-bold tracking-widest uppercase">
                 Total Good
               </div>
-              <div className="text-lg font-black text-blue-700 dark:text-blue-300">
+              <div className="text-primary text-lg font-black">
                 {totalGood.toLocaleString("id-ID")}
               </div>
             </div>
@@ -115,7 +115,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
           className={`h-14 w-full rounded-2xl text-base font-black shadow-lg transition-all active:scale-95 ${
             hasDraft
               ? "bg-amber-400 text-amber-950 shadow-amber-200/50 hover:bg-amber-500 dark:bg-amber-500 dark:text-amber-950"
-              : "bg-blue-600 text-white shadow-blue-200/50 hover:bg-blue-700 dark:shadow-none"
+              : "bg-primary text-primary-foreground shadow-primary/20 hover:bg-primary/90"
           }`}
         >
           {hasDraft ? (
@@ -145,10 +145,10 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
             {reports?.map((rpt) => (
               <div
                 key={rpt.id}
-                className={`flex flex-col gap-3 rounded-2xl border bg-white p-4 dark:bg-slate-900 ${
+                className={`bg-card flex flex-col gap-3 rounded-2xl border p-4 ${
                   rpt.status === "REJECTED"
-                    ? "border-red-200 bg-red-50/50 dark:border-red-900/50 dark:bg-red-950/10"
-                    : "border-slate-100 dark:border-slate-800"
+                    ? "border-destructive/30 bg-destructive/5"
+                    : "border-border"
                 }`}
               >
                 <div className="flex items-start justify-between">

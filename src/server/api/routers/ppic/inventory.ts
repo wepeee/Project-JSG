@@ -34,122 +34,238 @@ export const inventoryRouter = createTRPCRouter({
           includeZero: z.boolean().optional(),
           locationTypes: z.array(z.string()).optional(),
           type: z.nativeEnum(ProType).optional(), // Filter by PAPER/RIGID
+          mode: z
+            .enum(["INVENTORY", "PROGRESS"])
+            .default("INVENTORY")
+            .optional(),
         })
         .optional(),
     )
     .query(async ({ ctx, input }) => {
       const filters = input || {};
+      const mode = filters.mode ?? "INVENTORY";
 
-      // A. Group Transactions by PRO + Location (Machine) + Item
-      // Filter locations based on input, default to WIP
-      const typeFilter = filters.locationTypes
-        ? { in: filters.locationTypes as LocationType[] }
-        : LocationType.WIP;
+      // --- MODE: INVENTORY (On-Hand: IN - OUT) ---
+      if (mode === "INVENTORY") {
+        // A. Group Transactions by PRO + Location (Machine) + Item
+        // Filter locations based on input, default to WIP
+        const typeFilter = filters.locationTypes
+          ? { in: filters.locationTypes as LocationType[] }
+          : LocationType.WIP;
 
-      const groups = await ctx.db.inventoryTxn.groupBy({
-        by: ["proId", "locationId", "itemId", "type"],
-        where: {
-          location: {
-            type: typeFilter,
-            ...(filters.machineId ? { machineId: filters.machineId } : {}),
+        const groups = await ctx.db.inventoryTxn.groupBy({
+          by: ["proId", "locationId", "itemId", "type"],
+          where: {
+            location: {
+              type: typeFilter,
+              ...(filters.machineId ? { machineId: filters.machineId } : {}),
+            },
+            ...(filters.proId ? { proId: filters.proId } : {}),
+            ...(filters.type ? { pro: { type: filters.type } } : {}),
           },
-          ...(filters.proId ? { proId: filters.proId } : {}),
-          ...(filters.type ? { pro: { type: filters.type } } : {}),
-        },
-        _sum: {
-          qty: true,
-        },
-      });
+          _sum: {
+            qty: true,
+          },
+        });
 
-      // B. Fetch Details for Relations
-      const proIds = groups
-        .map((g) => g.proId)
-        .filter((id): id is number => id !== null);
+        // B. Fetch Details for Relations
+        const proIds = groups
+          .map((g) => g.proId)
+          .filter((id): id is number => id !== null);
 
-      const locationIds = groups.map((g) => g.locationId);
+        const locationIds = groups.map((g) => g.locationId);
 
-      // Optimize: only fetch unique IDs
-      const uniqueProIds = [...new Set(proIds)];
-      const uniqueLocIds = [...new Set(locationIds)];
+        const uniqueProIds = [...new Set(proIds)];
+        const uniqueLocIds = [...new Set(locationIds)];
 
-      const [pros, locations, allProses] = await Promise.all([
-        ctx.db.pro.findMany({
-          where: { id: { in: uniqueProIds } },
-          select: { id: true, proNumber: true, type: true, qtyPoPcs: true },
-        }),
-        ctx.db.inventoryLocation.findMany({
-          where: { id: { in: uniqueLocIds } },
-          include: { machine: true },
-        }),
-        // Fetch steps to determine order
-        ctx.db.proses.findMany({
+        const [pros, locations, allProses] = await Promise.all([
+          ctx.db.pro.findMany({
+            where: { id: { in: uniqueProIds } },
+            select: { id: true, proNumber: true, type: true, qtyPoPcs: true },
+          }),
+          ctx.db.inventoryLocation.findMany({
+            where: { id: { in: uniqueLocIds } },
+            include: { machine: true },
+          }),
+          ctx.db.proses.findMany({
             where: { proId: { in: uniqueProIds } },
-            select: { proId: true, machineId: true, orderNo: true }
-        })
-      ]);
+            select: { proId: true, machineId: true, orderNo: true },
+          }),
+        ]);
 
-      // C. Map & Aggregate Data (IN - OUT)
-      const proMap = new Map(pros.map((p) => [p.id, p]));
-      const locMap = new Map(locations.map((l) => [l.id, l]));
-      
-      // Map: ProID-MachineID -> OrderNo
-      const stepOrderMap = new Map<string, number>();
-      for(const p of allProses) {
-          if(p.machineId) {
+        const proMap = new Map(pros.map((p) => [p.id, p]));
+        const locMap = new Map(locations.map((l) => [l.id, l]));
+
+        const stepOrderMap = new Map<string, number>();
+        for (const p of allProses) {
+          if (p.machineId) {
             stepOrderMap.set(`${p.proId}-${p.machineId}`, p.orderNo);
           }
-      }
+        }
 
-      const aggregatedMap = new Map<string, WipMonitorItem>();
+        const aggregatedMap = new Map<string, WipMonitorItem>();
 
-      for (const g of groups) {
-        const key = `${g.proId}-${g.locationId}-${g.itemId}`;
-        const qty = Number(g._sum.qty ?? 0);
+        for (const g of groups) {
+          const key = `${g.proId}-${g.locationId}-${g.itemId}`;
+          const qty = Number(g._sum.qty ?? 0);
 
-        if (!aggregatedMap.has(key)) {
-          const pro = g.proId ? proMap.get(g.proId) : null;
-          const loc = locMap.get(g.locationId);
-          
-          let stepOrder = 999;
-          if (pro && loc?.machineId) {
-             stepOrder = stepOrderMap.get(`${pro.id}-${loc.machineId}`) ?? 999;
+          if (!aggregatedMap.has(key)) {
+            const pro = g.proId ? proMap.get(g.proId) : null;
+            const loc = locMap.get(g.locationId);
+
+            let stepOrder = 999;
+            if (pro && loc?.machineId) {
+              stepOrder = stepOrderMap.get(`${pro.id}-${loc.machineId}`) ?? 999;
+            }
+
+            aggregatedMap.set(key, {
+              proId: g.proId,
+              locationId: g.locationId,
+              itemId: g.itemId,
+              qty: 0,
+              proNumber: pro?.proNumber ?? "Unknown PRO",
+              proType: pro?.type ?? "Unknown",
+              proQty: pro?.qtyPoPcs ?? 0,
+              locationName: loc?.name ?? "Unknown Loc",
+              machineName: loc?.machine?.name ?? loc?.name ?? "Unassigned",
+              stepOrder,
+            });
           }
 
-          aggregatedMap.set(key, {
-            proId: g.proId,
-            locationId: g.locationId,
-            itemId: g.itemId,
-            qty: 0, // Init
-            proNumber: pro?.proNumber ?? "Unknown PRO",
-            proType: pro?.type ?? "Unknown",
-            proQty: pro?.qtyPoPcs ?? 0,
-            locationName: loc?.name ?? "Unknown Loc",
-            machineName: loc?.machine?.name ?? loc?.name ?? "Unassigned",
-            stepOrder, // Add step order
+          const item = aggregatedMap.get(key)!;
+          if (g.type === TxnType.IN) {
+            item.qty += qty;
+          } else if (g.type === TxnType.OUT) {
+            item.qty -= qty;
+          } else if (g.type === TxnType.ADJUST) {
+            item.qty += qty;
+          }
+        }
+
+        const result = Array.from(aggregatedMap.values());
+        if (input?.includeZero) {
+          return result;
+        }
+        return result.filter((r) => Math.abs(r.qty) > 0.001);
+      }
+
+      // --- MODE: PROGRESS (Produksi: Accumulated APPROVED PassOn) ---
+      else {
+        // 1. Fetch Production Reports (Sum qtyPassOn)
+        // Group by Proses (which links to PRO and Machine)
+        const reportGroups = await ctx.db.productionReport.groupBy({
+          by: ["prosesId"],
+          where: {
+            status: "APPROVED",
+            proses: {
+              ...(filters.proId ? { proId: filters.proId } : {}),
+              ...(filters.machineId ? { machineId: filters.machineId } : {}),
+              ...(filters.type ? { pro: { type: filters.type } } : {}),
+            },
+          },
+          _sum: {
+            qtyPassOn: true,
+          },
+        });
+
+        // 2. Resolve Relations
+        const prosesIds = reportGroups.map((g) => g.prosesId);
+
+        // Need distinct PIDs to fetch basic PRO info
+        // We'll fetch Proses with includes
+        const prosesDetails = await ctx.db.proses.findMany({
+          where: { id: { in: prosesIds } },
+          include: {
+            pro: true,
+            machine: true,
+          },
+        });
+        const prosesMap = new Map(prosesDetails.map((p) => [p.id, p]));
+
+        const results: WipMonitorItem[] = [];
+
+        for (const g of reportGroups) {
+          const p = prosesMap.get(g.prosesId);
+          if (!p) continue;
+
+          // Note: Progress view usually shows "How much passed from this step".
+          // ItemId isn't strictly in ProductionReport directly (it's per PRO).
+          // But WipMonitorItem structure requires itemId.
+          // Usually, PRO encodes the item/product. We can use pro.productName or proNumber.
+          // Or if we want strict compatibility with the UI which groups by ItemId, we use PRO Number?
+          // User requirement: "Pilih salah satu implementasi... Mode Produced-to-date".
+          // Let's use Pro Number as ItemId or a placeholder if mapping isn't 1:1.
+          // Actually, `WipMonitorItem` expects `itemId`.
+          // In `InventoryTxn`, `itemId` is explicit.
+          // In `ProductionReport`, we don't store `itemId`. We store `prosesId` -> `Pro`.
+          // `Pro` has `productName`.
+          // Let's use `pro.productName` or `pro.proNumber` if `itemId` is missing.
+          // However, the existing UI groups by `itemId`.
+          // For now, let's use `proNumber` as the key if `itemId` is unavailable, OR simpler:
+          // Fetch `pro.productName` as `itemId`.
+
+          results.push({
+            proId: p.proId,
+            locationId: 0, // No specific location for "Progress" view (conceptually)
+            itemId: p.pro.productName || p.pro.proNumber, // Use Product Name as Item Identifier
+            qty: Number(g._sum.qtyPassOn ?? 0),
+            proNumber: p.pro.proNumber,
+            proType: p.pro.type,
+            proQty: p.pro.qtyPoPcs,
+            machineName: p.machine?.name ?? "No Machine",
+            locationName: "Production Output", // Dummy
+            stepOrder: p.orderNo,
           });
         }
 
-        const item = aggregatedMap.get(key)!;
-        if (g.type === TxnType.IN) {
-          item.qty += qty;
-        } else if (g.type === TxnType.OUT) {
-          item.qty -= qty;
-        } else if (g.type === TxnType.ADJUST) {
-          // Treat ADJUST as absolute adjustment? Or signed?
-          // Usually ADJUST implies + or -. If stored as positive, we need rule.
-          // Let's assume ADJUST adds to balance for now, or check generic logic.
-          // Defaulting to add. Review if Adjust uses negative qty.
-          item.qty += qty;
+        // 3. Also Fetch FG Received (Cumulative)
+        // Only if not filtering by machine (or if FG location is relevant)
+        // User said: "Mode Produced-to-date (Progress): tampil total approved qtyPassOn per step/mesin + FG received cumulative."
+
+        // FG Received is effectively InventoryTxn IN to FG.
+        const fgGroups = await ctx.db.inventoryTxn.groupBy({
+          by: ["proId", "itemId"],
+          where: {
+            type: "IN",
+            location: { type: "FG" },
+            ...(filters.proId ? { proId: filters.proId } : {}),
+          },
+          _sum: {
+            qty: true,
+          },
+        });
+
+        // Fetch PRO details for FG items
+        const fgProIds = fgGroups
+          .map((g) => g.proId)
+          .filter((id): id is number => id !== null);
+        const fgPros = await ctx.db.pro.findMany({
+          where: { id: { in: fgProIds } },
+          select: { id: true, proNumber: true, type: true, qtyPoPcs: true },
+        });
+        const fgProMap = new Map(fgPros.map((p) => [p.id, p]));
+
+        for (const g of fgGroups) {
+          const pro = g.proId ? fgProMap.get(g.proId) : null;
+          // Only add if it matches filters
+          if (filters.type && pro?.type !== filters.type) continue;
+
+          results.push({
+            proId: g.proId,
+            locationId: -1, // Dummy
+            itemId: g.itemId,
+            qty: Number(g._sum.qty ?? 0),
+            proNumber: pro?.proNumber ?? "Unknown",
+            proType: pro?.type ?? "Unknown",
+            proQty: pro?.qtyPoPcs ?? 0,
+            machineName: "FG Received", // Virtual Machine Name
+            locationName: "Warehouse FG",
+            stepOrder: 9999, // Last
+          });
         }
-      }
 
-      const result = Array.from(aggregatedMap.values());
-
-      // Filter out zero balances unless requested
-      if (input?.includeZero) {
-        return result;
+        return results;
       }
-      return result.filter((r) => Math.abs(r.qty) > 0.001);
     }),
 
   // 2. Stock Card (Detailed History with Opening Balance)
@@ -361,9 +477,11 @@ export const inventoryRouter = createTRPCRouter({
           .optional(),
         type: z.enum(["PAPER", "RIGID"]).optional(),
         machineId: z.number().optional(), // Filter cols? No, rows having this machine.
+        mode: z.enum(["INVENTORY", "PROGRESS"]).default("PROGRESS").optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
+      const mode = input.mode ?? "PROGRESS";
       const wherePro: Prisma.ProWhereInput = {};
 
       if (input.status) wherePro.status = input.status;
@@ -398,75 +516,129 @@ export const inventoryRouter = createTRPCRouter({
         orderBy: { name: "asc" },
       });
 
-      // 3. Aggregate Production Reports (Matrix Cells)
-      // Group by proId, machineId
-      // We need to join ProductionReport -> Proses -> Machine
-      // Prisma groupBy doesn't support deep relation grouping easily (grouped by scalar fields).
-      // Workaround:
-      // A. Fetch raw aggregation?
-      // B. Fetch all reports with select? (Heavy)
-      // C. GroupBy prosesId, then map processes to machines.
-
-      // C is best.
-      const reportGroups = await ctx.db.productionReport.groupBy({
-        by: ["prosesId"],
-        where: {
-          status: "APPROVED",
-          proses: { proId: { in: proIds } },
-          // If input.machineId is used, filter here too?
-          // user said 'Columns = Mesin (dinamis)'.
-          // We return full matrix usually.
-        },
-        _sum: { qtyPassOn: true, qtyWip: true, qtyGood: true },
-      });
-
-      // Need mapping prosesId -> machineId, proId
-      // Fetch relevant proses details used in reports
-      const prosesIds = reportGroups.map((g) => g.prosesId);
-      const prosesList = await ctx.db.proses.findMany({
-        where: { id: { in: prosesIds } },
-        select: { id: true, proId: true, machineId: true },
-      });
-
-      const prosesMap = new Map(prosesList.map((p) => [p.id, p]));
-
-      // Build Matrix Data (proId -> machineId -> sum)
+      // 3. Aggregate Matrix Data
       const matrixData = new Map<number, Map<number, number>>();
 
-      for (const g of reportGroups) {
-        const p = prosesMap.get(g.prosesId);
-        if (!p || !p.machineId) continue;
+      if (mode === "PROGRESS") {
+        // --- MODE: PROGRESS (Accumulated Approved PassOn) ---
+        const reportGroups = await ctx.db.productionReport.groupBy({
+          by: ["prosesId"],
+          where: {
+            status: "APPROVED",
+            proses: { proId: { in: proIds } },
+          },
+          _sum: { qtyPassOn: true }, // ONLY PassOn
+        });
 
-        if (!matrixData.has(p.proId)) {
-          matrixData.set(p.proId, new Map());
+        // Need mapping prosesId -> machineId, proId
+        const prosesIds = reportGroups.map((g) => g.prosesId);
+        const prosesList = await ctx.db.proses.findMany({
+          where: { id: { in: prosesIds } },
+          select: { id: true, proId: true, machineId: true },
+        });
+
+        const prosesMap = new Map(prosesList.map((p) => [p.id, p]));
+
+        for (const g of reportGroups) {
+          const p = prosesMap.get(g.prosesId);
+          if (!p || !p.machineId) continue;
+
+          if (!matrixData.has(p.proId)) {
+            matrixData.set(p.proId, new Map());
+          }
+          const proRow = matrixData.get(p.proId)!;
+          const current = proRow.get(p.machineId) || 0;
+
+          // Only PassOn
+          const val = Number(g._sum.qtyPassOn ?? 0);
+
+          proRow.set(p.machineId, current + val);
         }
-        const proRow = matrixData.get(p.proId)!;
-        const current = proRow.get(p.machineId) || 0;
+      } else {
+        // --- MODE: INVENTORY (On-hand WIP: IN - OUT) ---
+        // Query InventoryTxn for WIP locations
+        const txnGroups = await ctx.db.inventoryTxn.groupBy({
+          by: ["proId", "locationId", "type"],
+          where: {
+            proId: { in: proIds },
+            location: { type: LocationType.WIP },
+          },
+          _sum: { qty: true },
+        });
 
-        // Sum all output types for the matrix cell
-        const val =
-          Number(g._sum.qtyPassOn ?? 0) +
-          Number(g._sum.qtyWip ?? 0) +
-          Number(g._sum.qtyGood ?? 0);
+        // Get Location -> Machine Mapping
+        const locIds = [...new Set(txnGroups.map((g) => g.locationId))];
+        const locations = await ctx.db.inventoryLocation.findMany({
+          where: { id: { in: locIds }, machineId: { not: null } },
+          select: { id: true, machineId: true },
+        });
 
-        proRow.set(p.machineId, current + val);
+        const locMachineMap = new Map(
+          locations.map((l) => [l.id, l.machineId!]),
+        );
+
+        for (const g of txnGroups) {
+          if (!g.proId) continue;
+          const machineId = locMachineMap.get(g.locationId);
+          if (!machineId) continue; // Skip if location has no machine attached (unlikely for WIP_M_)
+
+          if (!matrixData.has(g.proId)) {
+            matrixData.set(g.proId, new Map());
+          }
+          const proRow = matrixData.get(g.proId)!;
+          const current = proRow.get(machineId) || 0;
+
+          const qty = Number(g._sum.qty ?? 0);
+          let change = 0;
+          if (g.type === TxnType.IN) change = qty;
+          else if (g.type === TxnType.OUT) change = -qty;
+          else if (g.type === TxnType.ADJUST) change = qty; // Assume adjust adds
+
+          proRow.set(machineId, current + change);
+        }
       }
 
-      // 4. Fetch FG Received (InventoryTxn)
-      // Group by proId
-      const fgGroups = await ctx.db.inventoryTxn.groupBy({
-        by: ["proId"],
-        where: {
-          proId: { in: proIds },
-          location: { type: LocationType.FG },
-          type: TxnType.IN,
-        },
-        _sum: { qty: true },
-      });
+      // 4. Fetch FG Received (InventoryTxn) - Always Cumulative IN to FG?
+      // Or if mode=INVENTORY, show FG On-Hand?
+      // User said: "WIP Monitor ... Mode On-hand (Inventory): tampil saldo on-hand per mesin (WIP) + FG on-hand"
+      // "Mode Produced-to-date (Progress): tampil total approved qtyPassOn ... + FG received cumulative"
+      // So FG column should also respect mode.
 
-      const fgMap = new Map(
-        fgGroups.map((g) => [g.proId, Number(g._sum.qty ?? 0)]),
-      );
+      let fgMap = new Map<number, number>();
+
+      if (mode === "PROGRESS") {
+        const fgGroups = await ctx.db.inventoryTxn.groupBy({
+          by: ["proId"],
+          where: {
+            proId: { in: proIds },
+            location: { type: LocationType.FG },
+            type: TxnType.IN,
+          },
+          _sum: { qty: true },
+        });
+        fgMap = new Map(
+          fgGroups.map((g) => [g.proId!, Number(g._sum.qty ?? 0)]),
+        );
+      } else {
+        // Inventory Mode: FG On-Hand (IN - OUT)
+        const fgGroups = await ctx.db.inventoryTxn.groupBy({
+          by: ["proId", "type"],
+          where: {
+            proId: { in: proIds },
+            location: { type: LocationType.FG },
+          },
+          _sum: { qty: true },
+        });
+
+        for (const g of fgGroups) {
+          if (!g.proId) continue;
+          const val = Number(g._sum.qty ?? 0);
+          const current = fgMap.get(g.proId) || 0;
+          if (g.type === TxnType.IN) fgMap.set(g.proId, current + val);
+          else if (g.type === TxnType.OUT) fgMap.set(g.proId, current - val);
+          else if (g.type === TxnType.ADJUST) fgMap.set(g.proId, current + val);
+        }
+      }
 
       // 5. Assemble Result
       const rows = pros.map((pro) => {
@@ -481,7 +653,7 @@ export const inventoryRouter = createTRPCRouter({
         return {
           ...pro,
           matrix: matrixObj,
-          fgReceived: fg,
+          fgReceived: fg, // This is now context-aware (Received vs OnHand)
           fulfillment: pro.qtyPoPcs > 0 ? (fg / pro.qtyPoPcs) * 100 : 0,
         };
       });
@@ -501,7 +673,7 @@ export const inventoryRouter = createTRPCRouter({
       return ctx.db.productionReport.findMany({
         where: {
           // Show ALL reports (Pending/Approved/Rejected) so user can trace history
-          // status: "APPROVED", 
+          // status: "APPROVED",
           proses: {
             proId: input.proId,
             ...(input.machineId ? { machineId: input.machineId } : {}),

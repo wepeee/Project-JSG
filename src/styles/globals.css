@@ -4,7 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
@@ -31,6 +32,7 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -47,75 +49,117 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Custom Brand Tokens */
+  --color-brand-teal: var(--brand-teal);
+  --color-brand-pink: var(--brand-pink);
+  --color-brand-yellow: var(--brand-yellow);
+  --color-brand-charcoal: var(--brand-charcoal);
+  --color-brand-gray: var(--brand-gray);
+  --color-brand-offwhite: var(--brand-offwhite);
 }
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Brand Tokens */
+  --brand-teal: hsl(190 64% 59%); /* #53C2D9 */
+  --brand-pink: hsl(338 79% 58%); /* #E83E7D */
+  --brand-yellow: hsl(46 96% 53%); /* #FBC612 */
+  --brand-charcoal: hsl(14 21% 12%); /* #251B18 */
+  --brand-gray: hsl(7 5% 35%); /* #5F5756 */
+  --brand-offwhite: hsl(28 38% 87%); /* #EBDED3 */
+
+  /* Light Mode */
+  --background: hsl(30 20% 98%); /* Very light warm white, based on #EBDED3 */
+  --foreground: hsl(14 21% 12%); /* Charcoal */
+
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(14 21% 12%);
+
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(14 21% 12%);
+
+  /* Primary: Teal, Foreground: Charcoal */
+  --primary: hsl(190 64% 59%);
+  --primary-foreground: hsl(14 21% 12%);
+
+  /* Secondary: Off-white surface */
+  --secondary: hsl(28 38% 87%); /* #EBDED3 */
+  --secondary-foreground: hsl(14 21% 12%);
+
+  /* Muted: Light Grayish */
+  --muted: hsl(28 20% 94%);
+  --muted-foreground: hsl(7 5% 35%); /* Gray */
+
+  /* Accent: Off-white */
+  --accent: hsl(190 64% 94%); /* tint teal untuk hover/menu */
+  --accent-foreground: hsl(14 21% 12%);
+
+  --destructive: hsl(0 84% 60%); /* merah */
+  --destructive-foreground: hsl(0 0% 100%);
+
+  --border: hsl(28 20% 85%);
+  --input: hsl(28 20% 85%);
+  --ring: hsl(190 64% 59%);
+
+  /* Charts */
+  --chart-1: hsl(190 64% 59%); /* Teal */
+  --chart-2: hsl(338 79% 58%); /* Pink */
+  --chart-3: hsl(46 96% 53%); /* Yellow */
+  --chart-4: hsl(7 5% 35%); /* Gray */
+  --chart-5: hsl(28 38% 87%); /* Off-white */
+
+  /* Sidebar */
+  --sidebar: hsl(30 20% 98%);
+  --sidebar-foreground: hsl(14 21% 12%);
+  --sidebar-primary: hsl(190 64% 59%);
+  --sidebar-primary-foreground: hsl(14 21% 12%);
+  --sidebar-accent: hsl(28 38% 87%);
+  --sidebar-accent-foreground: hsl(14 21% 12%);
+  --sidebar-border: hsl(28 20% 85%);
+  --sidebar-ring: hsl(190 64% 59%);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: hsl(210 18% 5%); /* #0B0D0F */
+  --foreground: hsl(210 25% 93%); /* #E7EEF5 */
+
+  --card: hsl(210 18% 9%); /* #12161A */
+  --card-foreground: hsl(210 25% 93%);
+
+  --popover: hsl(210 18% 9%);
+  --popover-foreground: hsl(210 25% 93%);
+
+  /* brand */
+  --primary: hsl(190 65% 65%); /* teal pop di dark */
+  --primary-foreground: hsl(210 18% 5%);
+
+  /* surfaces */
+  --secondary: hsl(210 16% 12%); /* darker surface */
+  --secondary-foreground: hsl(210 25% 93%);
+
+  --muted: hsl(210 16% 12%);
+  --muted-foreground: hsl(210 12% 68%); /* #A7B2BC */
+
+  /* accent should be subtle in dark */
+  --accent: hsl(190 20% 16%);
+  --accent-foreground: hsl(210 25% 93%);
+
+  /* destructive should be red, not brand pink */
+  --destructive: hsl(0 72% 51%);
+  --destructive-foreground: hsl(210 25% 93%);
+
+  --border: hsl(210 18% 15%); /* #1F262D */
+  --input: hsl(210 18% 15%);
+  --ring: hsl(190 65% 65%);
+
+  /* optional: keep chart colors */
+  --chart-1: hsl(190 65% 65%);
+  --chart-2: hsl(338 79% 58%); /* brand pink */
+  --chart-3: hsl(46 96% 53%); /* brand yellow */
+  --chart-4: hsl(210 12% 68%);
+  --chart-5: hsl(210 18% 25%);
 }
 
 @layer base {

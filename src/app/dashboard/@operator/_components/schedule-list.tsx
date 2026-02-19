@@ -60,12 +60,12 @@ export function ScheduleList() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 dark:bg-slate-950/50">
+    <div className="bg-background min-h-screen pb-24">
       {/* Header with Glassmorphism */}
-      <div className="sticky top-0 z-30 border-b border-white/20 bg-white/70 pt-5 shadow-sm backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-900/70">
+      <div className="bg-background/80 sticky top-0 z-30 border-b pt-5 shadow-sm backdrop-blur-xl">
         <div className="px-5 pb-4">
           <div className="mb-2 flex items-center justify-between">
-            <h1 className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-2xl font-black tracking-tight text-transparent">
+            <h1 className="from-brand-teal to-brand-pink bg-gradient-to-r bg-clip-text text-2xl font-black tracking-tight text-transparent">
               Jadwal Produksi
             </h1>
             <div className="flex items-center gap-2">
@@ -74,7 +74,7 @@ export function ScheduleList() {
                   variant="ghost"
                   size="sm"
                   onClick={goToToday}
-                  className="h-7 px-2 text-[10px] font-bold text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                  className="text-primary hover:bg-primary/10 h-7 px-2 text-[10px] font-bold"
                 >
                   HARI INI
                 </Button>
@@ -130,16 +130,16 @@ export function ScheduleList() {
                 }`}
               >
                 <span
-                  className={`text-[10px] font-bold tracking-tighter uppercase ${active ? "text-blue-600" : ""}`}
+                  className={`text-[10px] font-bold tracking-tighter uppercase ${active ? "text-primary" : ""}`}
                 >
                   {format(d, "EEE", { locale: id })}
                 </span>
                 <div
                   className={`mt-1 flex h-8 w-8 items-center justify-center rounded-full text-sm font-black ${
                     active
-                      ? "bg-blue-600 text-white shadow-lg shadow-blue-200"
+                      ? "bg-primary text-primary-foreground shadow-primary/25 shadow-lg"
                       : isToday
-                        ? "border-2 border-blue-600 text-blue-600"
+                        ? "border-primary text-primary border-2"
                         : ""
                   }`}
                 >
@@ -157,7 +157,7 @@ export function ScheduleList() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-48 animate-pulse rounded-3xl bg-slate-200 dark:bg-slate-800"
+                className="bg-muted h-48 animate-pulse rounded-3xl"
               />
             ))}
           </div>
@@ -165,7 +165,7 @@ export function ScheduleList() {
 
         {schedule.data?.length === 0 && (
           <div className="text-muted-foreground/50 flex flex-col items-center justify-center py-24">
-            <div className="mb-4 rounded-full bg-slate-100 p-6 dark:bg-slate-900">
+            <div className="bg-muted mb-4 rounded-full p-6">
               <CalendarIcon className="h-12 w-12 opacity-20" />
             </div>
             <p className="text-sm font-medium">Belum ada tugas hari ini</p>
@@ -195,7 +195,7 @@ export function ScheduleList() {
               return (
                 <Card
                   key={`${pro.id}-${step.id}-${idx}`}
-                  className="group relative overflow-hidden rounded-[2rem] border-none bg-white shadow-xl ring-1 shadow-slate-200/50 ring-slate-200/50 dark:bg-slate-900 dark:shadow-none dark:ring-slate-800"
+                  className="group bg-card ring-border relative overflow-hidden rounded-[2rem] border-none shadow-xl ring-1 shadow-black/5"
                 >
                   {/* Visual Accent */}
                   <div
@@ -240,7 +240,7 @@ export function ScheduleList() {
                     </div>
 
                     <div className="mb-6 grid grid-cols-2 gap-4">
-                      <div className="flex flex-col gap-1 rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+                      <div className="bg-muted/40 flex flex-col gap-1 rounded-2xl p-3">
                         <span className="text-muted-foreground flex items-center gap-1.5 text-[9px] font-bold tracking-widest uppercase">
                           <HardDrive className="h-3 w-3" /> Mesin
                         </span>
@@ -248,7 +248,8 @@ export function ScheduleList() {
                           {step.machine?.name ?? "-"}
                         </span>
                       </div>
-                      <div className="flex flex-col gap-1 rounded-2xl bg-slate-50 p-3 dark:bg-slate-950">
+
+                      <div className="bg-muted/40 flex flex-col gap-1 rounded-2xl p-3">
                         <span className="text-muted-foreground flex items-center gap-1.5 text-[9px] font-bold tracking-widest uppercase">
                           <Package className="h-3 w-3" /> Target
                         </span>
@@ -258,10 +259,10 @@ export function ScheduleList() {
                       </div>
                     </div>
 
-                    <div className="mb-4 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
+                    <div className="mb-4 flex items-center justify-between border-t pt-4">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-                          <span className="text-[10px] font-black text-blue-600 uppercase">
+                        <div className="bg-primary/10 flex h-7 w-7 items-center justify-center rounded-full">
+                          <span className="text-primary text-[10px] font-black uppercase">
                             P
                           </span>
                         </div>
@@ -274,7 +275,7 @@ export function ScheduleList() {
                           </span>
                         </div>
                       </div>
-                      <div className="rounded-lg bg-slate-100 px-3 py-1 text-[10px] font-black uppercase dark:bg-slate-800">
+                      <div className="bg-muted rounded-lg px-3 py-1 text-[10px] font-black uppercase">
                         UP: {step.up ?? "-"}
                       </div>
                     </div>
@@ -291,12 +292,12 @@ export function ScheduleList() {
                             (m: any, mIdx: number) => (
                               <div
                                 key={mIdx}
-                                className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-2.5 dark:border-slate-800 dark:bg-slate-950/50"
+                                className="bg-muted/30 flex items-center justify-between rounded-xl border p-2.5"
                               >
                                 <span className="truncate pr-2 text-xs font-bold">
                                   {m.material?.name}
                                 </span>
-                                <div className="rounded-md bg-white px-2 py-0.5 text-xs font-black whitespace-nowrap shadow-sm dark:bg-slate-900">
+                                <div className="bg-card rounded-md px-2 py-0.5 text-xs font-black whitespace-nowrap shadow-sm">
                                   {Number(m.qtyReq).toLocaleString("id-ID")}{" "}
                                   <span className="text-muted-foreground text-[10px] font-bold">
                                     {m.material?.uom}
@@ -316,7 +317,7 @@ export function ScheduleList() {
                     <div className="mt-6">
                       <Button
                         onClick={() => setSelectedTask({ pro, step, shift })}
-                        className="h-12 w-full rounded-xl bg-blue-600 font-bold text-white shadow-lg shadow-blue-200/50 transition-all hover:bg-blue-700 active:scale-95"
+                        className="bg-primary text-primary-foreground shadow-primary/20 hover:bg-primary/90 h-12 w-full rounded-xl font-bold shadow-lg transition-all active:scale-95"
                       >
                         + Input Laporan Produksi
                       </Button>

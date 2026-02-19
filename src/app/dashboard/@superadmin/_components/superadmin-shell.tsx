@@ -6,12 +6,12 @@ import { signOut } from "next-auth/react";
 import { Button } from "~/components/ui/button";
 import { ThemeToggle } from "~/components/theme-toggle";
 
-import CreateUserForm from "./create-users-form";
-import MachineManager from "./machine-manager";
-import VerificationList from "./verification-list";
-import ProductionArchive from "./production-archive";
-import DashboardOverview from "./dashboard-overview";
-import WipMonitor from "./inventory/wip-monitor";
+import CreateUserForm from "./modules/users/create-users-form";
+import MachineManager from "./modules/machines/machine-manager";
+import VerificationList from "./modules/verification/verification-list";
+import ProductionArchive from "./modules/archive/production-archive";
+import DashboardOverview from "./modules/overview/dashboard-overview";
+import WipMonitor from "./modules/inventory/wip-monitor";
 
 type Props = {
   user: {
@@ -24,40 +24,177 @@ type Props = {
 type NavKey =
   | "dashboard"
   | "users"
-  | "machines_paper"
-  | "machines_rigid"
   | "settings"
   | "audit"
-  | "verification"
-  | "report_archive"
-  | "inventory";
+  | "machines_paper"
+  | "machines_rigid"
+  | "inventory_paper"
+  | "inventory_rigid"
+  | "verification_paper"
+  | "verification_rigid"
+  | "report_archive_paper"
+  | "report_archive_rigid";
 
 export default function SuperadminShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("dashboard");
   const [open, setOpen] = React.useState(false);
 
-  const title =
-    active === "dashboard"
-      ? "Dashboard Overview"
-      : active === "users"
-        ? "Kelola Akun"
-        : active === "machines_paper"
-          ? "Kelola Mesin Paper"
-          : active === "machines_rigid"
-            ? "Kelola Mesin Rigid"
-            : active === "settings"
-              ? "Pengaturan"
-              : active === "audit"
-                ? "Audit Log"
-                : active === "verification"
-                  ? "Verifikasi Laporan"
-                  : active === "report_archive"
-                    ? "Daftar Laporan"
-                    : "Monitoring Inventory";
+  const title = React.useMemo(() => {
+    switch (active) {
+      case "dashboard":
+        return "Dashboard Overview";
+      case "users":
+        return "Kelola Akun";
+      case "settings":
+        return "Pengaturan";
+      case "audit":
+        return "Audit Log";
+
+      case "machines_paper":
+        return "Kelola Mesin Paper";
+      case "inventory_paper":
+        return "WIP Monitor Paper";
+      case "verification_paper":
+        return "Verifikasi Laporan Paper";
+      case "report_archive_paper":
+        return "Daftar Laporan Paper";
+
+      case "machines_rigid":
+        return "Kelola Mesin Rigid";
+      case "inventory_rigid":
+        return "WIP Monitor Rigid";
+      case "verification_rigid":
+        return "Verifikasi Laporan Rigid";
+      case "report_archive_rigid":
+        return "Daftar Laporan Rigid";
+
+      default:
+        return "Dashboard";
+    }
+  }, [active]);
 
   // Filter Logic
-  const showPaperMachines = !user.department || user.department === "PAPER";
-  const showRigidMachines = !user.department || user.department === "RIGID";
+  const showPaper = !user.department || user.department === "PAPER";
+  const showRigid = !user.department || user.department === "RIGID";
+
+  const SidebarContent = () => (
+    <nav className="flex flex-1 flex-col gap-1 px-2">
+      <SidebarItem
+        label="Dashboard"
+        active={active === "dashboard"}
+        onClick={() => {
+          setActive("dashboard");
+          setOpen(false);
+        }}
+      />
+      <SidebarItem
+        label="Kelola Akun"
+        active={active === "users"}
+        onClick={() => {
+          setActive("users");
+          setOpen(false);
+        }}
+      />
+
+      {showPaper && (
+        <>
+          <div className="mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
+            PAPER
+          </div>
+          <SidebarItem
+            label="WIP Monitor"
+            active={active === "inventory_paper"}
+            onClick={() => {
+              setActive("inventory_paper");
+              setOpen(false);
+            }}
+          />
+          <SidebarItem
+            label="Verifikasi Laporan"
+            active={active === "verification_paper"}
+            onClick={() => {
+              setActive("verification_paper");
+              setOpen(false);
+            }}
+          />
+          <SidebarItem
+            label="Daftar Laporan"
+            active={active === "report_archive_paper"}
+            onClick={() => {
+              setActive("report_archive_paper");
+              setOpen(false);
+            }}
+          />
+          <SidebarItem
+            label="Kelola Mesin"
+            active={active === "machines_paper"}
+            onClick={() => {
+              setActive("machines_paper");
+              setOpen(false);
+            }}
+          />
+        </>
+      )}
+
+      {showRigid && (
+        <>
+          <div className="mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
+            RIGID
+          </div>
+          <SidebarItem
+            label="WIP Monitor"
+            active={active === "inventory_rigid"}
+            onClick={() => {
+              setActive("inventory_rigid");
+              setOpen(false);
+            }}
+          />
+          <SidebarItem
+            label="Verifikasi Laporan"
+            active={active === "verification_rigid"}
+            onClick={() => {
+              setActive("verification_rigid");
+              setOpen(false);
+            }}
+          />
+          <SidebarItem
+            label="Daftar Laporan"
+            active={active === "report_archive_rigid"}
+            onClick={() => {
+              setActive("report_archive_rigid");
+              setOpen(false);
+            }}
+          />
+          <SidebarItem
+            label="Kelola Mesin"
+            active={active === "machines_rigid"}
+            onClick={() => {
+              setActive("machines_rigid");
+              setOpen(false);
+            }}
+          />
+        </>
+      )}
+
+      <div className="mt-4 mb-2 border-t border-dashed" />
+      <SidebarItem
+        label="Audit Log"
+        active={active === "audit"}
+        onClick={() => {
+          setActive("audit");
+          setOpen(false);
+        }}
+      />
+      <SidebarItem
+        label="Pengaturan"
+        active={active === "settings"}
+        onClick={() => {
+          setActive("settings");
+          setOpen(false);
+        }}
+      />
+    </nav>
+  );
 
   return (
     <div className="bg-background min-h-screen w-full">
@@ -97,67 +234,7 @@ export default function SuperadminShell({ user }: Props) {
             )}
           </div>
 
-          <nav className="flex flex-1 flex-col gap-1 px-2">
-            <SidebarItem
-              label="Dashboard"
-              active={active === "dashboard"}
-              onClick={() => setActive("dashboard")}
-            />
-            <SidebarItem
-              label="Monitoring Inventory"
-              active={active === "inventory"}
-              onClick={() => setActive("inventory")}
-            />
-            <SidebarItem
-              label="Verifikasi Laporan"
-              active={active === "verification"}
-              onClick={() => setActive("verification")}
-            />
-            <SidebarItem
-              label="Daftar Laporan"
-              active={active === "report_archive"}
-              onClick={() => setActive("report_archive")}
-            />
-            <div className="my-2 border-t border-dashed" />
-            <SidebarItem
-              label="Kelola Akun"
-              active={active === "users"}
-              onClick={() => setActive("users")}
-            />
-            <SidebarItem
-              label="Audit Log"
-              active={active === "audit"}
-              onClick={() => setActive("audit")}
-            />
-            <SidebarItem
-              label="Pengaturan"
-              active={active === "settings"}
-              onClick={() => setActive("settings")}
-            />
-            <div className="px-3 pt-2 pb-1 text-xs font-semibold opacity-50">
-              MESIN
-            </div>
-            {showPaperMachines && (
-              <SidebarItem
-                label="Mesin Paper"
-                active={active === "machines_paper"}
-                onClick={() => {
-                  setActive("machines_paper");
-                  setOpen(false);
-                }}
-              />
-            )}
-            {showRigidMachines && (
-              <SidebarItem
-                label="Mesin Rigid"
-                active={active === "machines_rigid"}
-                onClick={() => {
-                  setActive("machines_rigid");
-                  setOpen(false);
-                }}
-              />
-            )}
-          </nav>
+          <SidebarContent />
 
           <div className="border-t px-4 py-4">
             <div className="text-sm font-medium">{user.name}</div>
@@ -198,88 +275,9 @@ export default function SuperadminShell({ user }: Props) {
                 </button>
               </div>
 
-              <nav className="flex flex-col gap-1 px-2 py-3">
-                <SidebarItem
-                  label="Dashboard"
-                  active={active === "dashboard"}
-                  onClick={() => {
-                    setActive("dashboard");
-                    setOpen(false);
-                  }}
-                />
-                <SidebarItem
-                  label="Monitoring Inventory"
-                  active={active === "inventory"}
-                  onClick={() => {
-                    setActive("inventory");
-                    setOpen(false);
-                  }}
-                />
-                <SidebarItem
-                  label="Verifikasi Laporan"
-                  active={active === "verification"}
-                  onClick={() => {
-                    setActive("verification");
-                    setOpen(false);
-                  }}
-                />
-                <SidebarItem
-                  label="Daftar Laporan"
-                  active={active === "report_archive"}
-                  onClick={() => {
-                    setActive("report_archive");
-                    setOpen(false);
-                  }}
-                />
-                <div className="my-2 border-t border-dashed" />
-                <SidebarItem
-                  label="Kelola Akun"
-                  active={active === "users"}
-                  onClick={() => {
-                    setActive("users");
-                    setOpen(false);
-                  }}
-                />
-                <SidebarItem
-                  label="Audit Log"
-                  active={active === "audit"}
-                  onClick={() => {
-                    setActive("audit");
-                    setOpen(false);
-                  }}
-                />
-                <SidebarItem
-                  label="Pengaturan"
-                  active={active === "settings"}
-                  onClick={() => {
-                    setActive("settings");
-                    setOpen(false);
-                  }}
-                />
-                <div className="px-3 pt-2 pb-1 text-xs font-semibold opacity-50">
-                  MESIN
-                </div>
-                {showPaperMachines && (
-                  <SidebarItem
-                    label="Mesin Paper"
-                    active={active === "machines_paper"}
-                    onClick={() => {
-                      setActive("machines_paper");
-                      setOpen(false);
-                    }}
-                  />
-                )}
-                {showRigidMachines && (
-                  <SidebarItem
-                    label="Mesin Rigid"
-                    active={active === "machines_rigid"}
-                    onClick={() => {
-                      setActive("machines_rigid");
-                      setOpen(false);
-                    }}
-                  />
-                )}
-              </nav>
+              <div className="py-3">
+                <SidebarContent />
+              </div>
 
               <div className="border-t px-4 py-4">
                 <div className="text-sm font-medium">{user.name}</div>
@@ -308,28 +306,47 @@ export default function SuperadminShell({ user }: Props) {
             </div>
           </div>
 
-          {active === "dashboard" ? (
+          {active === "dashboard" && (
             <DashboardOverview department={user.department} />
-          ) : active === "users" ? (
-            <CreateUserForm />
-          ) : active === "audit" ? (
+          )}
+          {active === "users" && <CreateUserForm />}
+          {active === "audit" && (
             <div className="rounded-md border p-4 text-sm opacity-80">
               Audit log belum dibuat. Nanti kita tambah (read-only) dari DB.
             </div>
-          ) : active === "settings" ? (
+          )}
+          {active === "settings" && (
             <div className="rounded-md border p-4 text-sm opacity-80">
               Pengaturan belum dibuat. Nanti kita rapihin.
             </div>
-          ) : active === "machines_paper" ? (
+          )}
+
+          {/* Paper Components */}
+          {active === "machines_paper" && (
             <MachineManager machineType="PAPER" />
-          ) : active === "machines_rigid" ? (
+          )}
+          {active === "inventory_paper" && (
+            <WipMonitor userDepartment="PAPER" />
+          )}
+          {active === "verification_paper" && (
+            <VerificationList userDepartment="PAPER" />
+          )}
+          {active === "report_archive_paper" && (
+            <ProductionArchive userDepartment="PAPER" />
+          )}
+
+          {/* Rigid Components */}
+          {active === "machines_rigid" && (
             <MachineManager machineType="RIGID" />
-          ) : active === "report_archive" ? (
-            <ProductionArchive userDepartment={user.department} />
-          ) : active === "inventory" ? (
-            <WipMonitor userDepartment={user.department} />
-          ) : (
-            <VerificationList userDepartment={user.department} />
+          )}
+          {active === "inventory_rigid" && (
+            <WipMonitor userDepartment="RIGID" />
+          )}
+          {active === "verification_rigid" && (
+            <VerificationList userDepartment="RIGID" />
+          )}
+          {active === "report_archive_rigid" && (
+            <ProductionArchive userDepartment="RIGID" />
           )}
         </main>
       </div>

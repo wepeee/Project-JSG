@@ -336,33 +336,33 @@ export default function ProductionArchive({
     <div className="space-y-4">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
-             <div>
-                <h2 className="text-xl font-bold tracking-tight">
-                    Daftar Laporan Produksi
-                </h2>
-                <p className="text-sm text-slate-500">
-                    Arsip laporan yang telah disetujui.
-                </p>
-             </div>
-             
-             {/* Search Input */}
-             <div className="relative md:ml-4">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
-                <Input
-                  type="search"
-                  placeholder="Cari No. PRO..."
-                  className="pl-9 w-full md:w-[250px] bg-white dark:bg-slate-900"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-             </div>
+          <div>
+            <h2 className="text-xl font-bold tracking-tight">
+              Daftar Laporan Produksi
+            </h2>
+            <p className="text-sm text-slate-500">
+              Arsip laporan yang telah disetujui.
+            </p>
+          </div>
+
+          {/* Search Input */}
+          <div className="relative md:ml-4">
+            <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-slate-500" />
+            <Input
+              type="search"
+              placeholder="Cari No. PRO..."
+              className="w-full bg-white pl-9 md:w-[250px] dark:bg-slate-900"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Category Switcher */}
         <div className="flex flex-col items-end gap-2">
           {/* Main Level */}
-          <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
-            {(!userDepartment || userDepartment === "PAPER") && (
+          {!userDepartment && (
+            <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
               <button
                 onClick={() => setActiveCategory("PAPER")}
                 className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
@@ -373,8 +373,6 @@ export default function ProductionArchive({
               >
                 PAPER
               </button>
-            )}
-            {(!userDepartment || userDepartment === "RIGID") && (
               <button
                 onClick={() => {
                   if (!isRigidActive) setActiveCategory("INJECTION");
@@ -387,8 +385,8 @@ export default function ProductionArchive({
               >
                 RIGID
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Sub Level for Rigid */}
           {isRigidActive && (

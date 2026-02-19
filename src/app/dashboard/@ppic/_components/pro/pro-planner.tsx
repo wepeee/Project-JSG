@@ -41,7 +41,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Upload, Plus } from "lucide-react";
 
 type StepDraftMaterial = {
   key: string;
@@ -666,103 +666,118 @@ export default function ProPlanner() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Perencanaan PRO</CardTitle>
-        </CardHeader>
+      <div className="space-y-8 pb-32">
+        {/* 1. Header Information */}
+        <Card className="border-none shadow-md">
+          <CardHeader className="bg-muted/20 border-b pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg font-bold tracking-tight uppercase">
+              <div className="bg-primary h-8 w-1 rounded-full" />
+              Informasi Produk & PRO
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6 pt-6">
+            <input
+              type="file"
+              accept=".csv"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleImport}
+            />
 
-        <CardContent className="space-y-4">
-          <input
-            type="file"
-            accept=".csv"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleImport}
-          />
-
-          {/* Header PRO */}
-          <div className="grid gap-6">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-              <div className="space-y-2 lg:col-span-5">
-                <div className="text-sm font-medium">Produk</div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {/* Product Name */}
+              <div className="space-y-2 lg:col-span-2">
+                <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  Nama Produk
+                </div>
                 <Input
                   value={productName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setProductName(e.target.value)
-                  }
-                  placeholder="Nama produk"
+                  onChange={(e) => setProductName(e.target.value)}
+                  placeholder="Nama produk..."
                   autoComplete="off"
+                  className="focus:border-primary border-primary/20 h-11 text-base font-semibold"
                 />
               </div>
 
-              <div className="space-y-2 lg:col-span-3">
-                <div className="text-sm font-medium">
-                  FG Part Number (Final)
+              {/* FG Part Number */}
+              <div className="space-y-2">
+                <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  FG Part Number
                 </div>
                 <Input
                   value={partNumber}
                   onChange={(e) => setPartNumber(e.target.value)}
                   placeholder="Part No. FG"
+                  className="h-11 font-mono text-sm"
                 />
               </div>
 
-              {/* Type Selector (Paper/Rigid) */}
-              <div className="space-y-2 lg:col-span-4">
-                <div className="text-sm font-medium">Tipe Box</div>
-                <div className="flex items-center gap-1 rounded-md border p-1">
+              {/* Tipe Box Toggle */}
+              <div className="space-y-2">
+                <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  Tipe Box
+                </div>
+                <div className="bg-muted flex h-11 items-center rounded-lg p-1">
                   <Button
                     type="button"
                     variant={proType === "PAPER" ? "default" : "ghost"}
-                    size="sm"
-                    className="h-8 flex-1 text-xs"
                     onClick={() => setProType("PAPER")}
+                    className={`flex-1 rounded-md text-xs font-bold uppercase transition-all ${
+                      proType === "PAPER"
+                        ? "bg-background text-primary shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
                     Paper Box
                   </Button>
                   <Button
                     type="button"
                     variant={proType === "RIGID" ? "default" : "ghost"}
-                    size="sm"
-                    className="h-8 flex-1 text-xs"
                     onClick={() => setProType("RIGID")}
+                    className={`flex-1 rounded-md text-xs font-bold uppercase transition-all ${
+                      proType === "RIGID"
+                        ? "bg-background text-primary shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
                     Rigid Box
                   </Button>
                 </div>
               </div>
 
-              <div className="space-y-2 lg:col-span-3">
-                <div className="text-sm font-medium">Jumlah PO (pcs)</div>
+              {/* Row 2 */}
+
+              {/* Qty PO */}
+              <div className="space-y-2">
+                <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  Jumlah PO (pcs)
+                </div>
                 <Input
                   type="number"
                   value={qtyPoPcs}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setQtyPoPcs(e.target.value)
-                  }
-                  placeholder="contoh: 100000"
+                  onChange={(e) => setQtyPoPcs(e.target.value)}
+                  placeholder="0"
+                  className="bg-muted/30 h-11 font-mono font-bold"
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4 border-b pb-6 lg:grid-cols-12 lg:items-end">
-              <div className="space-y-2 lg:col-span-4">
-                <div className="flex justify-between text-sm font-medium">
+              {/* Prefix PRO */}
+              <div className="space-y-2">
+                <div className="text-muted-foreground flex justify-between text-xs font-bold tracking-wider uppercase">
                   <span>Prefix PRO</span>
                   {headerProcess && (
-                    <span className="text-muted-foreground text-xs font-normal">
-                      Prefix: {headerProcess.code}
-                    </span>
+                    <span className="text-primary">{headerProcess.code}</span>
                   )}
                 </div>
                 <select
                   value={processId ?? ""}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  onChange={(e) =>
                     setProcessId(e.target.value ? Number(e.target.value) : null)
                   }
-                  className={control}
+                  className="border-input ring-offset-background placeholder:text-muted-foreground focus:ring-ring bg-background flex h-11 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={loadingMaster}
                 >
-                  <option value="">Pilih proses</option>
+                  <option value="">Pilih proses...</option>
                   {(processes.data ?? []).map((p: any) => (
                     <option key={p.id} value={p.id}>
                       {p.code} - {p.name}
@@ -771,113 +786,117 @@ export default function ProPlanner() {
                 </select>
               </div>
 
-              <div className="space-y-2 lg:col-span-3">
-                <div className="text-sm font-medium">
+              {/* No PRO */}
+              <div className="space-y-2">
+                <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
                   No. PRO (Manual/Import)
                 </div>
                 <Input
                   value={manualProNumber}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setManualProNumber(e.target.value)
-                  }
-                  placeholder="(Auto)"
-                  className="bg-muted/30"
+                  onChange={(e) => setManualProNumber(e.target.value)}
+                  placeholder="(Auto Generate)"
+                  className="placeholder:text-muted-foreground/50 bg-muted/40 h-11 font-mono text-sm"
                 />
               </div>
 
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:col-span-5 lg:justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={loadingMaster}
-                >
-                  Import CSV
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={openAdd}
-                  disabled={loadingMaster}
-                >
-                  + Tambah Proses
-                </Button>
-
-                <Button
-                  type="button"
-                  onClick={submitPro}
-                  disabled={createPro.isPending || loadingMaster}
-                >
-                  {createPro.isPending ? "Membuat..." : "Buat PRO"}
-                </Button>
-              </div>
-            </div>
-            {proType === "RIGID" && (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-                <div className="space-y-2 lg:col-span-4">
-                  <div className="text-sm font-medium">Batch No (Header)</div>
+              {proType === "RIGID" && (
+                <div className="space-y-2">
+                  <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    Batch No
+                  </div>
                   <Input
                     value={headerBatchNo}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setHeaderBatchNo(e.target.value)
-                    }
-                    placeholder="Batch No (untuk semua proses)"
+                    onChange={(e) => setHeaderBatchNo(e.target.value)}
+                    placeholder="Batch No"
+                    className="bg-background h-11"
                   />
                 </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 2. Process List */}
+        <Card className="border-none shadow-md">
+          <CardHeader className="bg-muted/20 flex flex-row items-center justify-between border-b pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg font-bold tracking-tight uppercase">
+              <div className="bg-brand-pink h-8 w-1 rounded-full" />
+              Daftar Proses Produksi
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loadingMaster}
+                className="h-9 gap-2 border-dashed"
+              >
+                <Upload className="text-muted-foreground h-4 w-4" />
+                Import CSV
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={openAdd}
+                disabled={loadingMaster || !processId}
+                className="h-9 gap-2 font-bold"
+              >
+                <Plus className="h-4 w-4" />
+                Tambah Proses
+              </Button>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-0">
+            {err && (
+              <div className="bg-destructive/10 text-destructive border-destructive/20 m-4 flex items-center rounded-lg border p-3 text-sm font-medium">
+                <span className="mr-2 text-lg">⚠️</span> {err}
               </div>
             )}
-          </div>
+            {ok && (
+              <div className="m-4 rounded-lg border border-green-500/20 bg-green-500/10 p-3 text-sm font-medium text-green-700">
+                <span className="mr-2 text-lg">✅</span> {ok}
+              </div>
+            )}
 
-          {err && (
-            <div className="bg-destructive/15 text-destructive rounded-md p-3 text-sm font-medium">
-              {err}
-            </div>
-          )}
-          {ok && (
-            <div className="rounded-md bg-green-500/15 p-3 text-sm font-medium text-green-600">
-              {ok}
-            </div>
-          )}
-
-          {/* Steps table */}
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="overflow-x-auto rounded-md border">
-              <div className="min-w-[860px]">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-10"></TableHead>
-                      <TableHead className="w-16">No.</TableHead>
-                      <TableHead className="w-32">Output PN (Step)</TableHead>
-                      <TableHead>Machine</TableHead>
-                      <TableHead className="w-28">Tanggal</TableHead>
-                      <TableHead className="w-24">UP / CAV</TableHead>
-                      <TableHead>Material</TableHead>
+                  <TableHeader className="bg-muted/30">
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="w-12 text-center">#</TableHead>
+                      <TableHead className="w-16 text-center">No.</TableHead>
+                      <TableHead className="w-48">Output PN (Step)</TableHead>
+                      <TableHead className="min-w-[150px]">Machine</TableHead>
+                      <TableHead className="w-32 text-center">Starts</TableHead>
+                      <TableHead className="w-24 text-center">UP/Cav</TableHead>
+                      <TableHead className="min-w-[200px]">Material</TableHead>
                       <TableHead className="w-24 text-right">Qty</TableHead>
-                      <TableHead className="w-24 text-right">UoM</TableHead>
-                      <TableHead className="w-[180px] text-right">
+                      <TableHead className="w-20 text-right">UoM</TableHead>
+                      <TableHead className="w-[140px] text-right">
                         Aksi
                       </TableHead>
                     </TableRow>
                   </TableHeader>
-
                   <TableBody>
                     {steps.length === 0 ? (
                       <TableRow>
-                        <TableCell
-                          colSpan={11}
-                          className="text-muted-foreground py-12 text-center"
-                        >
-                          <div className="flex flex-col items-center gap-1">
-                            <p className="font-semibold">Belum ada proses</p>
-                            <p className="text-sm">
-                              Klik "Import CSV" atau "+ Tambah Proses" untuk
-                              memulai.
+                        <TableCell colSpan={10} className="h-48 text-center">
+                          <div className="text-muted-foreground flex flex-col items-center justify-center gap-2">
+                            <div className="bg-muted rounded-full p-4">
+                              <GripVertical className="h-6 w-6 opacity-20" />
+                            </div>
+                            <p className="font-medium">
+                              Belum ada proses ditambahkan
+                            </p>
+                            <p className="mx-auto max-w-xs text-xs opacity-70">
+                              Gunakan tombol "Import CSV" atau "Tambah Proses"
+                              di atas untuk mengisi alur produksi.
                             </p>
                           </div>
                         </TableCell>
@@ -904,10 +923,32 @@ export default function ProPlanner() {
                   </TableBody>
                 </Table>
               </div>
-            </div>
-          </DndContext>
-        </CardContent>
-      </Card>
+            </DndContext>
+          </CardContent>
+        </Card>
+
+        {/* 3. Action Bar */}
+        <div className="bg-card/80 sticky bottom-4 z-10 flex items-center justify-between rounded-xl border p-4 shadow-xl backdrop-blur-md">
+          <div className="flex flex-col">
+            <span className="text-muted-foreground text-xs font-bold uppercase">
+              Summary
+            </span>
+            <span className="font-mono text-sm font-medium">
+              {steps.length} Proses •{" "}
+              {qtyPoPcs ? Number(qtyPoPcs).toLocaleString() : 0} Pcs Output
+            </span>
+          </div>
+          <Button
+            type="button"
+            size="lg"
+            onClick={submitPro}
+            disabled={createPro.isPending || loadingMaster}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 min-w-[200px] font-bold shadow-lg"
+          >
+            {createPro.isPending ? "Memproses..." : "Buat Production Order"}
+          </Button>
+        </div>
+      </div>
 
       {/* Dialog form step (tanpa pilih proses) */}
       <Dialog open={open} onOpenChange={setOpen}>
@@ -1120,7 +1161,9 @@ export default function ProPlanner() {
                         <optgroup label="Barang Setengah Jadi (WIP)">
                           {(materials.data ?? [])
                             // @ts-ignore
-                            .filter((m) => m.type === "WIP" && (m.wipStock || 0) > 0)
+                            .filter(
+                              (m) => m.type === "WIP" && (m.wipStock || 0) > 0,
+                            )
                             .map((m: any) => {
                               const stock = m.wipStock || 0;
                               return (
