@@ -20,6 +20,7 @@ export type WipMonitorItem = {
   proQty?: number; // Target PO
   machineName?: string;
   locationName?: string;
+  stepOrder?: number;
 };
 
 export const inventoryRouter = createTRPCRouter({
@@ -71,7 +72,7 @@ export const inventoryRouter = createTRPCRouter({
       const uniqueProIds = [...new Set(proIds)];
       const uniqueLocIds = [...new Set(locationIds)];
 
-      const [pros, locations] = await Promise.all([
+      const [pros, locations, allProses] = await Promise.all([
         ctx.db.pro.findMany({
           where: { id: { in: uniqueProIds } },
           select: { id: true, proNumber: true, type: true, qtyPoPcs: true },
@@ -80,11 +81,24 @@ export const inventoryRouter = createTRPCRouter({
           where: { id: { in: uniqueLocIds } },
           include: { machine: true },
         }),
+        // Fetch steps to determine order
+        ctx.db.proses.findMany({
+            where: { proId: { in: uniqueProIds } },
+            select: { proId: true, machineId: true, orderNo: true }
+        })
       ]);
 
       // C. Map & Aggregate Data (IN - OUT)
       const proMap = new Map(pros.map((p) => [p.id, p]));
       const locMap = new Map(locations.map((l) => [l.id, l]));
+      
+      // Map: ProID-MachineID -> OrderNo
+      const stepOrderMap = new Map<string, number>();
+      for(const p of allProses) {
+          if(p.machineId) {
+            stepOrderMap.set(`${p.proId}-${p.machineId}`, p.orderNo);
+          }
+      }
 
       const aggregatedMap = new Map<string, WipMonitorItem>();
 
@@ -95,6 +109,11 @@ export const inventoryRouter = createTRPCRouter({
         if (!aggregatedMap.has(key)) {
           const pro = g.proId ? proMap.get(g.proId) : null;
           const loc = locMap.get(g.locationId);
+          
+          let stepOrder = 999;
+          if (pro && loc?.machineId) {
+             stepOrder = stepOrderMap.get(`${pro.id}-${loc.machineId}`) ?? 999;
+          }
 
           aggregatedMap.set(key, {
             proId: g.proId,
@@ -106,6 +125,7 @@ export const inventoryRouter = createTRPCRouter({
             proQty: pro?.qtyPoPcs ?? 0,
             locationName: loc?.name ?? "Unknown Loc",
             machineName: loc?.machine?.name ?? loc?.name ?? "Unassigned",
+            stepOrder, // Add step order
           });
         }
 

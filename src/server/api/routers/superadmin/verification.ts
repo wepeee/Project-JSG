@@ -26,6 +26,7 @@ export const verificationRouter = createTRPCRouter({
             ])
             .optional(),
           limit: z.number().default(50),
+          search: z.string().optional(),
         })
         .optional(),
     )
@@ -37,7 +38,19 @@ export const verificationRouter = createTRPCRouter({
         where.status = input.status;
       }
 
-      // 2. Department Restriction (Security)
+      // 2. Search Filter (PRO or Product)
+      if (input?.search) {
+        where.proses = {
+          pro: {
+            OR: [
+              { proNumber: { contains: input.search } },
+              { productName: { contains: input.search } },
+            ],
+          },
+        };
+      }
+
+      // 3. Department Restriction (Security)
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const userDept = (ctx.session.user as any).department as
         | string

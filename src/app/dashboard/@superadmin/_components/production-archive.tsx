@@ -21,6 +21,7 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Textarea } from "~/components/ui/textarea";
+import { Input } from "~/components/ui/input";
 
 import {
   Table,
@@ -280,10 +281,13 @@ export default function ProductionArchive({
   const safeCategory =
     activeCategory === ("RIGID" as any) ? "INJECTION" : activeCategory;
 
+  const [search, setSearch] = React.useState("");
+
   const { data: reports, isLoading } = api.verification.getReports.useQuery({
     status: "APPROVED",
     category: safeCategory,
     limit: 100,
+    search: search || undefined,
   });
 
   const utils = api.useUtils();
@@ -331,13 +335,27 @@ export default function ProductionArchive({
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight">
-            Daftar Laporan Produksi
-          </h2>
-          <p className="text-sm text-slate-500">
-            Arsip laporan yang telah disetujui.
-          </p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+             <div>
+                <h2 className="text-xl font-bold tracking-tight">
+                    Daftar Laporan Produksi
+                </h2>
+                <p className="text-sm text-slate-500">
+                    Arsip laporan yang telah disetujui.
+                </p>
+             </div>
+             
+             {/* Search Input */}
+             <div className="relative md:ml-4">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                <Input
+                  type="search"
+                  placeholder="Cari No. PRO..."
+                  className="pl-9 w-full md:w-[250px] bg-white dark:bg-slate-900"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+             </div>
         </div>
 
         {/* Category Switcher */}
