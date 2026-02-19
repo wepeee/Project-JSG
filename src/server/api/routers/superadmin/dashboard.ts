@@ -33,30 +33,57 @@ export const dashboardRouter = createTRPCRouter({
         }
       }
 
+      
+      // 1. Fetch REPORTS (for Rejects & Downtime)
       const reports = await ctx.db.productionReport.findMany({
         where: whereClause,
         select: {
           reportDate: true,
-          qtyGood: true,
           qtyReject: true,
           totalDowntime: true,
-          downtimeBreakdown: true, // JSON
-          rejectBreakdown: true, // JSON
+          downtimeBreakdown: true, 
+          rejectBreakdown: true, 
         },
         orderBy: {
           reportDate: "asc",
         },
       });
 
-      // 0. Constants based on User's classification
-      // Image 3 (Planned): Tunggu Approval, Tunggu Material, Set Up, Machine Problem, Mencari Tools, Running In, Adj Process, Operator Issue
-      // 0. Constants based on User's classification
+      // 2. Fetch INVENTORY (for Verified Good Output / FG)
+      const invWhere: any = {
+        date: {
+            gte: startDate,
+            lte: endDate,
+        },
+        type: "IN",
+        location: {
+            type: "FG"
+        }
+      };
+
+      if (input.department) {
+          if (input.department === "PAPER") {
+              invWhere.pro = { type: "PAPER" };
+          } else if (input.department === "RIGID") {
+              invWhere.pro = { type: { not: "PAPER" } }; 
+          }
+      }
+
+      const fgTxns = await ctx.db.inventoryTxn.findMany({
+          where: invWhere,
+          select: {
+              date: true,
+              qty: true
+          }
+      });
+
+      // 0. Constants
       const PLANNED_KEYS = [
         "ISTIRAHAT",
         "TROUBLE_PLN",
         "TRIAL",
         "PREVENTIVE_MAINTENANCE",
-        "SETUP_CHANGE_OVER" // Moved to Planned based on feedback
+        "SETUP_CHANGE_OVER"
       ];
 
       const UNPLANNED_KEYS = [
@@ -76,12 +103,12 @@ export const dashboardRouter = createTRPCRouter({
       let totalPlannedDowntime = 0;
       let totalUnplannedDowntime = 0;
 
-      // 2. Daily Production
+      // 2. Maps
       const dailyMap = new Map<string, { good: number; reject: number }>();
       const weeklyMap = new Map<string, { good: number; reject: number }>();
       const weeklyPlannedMap = new Map<string, Record<string, number>>();
       const weeklyUnplannedMap = new Map<string, Record<string, number>>();
-      const weekDateMap = new Map<string, Date>(); // To store a representative date for the week
+      const weekDateMap = new Map<string, Date>(); 
 
       const getYearWeekString = (d: Date) => {
          const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -89,7 +116,6 @@ export const dashboardRouter = createTRPCRouter({
          date.setUTCDate(date.getUTCDate() + 4 - dayNum);
          const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
          const weekNo = Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
-         // Format: YYYY-WW (Sortable)
          return `${date.getUTCFullYear()}-${weekNo.toString().padStart(2, '0')}`;
       };
 
@@ -97,37 +123,30 @@ export const dashboardRouter = createTRPCRouter({
       const downtimeMap = new Map<string, number>();
       const rejectMap = new Map<string, number>();
 
+      // Process Production Reports (Reject & Downtime)
       for (const r of reports) {
-        // Summary
-        // handle Decimal to number conversion if necessary
-        const good = Number(r.qtyGood);
         const reject = Number(r.qtyReject);
         
-        totalGood += good;
         totalReject += reject;
         totalDowntime += r.totalDowntime;
 
         // Daily
-        const dateKey = r.reportDate.toISOString().split("T")[0]!; // YYYY-MM-DD
+        const dateKey = r.reportDate.toISOString().split("T")[0]!;
         const current = dailyMap.get(dateKey) ?? { good: 0, reject: 0 };
-        current.good += good;
         current.reject += reject;
         dailyMap.set(dateKey, current);
 
         // Weekly
         const weekKey = getYearWeekString(r.reportDate);
         const currentWeek = weeklyMap.get(weekKey) ?? { good: 0, reject: 0 };
-        currentWeek.good += good;
         currentWeek.reject += reject;
         weeklyMap.set(weekKey, currentWeek);
-        // Store the report date as representative if not set or overwrite (doesn't matter much for month if consistent)
-        // Better: store the one that generates the week? Or just use current report date.
-        // Since we want "Jan Week X", using the actual report date is good.
+        
         if (!weekDateMap.has(weekKey)) {
             weekDateMap.set(weekKey, r.reportDate);
         }
 
-        // Weekly Downtime Breakdown
+        // Downtime Breakdown
         if (r.downtimeBreakdown && typeof r.downtimeBreakdown === 'object' && !Array.isArray(r.downtimeBreakdown)) {
             const breakdown = r.downtimeBreakdown as Record<string, number | unknown>;
             
@@ -137,34 +156,19 @@ export const dashboardRouter = createTRPCRouter({
             for (const [key, val] of Object.entries(breakdown)) {
                 const minutes = Number(val);
                 if (!isNaN(minutes)) {
+                    downtimeMap.set(key, (downtimeMap.get(key) ?? 0) + minutes);
+
                     if (PLANNED_KEYS.includes(key)) {
+                        totalPlannedDowntime += minutes;
                         currentWeekPlanned[key] = (currentWeekPlanned[key] ?? 0) + minutes;
                     } else {
-                        // Default to Unplanned for anything else (Unplanned Keys + Unknowns)
+                        totalUnplannedDowntime += minutes;
                         currentWeekUnplanned[key] = (currentWeekUnplanned[key] ?? 0) + minutes;
                     }
                 }
             }
             weeklyPlannedMap.set(weekKey, currentWeekPlanned);
             weeklyUnplannedMap.set(weekKey, currentWeekUnplanned);
-        }
-
-        // Downtime Breakdown (Summary)
-        if (r.downtimeBreakdown && typeof r.downtimeBreakdown === 'object' && !Array.isArray(r.downtimeBreakdown)) {
-          const breakdown = r.downtimeBreakdown as Record<string, number | unknown>;
-          for (const [key, val] of Object.entries(breakdown)) {
-             const minutes = Number(val);
-             if (!isNaN(minutes)) {
-                downtimeMap.set(key, (downtimeMap.get(key) ?? 0) + minutes);
-
-                 // Categorize Planned vs Unplanned
-                 if (PLANNED_KEYS.includes(key)) {
-                     totalPlannedDowntime += minutes;
-                 } else {
-                     totalUnplannedDowntime += minutes;
-                 }
-             }
-          }
         }
 
         // Reject Breakdown
@@ -179,17 +183,41 @@ export const dashboardRouter = createTRPCRouter({
         }
       }
 
-      // Convert Maps to Arrays
-      const dailyProduction = Array.from(dailyMap.entries()).map(([date, val]) => ({
-        date,
-        good: val.good,
-        reject: val.reject,
-      }));
+      // Process Inventory Txns (Good Qty)
+      for (const txn of fgTxns) {
+          const good = Number(txn.qty); // Should be positive for IN
+          totalGood += good;
+
+          // Daily
+          const dateKey = txn.date.toISOString().split("T")[0]!;
+          const current = dailyMap.get(dateKey) ?? { good: 0, reject: 0 };
+          current.good += good;
+          dailyMap.set(dateKey, current);
+
+          // Weekly
+          const weekKey = getYearWeekString(txn.date);
+          const currentWeek = weeklyMap.get(weekKey) ?? { good: 0, reject: 0 };
+          currentWeek.good += good;
+          weeklyMap.set(weekKey, currentWeek);
+
+          if (!weekDateMap.has(weekKey)) {
+              weekDateMap.set(weekKey, txn.date);
+          }
+      }
+
+      // Convert Maps to Arrays (Sorting)
+      const dailyProduction = Array.from(dailyMap.entries())
+        .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+        .map(([date, val]) => ({
+            date,
+            good: val.good,
+            reject: val.reject,
+        }));
 
       const formatWeekLabel = (weekKey: string) => {
           const date = weekDateMap.get(weekKey);
           if (!date) return weekKey;
-          const month = date.toLocaleDateString("id-ID", { month: "long" }); // Jan, Feb... in ID
+          const month = date.toLocaleDateString("id-ID", { month: "long" }); 
           const year = date.getFullYear();
           const weekNum = weekKey.split('-')[1];
           return `${month} Week ${weekNum} ${year}`;
@@ -201,12 +229,12 @@ export const dashboardRouter = createTRPCRouter({
             week: formatWeekLabel(week), 
             good: val.good,
             reject: val.reject,
-      }));
+        }));
 
       const downtimeByType = Array.from(downtimeMap.entries()).map(([type, minutes]) => ({
         type,
         minutes,
-      })).sort((a, b) => b.minutes - a.minutes); // Descending
+      })).sort((a, b) => b.minutes - a.minutes); 
 
       const rejectByType = Array.from(rejectMap.entries()).map(([type, qty]) => ({
         type,

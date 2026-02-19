@@ -1120,7 +1120,7 @@ export default function ProPlanner() {
                         <optgroup label="Barang Setengah Jadi (WIP)">
                           {(materials.data ?? [])
                             // @ts-ignore
-                            .filter((m) => m.type === "WIP")
+                            .filter((m) => m.type === "WIP" && (m.wipStock || 0) > 0)
                             .map((m: any) => {
                               const stock = m.wipStock || 0;
                               return (

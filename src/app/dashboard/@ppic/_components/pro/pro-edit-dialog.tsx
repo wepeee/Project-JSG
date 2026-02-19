@@ -383,7 +383,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
                             {/* Group 2: WIP (Work In Process) */}
                             <optgroup label="Barang Setengah Jadi (WIP)">
                               {(materials.data ?? [])
-                                .filter((m) => m.type === "WIP")
+                                .filter((m) => m.type === "WIP" && ((m as any).wipStock || 0) > 0)
                                 .map((m) => {
                                   const stock = (m as any).wipStock || 0;
                                   return (
