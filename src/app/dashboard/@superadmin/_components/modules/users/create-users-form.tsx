@@ -22,6 +22,13 @@ import {
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -165,31 +172,28 @@ export default function CreateUserForm() {
               <form.Field
                 name="role"
                 children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
-                    <Field data-invalid={isInvalid}>
+                    <Field>
                       <FieldLabel htmlFor={field.name}>Role</FieldLabel>
-                      <select
-                        id={field.name}
-                        name={field.name}
+                      <Select
                         value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) =>
-                          field.handleChange(e.target.value as any)
-                        }
-                        className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-                        aria-invalid={isInvalid}
+                        onValueChange={(val) => field.handleChange(val as any)}
                       >
-                        <option value="SUPERADMIN">SUPERADMIN</option>
-                        <option value="ADMIN">ADMIN</option>
-                        <option value="PPIC">PPIC</option>
-                        <option value="OPERATOR">OPERATOR</option>
-                        <option value="MASTER">MASTER</option>
-                      </select>
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Pilih Role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="SUPERADMIN">SUPERADMIN</SelectItem>
+                          <SelectItem value="ADMIN">ADMIN</SelectItem>
+                          <SelectItem value="PPIC">PPIC</SelectItem>
+                          <SelectItem value="OPERATOR">OPERATOR</SelectItem>
+                          <SelectItem value="MASTER">MASTER</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {field.state.meta.isTouched &&
+                        field.state.meta.errors.length > 0 && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
                     </Field>
                   );
                 }}
@@ -207,22 +211,18 @@ export default function CreateUserForm() {
                             Bagian (Department)
                           </FieldLabel>
                           {role === "SUPERADMIN" ? (
-                            <select
-                              id={field.name}
-                              name={field.name}
-                              value={field.state.value} // ensure this is tied to state
-                              onBlur={field.handleBlur}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                            <Select
+                              value={field.state.value}
+                              onValueChange={(val) => field.handleChange(val)}
                             >
-                              <option value="" disabled>
-                                Pilih Department...
-                              </option>
-                              <option value="PAPER">PAPER</option>
-                              <option value="RIGID">RIGID</option>
-                            </select>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Pilih Department..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="PAPER">PAPER</SelectItem>
+                                <SelectItem value="RIGID">RIGID</SelectItem>
+                              </SelectContent>
+                            </Select>
                           ) : (
                             <Input
                               id={field.name}
@@ -292,50 +292,80 @@ export default function CreateUserForm() {
         </CardHeader>
 
         <CardContent>
-          {users.isLoading ? (
-            <p className="text-sm">Loading...</p>
-          ) : users.error ? (
-            <p className="text-destructive text-sm">{users.error.message}</p>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Username</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Bagian</TableHead>
-                    <TableHead>Dibuat</TableHead>
-                  </TableRow>
-                </TableHeader>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              {/* Search is handled in the header in previous design, but can be improved here if needed. 
+                   Keeping it in header as requested by layout but ensuring input style is consistent */}
+            </div>
 
-                <TableBody>
-                  {filteredUsers.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={4}
-                        className="text-center text-sm opacity-70"
-                      >
-                        Tidak ada hasil
-                      </TableCell>
+            {users.isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-muted-foreground animate-pulse text-sm">
+                  Loading users...
+                </p>
+              </div>
+            ) : users.error ? (
+              <div className="bg-destructive/10 text-destructive rounded-md p-4 text-sm">
+                {users.error.message}
+              </div>
+            ) : (
+              <div className="border-border rounded-md border">
+                <Table>
+                  <TableHeader className="bg-muted/50">
+                    <TableRow className="border-border border-b hover:bg-transparent">
+                      <TableHead className="text-foreground font-semibold">
+                        Username
+                      </TableHead>
+                      <TableHead className="text-foreground font-semibold">
+                        Role
+                      </TableHead>
+                      <TableHead className="text-foreground font-semibold">
+                        Bagian
+                      </TableHead>
+                      <TableHead className="text-foreground font-semibold">
+                        Dibuat
+                      </TableHead>
                     </TableRow>
-                  ) : (
-                    filteredUsers.map((u) => (
-                      <TableRow key={u.id}>
-                        <TableCell className="font-medium">
-                          {u.username}
-                        </TableCell>
-                        <TableCell>{u.role}</TableCell>
-                        <TableCell>{u.department || "-"}</TableCell>
-                        <TableCell>
-                          {new Date(u.createdAt).toLocaleString("id-ID")}
+                  </TableHeader>
+
+                  <TableBody>
+                    {filteredUsers.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={4}
+                          className="text-muted-foreground h-24 text-center text-sm"
+                        >
+                          Tidak ada hasil
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                    ) : (
+                      filteredUsers.map((u) => (
+                        <TableRow
+                          key={u.id}
+                          className="border-border hover:bg-muted/50 border-b"
+                        >
+                          <TableCell className="text-foreground font-medium">
+                            {u.username}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            <span className="bg-primary/10 text-primary inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium">
+                              {u.role}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {u.department || "-"}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-xs">
+                            {new Date(u.createdAt).toLocaleString("id-ID")}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

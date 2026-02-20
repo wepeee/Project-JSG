@@ -669,8 +669,8 @@ export default function ProPlanner() {
       <div className="space-y-8 pb-32">
         {/* 1. Header Information */}
         <Card className="border-none shadow-md">
-          <CardHeader className="bg-muted/20 border-b pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg font-bold tracking-tight uppercase">
+          <CardHeader className="bg-muted/20 border-border border-b pb-4">
+            <CardTitle className="text-foreground flex items-center gap-2 text-lg font-bold tracking-tight uppercase">
               <div className="bg-primary h-8 w-1 rounded-full" />
               Informasi Produk & PRO
             </CardTitle>
@@ -695,7 +695,7 @@ export default function ProPlanner() {
                   onChange={(e) => setProductName(e.target.value)}
                   placeholder="Nama produk..."
                   autoComplete="off"
-                  className="focus:border-primary border-primary/20 h-11 text-base font-semibold"
+                  className="focus:border-primary border-input bg-background h-11 text-base font-semibold"
                 />
               </div>
 
@@ -708,7 +708,7 @@ export default function ProPlanner() {
                   value={partNumber}
                   onChange={(e) => setPartNumber(e.target.value)}
                   placeholder="Part No. FG"
-                  className="h-11 font-mono text-sm"
+                  className="bg-background h-11 font-mono text-sm"
                 />
               </div>
 
@@ -818,9 +818,9 @@ export default function ProPlanner() {
 
         {/* 2. Process List */}
         <Card className="border-none shadow-md">
-          <CardHeader className="bg-muted/20 flex flex-row items-center justify-between border-b pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg font-bold tracking-tight uppercase">
-              <div className="bg-brand-pink h-8 w-1 rounded-full" />
+          <CardHeader className="bg-muted/20 border-border flex flex-row items-center justify-between border-b pb-4">
+            <CardTitle className="text-foreground flex items-center gap-2 text-lg font-bold tracking-tight uppercase">
+              <div className="bg-primary h-8 w-1 rounded-full" />
               Daftar Proses Produksi
             </CardTitle>
             <div className="flex items-center gap-2">
@@ -855,7 +855,7 @@ export default function ProPlanner() {
               </div>
             )}
             {ok && (
-              <div className="m-4 rounded-lg border border-green-500/20 bg-green-500/10 p-3 text-sm font-medium text-green-700">
+              <div className="m-4 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-700 dark:text-emerald-400">
                 <span className="mr-2 text-lg">✅</span> {ok}
               </div>
             )}
@@ -868,7 +868,7 @@ export default function ProPlanner() {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader className="bg-muted/30">
-                    <TableRow className="hover:bg-transparent">
+                    <TableRow className="border-border border-b hover:bg-transparent">
                       <TableHead className="w-12 text-center">#</TableHead>
                       <TableHead className="w-16 text-center">No.</TableHead>
                       <TableHead className="w-48">Output PN (Step)</TableHead>
@@ -933,7 +933,7 @@ export default function ProPlanner() {
             <span className="text-muted-foreground text-xs font-bold uppercase">
               Summary
             </span>
-            <span className="font-mono text-sm font-medium">
+            <span className="text-foreground font-mono text-sm font-medium">
               {steps.length} Proses •{" "}
               {qtyPoPcs ? Number(qtyPoPcs).toLocaleString() : 0} Pcs Output
             </span>
@@ -1310,7 +1310,7 @@ function SortableRow({
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab touch-none rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 active:cursor-grabbing"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground cursor-grab touch-none rounded p-1.5 active:cursor-grabbing"
         >
           <GripVertical className="h-4 w-4" />
         </button>
@@ -1338,7 +1338,10 @@ function SortableRow({
       <TableCell>
         <div className="flex flex-col gap-1">
           {step.materials.map((mat) => (
-            <div key={mat.key} className="border-b pb-1 text-xs last:border-0">
+            <div
+              key={mat.key}
+              className="border-border text-muted-foreground border-b pb-1 text-xs last:border-0"
+            >
               {getMatName(mat.materialId!)}
             </div>
           ))}
@@ -1350,7 +1353,7 @@ function SortableRow({
           {step.materials.map((mat) => (
             <div
               key={mat.key}
-              className="border-b pb-1 font-mono text-xs last:border-0"
+              className="border-border text-foreground border-b pb-1 font-mono text-xs last:border-0"
             >
               {mat.qtyReq ? Number(mat.qtyReq).toLocaleString("id-ID") : "-"}
             </div>
@@ -1358,7 +1361,7 @@ function SortableRow({
         </div>
         {exceed && (
           <div className="mt-2 flex justify-end">
-            <div className="rounded border border-red-200 bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
+            <div className="border-destructive/20 bg-destructive/10 text-destructive rounded border px-1.5 py-0.5 text-[10px] font-bold">
               ⚠️ {shiftCount} Shift
             </div>
           </div>
@@ -1369,7 +1372,7 @@ function SortableRow({
           {step.materials.map((mat) => (
             <div
               key={mat.key}
-              className="text-muted-foreground border-b pb-1 text-xs last:border-0"
+              className="text-muted-foreground border-border border-b pb-1 text-xs last:border-0"
             >
               {getMatUom(mat.materialId!)}
             </div>
@@ -1389,7 +1392,7 @@ function SortableRow({
           <Button
             variant="ghost"
             size="sm"
-            className="text-destructive hover:text-destructive h-7 px-2 text-xs"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-7 px-2 text-xs"
             onClick={() => onRemove(step.key)}
           >
             Hapus

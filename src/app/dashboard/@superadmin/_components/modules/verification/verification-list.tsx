@@ -124,13 +124,13 @@ export default function VerificationList({
         <div className="flex flex-col items-end gap-2">
           {/* Main Level */}
           {!userDepartment && (
-            <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+            <div className="bg-muted flex rounded-lg p-1">
               <button
                 onClick={() => setActiveCategory("PAPER")}
                 className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
                   !isRigidActive
-                    ? "bg-white shadow dark:bg-slate-700"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                    ? "bg-background text-foreground shadow"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 PAPER
@@ -141,8 +141,8 @@ export default function VerificationList({
                 }}
                 className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
                   isRigidActive
-                    ? "bg-white shadow dark:bg-slate-700"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                    ? "bg-background text-foreground shadow"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 RIGID
@@ -152,15 +152,15 @@ export default function VerificationList({
 
           {/* Sub Level for Rigid */}
           {isRigidActive && (
-            <div className="no-scrollbar flex overflow-x-auto rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+            <div className="no-scrollbar bg-muted flex overflow-x-auto rounded-lg p-1">
               {rigidSubCategories.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
                   className={`rounded-md px-3 py-1 text-xs font-bold whitespace-nowrap transition-all ${
                     activeCategory === cat.id
-                      ? "bg-white shadow dark:bg-slate-700"
-                      : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                      ? "bg-background text-foreground shadow"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {cat.label}
@@ -180,7 +180,7 @@ export default function VerificationList({
           <TabsTrigger value="PENDING" className="gap-2">
             Perlu Verifikasi
             {activeTab === "PENDING" && reports?.length ? (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-600">
+              <span className="bg-destructive/10 text-destructive flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold">
                 {reports.length}
               </span>
             ) : null}
@@ -197,7 +197,7 @@ export default function VerificationList({
           )}
 
           {!isLoading && reports?.length === 0 && (
-            <div className="rounded-xl border border-dashed py-12 text-center text-sm text-slate-500">
+            <div className="border-border text-muted-foreground rounded-xl border border-dashed py-12 text-center text-sm">
               Tidak ada laporan{" "}
               {activeTab === "PENDING" ? "baru" : "pada status ini"}.
             </div>
@@ -247,20 +247,20 @@ export default function VerificationList({
             return (
               <div
                 key={proId}
-                className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-slate-900/50"
+                className="border-border bg-card overflow-hidden rounded-xl border shadow-sm"
               >
                 {/* PRO Header */}
                 <div
                   role="button"
                   onClick={() => togglePro(proId)}
-                  className="cursor-pointer border-b border-slate-200 bg-white px-4 py-3 transition-colors select-none hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/50"
+                  className="border-border bg-muted/20 hover:bg-muted/50 cursor-pointer border-b px-4 py-3 transition-colors select-none"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 shrink-0 text-slate-400"
+                        className="text-muted-foreground h-6 w-6 shrink-0"
                       >
                         {isCollapsed ? (
                           <ChevronDown className="h-4 w-4" />
@@ -268,14 +268,14 @@ export default function VerificationList({
                           <ChevronUp className="h-4 w-4" />
                         )}
                       </Button>
-                      <span className="rounded bg-blue-100 px-2.5 py-1 text-xs font-bold tracking-wider text-blue-700 uppercase">
+                      <span className="bg-primary/10 text-primary rounded px-2.5 py-1 text-xs font-bold tracking-wider uppercase">
                         {group.pro.proNumber}
                       </span>
-                      <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                      <span className="text-foreground text-sm font-bold">
                         {group.pro.productName}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-slate-500">
+                    <div className="text-muted-foreground flex items-center gap-4 text-xs">
                       <div>Qty PO: {group.pro.qtyPoPcs}</div>
                       <div className="font-semibold">
                         {totalReports} Laporan
@@ -292,15 +292,15 @@ export default function VerificationList({
                       .map((procGroup) => (
                         <div key={procGroup.process.id} className="space-y-3">
                           {/* Process Header */}
-                          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-100/50 px-3 py-2 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] shadow-sm dark:bg-slate-700">
+                          <div className="border-border bg-muted/30 text-foreground flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold">
+                            <span className="bg-background flex h-5 w-5 items-center justify-center rounded-full text-[10px] shadow-sm">
                               {procGroup.process.orderNo}
                             </span>
                             <span>
                               {procGroup.process.machine?.name ??
                                 "Mesin Tidak Dikenal"}
                             </span>
-                            <span className="ml-auto text-[10px] font-normal text-slate-500">
+                            <span className="text-muted-foreground ml-auto text-[10px] font-normal">
                               {procGroup.reports.length} Laporan
                             </span>
                           </div>
@@ -316,13 +316,13 @@ export default function VerificationList({
                               .map((rpt) => (
                                 <div
                                   key={rpt.id}
-                                  className="group flex flex-col gap-4 rounded-xl border bg-white p-4 shadow-sm transition-all hover:border-blue-200 dark:bg-slate-900"
+                                  className="group border-border bg-card hover:border-primary/50 flex flex-col gap-4 rounded-xl border p-4 shadow-sm transition-all"
                                 >
                                   <div className="flex items-start justify-between">
                                     <div>
                                       {/* Operator & Shift */}
-                                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                                        <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                      <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                                        <span className="text-foreground font-semibold">
                                           {rpt.operatorName}
                                         </span>
                                         <span>•</span>
@@ -343,7 +343,7 @@ export default function VerificationList({
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="h-8 gap-1 text-green-600 hover:border-green-200 hover:bg-green-50 hover:text-green-700"
+                                          className="h-8 gap-1 text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
                                           onClick={() => handleApprove(rpt.id)}
                                           disabled={approveMutation.isPending}
                                         >
@@ -353,7 +353,7 @@ export default function VerificationList({
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="h-8 gap-1 text-red-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                                          className="text-destructive hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive h-8 gap-1"
                                           onClick={() => {
                                             setRejectId(rpt.id);
                                             setRejectNote("");
@@ -366,11 +366,11 @@ export default function VerificationList({
                                     )}
                                     {activeTab === "APPROVED" && (
                                       <div className="flex flex-col items-end gap-1">
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700">
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                                           <Check className="h-3 w-3" />{" "}
                                           Disetujui
                                         </span>
-                                        <div className="text-[10px] text-slate-400">
+                                        <div className="text-muted-foreground text-[10px]">
                                           by{" "}
                                           {rpt.checkedBy?.username || "Admin"}
                                         </div>
@@ -378,10 +378,10 @@ export default function VerificationList({
                                     )}
                                     {activeTab === "REJECTED" && (
                                       <div className="flex flex-col items-end gap-1">
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">
+                                        <span className="bg-destructive/10 text-destructive inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold">
                                           <X className="h-3 w-3" /> Ditolak
                                         </span>
-                                        <div className="text-[10px] text-slate-400">
+                                        <div className="text-muted-foreground text-[10px]">
                                           by{" "}
                                           {rpt.checkedBy?.username || "Admin"}
                                         </div>
@@ -390,7 +390,7 @@ export default function VerificationList({
                                   </div>
 
                                   {/* Stats Grid */}
-                                  <div className="grid grid-cols-4 gap-2 rounded-lg bg-slate-50 p-3 text-xs dark:bg-slate-950/50">
+                                  <div className="bg-muted/30 grid grid-cols-4 gap-2 rounded-lg p-3 text-xs">
                                     <div
                                       className={
                                         rpt.reportType === "PAPER" ||
@@ -399,17 +399,17 @@ export default function VerificationList({
                                           : "col-span-2"
                                       }
                                     >
-                                      <div className="font-semibold text-slate-500">
+                                      <div className="text-muted-foreground font-semibold">
                                         {rpt.reportType === "PAPER"
                                           ? "Pass On / FG"
                                           : "Pass On / Good"}
                                       </div>
-                                      <div className="text-lg font-bold text-slate-700 dark:text-slate-200">
+                                      <div className="text-foreground text-lg font-bold">
                                         {(
                                           Number(rpt.qtyGood) +
                                           Number(rpt.qtyPassOn)
                                         ).toLocaleString("id-ID")}
-                                        <span className="ml-1 text-xs font-normal text-slate-500">
+                                        <span className="text-muted-foreground ml-1 text-xs font-normal">
                                           {rpt.reportType === "PAPER"
                                             ? "(Pcs)"
                                             : ""}
@@ -432,14 +432,14 @@ export default function VerificationList({
                                     )}
 
                                     <div className="col-span-1">
-                                      <span className="font-semibold text-red-500">
+                                      <span className="text-destructive font-semibold">
                                         Reject
                                       </span>
-                                      <div className="text-lg font-bold text-red-600">
+                                      <div className="text-destructive text-lg font-bold">
                                         {Number(rpt.qtyReject).toLocaleString(
                                           "id-ID",
                                         )}{" "}
-                                        <span className="text-xs font-normal text-slate-500">
+                                        <span className="text-muted-foreground text-xs font-normal">
                                           {rpt.reportType !== "PAPER"
                                             ? "Gram"
                                             : "Pcs"}
@@ -447,10 +447,10 @@ export default function VerificationList({
                                       </div>
                                     </div>
                                     <div>
-                                      <div className="font-semibold text-slate-500">
+                                      <div className="text-muted-foreground font-semibold">
                                         Downtime
                                       </div>
-                                      <div className="text-lg font-bold text-slate-700 dark:text-slate-200">
+                                      <div className="text-foreground text-lg font-bold">
                                         {(() => {
                                           let calculatedTotal = 0;
                                           const hasBreakdown =
@@ -497,7 +497,7 @@ export default function VerificationList({
 
                                   {/* Notes & Detail Toggle */}
                                   {rpt.notes && (
-                                    <div className="rounded-lg border border-yellow-100 bg-yellow-50/50 p-2.5 text-xs text-yellow-800 dark:border-yellow-900/20 dark:bg-yellow-900/10 dark:text-yellow-200">
+                                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-2.5 text-xs text-amber-600 dark:text-amber-400">
                                       <span className="font-bold">
                                         Catatan Op:
                                       </span>{" "}
@@ -507,7 +507,7 @@ export default function VerificationList({
 
                                   {rpt.status === "REJECTED" &&
                                     rpt.rejectionNote && (
-                                      <div className="rounded-lg border border-red-100 bg-red-50/50 p-2.5 text-xs text-red-800 dark:border-red-900/20 dark:bg-red-900/10 dark:text-red-200">
+                                      <div className="border-destructive/20 bg-destructive/10 text-destructive rounded-lg border p-2.5 text-xs">
                                         <span className="font-bold">
                                           Alasan Penolakan:
                                         </span>{" "}
@@ -518,7 +518,7 @@ export default function VerificationList({
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="w-full text-xs text-slate-400"
+                                    className="text-muted-foreground w-full text-xs"
                                     onClick={() =>
                                       setExpandedId(
                                         expandedId === rpt.id ? null : rpt.id,
@@ -532,9 +532,9 @@ export default function VerificationList({
 
                                   {/* Expanded Details */}
                                   {expandedId === rpt.id && (
-                                    <div className="grid grid-cols-2 gap-4 rounded-lg bg-slate-50 p-4 text-xs dark:bg-slate-950/30">
+                                    <div className="bg-muted/30 grid grid-cols-2 gap-4 rounded-lg p-4 text-xs">
                                       <div className="space-y-1">
-                                        <div className="font-bold text-slate-700 dark:text-slate-300">
+                                        <div className="text-foreground font-bold">
                                           Waktu
                                         </div>
                                         <div>
@@ -559,7 +559,7 @@ export default function VerificationList({
 
                                       {activeCategory !== "PAPER" && (
                                         <div className="space-y-1">
-                                          <div className="font-bold text-slate-700 dark:text-slate-300">
+                                          <div className="text-foreground font-bold">
                                             Resources
                                           </div>
                                           <div>
@@ -584,7 +584,7 @@ export default function VerificationList({
 
                                       {activeCategory !== "PAPER" && (
                                         <div className="space-y-1">
-                                          <div className="font-bold text-slate-700 dark:text-slate-300">
+                                          <div className="text-foreground font-bold">
                                             Material
                                           </div>
                                           <div>
@@ -606,7 +606,7 @@ export default function VerificationList({
                                       )}
 
                                       <div className="space-y-1">
-                                        <div className="font-bold text-slate-700 dark:text-slate-300">
+                                        <div className="text-foreground font-bold">
                                           Output Lain
                                         </div>
                                         <div>
@@ -621,8 +621,8 @@ export default function VerificationList({
                                         Object.keys(
                                           rpt.rejectBreakdown as object,
                                         ).length > 0 && (
-                                          <div className="col-span-2 space-y-1 border-t pt-2">
-                                            <div className="font-bold text-red-600">
+                                          <div className="border-border col-span-2 space-y-1 border-t pt-2">
+                                            <div className="text-destructive font-bold">
                                               Rincian Reject
                                             </div>
                                             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -650,8 +650,8 @@ export default function VerificationList({
                                         Object.keys(
                                           rpt.downtimeBreakdown as object,
                                         ).length > 0 && (
-                                          <div className="col-span-2 space-y-1 border-t pt-2">
-                                            <div className="font-bold text-slate-600">
+                                          <div className="border-border col-span-2 space-y-1 border-t pt-2">
+                                            <div className="text-muted-foreground font-bold">
                                               Rincian Downtime
                                             </div>
                                             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -709,7 +709,7 @@ export default function VerificationList({
             <DialogTitle>Tolak Laporan</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="flex items-start gap-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
+            <div className="flex items-start gap-3 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-400">
               <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
               <p>
                 Laporan akan dikembalikan ke status <strong>REJECTED</strong>.

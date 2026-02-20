@@ -55,19 +55,41 @@ export default function ReportsListDialog({
 
         <div className="flex-1 overflow-auto rounded-md border">
           <Table>
-            <TableHeader className="bg-slate-200 dark:bg-slate-800">
-              <TableRow className="border-b border-slate-200 dark:border-slate-700 hover:bg-transparent">
-                <TableHead className="w-[120px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Tgl Laporan</TableHead>
-                <TableHead className="w-[100px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Status</TableHead>
-                <TableHead className="w-[80px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Shift</TableHead>
-                <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Operator</TableHead>
-                <TableHead className="w-[80px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Step</TableHead>
-                <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Mesin</TableHead>
-                <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Qty Pass</TableHead>
-                <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">WIP</TableHead>
-                <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Hold</TableHead>
-                <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Reject</TableHead>
-                <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Notes</TableHead>
+            <TableHeader className="bg-muted">
+              <TableRow className="border-border border-b hover:bg-transparent">
+                <TableHead className="text-muted-foreground w-[120px] px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                  Tgl Laporan
+                </TableHead>
+                <TableHead className="text-muted-foreground w-[100px] px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                  Status
+                </TableHead>
+                <TableHead className="text-muted-foreground w-[80px] px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                  Shift
+                </TableHead>
+                <TableHead className="text-muted-foreground px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                  Operator
+                </TableHead>
+                <TableHead className="text-muted-foreground w-[80px] px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                  Step
+                </TableHead>
+                <TableHead className="text-muted-foreground px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                  Mesin
+                </TableHead>
+                <TableHead className="text-muted-foreground px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                  Qty Pass
+                </TableHead>
+                <TableHead className="text-muted-foreground px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                  WIP
+                </TableHead>
+                <TableHead className="text-muted-foreground px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                  Hold
+                </TableHead>
+                <TableHead className="text-muted-foreground px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                  Reject
+                </TableHead>
+                <TableHead className="text-muted-foreground px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                  Notes
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -85,55 +107,64 @@ export default function ReportsListDialog({
                 </TableRow>
               ) : (
                 data.map((report) => (
-                  <TableRow key={report.id} className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-slate-800 dark:hover:bg-slate-800/50">
-                    <TableCell className="px-4 py-3 text-xs text-slate-700 dark:text-slate-300">
+                  <TableRow
+                    key={report.id}
+                    className="border-border hover:bg-muted/50 border-b"
+                  >
+                    <TableCell className="text-foreground px-4 py-3 text-xs">
                       {format(new Date(report.reportDate), "dd MMM yyyy", {
                         locale: idLocale,
                       })}
                     </TableCell>
                     <TableCell className="px-4 py-3">
                       {report.status === "APPROVED" && (
-                        <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 tracking-wide border border-emerald-200">
+                        <span className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-emerald-600 dark:text-emerald-400">
                           APPROVED
                         </span>
                       )}
                       {report.status === "PENDING" && (
-                        <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 tracking-wide border border-amber-200">
+                        <span className="inline-flex rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-600 dark:text-amber-400">
                           PENDING
                         </span>
                       )}
                       {report.status === "REJECTED" && (
-                        <span className="inline-flex rounded-full bg-red-100 px-2.5 py-0.5 text-[10px] font-bold text-red-700 tracking-wide border border-red-200">
+                        <span className="bg-destructive/10 text-destructive border-destructive/20 inline-flex rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wide">
                           REJECTED
                         </span>
                       )}
                       {report.status === "VOID" && (
-                        <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-700 tracking-wide border border-slate-200">
+                        <span className="bg-muted text-muted-foreground border-border inline-flex rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wide">
                           VOID
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">Shift {report.shift}</TableCell>
-                    <TableCell className="px-4 py-3 text-xs font-medium text-slate-700 dark:text-slate-300">{report.operatorName}</TableCell>
-                    <TableCell className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">#{report.proses?.orderNo}</TableCell>
-                    <TableCell className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
+                    <TableCell className="text-muted-foreground px-4 py-3 text-xs">
+                      Shift {report.shift}
+                    </TableCell>
+                    <TableCell className="text-foreground px-4 py-3 text-xs font-medium">
+                      {report.operatorName}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground px-4 py-3 text-xs">
+                      #{report.proses?.orderNo}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground px-4 py-3 text-xs">
                       {report.proses?.orderNo
                         ? report.proses.machine?.name
                         : "-"}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-right text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    <TableCell className="px-4 py-3 text-right font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
                       {Number(report.qtyPassOn).toLocaleString("id-ID")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-right text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
+                    <TableCell className="px-4 py-3 text-right font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
                       {Number(report.qtyWip).toLocaleString("id-ID")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-right text-xs font-mono font-bold text-amber-600 dark:text-amber-400">
+                    <TableCell className="px-4 py-3 text-right font-mono text-xs font-bold text-amber-600 dark:text-amber-400">
                       {Number(report.qtyHold).toLocaleString("id-ID")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-right text-xs font-mono font-bold text-red-600 dark:text-red-400">
+                    <TableCell className="text-destructive px-4 py-3 text-right font-mono text-xs font-bold">
                       {Number(report.qtyReject).toLocaleString("id-ID")}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-muted-foreground max-w-[200px] truncate text-xs italic">
+                    <TableCell className="text-muted-foreground max-w-[200px] truncate px-4 py-3 text-xs italic">
                       {report.notes || "-"}
                     </TableCell>
                   </TableRow>

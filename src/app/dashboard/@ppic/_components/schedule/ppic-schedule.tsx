@@ -179,51 +179,66 @@ function PROTooltipContent({
   return (
     <div className="space-y-2 text-xs">
       <div>
-        <div className="font-semibold text-blue-600">{proNumber}</div>
-        <div className="text-[11px] opacity-80">{productName}</div>
+        <div className="text-primary font-semibold">{proNumber}</div>
+        <div className="text-muted-foreground text-[11px] opacity-80">
+          {productName}
+        </div>
       </div>
-      <div className="space-y-1 border-t pt-2">
+      <div className="border-border space-y-1 border-t pt-2">
         <div className="flex justify-between">
-          <span className="opacity-70">Proses:</span>
+          <span className="text-muted-foreground opacity-70">Proses:</span>
           <span className="font-medium">#{orderNo}</span>
         </div>
         <div className="flex justify-between">
-          <span className="opacity-70">Process:</span>
+          <span className="text-muted-foreground opacity-70">Process:</span>
           <span className="font-medium">
             {processCode} - {processName}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="opacity-70">Machine:</span>
+          <span className="text-muted-foreground opacity-70">Machine:</span>
           <span className="font-medium">🔧 {machineName ?? "No Machine"}</span>
         </div>
         <div className="flex justify-between">
-          <span className="opacity-70">UP:</span>
+          <span className="text-muted-foreground opacity-70">UP:</span>
           <span className="font-medium">{up}</span>
         </div>
         <div className="flex justify-between">
-          <span className="opacity-70">Qty PO:</span>
+          <span className="text-muted-foreground opacity-70">Qty PO:</span>
           <span className="font-medium">{qtyPoPcs.toLocaleString()} pcs</span>
         </div>
-        <div className="flex justify-between">
-          <span className="opacity-70">Status:</span>
-          <Badge 
-            variant="outline" 
-            className={`
-              h-5 text-[10px] font-bold border px-2
-              ${status === "OPEN" ? "border-blue-200 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : ""}
-              ${status === "IN_PROGRESS" ? "border-amber-200 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : ""}
-              ${status === "COMPLETE" ? "border-emerald-200 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : ""}
-              ${status === "CLOSED" ? "border-slate-200 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400" : ""}
-              ${status === "CANCELLED" ? "border-red-200 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : ""}
-            `}
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground opacity-70">Status:</span>
+          <Badge
+            variant="outline"
+            className={`h-5 border px-2 text-[10px] font-bold ${
+              status === "OPEN"
+                ? "border-primary/20 bg-primary/10 text-primary"
+                : ""
+            } ${
+              status === "IN_PROGRESS"
+                ? "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                : ""
+            } ${
+              status === "COMPLETE"
+                ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                : ""
+            } ${
+              status === "CLOSED"
+                ? "border-muted bg-muted text-muted-foreground"
+                : ""
+            } ${
+              status === "CANCELLED"
+                ? "border-destructive/20 bg-destructive/10 text-destructive"
+                : ""
+            } `}
           >
             {status}
           </Badge>
         </div>
         {startDate && (
           <div className="flex justify-between">
-            <span className="opacity-70">Start:</span>
+            <span className="text-muted-foreground opacity-70">Start:</span>
             <span className="font-medium">
               {startDate.toLocaleDateString("id-ID", {
                 day: "2-digit",
@@ -237,11 +252,14 @@ function PROTooltipContent({
         )}
       </div>
       {materials && materials.length > 0 && (
-        <div className="border-t pt-2">
+        <div className="border-border border-t pt-2">
           <div className="mb-1 font-medium">Materials:</div>
           <div className="space-y-0.5">
             {materials.map((m: any, idx: number) => (
-              <div key={idx} className="text-[10px] opacity-80">
+              <div
+                key={idx}
+                className="text-muted-foreground text-[10px] opacity-80"
+              >
                 • {m.material.name}: {m.qtyReq.toString()} {m.material.uom}
               </div>
             ))}
@@ -782,83 +800,83 @@ export default function PPICSchedule({ onSelectPro }: Props) {
       >
         {/* Toolbar */}
         {/* Toolbar */}
-        <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 md:flex-row md:items-center md:justify-between">
+        <div className="border-border bg-card flex flex-col gap-4 rounded-xl border p-4 shadow-sm md:flex-row md:items-center md:justify-between">
           {/* Left Controls */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <TabsList className="flex h-auto w-fit items-center rounded-lg border border-slate-200 bg-slate-100/80 p-1 dark:border-slate-800 dark:bg-slate-800/50">
-              <TabsTrigger 
-                value="shift" 
-                className="rounded-md px-3 py-1.5 text-xs font-bold text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-slate-200 dark:text-slate-400 dark:data-[state=active]:bg-slate-950 dark:data-[state=active]:text-indigo-400 dark:data-[state=active]:ring-slate-700"
+            <TabsList className="border-border bg-muted/50 flex h-auto w-fit items-center rounded-lg border p-1">
+              <TabsTrigger
+                value="shift"
+                className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:ring-border rounded-md px-3 py-1.5 text-xs font-bold data-[state=active]:shadow-sm data-[state=active]:ring-1"
               >
                 Mingguan
               </TabsTrigger>
-              <TabsTrigger 
-                value="month" 
-                className="rounded-md px-3 py-1.5 text-xs font-bold text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-slate-200 dark:text-slate-400 dark:data-[state=active]:bg-slate-950 dark:data-[state=active]:text-indigo-400 dark:data-[state=active]:ring-slate-700"
+              <TabsTrigger
+                value="month"
+                className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:ring-border rounded-md px-3 py-1.5 text-xs font-bold data-[state=active]:shadow-sm data-[state=active]:ring-1"
               >
                 Bulanan
               </TabsTrigger>
             </TabsList>
 
-            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
+            <div className="bg-border hidden h-6 w-px sm:block" />
 
-            <div className="flex items-center rounded-lg border border-slate-200 bg-slate-100/80 p-1 dark:border-slate-800 dark:bg-slate-800/50">
-                <button
-                  onClick={() => setProType("PAPER")}
-                  className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
-                    proType === "PAPER"
-                      ? "bg-white text-blue-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-blue-400 dark:ring-slate-700"
-                      : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
-                  }`}
-                >
-                  Paper Box
-                </button>
-                <button
-                  onClick={() => setProType("RIGID")}
-                  className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
-                    proType === "RIGID"
-                      ? "bg-white text-amber-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-amber-400 dark:ring-slate-700"
-                      : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
-                  }`}
-                >
-                  Rigid Box
-                </button>
+            <div className="border-border bg-muted/50 flex items-center rounded-lg border p-1">
+              <button
+                onClick={() => setProType("PAPER")}
+                className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+                  proType === "PAPER"
+                    ? "bg-background text-primary ring-border shadow-sm ring-1"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                Paper Box
+              </button>
+              <button
+                onClick={() => setProType("RIGID")}
+                className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+                  proType === "RIGID"
+                    ? "bg-background text-primary ring-border shadow-sm ring-1"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                Rigid Box
+              </button>
             </div>
           </div>
 
           {/* Right Controls */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             {tab === "shift" && (
-                <div className="flex items-center rounded-lg border border-slate-200 bg-slate-100/80 p-1 dark:border-slate-800 dark:bg-slate-800/50">
-                  <button
-                    onClick={() => setViewMode("shift")}
-                    className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
-                        viewMode === "shift" 
-                        ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:ring-slate-700" 
-                        : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
-                    }`}
-                  >
-                    Per Shift
-                  </button>
-                  <button
-                    onClick={() => setViewMode("machine")}
-                    className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
-                        viewMode === "machine" 
-                        ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:ring-slate-700" 
-                        : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
-                    }`}
-                  >
-                    Per Mesin
-                  </button>
-                </div>
+              <div className="border-border bg-muted/50 flex items-center rounded-lg border p-1">
+                <button
+                  onClick={() => setViewMode("shift")}
+                  className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+                    viewMode === "shift"
+                      ? "bg-background text-foreground ring-border shadow-sm ring-1"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  Per Shift
+                </button>
+                <button
+                  onClick={() => setViewMode("machine")}
+                  className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+                    viewMode === "machine"
+                      ? "bg-background text-foreground ring-border shadow-sm ring-1"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  Per Mesin
+                </button>
+              </div>
             )}
             <div className="relative">
-              <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-slate-400" />
+              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
               <Input
                 placeholder="Cari No. PRO / Produk..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 w-[250px] rounded-md border-slate-200 bg-slate-50 pl-9 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:focus:bg-slate-950 dark:focus:ring-slate-800"
+                className="bg-background placeholder:text-muted-foreground focus:ring-ring h-9 w-[250px] pl-9 text-xs font-medium"
               />
             </div>
           </div>
@@ -983,14 +1001,28 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                                   </div>
                                                   <Badge
                                                     variant="outline"
-                                                    className={`
-                                                      h-4 px-1 text-[9px] border
-                                                      ${it.status === "OPEN" ? "border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : ""}
-                                                      ${it.status === "IN_PROGRESS" ? "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : ""}
-                                                      ${it.status === "COMPLETE" ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : ""}
-                                                      ${it.status === "CLOSED" ? "border-slate-200 bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400" : ""}
-                                                      ${it.status === "CANCELLED" ? "border-red-200 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400" : ""}
-                                                    `}
+                                                    className={`h-4 border px-1 text-[9px] ${
+                                                      it.status === "OPEN"
+                                                        ? "border-primary/20 bg-primary/10 text-primary"
+                                                        : ""
+                                                    } ${
+                                                      it.status ===
+                                                      "IN_PROGRESS"
+                                                        ? "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                                        : ""
+                                                    } ${
+                                                      it.status === "COMPLETE"
+                                                        ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                                        : ""
+                                                    } ${
+                                                      it.status === "CLOSED"
+                                                        ? "border-muted bg-muted text-muted-foreground"
+                                                        : ""
+                                                    } ${
+                                                      it.status === "CANCELLED"
+                                                        ? "border-destructive/20 bg-destructive/10 text-destructive"
+                                                        : ""
+                                                    } `}
                                                   >
                                                     {it.status}
                                                   </Badge>
@@ -1004,30 +1036,59 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                                     {it.processName}
                                                   </span>
                                                   {it.machineName && (
-                                                    <span className="inline-flex items-center rounded-sm border border-amber-200 bg-amber-100 px-1 py-0.5 text-[9px] font-medium text-amber-800">
+                                                    <span className="border-primary/20 bg-primary/5 text-primary inline-flex items-center rounded-sm border px-1 py-0.5 text-[9px] font-medium">
                                                       🔧 {it.machineName}
                                                     </span>
                                                   )}
                                                 </div>
-                                                
+
                                                 {/* Progress Bar */}
                                                 {(() => {
-                                                  const totalAchieved = it.productionReports?.reduce((acc: number, r: any) => 
-                                                    acc + (r.status === "APPROVED" ? (Number(r.qtyPassOn) || 0) + (Number(r.qtyGood) || 0) : 0), 0) ?? 0;
-                                                  const percentage = Math.min(100, Math.round((totalAchieved / (it.qtyPoPcs || 1)) * 100));
-                                                  
+                                                  const totalAchieved =
+                                                    it.productionReports?.reduce(
+                                                      (acc: number, r: any) =>
+                                                        acc +
+                                                        (r.status === "APPROVED"
+                                                          ? (Number(
+                                                              r.qtyPassOn,
+                                                            ) || 0) +
+                                                            (Number(
+                                                              r.qtyGood,
+                                                            ) || 0)
+                                                          : 0),
+                                                      0,
+                                                    ) ?? 0;
+                                                  const percentage = Math.min(
+                                                    100,
+                                                    Math.round(
+                                                      (totalAchieved /
+                                                        (it.qtyPoPcs || 1)) *
+                                                        100,
+                                                    ),
+                                                  );
+
                                                   return (
                                                     <div className="mt-1 w-full space-y-1">
-                                                      <div className="flex justify-between text-[8px] text-muted-foreground">
-                                                        <span>{percentage}%</span>
-                                                        <span>{totalAchieved.toLocaleString()} / {it.qtyPoPcs.toLocaleString()}</span>
+                                                      <div className="text-muted-foreground flex justify-between text-[8px]">
+                                                        <span>
+                                                          {percentage}%
+                                                        </span>
+                                                        <span>
+                                                          {totalAchieved.toLocaleString()}{" "}
+                                                          /{" "}
+                                                          {it.qtyPoPcs.toLocaleString()}
+                                                        </span>
                                                       </div>
-                                                      <div className="bg-slate-200 dark:bg-slate-700 h-1.5 w-full rounded-full overflow-hidden">
-                                                        <div 
+                                                      <div className="bg-secondary h-1.5 w-full overflow-hidden rounded-full">
+                                                        <div
                                                           className={`h-full rounded-full transition-all ${
-                                                            percentage >= 100 ? "bg-emerald-500" : "bg-blue-500"
+                                                            percentage >= 100
+                                                              ? "bg-emerald-500"
+                                                              : "bg-blue-500"
                                                           }`}
-                                                          style={{ width: `${percentage}%` }} 
+                                                          style={{
+                                                            width: `${percentage}%`,
+                                                          }}
                                                         />
                                                       </div>
                                                     </div>
@@ -1080,10 +1141,10 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                         <DroppableCell
                                           key={slotId}
                                           id={slotId}
-                                          className={`hover:bg-accent/5 flex min-h-[60px] flex-col border-b p-1.5 transition-colors last:border-b-0 ${isOverload ? "bg-red-50" : shiftNo === 1 ? "bg-blue-50/10" : shiftNo === 2 ? "bg-orange-50/10" : "bg-purple-50/10"}`}
+                                          className={`hover:bg-accent/5 flex min-h-[60px] flex-col border-b p-1.5 transition-colors last:border-b-0 ${isOverload ? "bg-destructive/10" : shiftNo === 1 ? "bg-primary/5" : shiftNo === 2 ? "bg-primary/10" : "bg-primary/15"}`}
                                         >
                                           <div
-                                            className={`mb-1 flex items-center justify-between text-[9px] font-medium ${isOverload ? "text-red-700" : "text-muted-foreground"}`}
+                                            className={`mb-1 flex items-center justify-between text-[9px] font-medium ${isOverload ? "text-destructive" : "text-muted-foreground"}`}
                                           >
                                             <span className="font-mono opacity-50">
                                               S{shiftNo}
@@ -1092,7 +1153,7 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                               <span
                                                 className={
                                                   isOverload
-                                                    ? "font-bold text-red-600"
+                                                    ? "text-destructive font-bold"
                                                     : "opacity-70"
                                                 }
                                               >
@@ -1281,7 +1342,7 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                       <div className="mt-1 flex items-center gap-1">
                                         <Badge
                                           variant="outline"
-                                          className="h-3.5 border-amber-200 bg-amber-50 px-1 text-[8px] font-medium text-amber-800"
+                                          className="border-primary/20 bg-primary/5 text-primary h-3.5 px-1 text-[8px] font-medium"
                                         >
                                           🔧 {stepInfo.machineName}
                                         </Badge>
@@ -1375,7 +1436,10 @@ function DraggableChip({
   return (
     <Tooltip>
       <TooltipTrigger asChild>{chipContent}</TooltipTrigger>
-      <TooltipContent side="right" className="max-w-xs">
+      <TooltipContent
+        side="right"
+        className="border-border bg-popover text-popover-foreground max-w-xs border shadow-md [&>svg]:hidden"
+      >
         {tooltip}
       </TooltipContent>
     </Tooltip>

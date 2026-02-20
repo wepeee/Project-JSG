@@ -149,7 +149,11 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
     return Array.from(groupedData.keys()).sort();
   }, [groupedData]);
 
-  const handleOpenCard = (item: WipMonitorItem, siblings: WipMonitorItem[], index: number) => {
+  const handleOpenCard = (
+    item: WipMonitorItem,
+    siblings: WipMonitorItem[],
+    index: number,
+  ) => {
     setSelectedRow({
       itemId: item.itemId,
       locationId: item.locationId,
@@ -162,52 +166,56 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
   };
 
   const handleNextItem = () => {
-      setSelectedRow((prev) => {
-        if (!prev || !prev.siblings) return prev;
-        const nextIdx = prev.currentIndex + 1;
-        
-        // Boundary check
-        if (nextIdx >= prev.siblings.length) return prev;
+    setSelectedRow((prev) => {
+      if (!prev || !prev.siblings) return prev;
+      const nextIdx = prev.currentIndex + 1;
 
-        const nextItem = prev.siblings[nextIdx];
-        return {
-            ...prev,
-            itemId: nextItem.itemId,
-            locationId: nextItem.locationId,
-            locationName: nextItem.locationName ?? "Unknown",
-            proNumber: nextItem.proNumber,
-            currentIndex: nextIdx,
-        };
-      });
+      // Boundary check
+      if (nextIdx >= prev.siblings.length) return prev;
+
+      const nextItem = prev.siblings[nextIdx];
+      return {
+        ...prev,
+        itemId: nextItem.itemId,
+        locationId: nextItem.locationId,
+        locationName: nextItem.locationName ?? "Unknown",
+        proNumber: nextItem.proNumber,
+        currentIndex: nextIdx,
+      };
+    });
   };
 
   const handlePrevItem = () => {
-      setSelectedRow((prev) => {
-        if (!prev || !prev.siblings) return prev;
-        const prevIdx = prev.currentIndex - 1;
+    setSelectedRow((prev) => {
+      if (!prev || !prev.siblings) return prev;
+      const prevIdx = prev.currentIndex - 1;
 
-        // Boundary check
-        if (prevIdx < 0) return prev;
+      // Boundary check
+      if (prevIdx < 0) return prev;
 
-        const prevItem = prev.siblings[prevIdx];
-        return {
-            ...prev,
-            itemId: prevItem.itemId,
-            locationId: prevItem.locationId,
-            locationName: prevItem.locationName ?? "Unknown",
-            proNumber: prevItem.proNumber,
-            currentIndex: prevIdx,
-        };
-      });
+      const prevItem = prev.siblings[prevIdx];
+      return {
+        ...prev,
+        itemId: prevItem.itemId,
+        locationId: prevItem.locationId,
+        locationName: prevItem.locationName ?? "Unknown",
+        proNumber: prevItem.proNumber,
+        currentIndex: prevIdx,
+      };
+    });
   };
 
-  const prevItemLabel = selectedRow && selectedRow.currentIndex > 0 
-    ? (selectedRow.siblings[selectedRow.currentIndex - 1]?.itemId ?? "Prev") 
-    : undefined;
+  const prevItemLabel =
+    selectedRow && selectedRow.currentIndex > 0
+      ? (selectedRow.siblings[selectedRow.currentIndex - 1]?.itemId ?? "Prev")
+      : undefined;
 
-  const nextItemLabel = selectedRow && selectedRow.siblings && selectedRow.currentIndex < selectedRow.siblings.length - 1
-    ? (selectedRow.siblings[selectedRow.currentIndex + 1]?.itemId ?? "Next")
-    : undefined;
+  const nextItemLabel =
+    selectedRow &&
+    selectedRow.siblings &&
+    selectedRow.currentIndex < selectedRow.siblings.length - 1
+      ? (selectedRow.siblings[selectedRow.currentIndex + 1]?.itemId ?? "Next")
+      : undefined;
 
   return (
     <div className="space-y-4">
@@ -223,13 +231,13 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
           <div className="flex flex-wrap items-center gap-2">
             {/* Category Switcher - Modern Segmented Control */}
             {!userDepartment && (
-              <div className="mr-2 flex items-center rounded-lg border border-slate-200 bg-slate-100/50 p-1 dark:border-slate-800 dark:bg-slate-800/50">
+              <div className="border-border bg-muted/50 mr-2 flex items-center rounded-lg border p-1">
                 <button
                   onClick={() => setActiveCategory("PAPER")}
                   className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
                     activeCategory === "PAPER"
-                      ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:ring-slate-700"
-                      : "text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
+                      ? "bg-background text-foreground ring-border shadow-sm ring-1"
+                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                   }`}
                 >
                   PAPER
@@ -238,8 +246,8 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                   onClick={() => setActiveCategory("RIGID")}
                   className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
                     activeCategory === "RIGID"
-                      ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:ring-slate-700"
-                      : "text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
+                      ? "bg-background text-foreground ring-border shadow-sm ring-1"
+                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                   }`}
                 >
                   RIGID
@@ -358,10 +366,12 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                 const itemsRaw = groupedData!.get(key)!;
                 // Sort items by Step Order (Ascending)
                 const items = [...itemsRaw].sort((a, b) => {
-                    const orderA = (a as any).stepOrder ?? 999;
-                    const orderB = (b as any).stepOrder ?? 999;
-                    if (orderA !== orderB) return orderA - orderB;
-                    return (a.machineName ?? "").localeCompare(b.machineName ?? "");
+                  const orderA = (a as any).stepOrder ?? 999;
+                  const orderB = (b as any).stepOrder ?? 999;
+                  if (orderA !== orderB) return orderA - orderB;
+                  return (a.machineName ?? "").localeCompare(
+                    b.machineName ?? "",
+                  );
                 });
 
                 const totalQty = items.reduce((acc, curr) => acc + curr.qty, 0);
@@ -369,18 +379,18 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                 return (
                   <div
                     key={key}
-                    className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+                    className="border-border bg-card overflow-hidden rounded-xl border shadow-sm transition-all hover:shadow-md"
                   >
-                    <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-3 dark:border-slate-800 dark:bg-slate-800/50">
+                    <div className="border-border bg-muted/20 flex items-center justify-between border-b px-6 py-3">
                       <div className="flex items-center gap-3">
                         <Badge
                           variant="secondary"
                           className={`rounded-md px-2 py-1 font-mono text-xs font-bold ${
                             groupMode === "PRO"
-                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                              ? "bg-primary/10 text-primary hover:bg-primary/20"
                               : groupMode === "MACHINE"
-                                ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                                : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                                ? "bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 dark:text-indigo-400"
+                                : "bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 dark:text-amber-400"
                           }`}
                         >
                           {groupMode === "PRO"
@@ -389,22 +399,22 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                               ? "MACHINE"
                               : "ITEM"}
                         </Badge>
-                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        <span className="text-foreground text-sm font-semibold">
                           {key}
                         </span>
                         {groupMode === "PRO" && items[0]?.proQty ? (
-                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500 dark:bg-slate-800">
+                          <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
                             Target: {items[0].proQty.toLocaleString("id-ID")}
                           </span>
                         ) : null}
                       </div>
 
-                      <div className="flex items-center gap-2 rounded-lg bg-white px-3 py-1 shadow-sm ring-1 ring-slate-100 dark:bg-slate-950 dark:ring-slate-800">
-                        <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      <div className="bg-background ring-border flex items-center gap-2 rounded-lg px-3 py-1 shadow-sm ring-1">
+                        <span className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
                           Total Stok
                         </span>
-                        <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-                        <span className="text-base font-bold text-indigo-600 dark:text-indigo-400">
+                        <div className="bg-border h-4 w-px" />
+                        <span className="text-primary text-base font-bold">
                           {totalQty.toLocaleString("id-ID")}
                         </span>
                       </div>
@@ -412,18 +422,18 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
 
                     <Table>
                       <TableHeader>
-                        <TableRow className="border-b border-slate-100 hover:bg-transparent dark:border-slate-800">
-                          <TableHead className="w-[400px] text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        <TableRow className="border-border border-b hover:bg-transparent">
+                          <TableHead className="text-muted-foreground w-[400px] text-xs font-semibold tracking-wider uppercase">
                             {groupMode === "PRO"
                               ? "Machine / Location"
                               : groupMode === "MACHINE"
                                 ? "PRO Number"
                                 : "Machine / Location"}
                           </TableHead>
-                          <TableHead className="w-[300px] text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                          <TableHead className="text-muted-foreground w-[300px] text-xs font-semibold tracking-wider uppercase">
                             {groupMode === "ITEM" ? "PRO Number" : "Item Name"}
                           </TableHead>
-                          <TableHead className="w-[150px] text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                          <TableHead className="text-muted-foreground w-[150px] text-right text-xs font-semibold tracking-wider uppercase">
                             Qty (Stok)
                           </TableHead>
                           <TableHead className="w-[50px]"></TableHead>
@@ -433,7 +443,7 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                         {items.map((item, idx) => (
                           <TableRow
                             key={`${item.proId}-${item.locationId}-${item.itemId}-${idx}`}
-                            className="border-b border-slate-50 last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-800/50"
+                            className="border-border hover:bg-muted/50 border-b last:border-0"
                           >
                             <TableCell className="py-2">
                               {groupMode === "PRO"
@@ -442,19 +452,19 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                                   ? `${item.proNumber} (${item.proType})`
                                   : item.machineName}
                             </TableCell>
-                            <TableCell className="py-2 font-medium text-slate-700 dark:text-slate-300">
+                            <TableCell className="text-foreground py-2 font-medium">
                               {groupMode === "ITEM"
                                 ? item.proNumber
                                 : item.itemId}
                             </TableCell>
-                            <TableCell className="py-2 text-right text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                            <TableCell className="text-primary py-2 text-right text-sm font-bold">
                               {item.qty.toLocaleString("id-ID")}
                             </TableCell>
                             <TableCell className="py-2 text-right">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 w-7 rounded-full p-0 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 dark:text-slate-500 dark:hover:bg-indigo-900/20 dark:hover:text-indigo-400"
+                                className="text-muted-foreground hover:bg-primary/10 hover:text-primary h-7 w-7 rounded-full p-0"
                                 onClick={() => handleOpenCard(item, items, idx)}
                                 title="Lihat Kartu Stok"
                               >
@@ -482,8 +492,17 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
           locationName={selectedRow.locationName}
           proNumber={selectedRow.proNumber}
           // Navigation Props (Check stock-card-dialog.tsx for types)
-          onNextItem={selectedRow.siblings && selectedRow.currentIndex < selectedRow.siblings.length - 1 ? handleNextItem : undefined}
-          onPrevItem={selectedRow.siblings && selectedRow.currentIndex > 0 ? handlePrevItem : undefined}
+          onNextItem={
+            selectedRow.siblings &&
+            selectedRow.currentIndex < selectedRow.siblings.length - 1
+              ? handleNextItem
+              : undefined
+          }
+          onPrevItem={
+            selectedRow.siblings && selectedRow.currentIndex > 0
+              ? handlePrevItem
+              : undefined
+          }
           nextItemLabel={nextItemLabel}
           prevItemLabel={prevItemLabel}
           currentItemIndex={selectedRow.currentIndex}

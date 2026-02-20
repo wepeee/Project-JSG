@@ -204,14 +204,18 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
         <div className="max-h-[calc(85vh-140px)] space-y-4 overflow-y-auto pr-1">
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-2">
-              <div className="text-sm font-medium">Produk</div>
+              <div className="text-muted-foreground text-sm font-medium">
+                Produk
+              </div>
               <Input
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <div className="text-sm font-medium">Qty PO</div>
+              <div className="text-muted-foreground text-sm font-medium">
+                Qty PO
+              </div>
               <Input
                 type="number"
                 value={qtyPoPcs}
@@ -219,7 +223,9 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
               />
             </div>
             <div className="space-y-2">
-              <div className="text-sm font-medium">Tanggal Mulai</div>
+              <div className="text-muted-foreground text-sm font-medium">
+                Tanggal Mulai
+              </div>
               <Input
                 type="date"
                 value={startDate}
@@ -228,9 +234,9 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
             </div>
           </div>
 
-          <Separator />
+          <Separator className="bg-border" />
 
-          <div className="rounded-md border">
+          <div className="border-border rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -258,7 +264,10 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
                       : null;
 
                     return (
-                      <TableRow key={s.key}>
+                      <TableRow
+                        key={s.key}
+                        className="border-border hover:bg-muted/50 border-b"
+                      >
                         <TableCell>{s.orderNo}</TableCell>
 
                         <TableCell>
@@ -273,7 +282,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
                                 ),
                               )
                             }
-                            className="h-10 text-xs"
+                            className="bg-background h-10 text-xs"
                             placeholder="Output PN (Step)"
                           />
                         </TableCell>
@@ -318,7 +327,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
                                 ),
                               )
                             }
-                            className="h-10 text-center"
+                            className="bg-background h-10 text-center"
                           />
                         </TableCell>
 
@@ -383,7 +392,11 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
                             {/* Group 2: WIP (Work In Process) */}
                             <optgroup label="Barang Setengah Jadi (WIP)">
                               {(materials.data ?? [])
-                                .filter((m) => m.type === "WIP" && ((m as any).wipStock || 0) > 0)
+                                .filter(
+                                  (m) =>
+                                    m.type === "WIP" &&
+                                    ((m as any).wipStock || 0) > 0,
+                                )
                                 .map((m) => {
                                   const stock = (m as any).wipStock || 0;
                                   return (
@@ -413,7 +426,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
                               )
                             }
                             disabled={!s.materialId}
-                            className="h-10"
+                            className="bg-background h-10"
                           />
                         </TableCell>
 

@@ -854,34 +854,34 @@ export default function ProList({
     return (
       <div className="space-y-6">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-                <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => {
-                      setSelectedId(null);
-                      setEditing(false);
-                      setStepDrafts([]);
-                      setErr(null);
-                    }}
-                    className="h-9 gap-2 border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                >
-                    <ChevronDown className="rotate-90 h-4 w-4" />
-                    Kembali
-                </Button>
-                <div>
-                     <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                        {p.proNumber}
-                     </h2>
-                     <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <span>Details & Material</span>
-                        <span>•</span>
-                        <span>{fmtDateTime(p.createdAt)}</span>
-                     </div>
-                </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedId(null);
+                setEditing(false);
+                setStepDrafts([]);
+                setErr(null);
+              }}
+              className="border-border text-muted-foreground hover:bg-muted hover:text-foreground h-9 gap-2"
+            >
+              <ChevronDown className="h-4 w-4 rotate-90" />
+              Kembali
+            </Button>
+            <div>
+              <h2 className="text-foreground text-xl font-bold tracking-tight">
+                {p.proNumber}
+              </h2>
+              <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                <span>Details & Material</span>
+                <span>•</span>
+                <span>{fmtDateTime(p.createdAt)}</span>
+              </div>
             </div>
+          </div>
 
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             {!editing ? (
               <>
                 <Button
@@ -893,80 +893,80 @@ export default function ProList({
                 >
                   {del.isPending ? "Menghapus..." : "Hapus PRO"}
                 </Button>
-                <Button
-                  onClick={startEdit}
-                  className="h-9 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-                >
+                <Button onClick={startEdit} className="h-9 shadow-sm">
                   Edit PRO
                 </Button>
               </>
             ) : (
-               <div className="flex gap-2">
-                 <Button variant="ghost" onClick={cancelEdit}>Batal</Button>
-                 <Button 
-                    onClick={saveAll} 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                    disabled={update.isPending || del.isPending}
-                 >
-                    {update.isPending ? "Menyimpan..." : "Simpan Perubahan"}
-                 </Button>
-               </div>
+              <div className="flex gap-2">
+                <Button variant="ghost" onClick={cancelEdit}>
+                  Batal
+                </Button>
+                <Button
+                  onClick={saveAll}
+                  disabled={update.isPending || del.isPending}
+                >
+                  {update.isPending ? "Menyimpan..." : "Simpan Perubahan"}
+                </Button>
+              </div>
             )}
-            </div>
+          </div>
         </div>
 
         {err && (
-          <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/50 dark:text-red-300">
+          <div className="border-destructive/20 bg-destructive/10 text-destructive mb-4 rounded-md border px-4 py-3 text-sm">
             {err}
           </div>
         )}
 
-        <Card className="border-slate-200 shadow-sm dark:border-slate-800">
-          <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900/50">
+        <Card className="border-border shadow-sm">
+          <CardHeader className="border-border bg-muted/20 border-b px-6 py-4">
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">
-                        📄
-                    </div>
-                    Informasi Produksi
+              <div className="text-foreground flex items-center gap-2 font-semibold">
+                <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-lg">
+                  📄
                 </div>
-                {!editing && (
-                    <Badge variant="outline" className="px-3 py-1 font-mono text-xs">
-                        {p.type}
-                    </Badge>
-                )}
+                Informasi Produksi
+              </div>
+              {!editing && (
+                <Badge
+                  variant="outline"
+                  className="px-3 py-1 font-mono text-xs"
+                >
+                  {p.type}
+                </Badge>
+              )}
             </div>
           </CardHeader>
 
           <CardContent className="space-y-6 pt-6">
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-1">
-                 <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">No. PRO</div>
-                 <div className="font-mono text-lg font-bold text-slate-900 dark:text-slate-100">
-                    {p.proNumber}
-                 </div>
+                <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  No. PRO
+                </div>
+                <div className="text-foreground font-mono text-lg font-bold">
+                  {p.proNumber}
+                </div>
               </div>
 
               {!editing ? (
                 <div className="space-y-1">
-                    <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Status</div>
-                    <Badge 
-                        variant="outline" 
-                        className={`
-                            text-xs font-bold border px-2 py-0.5
-                            ${p.status === "OPEN" ? "border-blue-200 bg-blue-100 text-blue-700" : ""}
-                            ${p.status === "IN_PROGRESS" ? "border-amber-200 bg-amber-100 text-amber-700" : ""}
-                            ${p.status === "COMPLETE" ? "border-emerald-200 bg-emerald-100 text-emerald-700" : ""}
-                            ${p.status === "CLOSED" ? "border-slate-200 bg-slate-100 text-slate-600" : ""}
-                            ${p.status === "CANCELLED" ? "border-red-200 bg-red-100 text-red-700" : ""}
-                        `}
-                    >
-                        {p.status}
-                    </Badge>
+                  <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    Status
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={`border px-2 py-0.5 text-xs font-bold ${p.status === "OPEN" ? "border-primary/20 bg-primary/10 text-primary" : ""} ${p.status === "IN_PROGRESS" ? "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400" : ""} ${p.status === "COMPLETE" ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : ""} ${p.status === "CLOSED" ? "border-muted bg-muted text-muted-foreground" : ""} ${p.status === "CANCELLED" ? "border-destructive/20 bg-destructive/10 text-destructive" : ""} `}
+                  >
+                    {p.status}
+                  </Badge>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Status</div>
+                  <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    Status
+                  </div>
                   <select
                     value={statusDraft}
                     onChange={(e) => setStatusDraft(e.target.value as Status)}
@@ -982,20 +982,27 @@ export default function ProList({
 
               {!editing ? (
                 <div className="space-y-1">
-                    <div className="text-xs font-bold text-slate-500 uppercase tracking-wider max-w-[200px] truncate" title="Prefix / Kategori">Prefix / Cat</div>
-                    <div className="text-sm font-medium text-slate-900 dark:text-slate-100 line-clamp-1">
-                        {processDraftId
-                        ? (processes.data?.find(
-                            (x: any) => x.id === processDraftId,
-                            )?.name ?? "-")
-                        : p.proPrefix
-                            ? `${p.proPrefix.code} - ${p.proPrefix.name}`
-                            : "-"}
-                    </div>
+                  <div
+                    className="text-muted-foreground max-w-[200px] truncate text-xs font-bold tracking-wider uppercase"
+                    title="Prefix / Kategori"
+                  >
+                    Prefix / Cat
+                  </div>
+                  <div className="text-foreground line-clamp-1 text-sm font-medium">
+                    {processDraftId
+                      ? (processes.data?.find(
+                          (x: any) => x.id === processDraftId,
+                        )?.name ?? "-")
+                      : p.proPrefix
+                        ? `${p.proPrefix.code} - ${p.proPrefix.name}`
+                        : "-"}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Prefix / Kategori</div>
+                  <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    Prefix / Kategori
+                  </div>
                   <select
                     value={processDraftId ?? ""}
                     onChange={(e) => {
@@ -1023,21 +1030,29 @@ export default function ProList({
               )}
 
               <div className="space-y-1">
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Dibuat</div>
-                <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                    {fmtDateTime(p.createdAt)}
+                <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  Dibuat
+                </div>
+                <div className="text-foreground text-sm font-medium">
+                  {fmtDateTime(p.createdAt)}
                 </div>
               </div>
 
               {p.type === "RIGID" &&
                 (!editing ? (
                   <div className="space-y-1">
-                    <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Batch No</div>
-                    <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{batchNo || "-"}</div>
+                    <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                      Batch No
+                    </div>
+                    <div className="text-foreground text-sm font-medium">
+                      {batchNo || "-"}
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Batch No</div>
+                    <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                      Batch No
+                    </div>
                     <Input
                       value={batchNo}
                       onChange={(e) => setBatchNo(e.target.value)}
@@ -1047,34 +1062,40 @@ export default function ProList({
                 ))}
 
               <div className="space-y-2 lg:col-span-2">
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Produk</div>
+                <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  Produk
+                </div>
                 <Input
                   value={productName}
                   onChange={(e) => setProductName(e.target.value)}
                   disabled={!editing}
-                  className="bg-white font-medium dark:bg-slate-950"
+                  className="bg-background font-medium"
                 />
               </div>
 
               <div className="space-y-2">
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Part Number (FG)</div>
+                <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  Part Number (FG)
+                </div>
                 <Input
                   value={partNumberDraft}
                   onChange={(e) => setPartNumberDraft(e.target.value)}
                   disabled={!editing}
                   placeholder="Part Number (FG)"
-                  className="bg-white font-medium dark:bg-slate-950"
+                  className="bg-background font-medium"
                 />
               </div>
 
               <div className="space-y-2">
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Qty PO</div>
+                <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                  Qty PO
+                </div>
                 <Input
                   type="number"
                   value={qtyPoPcs}
                   onChange={(e) => setQtyPoPcs(e.target.value)}
                   disabled={!editing}
-                  className="bg-white font-medium dark:bg-slate-950"
+                  className="bg-background font-medium"
                 />
               </div>
 
@@ -1089,7 +1110,7 @@ export default function ProList({
                   />
                   <label
                     htmlFor="regen"
-                    className="cursor-pointer text-sm font-medium text-blue-600 dark:text-blue-400"
+                    className="text-primary cursor-pointer text-sm font-medium"
                   >
                     Hitung sesuai kapasitas mesin
                   </label>
@@ -1098,8 +1119,8 @@ export default function ProList({
 
               {/* Display Auto Shift Expansion Flag */}
               {!editing && (p as any).autoShiftExpansion && (
-                <div className="flex items-center gap-2 pt-2 lg:col-span-12">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                <div className="flex items-center gap-2 pt-2 lg:col-span-4">
+                  <span className="bg-primary/10 text-primary inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium">
                     <span className="text-sm">🔄</span>
                     PRO dibuat dengan otomatisasi shift
                   </span>
@@ -1116,31 +1137,37 @@ export default function ProList({
             <div className="overflow-x-auto">
               <Table className="w-full">
                 {/* HANYA MENGUBAH BACKGROUND ABU DI SINI */}
-                <TableHeader className="bg-slate-200 dark:bg-slate-800">
-                  <TableRow className="border-y border-slate-300 dark:border-slate-700 hover:bg-transparent">
-                    <TableHead className="min-w-[150px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                <TableHeader className="bg-muted">
+                  <TableRow className="border-border border-y hover:bg-transparent">
+                    <TableHead className="text-foreground min-w-[150px] px-4 py-3 text-xs font-bold tracking-wider uppercase">
                       Machine
                     </TableHead>
-                    <TableHead className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                    <TableHead className="text-foreground w-16 px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
                       UP/CAV
                     </TableHead>
-                    <TableHead className="w-24 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                    <TableHead className="text-foreground w-24 px-4 py-3 text-xs font-bold tracking-wider uppercase">
                       Part No.
                     </TableHead>
-                    <TableHead className="min-w-[120px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                    <TableHead className="text-foreground min-w-[120px] px-4 py-3 text-xs font-bold tracking-wider uppercase">
                       Material
                     </TableHead>
-                    <TableHead className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                    <TableHead className="text-foreground w-16 px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
                       Qty Mat
                     </TableHead>
-                    <TableHead className="w-14 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">UoM</TableHead>
-                    <TableHead className="w-20 px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                    <TableHead className="text-foreground w-14 px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                      UoM
+                    </TableHead>
+                    <TableHead className="text-foreground w-20 px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
                       Target
                     </TableHead>
-                    <TableHead className="w-16 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">Shift</TableHead>
-                    <TableHead className="w-24 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">Jadwal</TableHead>
+                    <TableHead className="text-foreground w-16 px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                      Shift
+                    </TableHead>
+                    <TableHead className="text-foreground w-24 px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                      Jadwal
+                    </TableHead>
                     {editing && (
-                      <TableHead className="w-20 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                      <TableHead className="text-foreground w-20 px-4 py-3 text-xs font-bold tracking-wider uppercase">
                         Action
                       </TableHead>
                     )}
@@ -1155,8 +1182,19 @@ export default function ProList({
 
                     return list.map((item: any, idx: number) => {
                       const isDraft = editing;
-                      const itemReports = !isDraft ? (item as any).productionReports : [];
-                      const totalAchieved = itemReports?.reduce((acc: number, r: any) => acc + (r.status === "APPROVED" ? (Number(r.qtyPassOn) || 0) + (Number(r.qtyGood) || 0) : 0), 0) ?? 0;
+                      const itemReports = !isDraft
+                        ? (item as any).productionReports
+                        : [];
+                      const totalAchieved =
+                        itemReports?.reduce(
+                          (acc: number, r: any) =>
+                            acc +
+                            (r.status === "APPROVED"
+                              ? (Number(r.qtyPassOn) || 0) +
+                                (Number(r.qtyGood) || 0)
+                              : 0),
+                          0,
+                        ) ?? 0;
 
                       let machineName = "-";
                       let stdOutputPerShift: number | null | undefined = null;
@@ -1261,10 +1299,7 @@ export default function ProList({
                             return (
                               <TableRow
                                 key={`${isDraft ? (item as StepDraft).key : (item as any).id}-${sIdx}`}
-                                className={`
-                                  transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-800/50
-                                  ${!isMainRow ? "bg-slate-50/30 dark:bg-slate-900/30 border-b border-slate-100 dark:border-slate-800" : "border-b border-slate-200 dark:border-slate-800"}
-                                `}
+                                className={`hover:bg-muted/50 transition-colors ${!isMainRow ? "bg-muted/20 border-border border-b" : "border-border border-b"} `}
                               >
                                 <TableCell className="px-4 py-3 align-top">
                                   {isMainRow && editing ? (
@@ -1301,7 +1336,7 @@ export default function ProList({
                                           }),
                                         );
                                       }}
-                                      className="border-slate-200 bg-white dark:bg-slate-950 dark:border-slate-800 h-8 w-full rounded border px-2 text-xs font-medium"
+                                      className="bg-background h-8 w-full rounded border border-slate-200 px-2 text-xs font-medium dark:border-slate-800"
                                     >
                                       <option value="">(Optional)</option>
                                       {(machines.data ?? []).map((m: any) => (
@@ -1312,20 +1347,20 @@ export default function ProList({
                                     </select>
                                   ) : (
                                     <div className="max-w-[180px]">
-                                      <div className="text-slate-900 dark:text-slate-200 truncate text-xs font-bold leading-relaxed">
+                                      <div className="text-foreground truncate text-xs leading-relaxed font-bold">
                                         {machineName}
                                       </div>
-                                      <div className="text-slate-500 dark:text-slate-400 truncate text-[10px] font-medium">
+                                      <div className="text-muted-foreground truncate text-[10px] font-medium">
                                         {p.productName}
                                       </div>
                                     </div>
                                   )}
                                 </TableCell>
 
-                                <TableCell className="px-4 py-3 align-top text-right text-xs">
+                                <TableCell className="px-4 py-3 text-right align-top text-xs">
                                   {isMainRow && editing ? (
                                     <Input
-                                      className="bg-white border-slate-200 h-8 w-16 text-right text-xs font-medium dark:bg-slate-950 dark:border-slate-800"
+                                      className="bg-background h-8 w-16 border-slate-200 text-right text-xs font-medium dark:border-slate-800"
                                       value={(item as StepDraft).up}
                                       onChange={(e) => {
                                         setStepDrafts((prev) =>
@@ -1338,8 +1373,8 @@ export default function ProList({
                                       }}
                                     />
                                   ) : upVal ? (
-                                    <span className="font-mono font-medium text-slate-700 dark:text-slate-300">
-                                        {Number(upVal).toLocaleString("id-ID")}
+                                    <span className="text-foreground font-mono font-medium">
+                                      {Number(upVal).toLocaleString("id-ID")}
                                     </span>
                                   ) : (
                                     "-"
@@ -1349,7 +1384,7 @@ export default function ProList({
                                 <TableCell className="px-4 py-3 align-top text-xs">
                                   {isMainRow && editing ? (
                                     <Input
-                                      className="bg-white border-slate-200 h-8 w-full min-w-[80px] text-xs font-medium dark:bg-slate-950 dark:border-slate-800"
+                                      className="bg-background h-8 w-full min-w-[80px] border-slate-200 text-xs font-medium dark:border-slate-800"
                                       value={
                                         (item as StepDraft).partNumber || ""
                                       }
@@ -1367,8 +1402,8 @@ export default function ProList({
                                       }}
                                     />
                                   ) : (
-                                    <span className="font-medium text-slate-700 dark:text-slate-300">
-                                        {(isDraft
+                                    <span className="text-foreground font-medium">
+                                      {(isDraft
                                         ? (item as StepDraft).partNumber
                                         : (item as any).partNumber) || "-"}
                                     </span>
@@ -1381,7 +1416,7 @@ export default function ProList({
                                       (m: any, mIdx: number) => (
                                         <div
                                           key={mIdx}
-                                          className="text-slate-700 dark:text-slate-300 truncate text-[11px] font-medium"
+                                          className="text-foreground truncate text-[11px] font-medium"
                                           title={m.name}
                                         >
                                           {m.name}
@@ -1389,14 +1424,14 @@ export default function ProList({
                                       ),
                                     )}
                                     {materialsDisplay.length === 0 && (
-                                      <span className="text-slate-300 text-xs">
+                                      <span className="text-xs text-slate-300">
                                         -
                                       </span>
                                     )}
                                   </div>
                                 </TableCell>
 
-                                <TableCell className="px-4 py-3 align-top text-right">
+                                <TableCell className="px-4 py-3 text-right align-top">
                                   <div className="flex flex-col gap-1.5">
                                     {materialsDisplay.map(
                                       (m: any, mIdx: number) => {
@@ -1405,7 +1440,7 @@ export default function ProList({
                                           return (
                                             <div
                                               key={mIdx}
-                                              className="text-[11px] font-bold text-slate-900 dark:text-slate-100"
+                                              className="text-foreground text-[11px] font-bold"
                                             >
                                               {val
                                                 ? Number(val).toLocaleString(
@@ -1435,7 +1470,7 @@ export default function ProList({
                                           return (
                                             <div
                                               key={mIdx}
-                                              className="text-[11px] font-medium text-slate-600 dark:text-slate-400"
+                                              className="text-muted-foreground text-[11px] font-medium"
                                             >
                                               {perShift > 0
                                                 ? perShift.toLocaleString(
@@ -1456,7 +1491,7 @@ export default function ProList({
                                       (m: any, mIdx: number) => (
                                         <div
                                           key={mIdx}
-                                          className="text-slate-500 dark:text-slate-400 text-[11px] font-medium"
+                                          className="text-muted-foreground text-[11px] font-medium"
                                         >
                                           {m.uom}
                                         </div>
@@ -1465,15 +1500,18 @@ export default function ProList({
                                   </div>
                                 </TableCell>
 
-                                <TableCell className="px-4 py-3 align-top text-right text-xs font-bold text-slate-900 dark:text-slate-100">
-                                  <div className="mt-0.5">{totalAchieved.toLocaleString("id-ID")} / {p.qtyPoPcs.toLocaleString("id-ID")}</div>
+                                <TableCell className="text-foreground px-4 py-3 text-right align-top text-xs font-bold">
+                                  <div className="mt-0.5">
+                                    {totalAchieved.toLocaleString("id-ID")} /{" "}
+                                    {p.qtyPoPcs.toLocaleString("id-ID")}
+                                  </div>
                                 </TableCell>
 
                                 <TableCell className="px-4 py-3 align-top text-xs font-medium">
                                   {isMainRow && editing ? (
                                     <div className="flex flex-col gap-1.5">
                                       <div className="flex items-center gap-1">
-                                        <span className="text-slate-400 hidden w-6 text-[10px] lg:inline font-medium">
+                                        <span className="text-muted-foreground hidden w-6 text-[10px] font-medium lg:inline">
                                           Shift:
                                         </span>
                                         <select
@@ -1489,7 +1527,7 @@ export default function ProList({
                                               ),
                                             );
                                           }}
-                                          className="border-slate-200 bg-white h-7 w-16 rounded-md border px-1 text-xs font-medium dark:bg-slate-950 dark:border-slate-800"
+                                          className="border-input bg-background h-7 w-16 rounded-md border px-1 text-xs font-medium"
                                         >
                                           <option value={1}>I</option>
                                           <option value={2}>II</option>
@@ -1498,7 +1536,7 @@ export default function ProList({
                                       </div>
 
                                       {totalShifts > 1 && (
-                                        <div className="text-[10px] font-bold text-blue-600">
+                                        <div className="text-primary text-[10px] font-bold">
                                           (+{totalShifts - 1})
                                         </div>
                                       )}
@@ -1507,7 +1545,7 @@ export default function ProList({
 
                                   {!(isMainRow && editing) && (
                                     <div
-                                      className={`text-slate-900 dark:text-slate-100 text-xs font-semibold ${isMainRow && editing ? "mt-2 pl-[42px]" : "mt-1"}`}
+                                      className={`text-foreground text-xs font-semibold ${isMainRow && editing ? "mt-2 pl-[42px]" : "mt-1"}`}
                                     >
                                       Shift {sch.shift}
                                     </div>
@@ -1519,7 +1557,7 @@ export default function ProList({
                                     <div className="flex flex-col gap-1">
                                       <Input
                                         type="date"
-                                        className="bg-white border-slate-200 h-8 w-full min-w-[100px] text-xs font-medium dark:bg-slate-950 dark:border-slate-800"
+                                        className="bg-background h-8 w-full min-w-[100px] border-slate-200 text-xs font-medium dark:border-slate-800"
                                         value={
                                           (item as StepDraft).startDate ?? ""
                                         }
@@ -1539,14 +1577,17 @@ export default function ProList({
                                       />
                                     </div>
                                   ) : (
-                                    <div className="text-slate-900 dark:text-slate-100 font-medium">
-                                      {sch.date ? (
-                                        new Date(sch.date).toLocaleDateString("id-ID", {
-                                        weekday: "short",
-                                        day: "2-digit",
-                                        month: "short",
-                                        })
-                                      ) : "-"}
+                                    <div className="text-foreground font-medium">
+                                      {sch.date
+                                        ? new Date(sch.date).toLocaleDateString(
+                                            "id-ID",
+                                            {
+                                              weekday: "short",
+                                              day: "2-digit",
+                                              month: "short",
+                                            },
+                                          )
+                                        : "-"}
                                     </div>
                                   )}
                                 </TableCell>
@@ -1555,11 +1596,11 @@ export default function ProList({
                                 {editing && (
                                   <TableCell className="px-4 py-3 align-top">
                                     {isMainRow && (
-                                      <div className="flex gap-1 justify-end">
+                                      <div className="flex justify-end gap-1">
                                         <Button
                                           variant="ghost"
                                           size="sm"
-                                          className="h-7 px-2 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                                          className="text-muted-foreground hover:bg-muted hover:text-foreground h-7 px-2 text-xs"
                                           onClick={() =>
                                             openEditStep(item as StepDraft)
                                           }
@@ -1569,7 +1610,7 @@ export default function ProList({
                                         <Button
                                           variant="ghost"
                                           size="sm"
-                                          className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 px-2 text-xs"
+                                          className="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 px-2 text-xs"
                                           onClick={() =>
                                             removeStep((item as StepDraft).key)
                                           }
@@ -1824,16 +1865,16 @@ export default function ProList({
   // =========================
   return (
     <Card>
-      <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4 dark:border-slate-800 dark:bg-slate-900/50">
+      <CardHeader className="border-border bg-muted/20 border-b pb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="hover:bg-slate-200/50 -ml-2 h-auto px-3 py-1.5 text-lg font-bold text-slate-800 dark:text-slate-100"
+                className="hover:bg-muted text-foreground -ml-2 h-auto px-3 py-1.5 text-lg font-bold"
               >
                 Daftar PRO{" "}
-                <span className="ml-2 font-normal text-slate-500">
+                <span className="text-muted-foreground ml-2 font-normal">
                   {typeFilter === "PAPER"
                     ? "(Paper Box)"
                     : typeFilter === "RIGID"
@@ -1863,14 +1904,14 @@ export default function ProList({
 
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
               <Input
                 value={q}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setQ(e.target.value)
                 }
                 placeholder="Cari No. PRO / Produk..."
-                className="pl-9 sm:w-64"
+                className="bg-background pl-9 sm:w-64"
               />
             </div>
 
@@ -1879,7 +1920,7 @@ export default function ProList({
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                 setStatus(e.target.value as any)
               }
-              className="border-input bg-background h-10 rounded-md border px-3 text-sm sm:w-40 focus:ring-2 focus:ring-indigo-500"
+              className="border-input bg-background focus:ring-primary h-10 rounded-md border px-3 text-sm focus:ring-2 sm:w-40"
             >
               <option value="ALL">Semua Status</option>
               <option value="OPEN">OPEN</option>
@@ -1895,16 +1936,32 @@ export default function ProList({
         <div className="overflow-x-auto rounded-md border">
           <div className="min-w-[980px]">
             <Table>
-              <TableHeader className="bg-slate-100/70 dark:bg-slate-800/50">
+              <TableHeader className="bg-muted">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-44 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">No. PRO</TableHead>
-                  <TableHead className="w-24 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Tipe</TableHead>
-                  <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Produk</TableHead>
-                  <TableHead className="w-32 px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Target</TableHead>
-                  <TableHead className="w-28 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Mulai</TableHead>
-                  <TableHead className="w-28 px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Status</TableHead>
-                  <TableHead className="w-24 px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Proses</TableHead>
-                  <TableHead className="w-40 px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Aksi</TableHead>
+                  <TableHead className="text-muted-foreground w-44 px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                    No. PRO
+                  </TableHead>
+                  <TableHead className="text-muted-foreground w-24 px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                    Tipe
+                  </TableHead>
+                  <TableHead className="text-muted-foreground px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                    Produk
+                  </TableHead>
+                  <TableHead className="text-muted-foreground w-32 px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                    Target
+                  </TableHead>
+                  <TableHead className="text-muted-foreground w-28 px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                    Mulai
+                  </TableHead>
+                  <TableHead className="text-muted-foreground w-28 px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-muted-foreground w-24 px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                    Proses
+                  </TableHead>
+                  <TableHead className="text-muted-foreground w-40 px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                    Aksi
+                  </TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -1929,28 +1986,30 @@ export default function ProList({
                   </TableRow>
                 ) : list.data?.items?.length ? (
                   list.data.items.map((p: any) => (
-                    <TableRow 
-                      key={p.id} 
-                      className="border-b border-slate-200 transition-colors hover:bg-slate-50/80 dark:border-slate-800 dark:hover:bg-slate-800/50"
+                    <TableRow
+                      key={p.id}
+                      className="border-border hover:bg-muted/50 border-b transition-colors"
                     >
-                      <TableCell className="px-4 py-3 font-mono text-xs font-bold text-slate-800 dark:text-slate-300">
+                      <TableCell className="text-foreground px-4 py-3 font-mono text-xs font-bold">
                         {p.proNumber}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-xs">
                         {(p as any).type === "PAPER" ? (
-                          <span className="inline-flex items-center rounded-md border border-blue-200 bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                          <span className="border-primary/20 bg-primary/10 text-primary inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-bold">
                             PPR
                           </span>
                         ) : (p as any).type === "RIGID" ? (
-                          <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                          <span className="inline-flex items-center rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
                             RGD
                           </span>
                         ) : (
                           "-"
                         )}
                       </TableCell>
-                      <TableCell className="px-4 py-3 text-sm font-semibold text-slate-900 dark:text-slate-200">{p.productName}</TableCell>
-                      <TableCell className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-400">
+                      <TableCell className="text-foreground px-4 py-3 text-sm font-semibold">
+                        {p.productName}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground px-4 py-3 text-right text-xs">
                         {(() => {
                           const lastStep = p.proses?.[p.proses.length - 1];
                           let currentOutput = 0;
@@ -1967,14 +2026,18 @@ export default function ProList({
                           }
                           return (
                             <span>
-                                <span className="font-bold text-emerald-700 dark:text-emerald-400">{currentOutput.toLocaleString("id-ID")}</span>
-                                <span className="text-slate-400 mx-1">/</span>
-                                {p.qtyPoPcs.toLocaleString("id-ID")}
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                {currentOutput.toLocaleString("id-ID")}
+                              </span>
+                              <span className="text-muted-foreground mx-1">
+                                /
+                              </span>
+                              {p.qtyPoPcs.toLocaleString("id-ID")}
                             </span>
                           );
                         })()}
                       </TableCell>
-                      <TableCell className="px-4 py-3 text-xs font-medium text-slate-600 dark:text-slate-400">
+                      <TableCell className="text-muted-foreground px-4 py-3 text-xs font-medium">
                         {(() => {
                           const firstStep = p.proses?.[0];
                           const d = firstStep?.startDate ?? p.startDate;
@@ -1982,21 +2045,14 @@ export default function ProList({
                         })()}
                       </TableCell>
                       <TableCell className="px-4 py-3">
-                        <Badge 
-                            variant="outline" 
-                            className={`
-                                text-[10px] font-bold border
-                                ${p.status === "OPEN" ? "border-blue-200 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : ""}
-                                ${p.status === "IN_PROGRESS" ? "border-amber-200 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : ""}
-                                ${p.status === "COMPLETE" ? "border-emerald-200 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : ""}
-                                ${p.status === "CLOSED" ? "border-slate-200 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400" : ""}
-                                ${p.status === "CANCELLED" ? "border-red-200 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : ""}
-                            `}
+                        <Badge
+                          variant="outline"
+                          className={`border text-[10px] font-bold ${p.status === "OPEN" ? "border-primary/20 bg-primary/10 text-primary" : ""} ${p.status === "IN_PROGRESS" ? "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400" : ""} ${p.status === "COMPLETE" ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : ""} ${p.status === "CLOSED" ? "border-muted bg-muted text-muted-foreground" : ""} ${p.status === "CANCELLED" ? "border-destructive/20 bg-destructive/10 text-destructive" : ""} `}
                         >
-                            {p.status}
+                          {p.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="px-4 py-3 text-right text-xs font-medium text-slate-600 dark:text-slate-400">
+                      <TableCell className="text-muted-foreground px-4 py-3 text-right text-xs font-medium">
                         {p.proses?.length ?? 0}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-right">
@@ -2004,7 +2060,7 @@ export default function ProList({
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-7 border-slate-300 text-xs font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                            className="border-border text-muted-foreground hover:bg-muted hover:text-foreground h-7 text-xs font-medium"
                             onClick={() => setSelectedId(p.id)}
                           >
                             Detail
@@ -2048,4 +2104,4 @@ function Info({ label, value }: { label: string; value: React.ReactNode }) {
       <div className="text-sm font-medium">{value}</div>
     </div>
   );
-} 
+}

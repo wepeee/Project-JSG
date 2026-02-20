@@ -251,7 +251,7 @@ const EditableStandardInput = ({
       onChange={(e) => setLocalValue(e.target.value)}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      className="w-full rounded border border-slate-300 px-1 py-0.5 text-right text-xs focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800"
+      className="border-input bg-background focus:border-primary w-full rounded border px-1 py-0.5 text-right text-xs focus:outline-none"
       {...props}
     />
   );
@@ -347,11 +347,11 @@ export default function ProductionArchive({
 
           {/* Search Input */}
           <div className="relative md:ml-4">
-            <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-slate-500" />
+            <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input
               type="search"
               placeholder="Cari No. PRO..."
-              className="w-full bg-white pl-9 md:w-[250px] dark:bg-slate-900"
+              className="w-full pl-9 md:w-[250px]"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -362,13 +362,13 @@ export default function ProductionArchive({
         <div className="flex flex-col items-end gap-2">
           {/* Main Level */}
           {!userDepartment && (
-            <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+            <div className="bg-muted flex rounded-lg p-1">
               <button
                 onClick={() => setActiveCategory("PAPER")}
                 className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
                   !isRigidActive
-                    ? "bg-white shadow dark:bg-slate-700"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
                 }`}
               >
                 PAPER
@@ -379,8 +379,8 @@ export default function ProductionArchive({
                 }}
                 className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all ${
                   isRigidActive
-                    ? "bg-white shadow dark:bg-slate-700"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
                 }`}
               >
                 RIGID
@@ -390,15 +390,15 @@ export default function ProductionArchive({
 
           {/* Sub Level for Rigid */}
           {isRigidActive && (
-            <div className="no-scrollbar flex overflow-x-auto rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+            <div className="no-scrollbar bg-muted flex overflow-x-auto rounded-lg p-1">
               {rigidSubCategories.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
                   className={`rounded-md px-3 py-1 text-xs font-bold whitespace-nowrap transition-all ${
                     activeCategory === cat.id
-                      ? "bg-white shadow dark:bg-slate-700"
-                      : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
                   }`}
                 >
                   {cat.label}
@@ -409,20 +409,20 @@ export default function ProductionArchive({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border bg-white shadow-sm dark:bg-slate-900">
+      <div className="border-border bg-card overflow-hidden rounded-md border shadow-sm">
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-slate-300" />
+            <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
           </div>
         ) : reports?.length === 0 ? (
-          <div className="py-12 text-center text-sm text-slate-500">
+          <div className="text-muted-foreground py-12 text-center text-sm">
             Belum ada laporan {activeCategory.replace("_", " ")} yang disetujui.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="border-b border-slate-800 bg-slate-950">
-                <TableRow className="hover:bg-slate-900/50">
+              <TableHeader className="bg-muted/50">
+                <TableRow className="hover:bg-transparent">
                   <TableHead
                     rowSpan={
                       activeCategory === "PAPER" ||
@@ -432,7 +432,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="w-[120px] text-center text-slate-300"
+                    className="text-muted-foreground w-[120px] text-center font-medium"
                   >
                     Tanggal
                   </TableHead>
@@ -445,7 +445,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-slate-300"
+                    className="text-muted-foreground font-medium"
                   >
                     No. PRO
                   </TableHead>
@@ -471,7 +471,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="min-w-[200px] text-slate-300"
+                    className="text-muted-foreground min-w-[200px] font-medium"
                   >
                     Produk
                   </TableHead>
@@ -484,7 +484,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-slate-300"
+                    className="text-muted-foreground font-medium"
                   >
                     Mesin
                   </TableHead>
@@ -497,7 +497,7 @@ export default function ProductionArchive({
                           ? 2
                           : 1
                       }
-                      className="text-slate-300"
+                      className="text-muted-foreground font-medium"
                     >
                       Batch No
                     </TableHead>
@@ -506,13 +506,13 @@ export default function ProductionArchive({
                     <>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Speed
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Std Speed
                       </TableHead>
@@ -527,7 +527,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-center text-slate-300"
+                    className="text-muted-foreground text-center font-medium"
                   >
                     Shift
                   </TableHead>
@@ -540,7 +540,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-slate-300"
+                    className="text-muted-foreground font-medium"
                   >
                     Operator
                   </TableHead>
@@ -553,7 +553,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-center text-slate-300"
+                    className="text-muted-foreground text-center font-medium"
                   >
                     Mulai
                   </TableHead>
@@ -566,7 +566,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-center text-slate-300"
+                    className="text-muted-foreground text-center font-medium"
                   >
                     Selesai
                   </TableHead>
@@ -575,13 +575,13 @@ export default function ProductionArchive({
                     <>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         MP STD
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         {activeCategory === "PACKING_ASSEMBLY"
                           ? "MP LPH"
@@ -590,20 +590,20 @@ export default function ProductionArchive({
                       {activeCategory === "PACKING_ASSEMBLY" && (
                         <TableHead
                           rowSpan={2}
-                          className="text-right text-slate-300"
+                          className="text-muted-foreground text-right font-medium"
                         >
                           MP ACT
                         </TableHead>
                       )}
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         CT STD
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         STD OUTPUT / H
                       </TableHead>
@@ -613,19 +613,19 @@ export default function ProductionArchive({
                     <>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Cav Std
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         CT Std
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Std Output/Hour
                       </TableHead>
@@ -640,7 +640,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-right text-slate-300"
+                    className="text-muted-foreground text-right font-medium"
                   >
                     Pass On
                   </TableHead>
@@ -653,7 +653,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-right text-slate-300"
+                    className="text-muted-foreground text-right font-medium"
                   >
                     Hold
                   </TableHead>
@@ -666,7 +666,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-right text-slate-300"
+                    className="text-muted-foreground text-right font-medium"
                   >
                     WIP
                   </TableHead>
@@ -679,7 +679,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-right text-slate-300"
+                    className="text-muted-foreground text-right font-medium"
                   >
                     <div className="flex items-center justify-end gap-1">
                       <span>Reject</span>
@@ -691,7 +691,7 @@ export default function ProductionArchive({
                           onClick={() =>
                             setShowRejectDetails(!showRejectDetails)
                           }
-                          className="rounded p-0.5 hover:bg-slate-800"
+                          className="hover:bg-muted rounded p-0.5"
                         >
                           {showRejectDetails ? (
                             <ChevronLeft className="h-4 w-4" />
@@ -708,7 +708,7 @@ export default function ProductionArchive({
                       <TableHead
                         key={col}
                         rowSpan={2}
-                        className="text-right text-xs whitespace-nowrap text-slate-300"
+                        className="text-muted-foreground text-right text-xs whitespace-nowrap"
                       >
                         {col}
                       </TableHead>
@@ -719,7 +719,7 @@ export default function ProductionArchive({
                       <TableHead
                         key={col}
                         rowSpan={2}
-                        className="text-right text-xs whitespace-nowrap text-slate-300"
+                        className="text-muted-foreground text-right text-xs whitespace-nowrap"
                       >
                         {col}
                       </TableHead>
@@ -757,13 +757,13 @@ export default function ProductionArchive({
                       <>
                         <TableHead
                           rowSpan={2}
-                          className="text-right text-slate-300"
+                          className="text-muted-foreground text-right font-medium"
                         >
                           Berat Produk (gr)
                         </TableHead>
                         <TableHead
                           rowSpan={2}
-                          className="text-right text-slate-300"
+                          className="text-muted-foreground text-right font-medium"
                         >
                           Total Reject (Pcs)
                         </TableHead>
@@ -774,7 +774,7 @@ export default function ProductionArchive({
                     activeCategory === "PACKING_ASSEMBLY") && (
                     <TableHead
                       rowSpan={2}
-                      className="text-right text-slate-300"
+                      className="text-muted-foreground text-right font-medium"
                     >
                       Finish Good
                     </TableHead>
@@ -788,7 +788,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-right text-slate-300"
+                    className="text-muted-foreground text-right font-medium"
                   >
                     Total Output
                   </TableHead>
@@ -801,7 +801,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-right text-slate-300"
+                    className="text-muted-foreground text-right font-medium"
                   >
                     <div className="flex items-center justify-end gap-1">
                       <span>Downtime</span>
@@ -813,7 +813,7 @@ export default function ProductionArchive({
                           onClick={() =>
                             setShowDowntimeDetails(!showDowntimeDetails)
                           }
-                          className="rounded p-0.5 hover:bg-slate-800"
+                          className="hover:bg-muted rounded p-0.5"
                         >
                           {showDowntimeDetails ? (
                             <ChevronLeft className="h-4 w-4" />
@@ -896,25 +896,25 @@ export default function ProductionArchive({
                     <>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Availability
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Performance
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Quality
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         OEE %
                       </TableHead>
@@ -926,85 +926,85 @@ export default function ProductionArchive({
                     <>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Total Time
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Total Loss Hour
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Working Time
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Total Downtime
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Commercial Hour
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Running Hour
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         Effective Hour
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         DT RATE C/B
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         SPEED RATE D/C
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         QUALITY RATE E/D
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         REE E/B %
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         OEE E/A %
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         DOWN TIME %
                       </TableHead>
                       <TableHead
                         rowSpan={2}
-                        className="text-right text-slate-300"
+                        className="text-muted-foreground text-right font-medium"
                       >
                         REJECT RATE
                       </TableHead>
@@ -1019,7 +1019,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="text-slate-300"
+                    className="text-muted-foreground font-medium"
                   >
                     Catatan
                   </TableHead>
@@ -1032,7 +1032,7 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
-                    className="w-[100px] text-center text-slate-300"
+                    className="text-muted-foreground w-[100px] text-center font-medium"
                   >
                     Aksi
                   </TableHead>
@@ -1176,13 +1176,13 @@ export default function ProductionArchive({
                 {reports?.map((rpt) => (
                   <TableRow
                     key={rpt.id}
-                    className="border-b border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900/50"
+                    className="border-border hover:bg-muted/50 border-b"
                   >
                     <TableCell className="text-center text-xs font-medium">
                       <div>
                         {format(new Date(rpt.reportDate), "dd MMM yyyy")}
                       </div>
-                      <div className="text-[10px] text-slate-400">
+                      <div className="text-muted-foreground text-[10px]">
                         by {rpt.checkedBy?.username || "Admin"}
                       </div>
                     </TableCell>
@@ -2660,7 +2660,7 @@ export default function ProductionArchive({
             <DialogTitle>Void Laporan</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="flex items-start gap-3 rounded-lg bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
+            <div className="bg-destructive/10 text-destructive flex items-start gap-3 rounded-lg p-3 text-sm">
               <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
               <p>
                 Laporan yang di-void akan{" "}

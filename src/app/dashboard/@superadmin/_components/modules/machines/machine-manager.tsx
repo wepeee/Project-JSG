@@ -37,6 +37,14 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
 
 const SHIFT_HOURS = 7; // Rigid usually 7 hrs shift based on data (14700/2100=7)
 const PAPER_SHIFT_HOURS = 6.8;
@@ -414,19 +422,21 @@ export default function MachineManager({
                 children={(field) => (
                   <Field>
                     <FieldLabel>UoM</FieldLabel>
-                    <select
+                    <Select
                       value={field.state.value}
-                      onChange={(e) =>
-                        field.handleChange(e.target.value as Uom)
-                      }
-                      className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                      onValueChange={(val) => field.handleChange(val as Uom)}
                     >
-                      {UOM_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih UoM" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {UOM_OPTIONS.map((opt) => (
+                          <SelectItem key={opt} value={opt}>
+                            {opt}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </Field>
                 )}
               />
@@ -493,31 +503,53 @@ export default function MachineManager({
           ) : machines.error ? (
             <p className="text-destructive text-sm">{machines.error.message}</p>
           ) : (
-            <div className="overflow-x-auto rounded-md border">
+            <div className="border-border overflow-hidden rounded-md border">
               <Table>
-                <TableHeader className="bg-slate-200 dark:bg-slate-800">
-                  <TableRow className="border-b border-slate-200 dark:border-slate-700 hover:bg-transparent">
-                    <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">
+                <TableHeader className="bg-muted/50">
+                  <TableRow className="border-border border-b hover:bg-transparent">
+                    <TableHead className="text-muted-foreground px-4 py-3 text-xs font-bold tracking-wider uppercase">
                       {machineType === "RIGID" ? "Nama Item" : "Nama Mesin"}
                     </TableHead>
                     {machineType === "RIGID" && (
                       <>
-                        <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">CT(s)</TableHead>
-                        <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Cav</TableHead>
-                        <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">MP</TableHead>
+                        <TableHead className="text-muted-foreground px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                          CT(s)
+                        </TableHead>
+                        <TableHead className="text-muted-foreground px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                          Cav
+                        </TableHead>
+                        <TableHead className="text-muted-foreground px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                          MP
+                        </TableHead>
                       </>
                     )}
-                    <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Out/Hr</TableHead>
-                    <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Out/Shift</TableHead>
+                    <TableHead className="text-muted-foreground px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                      Out/Hr
+                    </TableHead>
+                    <TableHead className="text-muted-foreground px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                      Out/Shift
+                    </TableHead>
                     {machineType === "RIGID" && (
                       <>
-                        <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Out/Day</TableHead>
-                        <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Work Ctr</TableHead>
+                        <TableHead className="text-muted-foreground px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                          Out/Day
+                        </TableHead>
+                        <TableHead className="text-muted-foreground px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                          Work Ctr
+                        </TableHead>
                       </>
                     )}
-                    <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">UoM</TableHead>
-                    {machineType === "PAPER" && <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Remark</TableHead>}
-                    <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Aksi</TableHead>
+                    <TableHead className="text-muted-foreground px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                      UoM
+                    </TableHead>
+                    {machineType === "PAPER" && (
+                      <TableHead className="text-muted-foreground px-4 py-3 text-xs font-bold tracking-wider uppercase">
+                        Remark
+                      </TableHead>
+                    )}
+                    <TableHead className="text-muted-foreground px-4 py-3 text-right text-xs font-bold tracking-wider uppercase">
+                      Aksi
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -525,16 +557,19 @@ export default function MachineManager({
                     <TableRow>
                       <TableCell
                         colSpan={machineType === "RIGID" ? 9 : 6}
-                        className="text-center text-sm opacity-70"
+                        className="text-muted-foreground text-center text-sm opacity-70"
                       >
                         Tidak ada data
                       </TableCell>
                     </TableRow>
                   ) : (
                     filtered.map((m) => (
-                      <TableRow key={m.id} className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-slate-800 dark:hover:bg-slate-800/50">
+                      <TableRow
+                        key={m.id}
+                        className="border-border hover:bg-muted/50 border-b"
+                      >
                         <TableCell
-                          className={`px-4 py-3 font-medium text-slate-700 dark:text-slate-300 ${
+                          className={`text-foreground px-4 py-3 font-medium ${
                             machineType === "RIGID"
                               ? "max-w-[200px] truncate"
                               : ""
@@ -546,45 +581,47 @@ export default function MachineManager({
                         {machineType === "RIGID" && (
                           <>
                             {/* @ts-ignore */}
-                            <TableCell className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-400">
+                            <TableCell className="text-muted-foreground px-4 py-3 text-right text-xs">
                               {m.cycleTimeSec
                                 ? Number(m.cycleTimeSec).toFixed(1)
                                 : "-"}
                             </TableCell>
                             {/* @ts-ignore */}
-                            <TableCell className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-400">
+                            <TableCell className="text-muted-foreground px-4 py-3 text-right text-xs">
                               {m.cavity}
                             </TableCell>
                             {/* @ts-ignore */}
-                            <TableCell className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-400">
+                            <TableCell className="text-muted-foreground px-4 py-3 text-right text-xs">
                               {m.manPower}
                             </TableCell>
                           </>
                         )}
 
-                        <TableCell className="px-4 py-3 text-right text-xs font-mono text-slate-600 dark:text-slate-400">
+                        <TableCell className="text-muted-foreground px-4 py-3 text-right font-mono text-xs">
                           {m.stdOutputPerHour.toLocaleString()}
                         </TableCell>
-                        <TableCell className="px-4 py-3 text-right text-xs font-mono font-medium text-slate-800 dark:text-slate-200">
+                        <TableCell className="text-foreground px-4 py-3 text-right font-mono text-xs font-medium">
                           {m.stdOutputPerShift.toLocaleString()}
                         </TableCell>
 
                         {machineType === "RIGID" && (
                           <>
                             {/* @ts-ignore */}
-                            <TableCell className="px-4 py-3 text-right text-xs font-mono text-slate-600 dark:text-slate-400">
+                            <TableCell className="text-muted-foreground px-4 py-3 text-right font-mono text-xs">
                               {(m.stdOutputPerShift * 3).toLocaleString()}
                             </TableCell>
                             {/* @ts-ignore */}
-                            <TableCell className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
+                            <TableCell className="text-muted-foreground px-4 py-3 text-xs">
                               {m.workCenter ?? "-"}
                             </TableCell>
                           </>
                         )}
 
-                        <TableCell className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">{m.uom}</TableCell>
+                        <TableCell className="text-muted-foreground px-4 py-3 text-xs">
+                          {m.uom}
+                        </TableCell>
                         {machineType === "PAPER" && (
-                          <TableCell className="px-4 py-3 max-w-[260px] truncate text-xs text-slate-500 dark:text-slate-400">
+                          <TableCell className="text-muted-foreground max-w-[260px] truncate px-4 py-3 text-xs">
                             {m.remark ?? "-"}
                           </TableCell>
                         )}
@@ -592,22 +629,22 @@ export default function MachineManager({
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="ghost"
-                              size="sm"
-                              className="h-7 px-2 text-xs text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                              size="icon"
+                              className="text-muted-foreground hover:bg-muted h-7 w-7"
                               onClick={() => {
                                 setEditingMachine(m);
                                 setEditOpen(true);
                               }}
                             >
-                              Edit
+                              <Pencil className="h-3.5 w-3.5" />
                             </Button>
                             <Button
                               variant="ghost"
-                              size="sm"
-                              className="h-7 px-2 text-xs text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20"
+                              size="icon"
+                              className="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 w-7"
                               onClick={() => setDeleteId(m.id)}
                             >
-                              Hapus
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                         </TableCell>
@@ -793,19 +830,21 @@ export default function MachineManager({
                 children={(field) => (
                   <Field>
                     <FieldLabel>UoM</FieldLabel>
-                    <select
+                    <Select
                       value={field.state.value}
-                      onChange={(e) =>
-                        field.handleChange(e.target.value as Uom)
-                      }
-                      className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                      onValueChange={(val) => field.handleChange(val as Uom)}
                     >
-                      {UOM_OPTIONS.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih UoM" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {UOM_OPTIONS.map((opt) => (
+                          <SelectItem key={opt} value={opt}>
+                            {opt}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </Field>
                 )}
               />
@@ -850,10 +889,7 @@ export default function MachineManager({
       </Dialog>
 
       {/* Delete Confirmation */}
-      <Dialog
-        open={!!deleteId}
-        onOpenChange={(v) => !v && setDeleteId(null)}
-      >
+      <Dialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Hapus Data?</DialogTitle>
@@ -863,10 +899,7 @@ export default function MachineManager({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteId(null)}
-            >
+            <Button variant="outline" onClick={() => setDeleteId(null)}>
               Batal
             </Button>
             <Button

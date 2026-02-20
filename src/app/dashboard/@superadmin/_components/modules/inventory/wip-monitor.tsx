@@ -236,7 +236,7 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader className="flex flex-col items-start justify-between space-y-2 border-b border-slate-100 bg-slate-50/50 pb-4 dark:border-slate-800 dark:bg-slate-900/50 lg:flex-row lg:items-center lg:space-y-0">
+        <CardHeader className="border-border bg-muted/20 flex flex-col items-start justify-between space-y-2 border-b pb-4 lg:flex-row lg:items-center lg:space-y-0">
           <div className="space-y-1">
             <CardTitle>
               {viewMode === "INVENTORY"
@@ -252,13 +252,13 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
 
           <div className="flex flex-wrap items-center gap-2">
             {/* View Mode Toggle */}
-            <div className="mr-4 flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+            <div className="bg-muted mr-4 flex rounded-lg p-1">
               <button
                 onClick={() => setViewMode("INVENTORY")}
                 className={`flex items-center gap-2 rounded-md px-3 py-1 text-xs font-bold transition-all ${
                   viewMode === "INVENTORY"
-                    ? "bg-white text-blue-600 shadow dark:bg-slate-700 dark:text-blue-400"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                    ? "bg-background text-primary shadow"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Inventory (Stock)
@@ -267,8 +267,8 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                 onClick={() => setViewMode("PROGRESS")}
                 className={`flex items-center gap-2 rounded-md px-3 py-1 text-xs font-bold transition-all ${
                   viewMode === "PROGRESS"
-                    ? "bg-white text-green-600 shadow dark:bg-slate-700 dark:text-green-400"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                    ? "bg-background text-emerald-600 shadow dark:text-emerald-400"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Progress (Produced)
@@ -277,13 +277,13 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
 
             {/* Category Switcher - Only show if NO department restriction */}
             {!userDepartment && (
-              <div className="mr-2 flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+              <div className="bg-muted mr-2 flex rounded-lg p-1">
                 <button
                   onClick={() => setActiveCategory("PAPER")}
                   className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${
                     activeCategory === "PAPER"
-                      ? "bg-white shadow dark:bg-slate-700"
-                      : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                      ? "bg-background shadow"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   PAPER
@@ -292,8 +292,8 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                   onClick={() => setActiveCategory("RIGID")}
                   className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${
                     activeCategory === "RIGID"
-                      ? "bg-white shadow dark:bg-slate-700"
-                      : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                      ? "bg-background shadow"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   RIGID
@@ -427,9 +427,12 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                 const totalQty = items.reduce((acc, curr) => acc + curr.qty, 0);
 
                 return (
-                  <div key={key} className="bg-muted/20 rounded-md border p-4">
+                  <div
+                    key={key}
+                    className="bg-muted/20 border-border rounded-md border p-4"
+                  >
                     <div className="mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-lg font-semibold">
+                      <div className="text-foreground flex items-center gap-2 text-lg font-semibold">
                         <Badge variant="outline">
                           {groupMode === "PRO"
                             ? "PRO"
@@ -445,43 +448,43 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                         ) : null}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-slate-500">
+                        <span className="text-muted-foreground text-sm font-medium">
                           Total {viewMode === "INVENTORY" ? "Stok" : "Output"}:
                         </span>
                         <span
-                          className={`text-lg font-bold ${viewMode === "INVENTORY" ? "text-blue-700" : "text-green-700"}`}
+                          className={`text-lg font-bold ${viewMode === "INVENTORY" ? "text-primary" : "text-emerald-600 dark:text-emerald-400"}`}
                         >
                           {totalQty.toLocaleString("id-ID")}
                         </span>
                       </div>
                     </div>
 
-                      <Table>
-                        <TableHeader className="bg-slate-200 dark:bg-slate-800">
-                          <TableRow className="border-b border-slate-200 dark:border-slate-700 hover:bg-transparent">
-                            <TableHead className="w-[400px] text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">
-                              {groupMode === "PRO"
-                                ? "Machine / Process"
-                                : groupMode === "MACHINE"
-                                  ? "PRO Number"
-                                  : "Machine / Location"}
-                            </TableHead>
-                            <TableHead className="w-[300px] text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">
-                              {groupMode === "ITEM" ? "PRO Number" : "Item Name"}
-                            </TableHead>
-                            <TableHead className="w-[150px] text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">
-                              {viewMode === "INVENTORY"
-                                ? "Qty (On-Hand)"
-                                : "Qty (Produced)"}
-                            </TableHead>
-                            <TableHead className="w-[50px]"></TableHead>
-                          </TableRow>
-                        </TableHeader>
+                    <Table>
+                      <TableHeader className="bg-muted">
+                        <TableRow className="border-border border-b hover:bg-transparent">
+                          <TableHead className="text-muted-foreground w-[400px] text-xs font-bold tracking-wider uppercase">
+                            {groupMode === "PRO"
+                              ? "Machine / Process"
+                              : groupMode === "MACHINE"
+                                ? "PRO Number"
+                                : "Machine / Location"}
+                          </TableHead>
+                          <TableHead className="text-muted-foreground w-[300px] text-xs font-bold tracking-wider uppercase">
+                            {groupMode === "ITEM" ? "PRO Number" : "Item Name"}
+                          </TableHead>
+                          <TableHead className="text-muted-foreground w-[150px] text-right text-xs font-bold tracking-wider uppercase">
+                            {viewMode === "INVENTORY"
+                              ? "Qty (On-Hand)"
+                              : "Qty (Produced)"}
+                          </TableHead>
+                          <TableHead className="w-[50px]"></TableHead>
+                        </TableRow>
+                      </TableHeader>
                       <TableBody>
                         {items.map((item, idx) => (
                           <TableRow
                             key={`${item.proId}-${item.locationId}-${item.itemId}-${idx}`}
-                            className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-slate-800 dark:hover:bg-slate-800/50"
+                            className="border-border hover:bg-muted/50 border-b"
                           >
                             <TableCell>
                               {groupMode === "PRO"
@@ -490,13 +493,13 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                                   ? `${item.proNumber} (${item.proType})`
                                   : item.machineName}
                             </TableCell>
-                            <TableCell className="font-medium">
+                            <TableCell className="text-foreground font-medium">
                               {groupMode === "ITEM"
                                 ? item.proNumber
                                 : item.itemId}
                             </TableCell>
                             <TableCell
-                              className={`text-right text-base font-semibold ${viewMode === "INVENTORY" ? "text-blue-700" : "text-green-700"}`}
+                              className={`text-right text-base font-semibold ${viewMode === "INVENTORY" ? "text-primary" : "text-emerald-600 dark:text-emerald-400"}`}
                             >
                               {item.qty.toLocaleString("id-ID")}
                             </TableCell>
