@@ -22,6 +22,7 @@ import {
 } from "~/components/ui/dialog";
 import { Textarea } from "~/components/ui/textarea";
 import { Input } from "~/components/ui/input";
+import { ReportDetailDialog } from "./report-detail-dialog";
 
 import {
   Table,
@@ -303,6 +304,8 @@ export default function ProductionArchive({
   // --- Void Report ---
   const [voidId, setVoidId] = React.useState<string | null>(null);
   const [voidReason, setVoidReason] = React.useState("");
+
+  const [selectedReport, setSelectedReport] = React.useState<any>(null);
 
   const voidMutation = api.verification.voidReport.useMutation({
     onSuccess: () => {
@@ -1176,7 +1179,19 @@ export default function ProductionArchive({
                 {reports?.map((rpt) => (
                   <TableRow
                     key={rpt.id}
-                    className="border-border hover:bg-muted/50 border-b"
+                    className="cursor-pointer border-b border-border hover:bg-muted/50"
+                    onClick={(e) => {
+                      // Prevent opening if clicking on input or button
+                      if (
+                        e.target instanceof HTMLInputElement ||
+                        e.target instanceof HTMLButtonElement ||
+                        (e.target as HTMLElement).closest("button") ||
+                        (e.target as HTMLElement).closest("input")
+                      ) {
+                        return;
+                      }
+                      setSelectedReport(rpt);
+                    }}
                   >
                     <TableCell className="text-center text-xs font-medium">
                       <div>
@@ -2695,6 +2710,13 @@ export default function ProductionArchive({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ReportDetailDialog
+        isOpen={!!selectedReport}
+        onOpenChange={(open) => !open && setSelectedReport(null)}
+        report={selectedReport}
+        category={activeCategory}
+      />
     </div>
   );
 }
