@@ -495,29 +495,29 @@ export default function MachineManager({
           ) : (
             <div className="overflow-x-auto rounded-md border">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>
+                <TableHeader className="bg-slate-200 dark:bg-slate-800">
+                  <TableRow className="border-b border-slate-200 dark:border-slate-700 hover:bg-transparent">
+                    <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">
                       {machineType === "RIGID" ? "Nama Item" : "Nama Mesin"}
                     </TableHead>
                     {machineType === "RIGID" && (
                       <>
-                        <TableHead className="text-right">CT(s)</TableHead>
-                        <TableHead className="text-right">Cav</TableHead>
-                        <TableHead className="text-right">MP</TableHead>
+                        <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">CT(s)</TableHead>
+                        <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Cav</TableHead>
+                        <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">MP</TableHead>
                       </>
                     )}
-                    <TableHead className="text-right">Out/Hr</TableHead>
-                    <TableHead className="text-right">Out/Shift</TableHead>
+                    <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Out/Hr</TableHead>
+                    <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Out/Shift</TableHead>
                     {machineType === "RIGID" && (
                       <>
-                        <TableHead className="text-right">Out/Day</TableHead>
-                        <TableHead>Work Ctr</TableHead>
+                        <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Out/Day</TableHead>
+                        <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Work Ctr</TableHead>
                       </>
                     )}
-                    <TableHead>UoM</TableHead>
-                    {machineType === "PAPER" && <TableHead>Remark</TableHead>}
-                    <TableHead className="text-right">Aksi</TableHead>
+                    <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">UoM</TableHead>
+                    {machineType === "PAPER" && <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Remark</TableHead>}
+                    <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -532,13 +532,13 @@ export default function MachineManager({
                     </TableRow>
                   ) : (
                     filtered.map((m) => (
-                      <TableRow key={m.id}>
+                      <TableRow key={m.id} className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-slate-800 dark:hover:bg-slate-800/50">
                         <TableCell
-                          className={
+                          className={`px-4 py-3 font-medium text-slate-700 dark:text-slate-300 ${
                             machineType === "RIGID"
                               ? "max-w-[200px] truncate"
                               : ""
-                          }
+                          }`}
                         >
                           {m.name}
                         </TableCell>
@@ -546,54 +546,54 @@ export default function MachineManager({
                         {machineType === "RIGID" && (
                           <>
                             {/* @ts-ignore */}
-                            <TableCell className="text-right">
+                            <TableCell className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-400">
                               {m.cycleTimeSec
                                 ? Number(m.cycleTimeSec).toFixed(1)
                                 : "-"}
                             </TableCell>
                             {/* @ts-ignore */}
-                            <TableCell className="text-right">
+                            <TableCell className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-400">
                               {m.cavity}
                             </TableCell>
                             {/* @ts-ignore */}
-                            <TableCell className="text-right">
+                            <TableCell className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-400">
                               {m.manPower}
                             </TableCell>
                           </>
                         )}
 
-                        <TableCell className="text-right">
+                        <TableCell className="px-4 py-3 text-right text-xs font-mono text-slate-600 dark:text-slate-400">
                           {m.stdOutputPerHour.toLocaleString()}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="px-4 py-3 text-right text-xs font-mono font-medium text-slate-800 dark:text-slate-200">
                           {m.stdOutputPerShift.toLocaleString()}
                         </TableCell>
 
                         {machineType === "RIGID" && (
                           <>
                             {/* @ts-ignore */}
-                            <TableCell className="text-right">
+                            <TableCell className="px-4 py-3 text-right text-xs font-mono text-slate-600 dark:text-slate-400">
                               {(m.stdOutputPerShift * 3).toLocaleString()}
                             </TableCell>
                             {/* @ts-ignore */}
-                            <TableCell className="text-xs">
+                            <TableCell className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
                               {m.workCenter ?? "-"}
                             </TableCell>
                           </>
                         )}
 
-                        <TableCell>{m.uom}</TableCell>
+                        <TableCell className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">{m.uom}</TableCell>
                         {machineType === "PAPER" && (
-                          <TableCell className="max-w-[260px] truncate">
+                          <TableCell className="px-4 py-3 max-w-[260px] truncate text-xs text-slate-500 dark:text-slate-400">
                             {m.remark ?? "-"}
                           </TableCell>
                         )}
-                        <TableCell className="text-right">
+                        <TableCell className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-2">
                             <Button
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
-                              className="h-8"
+                              className="h-7 px-2 text-xs text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                               onClick={() => {
                                 setEditingMachine(m);
                                 setEditOpen(true);
@@ -602,9 +602,9 @@ export default function MachineManager({
                               Edit
                             </Button>
                             <Button
-                              variant="destructive"
+                              variant="ghost"
                               size="sm"
-                              className="h-8"
+                              className="h-7 px-2 text-xs text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20"
                               onClick={() => setDeleteId(m.id)}
                             >
                               Hapus

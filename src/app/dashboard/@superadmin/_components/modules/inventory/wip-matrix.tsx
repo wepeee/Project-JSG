@@ -134,76 +134,81 @@ export default function WipMatrix({
 
   return (
     <Card className="flex h-full min-w-0 flex-col border-none shadow-none">
-      {/* Filters */}
-      <div className="mb-4 flex flex-wrap items-center gap-2 p-1">
-        {/* View Mode Toggle */}
-        <div className="mr-4 flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+      {/* Filters Toolbar */}
+      <div className="mb-4 flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center">
+        {/* View Mode Toggle - Modern Segmented Control */}
+        <div className="flex items-center rounded-lg border border-slate-200 bg-slate-100/50 p-1 dark:border-slate-800 dark:bg-slate-800/50">
           <button
             onClick={() => setViewMode("PROGRESS")}
-            className={`flex items-center gap-2 rounded-md px-3 py-1 text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
               viewMode === "PROGRESS"
-                ? "bg-white text-green-600 shadow dark:bg-slate-700 dark:text-green-400"
-                : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                ? "bg-white text-emerald-600 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-emerald-400 dark:ring-slate-700"
+                : "text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
             }`}
           >
             Progress (Flow)
           </button>
           <button
             onClick={() => setViewMode("INVENTORY")}
-            className={`flex items-center gap-2 rounded-md px-3 py-1 text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
               viewMode === "INVENTORY"
-                ? "bg-white text-blue-600 shadow dark:bg-slate-700 dark:text-blue-400"
-                : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                ? "bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-indigo-400 dark:ring-slate-700"
+                : "text-slate-500 hover:bg-slate-200/50 hover:text-slate-700 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
             }`}
           >
             Inventory (Stock)
           </button>
         </div>
 
-        <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="h-8 w-[130px] text-xs">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Statuses (Open/Closed)</SelectItem>
-            <SelectItem value="OPEN">Open Only</SelectItem>
-            <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-            <SelectItem value="COMPLETE">Complete (Done)</SelectItem>
-            <SelectItem value="CLOSED">Closed</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {!userDepartment && (
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger className="h-8 w-[100px] text-xs">
-              <SelectValue placeholder="Type" />
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger className="h-9 w-[180px] text-xs">
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All Types</SelectItem>
-              <SelectItem value="PAPER">Paper</SelectItem>
-              <SelectItem value="RIGID">Rigid</SelectItem>
+              <SelectItem value="ALL">All Statuses (Open/Closed)</SelectItem>
+              <SelectItem value="OPEN">Open Only</SelectItem>
+              <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+              <SelectItem value="COMPLETE">Complete (Done)</SelectItem>
+              <SelectItem value="CLOSED">Closed</SelectItem>
             </SelectContent>
           </Select>
-        )}
 
-        <Input
-          type="date"
-          className="h-8 w-[130px] text-xs"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          placeholder="Start Date"
-        />
-        <Input
-          type="date"
-          className="h-8 w-[130px] text-xs"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-        />
+          {!userDepartment && (
+            <Select value={type} onValueChange={setType}>
+              <SelectTrigger className="h-9 w-[120px] text-xs">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Types</SelectItem>
+                <SelectItem value="PAPER">Paper</SelectItem>
+                <SelectItem value="RIGID">Rigid</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+
+          <div className="flex items-center gap-1 rounded-md border border-input bg-background px-2 py-1">
+             <span className="text-[10px] text-muted-foreground uppercase font-bold mr-1">Range</span>
+             <Input
+              type="date"
+              className="h-6 w-auto border-none p-0 text-xs focus-visible:ring-0 shadow-none"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <span className="text-muted-foreground">-</span>
+            <Input
+              type="date"
+              className="h-6 w-auto border-none p-0 text-xs focus-visible:ring-0 shadow-none"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
+        </div>
 
         <Button
           variant="outline"
           size="sm"
-          className="ml-auto h-8 gap-2"
+          className="h-9 gap-2 border-dashed"
           onClick={handleExport}
           disabled={!data}
         >
@@ -213,31 +218,31 @@ export default function WipMatrix({
       </div>
 
       {/* Matrix Table */}
-      <div className="flex-1 overflow-auto rounded-md border bg-white dark:bg-slate-950">
+      <div className="flex-1 overflow-auto rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <Table className="relative w-full min-w-[1200px] border-collapse">
-          <TableHeader className="sticky top-0 z-40 shadow-sm">
-            <TableRow className="border-b border-gray-200 dark:border-gray-700">
-              <TableHead className="sticky left-0 z-50 w-[140px] border-r bg-gray-100 font-semibold text-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] dark:bg-slate-800 dark:text-gray-200">
+          <TableHeader className="sticky top-0 z-40 bg-slate-200 dark:bg-slate-800">
+            <TableRow className="border-b border-slate-200 hover:bg-transparent dark:border-slate-700">
+              <TableHead className="sticky left-0 z-50 w-[140px] min-w-[140px] max-w-[140px] border-r border-slate-300 bg-slate-200 px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
                 PRO Number
               </TableHead>
-              <TableHead className="z-40 w-[250px] bg-gray-100 font-semibold text-gray-700 dark:bg-slate-800 dark:text-gray-200">
+              <TableHead className="sticky left-[140px] z-50 w-[250px] min-w-[250px] max-w-[250px] border-r border-slate-300 bg-slate-200 px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
                 Product Name
               </TableHead>
-              <TableHead className="z-40 w-[100px] border-r bg-gray-100 text-right font-semibold text-gray-700 dark:bg-slate-800 dark:text-gray-200">
+              <TableHead className="z-40 w-[100px] min-w-[100px] border-r border-slate-300 bg-slate-200 px-2 py-2 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
                 Qty PO
               </TableHead>
               {data?.columns.map((col) => (
                 <TableHead
                   key={col.id}
-                  className="z-40 min-w-[120px] border-r border-gray-200 bg-gray-100 text-right font-semibold text-gray-700 dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200"
+                  className="z-40 min-w-[120px] border-r border-slate-300 bg-slate-200 px-2 py-2 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
                 >
-                  {col.name}
+                  <span className="line-clamp-2">{col.name}</span>
                 </TableHead>
               ))}
-              <TableHead className="sticky right-0 z-50 w-[120px] border-l bg-gray-100 text-right font-semibold text-gray-700 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] dark:bg-slate-800 dark:text-gray-200">
+              <TableHead className="sticky right-0 z-50 w-[120px] border-l border-slate-300 bg-slate-200 px-2 py-2 text-right text-xs font-bold uppercase tracking-wider text-slate-700 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400">
                 {viewMode === "INVENTORY" ? "FG On-Hand" : "FG Received"}
               </TableHead>
-              <TableHead className="z-40 w-[100px] bg-gray-100 text-right font-semibold text-gray-700 dark:bg-slate-800 dark:text-gray-200">
+              <TableHead className="z-40 w-[120px] bg-slate-200 px-2 py-2 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:bg-slate-800 dark:text-slate-400">
                 % Fulfilled
               </TableHead>
             </TableRow>
@@ -269,19 +274,21 @@ export default function WipMatrix({
                   key={row.id}
                   className="group transition-colors hover:bg-blue-50/50 dark:hover:bg-slate-800/50"
                 >
-                  <TableCell className="sticky left-0 z-30 border-r bg-white text-xs font-medium shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-blue-50/50 dark:bg-slate-950 dark:group-hover:bg-slate-800/50">
-                    {row.proNumber}
-                    <div className="text-muted-foreground text-[10px] font-normal">
-                      {row.status}
+                  <TableCell className="sticky left-0 z-30 w-[140px] min-w-[140px] max-w-[140px] truncate border-r border-slate-100 bg-white p-2 align-top text-xs font-medium shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:group-hover:bg-slate-900">
+                    <div className="flex flex-col gap-0.5 truncate">
+                        <span className="font-mono font-bold text-slate-700 truncate dark:text-slate-200">{row.proNumber}</span>
+                        <Badge variant="outline" className="w-fit scale-90 px-1 py-0 text-[8px] opacity-70">
+                        {row.status}
+                        </Badge>
                     </div>
                   </TableCell>
                   <TableCell
-                    className="max-w-[250px] truncate text-xs font-medium text-gray-700 dark:text-gray-300"
+                    className="sticky left-[140px] z-30 w-[250px] min-w-[250px] max-w-[250px] border-r border-slate-100 bg-white p-2 align-top text-xs font-medium text-slate-600 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:group-hover:bg-slate-900"
                     title={row.productName}
                   >
-                    {row.productName}
+                    <span className="line-clamp-2 break-words leading-tight">{row.productName}</span>
                   </TableCell>
-                  <TableCell className="border-r text-right font-mono text-xs">
+                  <TableCell className="w-[100px] min-w-[100px] border-r border-slate-100 p-2 text-right font-mono text-xs font-bold text-slate-800 dark:border-slate-800 dark:text-slate-300">
                     {row.qtyPoPcs.toLocaleString("id-ID")}
                   </TableCell>
 
@@ -290,10 +297,10 @@ export default function WipMatrix({
                     return (
                       <TableCell
                         key={col.id}
-                        className={`cursor-pointer border-r border-gray-100 text-right text-xs transition-all duration-200 dark:border-gray-800 ${
+                        className={`cursor-pointer border-r border-slate-100 p-2 text-right text-xs transition-all duration-200 dark:border-slate-800 ${
                           val
-                            ? "bg-blue-50/30 font-semibold text-blue-700 hover:bg-blue-100/50 dark:bg-blue-900/10 dark:text-blue-300 dark:hover:bg-blue-900/30"
-                            : "text-muted-foreground/20"
+                            ? "bg-slate-50 font-bold text-slate-800 hover:bg-slate-200/50 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                            : "text-slate-300 dark:text-slate-700"
                         }`}
                         onClick={() =>
                           val
@@ -306,13 +313,13 @@ export default function WipMatrix({
                     );
                   })}
 
-                  <TableCell className="sticky right-0 z-30 border-l bg-white text-right text-xs font-bold shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-blue-50/50 dark:bg-slate-950 dark:group-hover:bg-slate-800/50">
+                  <TableCell className="sticky right-0 z-30 border-l border-slate-100 bg-white p-2 text-right text-xs font-bold shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.05)] group-hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:group-hover:bg-slate-900">
                     {row.fgReceived > 0 ? (
-                      <span className="text-green-600 dark:text-green-400">
+                      <span className="text-emerald-600 dark:text-emerald-400">
                         {row.fgReceived.toLocaleString("id-ID")}
                       </span>
                     ) : (
-                      "-"
+                      <span className="text-slate-300">-</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">

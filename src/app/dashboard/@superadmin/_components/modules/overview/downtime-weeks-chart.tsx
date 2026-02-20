@@ -30,7 +30,7 @@ type Props = {
   maxCategories?: number;
 };
 
-const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#a4de6c", "#d0ed57"];
+const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
 export default function DowntimeWeeksChart({ 
     title = "PLAN DOWNTIME", 
@@ -95,11 +95,11 @@ export default function DowntimeWeeksChart({
 
   return (
     <Card className="col-span-2">
-      <CardHeader>
+      <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4 dark:border-slate-800 dark:bg-slate-900/50">
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         {/* Chart */}
         <div className="h-[350px] w-full mb-8">
           <ResponsiveContainer width="100%" height="100%">
@@ -112,20 +112,22 @@ export default function DowntimeWeeksChart({
                 bottom: 5,
               }}
             >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" tick={renderCustomAxisTick} interval={0} />
-              <YAxis />
-              <Tooltip formatter={(value) => [`${value} min`, "Durasi"]} />
-              {/* No Legend here if we want it to look exactly like the image (legend is implicitly the bars) 
-                  But for clarity, a Legend identifying Weeks is good. 
-              */}
+              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+              <XAxis dataKey="name" tick={renderCustomAxisTick} interval={0} tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} fontSize={12} tickFormatter={(val) => `${val}m`} />
+              <Tooltip 
+                formatter={(value) => [`${value} min`, "Durasi"]} 
+                contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                cursor={{ fill: 'transparent' }}
+              />
               <Legend />
               {weeks.map((week, index) => (
                 <Bar
                   key={week}
                   dataKey={week}
                   fill={COLORS[index % COLORS.length]}
-                  barSize={20} // Make bars thinner to fit groups
+                  barSize={20}
+                  radius={[4, 4, 0, 0]}
                 />
               ))}
             </BarChart>
@@ -133,13 +135,13 @@ export default function DowntimeWeeksChart({
         </div>
 
         {/* Data Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse border border-gray-200 dark:border-gray-700">
+        <div className="overflow-x-auto rounded-md border border-slate-200 dark:border-slate-800">
+          <table className="w-full text-sm border-collapse">
             <thead>
-              <tr>
-                <th className="border border-gray-200 dark:border-gray-700 p-2 bg-secondary text-left min-w-[100px]">Week</th>
+              <tr className="border-b border-slate-200 dark:border-slate-800">
+                <th className="bg-slate-100 dark:bg-slate-800/80 p-3 text-left text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400 min-w-[100px]">Week</th>
                 {categories.map((cat) => (
-                  <th key={cat} className="border border-gray-200 dark:border-gray-700 p-2 bg-secondary text-center">
+                  <th key={cat} className="bg-slate-100 dark:bg-slate-800/80 p-3 text-center text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">
                     {cat.replace(/_/g, " ")}
                   </th>
                 ))}
@@ -147,17 +149,17 @@ export default function DowntimeWeeksChart({
             </thead>
             <tbody>
               {processedWeekly.map((weekItem, index) => (
-                <tr key={index}>
-                  <td className="border border-gray-200 dark:border-gray-700 p-2 font-medium flex items-center gap-2">
+                <tr key={index} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50 dark:border-slate-800 dark:hover:bg-slate-800/50">
+                  <td className="p-3 font-medium flex items-center gap-2 text-slate-700 dark:text-slate-300">
                     <span 
-                        className="w-3 h-3 inline-block rounded-sm" 
+                        className="w-2.5 h-2.5 inline-block rounded-full" 
                         style={{ backgroundColor: COLORS[index % COLORS.length] }}
                     ></span>
                     {weekItem.week}
                   </td>
                   {categories.map((cat) => (
-                    <td key={cat} className="border border-gray-200 dark:border-gray-700 p-2 text-center">
-                      {Number(weekItem[cat] || 0).toLocaleString()}
+                    <td key={cat} className="p-3 text-center text-slate-600 dark:text-slate-400 font-mono text-xs">
+                      {Number(weekItem[cat] || 0).toLocaleString()} <span className="text-[10px] text-slate-400 ml-0.5">m</span>
                     </td>
                   ))}
                 </tr>

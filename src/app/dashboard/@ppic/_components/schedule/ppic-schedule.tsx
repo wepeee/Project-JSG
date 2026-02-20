@@ -207,7 +207,17 @@ function PROTooltipContent({
         </div>
         <div className="flex justify-between">
           <span className="opacity-70">Status:</span>
-          <Badge variant="outline" className="h-5 text-[10px]">
+          <Badge 
+            variant="outline" 
+            className={`
+              h-5 text-[10px] font-bold border px-2
+              ${status === "OPEN" ? "border-blue-200 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : ""}
+              ${status === "IN_PROGRESS" ? "border-amber-200 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : ""}
+              ${status === "COMPLETE" ? "border-emerald-200 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : ""}
+              ${status === "CLOSED" ? "border-slate-200 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400" : ""}
+              ${status === "CANCELLED" ? "border-red-200 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : ""}
+            `}
+          >
             {status}
           </Badge>
         </div>
@@ -771,65 +781,88 @@ export default function PPICSchedule({ onSelectPro }: Props) {
         className="space-y-4"
       >
         {/* Toolbar */}
-        <Card className="border-none shadow-md">
-          <div className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
-            {/* Left Controls */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <TabsList className="h-9 w-fit">
-                <TabsTrigger value="shift" className="px-4 text-xs">
-                  Mingguan
-                </TabsTrigger>
-                <TabsTrigger value="month" className="px-4 text-xs">
-                  Bulanan
-                </TabsTrigger>
-              </TabsList>
+        {/* Toolbar */}
+        <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950 md:flex-row md:items-center md:justify-between">
+          {/* Left Controls */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <TabsList className="flex h-auto w-fit items-center rounded-lg border border-slate-200 bg-slate-100/80 p-1 dark:border-slate-800 dark:bg-slate-800/50">
+              <TabsTrigger 
+                value="shift" 
+                className="rounded-md px-3 py-1.5 text-xs font-bold text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-slate-200 dark:text-slate-400 dark:data-[state=active]:bg-slate-950 dark:data-[state=active]:text-indigo-400 dark:data-[state=active]:ring-slate-700"
+              >
+                Mingguan
+              </TabsTrigger>
+              <TabsTrigger 
+                value="month" 
+                className="rounded-md px-3 py-1.5 text-xs font-bold text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-slate-200 dark:text-slate-400 dark:data-[state=active]:bg-slate-950 dark:data-[state=active]:text-indigo-400 dark:data-[state=active]:ring-slate-700"
+              >
+                Bulanan
+              </TabsTrigger>
+            </TabsList>
 
-              <div className="bg-muted flex h-9 items-center rounded-lg p-1">
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
+
+            <div className="flex items-center rounded-lg border border-slate-200 bg-slate-100/80 p-1 dark:border-slate-800 dark:bg-slate-800/50">
                 <button
                   onClick={() => setProType("PAPER")}
-                  className={`flex-1 rounded-md px-3 py-1 text-xs font-medium transition-all ${proType === "PAPER" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-primary"}`}
+                  className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+                    proType === "PAPER"
+                      ? "bg-white text-blue-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-blue-400 dark:ring-slate-700"
+                      : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
+                  }`}
                 >
                   Paper Box
                 </button>
                 <button
                   onClick={() => setProType("RIGID")}
-                  className={`flex-1 rounded-md px-3 py-1 text-xs font-medium transition-all ${proType === "RIGID" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-primary"}`}
+                  className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+                    proType === "RIGID"
+                      ? "bg-white text-amber-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-amber-400 dark:ring-slate-700"
+                      : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
+                  }`}
                 >
                   Rigid Box
                 </button>
-              </div>
             </div>
+          </div>
 
-            {/* Right Controls */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              {tab === "shift" && (
-                <div className="bg-muted flex h-9 items-center rounded-lg p-1">
+          {/* Right Controls */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            {tab === "shift" && (
+                <div className="flex items-center rounded-lg border border-slate-200 bg-slate-100/80 p-1 dark:border-slate-800 dark:bg-slate-800/50">
                   <button
                     onClick={() => setViewMode("shift")}
-                    className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${viewMode === "shift" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-primary"}`}
+                    className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+                        viewMode === "shift" 
+                        ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:ring-slate-700" 
+                        : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
+                    }`}
                   >
                     Per Shift
                   </button>
                   <button
                     onClick={() => setViewMode("machine")}
-                    className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${viewMode === "machine" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-primary"}`}
+                    className={`rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+                        viewMode === "machine" 
+                        ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:ring-slate-700" 
+                        : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
+                    }`}
                   >
                     Per Mesin
                   </button>
                 </div>
-              )}
-              <div className="relative">
-                <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-                <Input
-                  placeholder="Cari No. PRO / Produk..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-muted/50 focus:bg-background h-9 w-[250px] pl-9"
-                />
-              </div>
+            )}
+            <div className="relative">
+              <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Cari No. PRO / Produk..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 w-[250px] rounded-md border-slate-200 bg-slate-50 pl-9 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:focus:bg-slate-950 dark:focus:ring-slate-800"
+              />
             </div>
           </div>
-        </Card>
+        </div>
 
         <Card className="overflow-hidden border-none shadow-md">
           <TooltipProvider delayDuration={300}>
@@ -943,30 +976,63 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                                 <PROTooltipContent {...rest} />
                                               }
                                             >
-                                              <div className="flex items-center justify-between gap-2">
-                                                <div className="text-primary truncate text-xs font-bold">
-                                                  {it.proNumber}
+                                              <div className="flex flex-col gap-1.5">
+                                                <div className="flex items-center justify-between gap-2">
+                                                  <div className="text-primary truncate text-xs font-bold">
+                                                    {it.proNumber}
+                                                  </div>
+                                                  <Badge
+                                                    variant="outline"
+                                                    className={`
+                                                      h-4 px-1 text-[9px] border
+                                                      ${it.status === "OPEN" ? "border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : ""}
+                                                      ${it.status === "IN_PROGRESS" ? "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : ""}
+                                                      ${it.status === "COMPLETE" ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : ""}
+                                                      ${it.status === "CLOSED" ? "border-slate-200 bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400" : ""}
+                                                      ${it.status === "CANCELLED" ? "border-red-200 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400" : ""}
+                                                    `}
+                                                  >
+                                                    {it.status}
+                                                  </Badge>
                                                 </div>
-                                                <Badge
-                                                  variant="outline"
-                                                  className="border-primary/20 bg-primary/5 text-primary h-4 px-1 text-[9px]"
-                                                >
-                                                  {it.status}
-                                                </Badge>
-                                              </div>
-                                              <div className="mt-0.5 truncate text-[10px] font-medium">
-                                                {it.productName}
-                                              </div>
-                                              <div className="mt-1.5 flex flex-wrap gap-1">
-                                                <span className="bg-muted text-muted-foreground inline-flex items-center rounded-sm border px-1 py-0.5 text-[9px] font-medium">
-                                                  {it.processCode} -{" "}
-                                                  {it.processName}
-                                                </span>
-                                                {it.machineName && (
-                                                  <span className="inline-flex items-center rounded-sm border border-amber-200 bg-amber-100 px-1 py-0.5 text-[9px] font-medium text-amber-800">
-                                                    🔧 {it.machineName}
+                                                <div className="truncate text-[10px] font-medium opacity-90">
+                                                  {it.productName}
+                                                </div>
+                                                <div className="flex flex-wrap gap-1">
+                                                  <span className="bg-muted text-muted-foreground inline-flex items-center rounded-sm border px-1 py-0.5 text-[9px] font-medium">
+                                                    {it.processCode} -{" "}
+                                                    {it.processName}
                                                   </span>
-                                                )}
+                                                  {it.machineName && (
+                                                    <span className="inline-flex items-center rounded-sm border border-amber-200 bg-amber-100 px-1 py-0.5 text-[9px] font-medium text-amber-800">
+                                                      🔧 {it.machineName}
+                                                    </span>
+                                                  )}
+                                                </div>
+                                                
+                                                {/* Progress Bar */}
+                                                {(() => {
+                                                  const totalAchieved = it.productionReports?.reduce((acc: number, r: any) => 
+                                                    acc + (r.status === "APPROVED" ? (Number(r.qtyPassOn) || 0) + (Number(r.qtyGood) || 0) : 0), 0) ?? 0;
+                                                  const percentage = Math.min(100, Math.round((totalAchieved / (it.qtyPoPcs || 1)) * 100));
+                                                  
+                                                  return (
+                                                    <div className="mt-1 w-full space-y-1">
+                                                      <div className="flex justify-between text-[8px] text-muted-foreground">
+                                                        <span>{percentage}%</span>
+                                                        <span>{totalAchieved.toLocaleString()} / {it.qtyPoPcs.toLocaleString()}</span>
+                                                      </div>
+                                                      <div className="bg-slate-200 dark:bg-slate-700 h-1.5 w-full rounded-full overflow-hidden">
+                                                        <div 
+                                                          className={`h-full rounded-full transition-all ${
+                                                            percentage >= 100 ? "bg-emerald-500" : "bg-blue-500"
+                                                          }`}
+                                                          style={{ width: `${percentage}%` }} 
+                                                        />
+                                                      </div>
+                                                    </div>
+                                                  );
+                                                })()}
                                               </div>
                                             </DraggableChip>
                                           );

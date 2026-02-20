@@ -55,19 +55,19 @@ export default function ReportsListDialog({
 
         <div className="flex-1 overflow-auto rounded-md border">
           <Table>
-            <TableHeader className="bg-secondary sticky top-0 z-10">
-              <TableRow>
-                <TableHead>Tgl Laporan</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Shift</TableHead>
-                <TableHead>Operator</TableHead>
-                <TableHead>Step</TableHead>
-                <TableHead>Mesin</TableHead>
-                <TableHead className="text-right">Qty Pass</TableHead>
-                <TableHead className="text-right">WIP</TableHead>
-                <TableHead className="text-right">Hold</TableHead>
-                <TableHead className="text-right">Qty Reject</TableHead>
-                <TableHead>Notes</TableHead>
+            <TableHeader className="bg-slate-200 dark:bg-slate-800">
+              <TableRow className="border-b border-slate-200 dark:border-slate-700 hover:bg-transparent">
+                <TableHead className="w-[120px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Tgl Laporan</TableHead>
+                <TableHead className="w-[100px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Status</TableHead>
+                <TableHead className="w-[80px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Shift</TableHead>
+                <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Operator</TableHead>
+                <TableHead className="w-[80px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Step</TableHead>
+                <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Mesin</TableHead>
+                <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Qty Pass</TableHead>
+                <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">WIP</TableHead>
+                <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Hold</TableHead>
+                <TableHead className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Reject</TableHead>
+                <TableHead className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -85,55 +85,55 @@ export default function ReportsListDialog({
                 </TableRow>
               ) : (
                 data.map((report) => (
-                  <TableRow key={report.id}>
-                    <TableCell>
+                  <TableRow key={report.id} className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-slate-800 dark:hover:bg-slate-800/50">
+                    <TableCell className="px-4 py-3 text-xs text-slate-700 dark:text-slate-300">
                       {format(new Date(report.reportDate), "dd MMM yyyy", {
                         locale: idLocale,
                       })}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-4 py-3">
                       {report.status === "APPROVED" && (
-                        <span className="rounded bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">
+                        <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 tracking-wide border border-emerald-200">
                           APPROVED
                         </span>
                       )}
                       {report.status === "PENDING" && (
-                        <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                        <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 tracking-wide border border-amber-200">
                           PENDING
                         </span>
                       )}
                       {report.status === "REJECTED" && (
-                        <span className="rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">
+                        <span className="inline-flex rounded-full bg-red-100 px-2.5 py-0.5 text-[10px] font-bold text-red-700 tracking-wide border border-red-200">
                           REJECTED
                         </span>
                       )}
                       {report.status === "VOID" && (
-                        <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700">
+                        <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-700 tracking-wide border border-slate-200">
                           VOID
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>Shift {report.shift}</TableCell>
-                    <TableCell>{report.operatorName}</TableCell>
-                    <TableCell>#{report.proses?.orderNo}</TableCell>
-                    <TableCell>
+                    <TableCell className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">Shift {report.shift}</TableCell>
+                    <TableCell className="px-4 py-3 text-xs font-medium text-slate-700 dark:text-slate-300">{report.operatorName}</TableCell>
+                    <TableCell className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">#{report.proses?.orderNo}</TableCell>
+                    <TableCell className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
                       {report.proses?.orderNo
                         ? report.proses.machine?.name
                         : "-"}
                     </TableCell>
-                    <TableCell className="text-right font-bold text-green-600">
+                    <TableCell className="px-4 py-3 text-right text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
                       {Number(report.qtyPassOn).toLocaleString("id-ID")}
                     </TableCell>
-                    <TableCell className="text-right font-bold text-blue-600">
+                    <TableCell className="px-4 py-3 text-right text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
                       {Number(report.qtyWip).toLocaleString("id-ID")}
                     </TableCell>
-                    <TableCell className="text-right font-bold text-amber-600">
+                    <TableCell className="px-4 py-3 text-right text-xs font-mono font-bold text-amber-600 dark:text-amber-400">
                       {Number(report.qtyHold).toLocaleString("id-ID")}
                     </TableCell>
-                    <TableCell className="text-right font-bold text-red-600">
+                    <TableCell className="px-4 py-3 text-right text-xs font-mono font-bold text-red-600 dark:text-red-400">
                       {Number(report.qtyReject).toLocaleString("id-ID")}
                     </TableCell>
-                    <TableCell className="text-muted-foreground max-w-[200px] truncate text-xs">
+                    <TableCell className="px-4 py-3 text-muted-foreground max-w-[200px] truncate text-xs italic">
                       {report.notes || "-"}
                     </TableCell>
                   </TableRow>

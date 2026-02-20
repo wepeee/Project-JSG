@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { api } from "../../../../../../trpc/react";
+import { api } from "~/trpc/react";
 import {
   Card,
   CardContent,
@@ -18,8 +18,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -31,13 +31,13 @@ import {
   Cell,
 } from "recharts";
 import { Loader2, TrendingUp, AlertCircle, Clock, CheckCircle } from "lucide-react";
-import DowntimeWeeksChart from "./downtime-weeks-chart";
+import DowntimeWeeksChart from "./modules/overview/downtime-weeks-chart";
 
 type Props = {
   department?: string;
 };
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
+const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
 export default function DashboardOverview({ department }: Props) {
   const [viewMode, setViewMode] = useState<"daily" | "weekly">("daily");
@@ -82,32 +82,48 @@ export default function DashboardOverview({ department }: Props) {
           title="Total Output"
           value={summary.totalOutput.toLocaleString()}
           description="PCS (30 Hari Terakhir)"
-          icon={<TrendingUp className="h-4 w-4 text-blue-500" />}
+          icon={
+            <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
+              <TrendingUp className="text-primary h-4 w-4" />
+            </div>
+          }
           trend="Total Produksi"
         />
         <StatsCard
           title="Produk Baik"
           value={summary.totalGood.toLocaleString()}
           description="PCS (30 Hari Terakhir)"
-          icon={<CheckCircle className="h-4 w-4 text-green-500" />}
+          icon={
+            <div className="rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/30">
+              <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+          }
           trend={`${efficiency}% Efisiensi`}
-          trendColor="text-green-500"
+          trendColor="text-emerald-600"
         />
         <StatsCard
           title="Total Reject"
           value={summary.totalReject.toLocaleString()}
           description="PCS (30 Hari Terakhir)"
-          icon={<AlertCircle className="h-4 w-4 text-red-500" />}
+          icon={
+            <div className="rounded-full bg-rose-100 p-2 dark:bg-rose-900/30">
+              <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+            </div>
+          }
           trend={`${((summary.totalReject / (summary.totalOutput || 1)) * 100).toFixed(1)}% Rate Reject`}
-          trendColor="text-red-500"
+          trendColor="text-rose-600"
         />
         <StatsCard
           title="Downtime"
           value={`${Math.round(summary.totalDowntime / 60)} Jam`}
           description="Total Waktu Hilang"
-          icon={<Clock className="h-4 w-4 text-orange-500" />}
+          icon={
+            <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
+              <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            </div>
+          }
           trend={`${summary.totalDowntime.toLocaleString()} Menit`}
-          trendColor="text-orange-500"
+          trendColor="text-amber-600"
           breakdown={[
               { label: "Planned", value: `${Math.round(summary.totalPlannedDowntime / 60)}h` },
               { label: "Unplanned", value: `${Math.round(summary.totalUnplannedDowntime / 60)}h` }
@@ -117,7 +133,7 @@ export default function DashboardOverview({ department }: Props) {
 
       {/* 2. Charts Row 1: Production Trend */}
       <Card>
-        <CardHeader>
+        <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4 dark:border-slate-800 dark:bg-slate-900/50">
           <div className="flex items-center justify-between">
             <div>
                 <CardTitle>Tren Produksi {viewMode === "daily" ? "Harian" : "Mingguan"}</CardTitle>
@@ -127,9 +143,9 @@ export default function DashboardOverview({ department }: Props) {
             </div>
             <Select
                 value={viewMode}
-                onValueChange={(val: string) => setViewMode(val as "daily" | "weekly")}
+                onValueChange={(val) => setViewMode(val as "daily" | "weekly")}
             >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] bg-white dark:bg-slate-950">
                     <SelectValue placeholder="Pilih Tampilan" />
                 </SelectTrigger>
                 <SelectContent>
@@ -141,18 +157,30 @@ export default function DashboardOverview({ department }: Props) {
         </CardHeader>
         <CardContent className="h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="colorGood" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorReject" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.3} vertical={false} />
               <XAxis 
                 dataKey={viewMode === "daily" ? "date" : "week"} 
                 tick={{ fontSize: 12 }} 
+                tickLine={false}
+                axisLine={false}
                 tickFormatter={(val) => 
                     viewMode === "daily" 
                         ? new Date(val).toLocaleDateString("id-ID", { day: '2-digit', month: 'short' })
                         : val
                 }
               />
-              <YAxis tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
               <Tooltip 
                 contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
                 labelFormatter={(label) => 
@@ -162,24 +190,25 @@ export default function DashboardOverview({ department }: Props) {
                 }
               />
               <Legend />
-              <Line
+              <Area
                 type="monotone"
                 dataKey="good"
-                stroke="#10b981" // green-500
+                stroke="#10b981" // emerald-500
+                fillOpacity={1}
+                fill="url(#colorGood)"
                 strokeWidth={2}
                 name="Jml Baik"
-                dot={false}
-                activeDot={{ r: 6 }}
               />
-              <Line
+              <Area
                 type="monotone"
                 dataKey="reject"
                 stroke="#ef4444" // red-500
+                fillOpacity={1}
+                fill="url(#colorReject)"
                 strokeWidth={2}
                 name="Jml Reject"
-                dot={false}
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
@@ -206,7 +235,7 @@ export default function DashboardOverview({ department }: Props) {
 
         {/* Reject Breakdown */}
         <Card>
-            <CardHeader>
+            <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4 dark:border-slate-800 dark:bg-slate-900/50">
                 <CardTitle>Analisa Reject</CardTitle>
                 <CardDescription>Penyebab reject terbesar berdasarkan jumlah.</CardDescription>
             </CardHeader>
@@ -223,7 +252,7 @@ export default function DashboardOverview({ department }: Props) {
                             fill="#8884d8"
                             label
                         >
-                             {rejectTypes.slice(0, 5).map((entry: any, index: number) => (
+                             {rejectTypes.slice(0, 5).map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
@@ -236,7 +265,7 @@ export default function DashboardOverview({ department }: Props) {
 
       {/* 4. Planned vs Unplanned Downtime */}
       <Card>
-          <CardHeader>
+          <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4 dark:border-slate-800 dark:bg-slate-900/50">
               <CardTitle>Perbandingan Planned vs Unplanned Downtime</CardTitle>
               <CardDescription>Total durasi dalam menit dan persentase.</CardDescription>
           </CardHeader>
@@ -258,7 +287,7 @@ export default function DashboardOverview({ department }: Props) {
                           <Cell fill="#ef4444" /> {/* Unplanned - Red */}
                           <Cell fill="#3b82f6" /> {/* Planned - Blue */}
                       </Pie>
-                      <Tooltip formatter={(value: any) => [`${Math.round((value || 0) / 60)} Jam (${value || 0} m)`, "Durasi"] as [string, string]} />
+                      <Tooltip formatter={(value: number | undefined) => [`${Math.round((value || 0) / 60)} Jam (${value || 0} m)`, "Durasi"] as [string, string]} />
                       <Legend verticalAlign="bottom" height={36}/>
                   </PieChart>
               </ResponsiveContainer>
