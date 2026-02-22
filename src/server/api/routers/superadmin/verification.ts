@@ -137,7 +137,6 @@ export const verificationRouter = createTRPCRouter({
             endTime: { not: null },
           },
           select: {
-            qtyGood: true,
             qtyPassOn: true,
             qtyWip: true,
             qtyHold: true,
@@ -152,7 +151,6 @@ export const verificationRouter = createTRPCRouter({
 
           history.forEach((h) => {
             const output =
-              Number(h.qtyGood || 0) +
               Number(h.qtyPassOn || 0) +
               Number(h.qtyWip || 0) +
               Number(h.qtyHold || 0);
@@ -179,10 +177,17 @@ export const verificationRouter = createTRPCRouter({
         }
       }
 
-      return reports.map((r) => ({
-        ...r,
-        stdSpeed: speedMap.get(r.proses.pro.productName) ?? null,
-      }));
+      return reports.map((r) => {
+        const meta = (r.metaData as any) ?? {};
+        const savedStdSpeed = meta.stdSpeed ? Number(meta.stdSpeed) : null;
+        return {
+          ...r,
+          stdSpeed:
+            savedStdSpeed ?? speedMap.get(r.proses.pro.productName) ?? null,
+          savedStdSpeed,
+          computedStdSpeed: speedMap.get(r.proses.pro.productName) ?? null,
+        };
+      });
     }),
 
   approveReport: superAdminProcedure
@@ -537,7 +542,6 @@ export const verificationRouter = createTRPCRouter({
                   select: {
                     status: true,
                     qtyPassOn: true,
-                    qtyGood: true,
                   },
                 },
               },
@@ -566,11 +570,7 @@ export const verificationRouter = createTRPCRouter({
               totalOutput = lastStep.productionReports
                 .filter((r) => r.status === ReportStatus.APPROVED)
                 .reduce((acc, r) => {
-                  return (
-                    acc +
-                    Number(r.qtyPassOn?.toString() ?? "0") +
-                    Number(r.qtyGood?.toString() ?? "0")
-                  );
+                  return acc + Number(r.qtyPassOn?.toString() ?? "0");
                 }, 0);
             }
           }
@@ -707,7 +707,6 @@ export const verificationRouter = createTRPCRouter({
                   select: {
                     status: true,
                     qtyPassOn: true,
-                    qtyGood: true,
                   },
                 },
               },
@@ -738,11 +737,7 @@ export const verificationRouter = createTRPCRouter({
               totalOutput = lastStep.productionReports
                 .filter((r) => r.status === ReportStatus.APPROVED)
                 .reduce((acc, r) => {
-                  return (
-                    acc +
-                    Number(r.qtyPassOn?.toString() ?? "0") +
-                    Number(r.qtyGood?.toString() ?? "0")
-                  );
+                  return acc + Number(r.qtyPassOn?.toString() ?? "0");
                 }, 0);
             }
           }
@@ -862,11 +857,7 @@ export const verificationRouter = createTRPCRouter({
             totalOutput = lastStep.productionReports
               .filter((r) => r.status === ReportStatus.APPROVED)
               .reduce((acc, r) => {
-                return (
-                  acc +
-                  Number(r.qtyPassOn?.toString() ?? "0") +
-                  Number(r.qtyGood?.toString() ?? "0")
-                );
+                return acc + Number(r.qtyPassOn?.toString() ?? "0");
               }, 0);
           }
         }
@@ -914,16 +905,29 @@ export const verificationRouter = createTRPCRouter({
         cavityStd: z.number().int().positive().optional(),
         cycleTimeStd: z.number().positive().optional(),
         mpStd: z.number().int().positive().optional(),
+        stdSpeed: z.number().positive().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const updateData: any = {
+        cavityStd: input.cavityStd,
+        cycleTimeStd: input.cycleTimeStd,
+        manPowerStd: input.mpStd,
+      };
+
+      // Store stdSpeed in metaData JSON (no schema change needed)
+      if (input.stdSpeed !== undefined) {
+        const existing = await ctx.db.productionReport.findUnique({
+          where: { id: input.id },
+          select: { metaData: true },
+        });
+        const meta = (existing?.metaData as any) ?? {};
+        updateData.metaData = { ...meta, stdSpeed: input.stdSpeed };
+      }
+
       return ctx.db.productionReport.update({
         where: { id: input.id },
-        data: {
-          cavityStd: input.cavityStd,
-          cycleTimeStd: input.cycleTimeStd,
-          manPowerStd: input.mpStd,
-        },
+        data: updateData,
       });
     }),
 });

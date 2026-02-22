@@ -272,7 +272,6 @@ model ProductionReport {
   qtyHold   Decimal? @default(0)
   qtyWip    Decimal? @default(0)
 
-  qtyGood   Decimal @default(0) // Finish Good / Total Output / Output Baik
   qtyReject Decimal @default(0) // Total Reject
 
   // --- Reject Details (JSON) ---

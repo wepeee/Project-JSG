@@ -1049,12 +1049,9 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                                                       (acc: number, r: any) =>
                                                         acc +
                                                         (r.status === "APPROVED"
-                                                          ? (Number(
+                                                          ? Number(
                                                               r.qtyPassOn,
-                                                            ) || 0) +
-                                                            (Number(
-                                                              r.qtyGood,
-                                                            ) || 0)
+                                                            ) || 0
                                                           : 0),
                                                       0,
                                                     ) ?? 0;

@@ -31,16 +31,14 @@ async function main() {
         totalOutput = lastStep.productionReports
           .filter((r) => r.status === "APPROVED")
           .reduce((acc, r) => {
-            return (
-              acc +
-              Number(r.qtyPassOn?.toString() ?? "0") +
-              Number(r.qtyGood?.toString() ?? "0")
-            );
+            return acc + Number(r.qtyPassOn?.toString() ?? "0");
           }, 0);
       }
     }
 
-    console.log(`PRO ${pro.proNumber}: Target ${pro.qtyPoPcs}, Actual ${totalOutput}, Status ${pro.status}`);
+    console.log(
+      `PRO ${pro.proNumber}: Target ${pro.qtyPoPcs}, Actual ${totalOutput}, Status ${pro.status}`,
+    );
 
     if (totalOutput >= pro.qtyPoPcs) {
       console.log(`-> Updating ${pro.proNumber} to COMPLETE`);

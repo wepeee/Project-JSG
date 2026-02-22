@@ -405,10 +405,9 @@ export default function VerificationList({
                                           : "Pass On / Good"}
                                       </div>
                                       <div className="text-foreground text-lg font-bold">
-                                        {(
-                                          Number(rpt.qtyGood) +
-                                          Number(rpt.qtyPassOn)
-                                        ).toLocaleString("id-ID")}
+                                        {Number(rpt.qtyPassOn).toLocaleString(
+                                          "id-ID",
+                                        )}
                                         <span className="text-muted-foreground ml-1 text-xs font-normal">
                                           {rpt.reportType === "PAPER"
                                             ? "(Pcs)"

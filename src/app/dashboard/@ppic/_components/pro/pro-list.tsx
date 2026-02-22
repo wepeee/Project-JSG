@@ -1190,8 +1190,7 @@ export default function ProList({
                           (acc: number, r: any) =>
                             acc +
                             (r.status === "APPROVED"
-                              ? (Number(r.qtyPassOn) || 0) +
-                                (Number(r.qtyGood) || 0)
+                              ? Number(r.qtyPassOn) || 0
                               : 0),
                           0,
                         ) ?? 0;
@@ -2018,9 +2017,7 @@ export default function ProList({
                               .filter((r: any) => r.status === "APPROVED")
                               .reduce(
                                 (acc: number, curr: any) =>
-                                  acc +
-                                  (Number(curr.qtyPassOn) || 0) +
-                                  (Number(curr.qtyGood) || 0),
+                                  acc + (Number(curr.qtyPassOn) || 0),
                                 0,
                               );
                           }

@@ -512,7 +512,6 @@ export function ProductionReportModal({
     materialWip: "",
 
     // Output
-    qtyGood: "",
     qtyPassOn: "",
     qtyWip: "",
     qtyHold: "",
@@ -602,7 +601,6 @@ export function ProductionReportModal({
     const av = availableTime > 0 ? (operatingTime / availableTime) * 100 : 0;
 
     // 2. Output & Quality
-    const good = Number(formData.qtyGood) || 0;
     const passOn = Number(formData.qtyPassOn) || 0;
     const hold = Number(formData.qtyHold) || 0;
     const wip = Number(formData.qtyWip) || 0;
@@ -611,8 +609,7 @@ export function ProductionReportModal({
     // User says: Total Output = PASS ON + HOLD + WIP + TOTAL REJECT
     // And: Finish Good = Total Output - Total Reject
     // Implies: Finish Good = PASS ON + HOLD + WIP
-    // We also include 'good' input in case it's used instead of breakdown.
-    const finishGood = good + passOn + hold + wip;
+    const finishGood = passOn + hold + wip;
 
     // Convert Reject to Pcs for Rigid (if Product Weight exists)
     let rejectCount = totalReject;
@@ -627,11 +624,8 @@ export function ProductionReportModal({
 
     const totalOut = finishGood + rejectCount;
 
-    // Quality = PASS ON / Total Output (User Request)
-    // Note: We include 'good' just in case, but primary is Pass On.
-    // If user inputs 'good' instead of 'passOn', it should count.
-    // But commonly it's Pass On.
-    const qualityNumerator = passOn + good;
+    // Quality = PASS ON / Total Output
+    const qualityNumerator = passOn;
     const q = totalOut > 0 ? (qualityNumerator / totalOut) * 100 : 0;
 
     // 3. Performance
@@ -697,7 +691,6 @@ export function ProductionReportModal({
     formData.endDate,
     formData.endTime,
     formData.ctStd,
-    formData.qtyGood,
     formData.qtyPassOn,
     formData.qtyHold,
     formData.qtyWip,
@@ -808,7 +801,6 @@ export function ProductionReportModal({
           materialPassOn: (editReport.metaData as any)?.materialPassOn || "",
           materialHold: (editReport.metaData as any)?.materialHold || "",
           materialWip: (editReport.metaData as any)?.materialWip || "",
-          qtyGood: editReport.qtyGood?.toString() || "",
           qtyPassOn: editReport.qtyPassOn?.toString() || "",
           qtyWip: editReport.qtyWip?.toString() || "",
           qtyHold: editReport.qtyHold?.toString() || "",
@@ -897,7 +889,6 @@ export function ProductionReportModal({
             materialPassOn: "",
             materialHold: "",
             materialWip: "",
-            qtyGood: "",
             qtyPassOn: "",
             qtyWip: "",
             qtyHold: "",
@@ -1023,9 +1014,9 @@ export function ProductionReportModal({
       return;
     }
 
-    // Guard: qtyGood and qtyPassOn must be explicitly provided
-    if (formData.qtyGood === "" && formData.qtyPassOn === "") {
-      alert("Output (Qty Good atau Qty Pass On) wajib diisi!");
+    // Guard: qtyPassOn must be explicitly provided
+    if (formData.qtyPassOn === "") {
+      alert("Output (Qty Pass On) wajib diisi!");
       return;
     }
 
@@ -1069,7 +1060,6 @@ export function ProductionReportModal({
       materialPurgeQty: parseNumber(formData.materialPurge) || undefined,
 
       // Use parseInteger for Counts
-      qtyGood: parseInteger(formData.qtyGood),
       qtyPassOn: parseInteger(formData.qtyPassOn),
       qtyHold: parseInteger(formData.qtyHold),
       qtyWip: parseInteger(formData.qtyWip),
@@ -2462,7 +2452,6 @@ export function ProductionReportModal({
                     materialPassOn: "",
                     materialHold: "",
                     materialWip: "",
-                    qtyGood: "",
                     qtyPassOn: "",
                     qtyWip: "",
                     qtyHold: "",

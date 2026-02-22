@@ -105,7 +105,6 @@ export const prosRouter = createTRPCRouter({
                 select: {
                   status: true,
                   qtyPassOn: true,
-                  qtyGood: true,
                 },
               },
             },
@@ -366,7 +365,6 @@ export const prosRouter = createTRPCRouter({
                 select: {
                   status: true,
                   qtyPassOn: true,
-                  qtyGood: true,
                 },
               },
             },
@@ -760,7 +758,6 @@ export const prosRouter = createTRPCRouter({
                 select: {
                   status: true,
                   qtyPassOn: true,
-                  qtyGood: true,
                 },
               },
             },

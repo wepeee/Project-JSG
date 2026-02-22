@@ -31,7 +31,6 @@ const productionReportInput = z.object({
   materialPurgeQty: z.number().optional(),
 
   // Output — operator must explicitly fill these (no silent default)
-  qtyGood: z.number().min(0),
   qtyPassOn: z.number().min(0),
   qtyHold: z.number().min(0).default(0),
   qtyWip: z.number().min(0).default(0),
@@ -98,7 +97,6 @@ export const productionRouter = createTRPCRouter({
           materialRunnerQty: input.materialRunnerQty,
           materialPurgeQty: input.materialPurgeQty,
 
-          qtyGood: input.qtyGood,
           qtyPassOn: input.qtyPassOn,
           qtyHold: input.qtyHold,
           qtyWip: input.qtyWip,
@@ -167,7 +165,7 @@ export const productionRouter = createTRPCRouter({
           // Logic Simplified:
           // If any report exists (pending or approved) -> IN_PROGRESS
           // Completion/Closing is handled by Superadmin Approval only.
-          
+
           if (stepsWithAnyReport > 0) {
             newStatus = ProStatus.IN_PROGRESS;
           } else {
@@ -229,7 +227,6 @@ export const productionRouter = createTRPCRouter({
           materialRunnerQty: input.data.materialRunnerQty,
           materialPurgeQty: input.data.materialPurgeQty,
 
-          qtyGood: input.data.qtyGood,
           qtyPassOn: input.data.qtyPassOn,
           qtyHold: input.data.qtyHold,
           qtyWip: input.data.qtyWip,
@@ -294,7 +291,6 @@ export const productionRouter = createTRPCRouter({
           reportType: true,
           startTime: true,
           endTime: true,
-          qtyGood: true,
           qtyPassOn: true,
           qtyReject: true,
           qtyHold: true,

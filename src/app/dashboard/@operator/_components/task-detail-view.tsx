@@ -46,10 +46,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
 
   const totalGood = React.useMemo(() => {
     if (!reports) return 0;
-    return reports.reduce(
-      (acc, curr) => acc + Number(curr.qtyGood) + Number(curr.qtyPassOn),
-      0,
-    );
+    return reports.reduce((acc, curr) => acc + Number(curr.qtyPassOn), 0);
   }, [reports]);
 
   return (
@@ -164,10 +161,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="rounded bg-green-100 px-2 py-0.5 text-xs font-black text-green-700">
-                        Good:{" "}
-                        {(
-                          Number(rpt.qtyGood) + Number(rpt.qtyPassOn)
-                        ).toLocaleString()}
+                        Good: {Number(rpt.qtyPassOn).toLocaleString()}
                       </div>
                       {Number(rpt.qtyReject) > 0 && (
                         <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-black text-red-700">

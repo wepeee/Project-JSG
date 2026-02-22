@@ -112,7 +112,7 @@ async function main() {
                   reportType: LphType.PAPER,
                   startTime: new Date(),
                   endTime: new Date(new Date().getTime() + 4 * 60 * 60 * 1000), // +4 hours
-                  qtyGood: 2500,
+                  qtyPassOn: 2500,
                   qtyReject: 50,
                   qtyWip: 0,
                   status: ReportStatus.APPROVED, // Approved immediately
@@ -180,7 +180,7 @@ async function main() {
                 reportType: LphType.INJECTION,
                 startTime: startTimeKey,
                 endTime: endTimeKey,
-                qtyGood: 500,
+                qtyPassOn: 500,
                 qtyReject: 10,
                 qtyWip: 0,
                 status: ReportStatus.APPROVED,
@@ -256,7 +256,7 @@ async function main() {
                   reportType: LphType.INJECTION,
                   startTime: new Date(),
                   endTime: new Date(new Date().getTime() + 8 * 60 * 60 * 1000), // +8 hours
-                  qtyGood: 3400,
+                  qtyPassOn: 3400,
                   qtyReject: 100,
                   qtyWip: 0,
                   status: ReportStatus.APPROVED, // Approved immediately

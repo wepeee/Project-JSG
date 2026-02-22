@@ -1179,7 +1179,7 @@ export default function ProductionArchive({
                 {reports?.map((rpt) => (
                   <TableRow
                     key={rpt.id}
-                    className="cursor-pointer border-b border-border hover:bg-muted/50"
+                    className="border-border hover:bg-muted/50 cursor-pointer border-b"
                     onClick={(e) => {
                       // Prevent opening if clicking on input or button
                       if (
@@ -1233,7 +1233,6 @@ export default function ProductionArchive({
 
                           // Total Output = Good + PassOn + Wip + Hold
                           const totalOutput =
-                            Number(rpt.qtyGood || 0) +
                             Number(rpt.qtyPassOn || 0) +
                             Number(rpt.qtyWip || 0) +
                             Number(rpt.qtyHold || 0);
@@ -1246,14 +1245,33 @@ export default function ProductionArchive({
                       </TableCell>
                     )}
                     {activeCategory === "PAPER" && (
-                      <TableCell className="text-right text-xs text-slate-500">
-                        {
-                          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                          (rpt as any).stdSpeed
-                            ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                              `${Math.round((rpt as any).stdSpeed as number)}/m`
-                            : "-"
-                        }
+                      <TableCell className="text-right text-xs">
+                        <EditableStandardInput
+                          value={
+                            (rpt as any).savedStdSpeed
+                              ? Number((rpt as any).savedStdSpeed)
+                              : (rpt as any).computedStdSpeed
+                                ? Math.round(
+                                    Number((rpt as any).computedStdSpeed),
+                                  )
+                                : null
+                          }
+                          placeholder={
+                            (rpt as any).computedStdSpeed
+                              ? `${Math.round(Number((rpt as any).computedStdSpeed))}`
+                              : "-"
+                          }
+                          step="1"
+                          min="1"
+                          onSave={(val) => {
+                            if (val !== null) {
+                              updateStandards.mutate({
+                                id: rpt.id,
+                                stdSpeed: val,
+                              });
+                            }
+                          }}
+                        />
                       </TableCell>
                     )}
                     <TableCell className="text-center text-xs font-bold">
@@ -1427,7 +1445,7 @@ export default function ProductionArchive({
                       </>
                     )}
                     <TableCell className="text-right text-xs font-bold text-green-600">
-                      {Number(rpt.qtyGood) + Number(rpt.qtyPassOn)}
+                      {Number(rpt.qtyPassOn)}
                     </TableCell>
                     <TableCell className="text-right text-xs text-slate-600 dark:text-slate-400">
                       {Number(rpt.qtyHold) > 0 ? Number(rpt.qtyHold) : "-"}
@@ -1566,7 +1584,6 @@ export default function ProductionArchive({
                       <TableCell className="text-right text-xs font-bold text-emerald-600">
                         {(() => {
                           const finishGood =
-                            Number(rpt.qtyGood || 0) +
                             Number(rpt.qtyPassOn || 0) +
                             Number(rpt.qtyHold || 0) +
                             Number(rpt.qtyWip || 0);
@@ -1577,7 +1594,6 @@ export default function ProductionArchive({
                     <TableCell className="text-right text-xs font-black text-slate-800 dark:text-slate-100">
                       {(() => {
                         let total =
-                          Number(rpt.qtyGood || 0) +
                           Number(rpt.qtyPassOn || 0) +
                           Number(rpt.qtyHold || 0) +
                           Number(rpt.qtyWip || 0);
@@ -1877,7 +1893,6 @@ export default function ProductionArchive({
                             if (targetOutput <= 0) return "0%";
 
                             const totalOutput =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0) +
@@ -1903,7 +1918,6 @@ export default function ProductionArchive({
                         <TableCell className="text-right text-xs">
                           {(() => {
                             const totalOutput =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0) +
@@ -1981,7 +1995,6 @@ export default function ProductionArchive({
                               const targetOutput =
                                 Number((rpt as any).stdSpeed) * operatingTime;
                               const totalOutput =
-                                Number(rpt.qtyGood || 0) +
                                 Number(rpt.qtyPassOn || 0) +
                                 Number(rpt.qtyHold || 0) +
                                 Number(rpt.qtyWip || 0) +
@@ -1995,7 +2008,6 @@ export default function ProductionArchive({
                             // 3. Quality
                             let qual = 0;
                             const totalOutput =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0) +
@@ -2177,7 +2189,6 @@ export default function ProductionArchive({
 
                             // Calculate Total Output (in Pcs for Rigid)
                             let totalOutput =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
@@ -2224,7 +2235,6 @@ export default function ProductionArchive({
 
                             // Get Finish Good (Good + Pass On + Hold + WIP)
                             const finishGood =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
@@ -2313,7 +2323,6 @@ export default function ProductionArchive({
 
                             // Calculate Total Output (Running Hour numerator)
                             let totalOutput =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
@@ -2396,7 +2405,6 @@ export default function ProductionArchive({
 
                             // Calculate Total Output (Running Hour)
                             let totalOutput =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
@@ -2417,7 +2425,6 @@ export default function ProductionArchive({
 
                             // Calculate Finish Good (Effective Hour numerator)
                             const finishGood =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
@@ -2491,7 +2498,6 @@ export default function ProductionArchive({
 
                             // Calculate Running Hour for SPEED RATE
                             let totalOutput =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
@@ -2517,7 +2523,6 @@ export default function ProductionArchive({
 
                             // Calculate Effective Hour for QUALITY RATE (using Finish Good)
                             const finishGood =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
@@ -2554,7 +2559,6 @@ export default function ProductionArchive({
 
                             // Calculate Effective Hour
                             const finishGood =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
@@ -2609,7 +2613,6 @@ export default function ProductionArchive({
                         <TableCell className="text-right text-xs">
                           {(() => {
                             let totalOutput =
-                              Number(rpt.qtyGood || 0) +
                               Number(rpt.qtyPassOn || 0) +
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);

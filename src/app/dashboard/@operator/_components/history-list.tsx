@@ -124,10 +124,7 @@ export function HistoryList() {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="rounded bg-green-100 px-2 py-0.5 text-xs font-black text-green-700">
-                    Good:{" "}
-                    {(
-                      Number(rpt.qtyGood) + Number(rpt.qtyPassOn)
-                    ).toLocaleString()}
+                    Good: {Number(rpt.qtyPassOn).toLocaleString()}
                   </div>
                   {Number(rpt.qtyReject) > 0 && (
                     <div className="rounded bg-red-100 px-2 py-0.5 text-xs font-black text-red-700">
