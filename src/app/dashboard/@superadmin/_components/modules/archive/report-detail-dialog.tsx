@@ -19,11 +19,23 @@ import { format } from "date-fns";
 import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
-import { X } from "lucide-react";
+import { X, CheckCircle2, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 
-// Reuse constants from parent if possible, or redefine.
-// For simplicity and self-containment, I'll redefine the crucial ones or just iterate over keys if dynamic.
-// But the keys are specific strings. I'll copy the constants to be safe.
+// Planned downtime key identifiers (mirrored from dashboard router)
+const PLANNED_DT_KEYS = [
+  "ISTIRAHAT",
+  "TROUBLE_PLN",
+  "TRIAL",
+  "PREVENTIVE_MAINTENANCE",
+  "SETUP_CHANGE_OVER",
+];
+
+const getDowntimeType = (key: string): "planned" | "unplanned" => {
+  if (key.startsWith("PLANNED:")) return "planned";
+  if (key.startsWith("UNPLANNED:")) return "unplanned";
+  const stripped = key.replace(/^(PLANNED:|UNPLANNED:)/, "");
+  return PLANNED_DT_KEYS.includes(stripped) ? "planned" : "unplanned";
+};
 
 const PAPER_REJECT_COLUMNS = [
   "Bintik",
@@ -164,11 +176,19 @@ export function ReportDetailDialog({
   category,
   isOpen,
   onOpenChange,
+  currentIndex,
+  totalCount,
+  onPrev,
+  onNext,
 }: {
   report: Report | null;
   category: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  currentIndex?: number;
+  totalCount?: number;
+  onPrev?: () => void;
+  onNext?: () => void;
 }) {
   if (!report) return null;
 
@@ -188,17 +208,47 @@ export function ReportDetailDialog({
                 {report.proses.pro.proNumber}
               </Badge>
             </div>
-            <div className="text-muted-foreground flex items-center gap-2 text-sm font-normal">
-              <span>{format(new Date(report.reportDate), "dd MMM yyyy")}</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-foreground ml-2 h-8 w-8 rounded-full"
-                onClick={() => onOpenChange(false)}
-              >
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close</span>
-              </Button>
+            <div className="flex items-center gap-3">
+              {/* Navigation Controls */}
+              {totalCount !== undefined && totalCount > 1 && (
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-7 w-7 rounded-full"
+                    onClick={onPrev}
+                    disabled={currentIndex === 0}
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                    <span className="sr-only">Previous</span>
+                  </Button>
+                  <span className="text-muted-foreground min-w-[60px] text-center text-xs tabular-nums">
+                    {(currentIndex ?? 0) + 1} / {totalCount}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-7 w-7 rounded-full"
+                    onClick={onNext}
+                    disabled={currentIndex === (totalCount ?? 1) - 1}
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                    <span className="sr-only">Next</span>
+                  </Button>
+                </div>
+              )}
+              <div className="text-muted-foreground flex items-center gap-2 text-sm font-normal">
+                <span>{format(new Date(report.reportDate), "dd MMM yyyy")}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-foreground ml-2 h-8 w-8 rounded-full"
+                  onClick={() => onOpenChange(false)}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Close</span>
+                </Button>
+              </div>
             </div>
           </DialogTitle>
         </DialogHeader>
@@ -272,7 +322,7 @@ export function ReportDetailDialog({
               </div>
             </div>
 
-            {/* Notes moved here */}
+            {/* Notes */}
             <div className="space-y-1">
               <span className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
                 Catatan
@@ -283,6 +333,26 @@ export function ReportDetailDialog({
               >
                 {report.notes || "-"}
               </div>
+            </div>
+
+            {/* Verification Status */}
+            <div className="space-y-1">
+              <span className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+                Verifikasi
+              </span>
+              {report.checkedBy ? (
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                  <span className="text-xs font-medium text-emerald-600">
+                    {report.checkedBy.username}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <Clock className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+                  <span className="text-muted-foreground text-xs italic">Belum diverifikasi</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -453,10 +523,15 @@ export function ReportDetailDialog({
                         );
                       }
 
+                      const maxRejectVal = Math.max(...items.map((i) => Number(i.value)));
                       return items.map((item, idx) => (
                         <TableRow key={idx} className="hover:bg-muted/50">
-                          <TableCell className="py-2.5 text-xs font-medium">
-                            {item.label}
+                          <TableCell className="relative overflow-hidden py-2.5 text-xs font-medium">
+                            <div
+                              className="absolute inset-y-0 left-0 rounded-r bg-red-500/10 transition-all"
+                              style={{ width: `${(Number(item.value) / maxRejectVal) * 100}%` }}
+                            />
+                            <span className="relative">{item.label}</span>
                           </TableCell>
                           <TableCell className="py-2.5 text-right font-mono text-xs font-bold text-red-600">
                             {Number(item.value).toLocaleString()}{" "}
@@ -511,23 +586,46 @@ export function ReportDetailDialog({
                         );
                       }
 
-                      return items.map((item, idx) => (
-                        <TableRow key={idx} className="hover:bg-muted/50">
-                          <TableCell
-                            className="max-w-[200px] truncate py-2.5 text-xs font-medium capitalize"
-                            title={item.label}
-                          >
-                            {item.label
-                              .replace("PLANNED:", "")
-                              .replace("UNPLANNED:", "")
-                              .replace(/_/g, " ")
-                              .toLowerCase()}
-                          </TableCell>
-                          <TableCell className="py-2.5 text-right font-mono text-xs font-bold text-amber-600">
-                            {item.value}m
-                          </TableCell>
-                        </TableRow>
-                      ));
+                      const maxDtVal = Math.max(...items.map((i) => i.value));
+                      return items.map((item, idx) => {
+                        const isPlanned = getDowntimeType(item.label) === "planned";
+                        return (
+                          <TableRow key={idx} className="hover:bg-muted/50">
+                            <TableCell
+                              className="relative overflow-hidden py-2.5 text-xs font-medium"
+                              title={item.label}
+                            >
+                              <div
+                                className={`absolute inset-y-0 left-0 rounded-r transition-all ${
+                                  isPlanned ? "bg-blue-500/10" : "bg-amber-500/10"
+                                }`}
+                                style={{ width: `${(item.value / maxDtVal) * 100}%` }}
+                              />
+                              <span className="relative flex items-center gap-2">
+                                <span className="capitalize">
+                                  {item.label
+                                    .replace("PLANNED:", "")
+                                    .replace("UNPLANNED:", "")
+                                    .replace(/_/g, " ")
+                                    .toLowerCase()}
+                                </span>
+                                <span
+                                  className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                                    isPlanned
+                                      ? "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400"
+                                      : "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
+                                  }`}
+                                >
+                                  {isPlanned ? "Planned" : "Unplanned"}
+                                </span>
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-2.5 text-right font-mono text-xs font-bold text-amber-600">
+                              {item.value}m
+                            </TableCell>
+                          </TableRow>
+                        );
+                      });
                     })()}
                   </TableBody>
                 </Table>

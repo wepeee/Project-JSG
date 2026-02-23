@@ -11,6 +11,8 @@ import {
   ChevronLeft,
   Ban,
   AlertCircle,
+  CalendarDays,
+  X,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
@@ -283,12 +285,16 @@ export default function ProductionArchive({
     activeCategory === ("RIGID" as any) ? "INJECTION" : activeCategory;
 
   const [search, setSearch] = React.useState("");
+  const [dateFrom, setDateFrom] = React.useState("");
+  const [dateTo, setDateTo] = React.useState("");
 
   const { data: reports, isLoading } = api.verification.getReports.useQuery({
     status: "APPROVED",
     category: safeCategory,
     limit: 100,
     search: search || undefined,
+    startDate: dateFrom ? new Date(dateFrom) : undefined,
+    endDate: dateTo ? new Date(dateTo) : undefined,
   });
 
   const utils = api.useUtils();
@@ -306,6 +312,7 @@ export default function ProductionArchive({
   const [voidReason, setVoidReason] = React.useState("");
 
   const [selectedReport, setSelectedReport] = React.useState<any>(null);
+  const [selectedReportIndex, setSelectedReportIndex] = React.useState<number>(0);
 
   const voidMutation = api.verification.voidReport.useMutation({
     onSuccess: () => {
@@ -354,10 +361,39 @@ export default function ProductionArchive({
             <Input
               type="search"
               placeholder="Cari No. PRO..."
-              className="w-full pl-9 md:w-[250px]"
+              className="w-full pl-9 md:w-[220px]"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+          </div>
+
+          {/* Date Range Filter */}
+          <div className="flex items-center gap-1.5">
+            <CalendarDays className="text-muted-foreground h-4 w-4 shrink-0" />
+            <Input
+              type="date"
+              className="w-[140px] text-xs"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              title="Dari tanggal"
+            />
+            <span className="text-muted-foreground text-xs">—</span>
+            <Input
+              type="date"
+              className="w-[140px] text-xs"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              title="Sampai tanggal"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={() => { setDateFrom(""); setDateTo(""); }}
+                className="text-muted-foreground hover:text-foreground ml-0.5 rounded p-1 transition-colors"
+                title="Reset filter tanggal"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -1176,7 +1212,7 @@ export default function ProductionArchive({
                 )}
               </TableHeader>
               <TableBody>
-                {reports?.map((rpt) => (
+                {reports?.map((rpt, rptIdx) => (
                   <TableRow
                     key={rpt.id}
                     className="border-border hover:bg-muted/50 cursor-pointer border-b"
@@ -1191,6 +1227,7 @@ export default function ProductionArchive({
                         return;
                       }
                       setSelectedReport(rpt);
+                      setSelectedReportIndex(rptIdx);
                     }}
                   >
                     <TableCell className="text-center text-xs font-medium">
@@ -2719,6 +2756,22 @@ export default function ProductionArchive({
         onOpenChange={(open) => !open && setSelectedReport(null)}
         report={selectedReport}
         category={activeCategory}
+        currentIndex={selectedReportIndex}
+        totalCount={reports?.length ?? 0}
+        onPrev={() => {
+          const prevIdx = selectedReportIndex - 1;
+          if (prevIdx >= 0 && reports) {
+            setSelectedReport(reports[prevIdx]);
+            setSelectedReportIndex(prevIdx);
+          }
+        }}
+        onNext={() => {
+          const nextIdx = selectedReportIndex + 1;
+          if (reports && nextIdx < reports.length) {
+            setSelectedReport(reports[nextIdx]);
+            setSelectedReportIndex(nextIdx);
+          }
+        }}
       />
     </div>
   );

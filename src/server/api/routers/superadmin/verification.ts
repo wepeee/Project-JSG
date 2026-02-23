@@ -27,6 +27,8 @@ export const verificationRouter = createTRPCRouter({
             .optional(),
           limit: z.number().default(50),
           search: z.string().optional(),
+          startDate: z.date().optional(),
+          endDate: z.date().optional(),
         })
         .optional(),
     )
@@ -38,7 +40,19 @@ export const verificationRouter = createTRPCRouter({
         where.status = input.status;
       }
 
-      // 2. Search Filter (PRO or Product)
+      // 2. Date Range Filter
+      if (input?.startDate || input?.endDate) {
+        where.reportDate = {};
+        if (input.startDate) where.reportDate.gte = input.startDate;
+        if (input.endDate) {
+          // Include the full end day
+          const endOfDay = new Date(input.endDate);
+          endOfDay.setHours(23, 59, 59, 999);
+          where.reportDate.lte = endOfDay;
+        }
+      }
+
+      // 3. Search Filter (PRO or Product)
       if (input?.search) {
         where.proses = {
           pro: {
