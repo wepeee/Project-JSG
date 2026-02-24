@@ -11,7 +11,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, Search } from "lucide-react";
 import { Card } from "~/components/ui/card";
 
 import { api, type RouterOutputs } from "~/trpc/react";
@@ -25,6 +25,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { Input } from "~/components/ui/input";
+import { SchedulePdfExport } from "./schedule-pdf-export";
 
 type Props = {
   onSelectPro?: (id: number) => void;
@@ -320,6 +321,7 @@ export default function PPICSchedule({ onSelectPro }: Props) {
   // View mode
   const [viewMode, setViewMode] = React.useState<"shift" | "machine">("shift");
   const [proType, setProType] = React.useState<"PAPER" | "RIGID">("PAPER");
+  const [showPdfExport, setShowPdfExport] = React.useState(false);
 
   // Machine data
   const machines = api.machines.list.useQuery({ type: proType });
@@ -870,6 +872,18 @@ export default function PPICSchedule({ onSelectPro }: Props) {
                 </button>
               </div>
             )}
+
+            {/* Export PDF Button */}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowPdfExport(true)}
+              className="border-blue-800 bg-blue-950/40 text-blue-300 hover:bg-blue-900 hover:text-blue-100"
+            >
+              <FileText className="mr-1.5 h-3.5 w-3.5" />
+              Export PDF
+            </Button>
+
             <div className="relative">
               <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
               <Input
@@ -1364,6 +1378,17 @@ export default function PPICSchedule({ onSelectPro }: Props) {
           </TooltipProvider>
         </Card>
       </Tabs>
+
+      {/* PDF Export Dialog */}
+      <SchedulePdfExport
+        open={showPdfExport}
+        onOpenChange={setShowPdfExport}
+        items={(tab === "shift" ? weekSchedule.data : monthSchedule.data) ?? []}
+        weekLabel={weekLabel}
+        weekStart={weekStart}
+        weekEnd={weekEnd}
+        proType={proType}
+      />
     </div>
   );
 }
