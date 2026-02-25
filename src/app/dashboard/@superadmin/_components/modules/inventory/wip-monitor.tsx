@@ -26,7 +26,7 @@ import {
 } from "~/components/ui/table";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { Loader2, RefreshCw, FileText } from "lucide-react";
+import { Loader2, RefreshCw, FileText, Zap } from "lucide-react";
 import type { WipMonitorItem } from "~/server/api/routers/ppic/inventory";
 import StockCardDialog from "./stock-card-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -97,6 +97,9 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
   const [filterMachineId, setFilterMachineId] = React.useState<string>("ALL");
   const [filterType, setFilterType] = React.useState<string>("WIP");
   const [includeZero, setIncludeZero] = React.useState(false);
+  const [autoRefresh, setAutoRefresh] = React.useState(false);
+  const [countdown, setCountdown] = React.useState(30);
+  const REFRESH_INTERVAL = 30;
 
   // Dialog State
   const [cardOpen, setCardOpen] = React.useState(false);
@@ -106,6 +109,8 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
     locationName: string;
     proId?: number;
     proNumber?: string;
+    siblings: WipMonitorItem[];
+    currentIndex: number;
   } | null>(null);
 
   // Queries
@@ -142,7 +147,25 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
   ]);
 
   const { data, isLoading, refetch, isRefetching } =
-    api.inventory.getWipMonitor.useQuery(queryInput);
+    api.inventory.getWipMonitor.useQuery(queryInput, {
+      refetchInterval: autoRefresh ? REFRESH_INTERVAL * 1000 : false,
+    });
+
+  // Countdown timer
+  React.useEffect(() => {
+    if (!autoRefresh) {
+      setCountdown(REFRESH_INTERVAL);
+      return;
+    }
+    setCountdown(REFRESH_INTERVAL);
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) return REFRESH_INTERVAL;
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, isRefetching]);
 
   // Client-side grouping (Visual Only)
   const groupedData = React.useMemo(() => {
@@ -161,8 +184,11 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
     return Array.from(groupedData.keys()).sort();
   }, [groupedData]);
 
-  const handleOpenCard = (item: WipMonitorItem) => {
-    // Only open for Inventory Mode or FG items in Progress which have real locationId
+  const handleOpenCard = (
+    item: WipMonitorItem,
+    siblings: WipMonitorItem[],
+    index: number,
+  ) => {
     if (viewMode === "PROGRESS" && item.locationId <= 0) return;
 
     setSelectedRow({
@@ -171,8 +197,44 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
       locationName: item.locationName ?? "Unknown",
       proId: item.proId ?? undefined,
       proNumber: item.proNumber,
+      siblings,
+      currentIndex: index,
     });
     setCardOpen(true);
+  };
+
+  const handleNextItem = () => {
+    setSelectedRow((prev) => {
+      if (!prev || prev.currentIndex >= prev.siblings.length - 1) return prev;
+      const nextIdx = prev.currentIndex + 1;
+      const next = prev.siblings[nextIdx]!;
+      return {
+        ...prev,
+        itemId: next.itemId,
+        locationId: next.locationId,
+        locationName: next.locationName ?? "Unknown",
+        proId: next.proId ?? undefined,
+        proNumber: next.proNumber,
+        currentIndex: nextIdx,
+      };
+    });
+  };
+
+  const handlePrevItem = () => {
+    setSelectedRow((prev) => {
+      if (!prev || prev.currentIndex <= 0) return prev;
+      const prevIdx = prev.currentIndex - 1;
+      const prevItem = prev.siblings[prevIdx]!;
+      return {
+        ...prev,
+        itemId: prevItem.itemId,
+        locationId: prevItem.locationId,
+        locationName: prevItem.locationName ?? "Unknown",
+        proId: prevItem.proId ?? undefined,
+        proNumber: prevItem.proNumber,
+        currentIndex: prevIdx,
+      };
+    });
   };
 
   return (
@@ -326,17 +388,43 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                 <SelectItem value="ITEM">View by Item</SelectItem>
               </SelectContent>
             </Select>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => refetch()}
-              disabled={isLoading || isRefetching}
-            >
-              <RefreshCw
-                className={`h-3.5 w-3.5 ${isRefetching ? "animate-spin" : ""}`}
-              />
-            </Button>
+            {/* Auto-refresh toggle + manual refresh */}
+            <div className="flex items-center gap-1">
+              {autoRefresh && (
+                <span
+                  className="text-muted-foreground tabular-nums text-xs min-w-[28px] text-right"
+                  title="Refresh berikutnya dalam..."
+                >
+                  {countdown}s
+                </span>
+              )}
+              <Button
+                variant={autoRefresh ? "default" : "outline"}
+                size="sm"
+                className={`h-8 gap-1.5 px-2 text-xs ${
+                  autoRefresh
+                    ? "bg-primary text-primary-foreground"
+                    : ""
+                }`}
+                onClick={() => setAutoRefresh((v) => !v)}
+                title={autoRefresh ? "Auto-refresh Aktif (klik untuk mematikan)" : "Aktifkan Auto-refresh"}
+              >
+                <Zap className="h-3.5 w-3.5" />
+                {autoRefresh ? "Live" : "Auto"}
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => { void refetch(); setCountdown(REFRESH_INTERVAL); }}
+                disabled={isLoading || isRefetching}
+                title="Refresh sekarang"
+              >
+                <RefreshCw
+                  className={`h-3.5 w-3.5 ${isRefetching ? "animate-spin" : ""}`}
+                />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -452,7 +540,7 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                                   variant="ghost"
                                   size="sm"
                                   className="h-6 w-6 p-0"
-                                  onClick={() => handleOpenCard(item)}
+                                  onClick={() => handleOpenCard(item, items, idx)}
                                   title="Lihat Kartu Stok"
                                 >
                                   <FileText className="h-4 w-4" />
@@ -480,6 +568,22 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
           locationName={selectedRow.locationName}
           proId={selectedRow.proId}
           proNumber={selectedRow.proNumber}
+          onNextItem={
+            selectedRow.currentIndex < selectedRow.siblings.length - 1
+              ? handleNextItem
+              : undefined
+          }
+          onPrevItem={
+            selectedRow.currentIndex > 0 ? handlePrevItem : undefined
+          }
+          nextItemLabel={
+            selectedRow.siblings[selectedRow.currentIndex + 1]?.itemId
+          }
+          prevItemLabel={
+            selectedRow.siblings[selectedRow.currentIndex - 1]?.itemId
+          }
+          currentItemIndex={selectedRow.currentIndex}
+          totalItems={selectedRow.siblings.length}
         />
       )}
     </div>

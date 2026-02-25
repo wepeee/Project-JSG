@@ -16,6 +16,8 @@ import {
   PauseCircle,
   Settings2,
   ExternalLink,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Dialog,
@@ -45,6 +47,13 @@ type StockCardDialogProps = {
   locationName: string;
   proId?: number;
   proNumber?: string;
+  // Navigation between sibling items
+  onNextItem?: () => void;
+  onPrevItem?: () => void;
+  nextItemLabel?: string;
+  prevItemLabel?: string;
+  currentItemIndex?: number;
+  totalItems?: number;
 };
 
 // ── Human-readable Transaction Label ──────────────────
@@ -158,6 +167,12 @@ export default function StockCardDialog({
   locationName,
   proId,
   proNumber,
+  onNextItem,
+  onPrevItem,
+  nextItemLabel,
+  prevItemLabel,
+  currentItemIndex,
+  totalItems,
 }: StockCardDialogProps) {
   const [page, setPage] = React.useState(1);
   const pageSize = 25;
@@ -436,29 +451,64 @@ export default function StockCardDialog({
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1}
-            >
-              Prev
-            </Button>
-            <span className="bg-background min-w-[3rem] rounded-md border px-3 py-1.5 text-center text-sm font-medium tabular-nums">
-              {page} / {totalPages || 1}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page >= totalPages}
-            >
-              Next
-            </Button>
-          </div>
+          {totalPages > 1 ? (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+              >
+                Prev
+              </Button>
+              <span className="bg-background min-w-[3rem] rounded-md border px-3 py-1.5 text-center text-sm font-medium tabular-nums">
+                {page} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page >= totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          ) : (
+            <div />
+          )}
 
-          <div className="w-[120px]" />
+          {/* Item navigation */}
+          {(onPrevItem ?? onNextItem) ? (
+            <div className="flex items-center gap-2">
+              {totalItems != null && currentItemIndex != null && (
+                <span className="text-muted-foreground text-xs tabular-nums">
+                  Item {currentItemIndex + 1} / {totalItems}
+                </span>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onPrevItem}
+                disabled={!onPrevItem}
+                title={prevItemLabel ? `← ${prevItemLabel}` : "Item Sebelumnya"}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Prev
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onNextItem}
+                disabled={!onNextItem}
+                title={nextItemLabel ? `${nextItemLabel} →` : "Item Berikutnya"}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="w-[120px]" />
+          )}
         </div>
       </DialogContent>
     </Dialog>
