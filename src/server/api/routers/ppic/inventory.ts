@@ -274,6 +274,7 @@ export const inventoryRouter = createTRPCRouter({
       z.object({
         itemId: z.string(),
         locationId: z.number().optional(),
+        proId: z.number().optional(),
         startDate: z.date().optional(),
         endDate: z.date().optional(),
         page: z.number().min(1).default(1),
@@ -281,11 +282,13 @@ export const inventoryRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { itemId, locationId, startDate, endDate, page, pageSize } = input;
+      const { itemId, locationId, proId, startDate, endDate, page, pageSize } =
+        input;
 
       const whereClause: Prisma.InventoryTxnWhereInput = {
         itemId,
         ...(locationId ? { locationId } : {}),
+        ...(proId ? { proId } : {}),
       };
 
       // A. Calculate Opening Balance (Sum BEFORE startDate)
@@ -340,9 +343,23 @@ export const inventoryRouter = createTRPCRouter({
         take: pageSize,
         include: {
           productionReport: {
-            select: { shift: true, operatorName: true },
+            select: {
+              id: true,
+              shift: true,
+              operatorName: true,
+              reportDate: true,
+              status: true,
+            },
           },
           location: true,
+          proses: {
+            select: {
+              orderNo: true,
+              machine: { select: { name: true } },
+              pro: { select: { proNumber: true } },
+            },
+          },
+          pro: { select: { proNumber: true } },
         },
       });
 
@@ -402,7 +419,26 @@ export const inventoryRouter = createTRPCRouter({
           ...(endDate ? { date: { lte: endDate } } : {}),
         },
         orderBy: { date: "asc" },
-        include: { location: true, productionReport: true },
+        include: {
+          location: true,
+          productionReport: {
+            select: {
+              id: true,
+              shift: true,
+              operatorName: true,
+              reportDate: true,
+              status: true,
+            },
+          },
+          proses: {
+            select: {
+              orderNo: true,
+              machine: { select: { name: true } },
+              pro: { select: { proNumber: true } },
+            },
+          },
+          pro: { select: { proNumber: true } },
+        },
       });
 
       // C. Calculate Running Balance
@@ -429,8 +465,15 @@ export const inventoryRouter = createTRPCRouter({
       const endIdx = startIdx + pageSize;
       const pageRows = enrichedTxns.slice(startIdx, endIdx);
 
+      // Current on-hand balance = last running balance (or openingBalance if no txns)
+      const onHandBalance =
+        enrichedTxns.length > 0
+          ? enrichedTxns[enrichedTxns.length - 1]!.runningBalance
+          : openingBalance;
+
       return {
         openingBalance,
+        currentBalance: onHandBalance,
         total: enrichedTxns.length,
         rows: pageRows,
       };

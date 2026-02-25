@@ -10382,7 +10382,6 @@ export namespace Prisma {
     qtyPassOn: Decimal | null
     qtyHold: Decimal | null
     qtyWip: Decimal | null
-    qtyGood: Decimal | null
     qtyReject: Decimal | null
     totalDowntime: number | null
     inputWipQty: Decimal | null
@@ -10403,7 +10402,6 @@ export namespace Prisma {
     qtyPassOn: Decimal | null
     qtyHold: Decimal | null
     qtyWip: Decimal | null
-    qtyGood: Decimal | null
     qtyReject: Decimal | null
     totalDowntime: number | null
     inputWipQty: Decimal | null
@@ -10431,7 +10429,6 @@ export namespace Prisma {
     qtyPassOn: Decimal | null
     qtyHold: Decimal | null
     qtyWip: Decimal | null
-    qtyGood: Decimal | null
     qtyReject: Decimal | null
     totalDowntime: number | null
     notes: string | null
@@ -10473,7 +10470,6 @@ export namespace Prisma {
     qtyPassOn: Decimal | null
     qtyHold: Decimal | null
     qtyWip: Decimal | null
-    qtyGood: Decimal | null
     qtyReject: Decimal | null
     totalDowntime: number | null
     notes: string | null
@@ -10515,7 +10511,6 @@ export namespace Prisma {
     qtyPassOn: number
     qtyHold: number
     qtyWip: number
-    qtyGood: number
     qtyReject: number
     rejectBreakdown: number
     downtimeBreakdown: number
@@ -10555,7 +10550,6 @@ export namespace Prisma {
     qtyPassOn?: true
     qtyHold?: true
     qtyWip?: true
-    qtyGood?: true
     qtyReject?: true
     totalDowntime?: true
     inputWipQty?: true
@@ -10576,7 +10570,6 @@ export namespace Prisma {
     qtyPassOn?: true
     qtyHold?: true
     qtyWip?: true
-    qtyGood?: true
     qtyReject?: true
     totalDowntime?: true
     inputWipQty?: true
@@ -10604,7 +10597,6 @@ export namespace Prisma {
     qtyPassOn?: true
     qtyHold?: true
     qtyWip?: true
-    qtyGood?: true
     qtyReject?: true
     totalDowntime?: true
     notes?: true
@@ -10646,7 +10638,6 @@ export namespace Prisma {
     qtyPassOn?: true
     qtyHold?: true
     qtyWip?: true
-    qtyGood?: true
     qtyReject?: true
     totalDowntime?: true
     notes?: true
@@ -10688,7 +10679,6 @@ export namespace Prisma {
     qtyPassOn?: true
     qtyHold?: true
     qtyWip?: true
-    qtyGood?: true
     qtyReject?: true
     rejectBreakdown?: true
     downtimeBreakdown?: true
@@ -10820,7 +10810,6 @@ export namespace Prisma {
     qtyPassOn: Decimal | null
     qtyHold: Decimal | null
     qtyWip: Decimal | null
-    qtyGood: Decimal
     qtyReject: Decimal
     rejectBreakdown: JsonValue | null
     downtimeBreakdown: JsonValue | null
@@ -10884,7 +10873,6 @@ export namespace Prisma {
     qtyPassOn?: boolean
     qtyHold?: boolean
     qtyWip?: boolean
-    qtyGood?: boolean
     qtyReject?: boolean
     rejectBreakdown?: boolean
     downtimeBreakdown?: boolean
@@ -10936,7 +10924,6 @@ export namespace Prisma {
     qtyPassOn?: boolean
     qtyHold?: boolean
     qtyWip?: boolean
-    qtyGood?: boolean
     qtyReject?: boolean
     rejectBreakdown?: boolean
     downtimeBreakdown?: boolean
@@ -10959,7 +10946,7 @@ export namespace Prisma {
     inputWipQty?: boolean
   }
 
-  export type ProductionReportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "prosesId" | "reportDate" | "shift" | "operatorName" | "reportType" | "startTime" | "endTime" | "batchNo" | "manPowerStd" | "manPowerAct" | "cycleTimeStd" | "cycleTimeAct" | "cavityStd" | "cavityAct" | "inputMaterialQty" | "materialRunnerQty" | "materialPurgeQty" | "qtyPassOn" | "qtyHold" | "qtyWip" | "qtyGood" | "qtyReject" | "rejectBreakdown" | "downtimeBreakdown" | "totalDowntime" | "notes" | "othersNote" | "adminNote" | "metaData" | "createdById" | "createdAt" | "updatedAt" | "status" | "rejectionNote" | "checkedById" | "checkedAt" | "voidedAt" | "voidedById" | "voidReason" | "stockPostedAt" | "inputWipQty", ExtArgs["result"]["productionReport"]>
+  export type ProductionReportOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "prosesId" | "reportDate" | "shift" | "operatorName" | "reportType" | "startTime" | "endTime" | "batchNo" | "manPowerStd" | "manPowerAct" | "cycleTimeStd" | "cycleTimeAct" | "cavityStd" | "cavityAct" | "inputMaterialQty" | "materialRunnerQty" | "materialPurgeQty" | "qtyPassOn" | "qtyHold" | "qtyWip" | "qtyReject" | "rejectBreakdown" | "downtimeBreakdown" | "totalDowntime" | "notes" | "othersNote" | "adminNote" | "metaData" | "createdById" | "createdAt" | "updatedAt" | "status" | "rejectionNote" | "checkedById" | "checkedAt" | "voidedAt" | "voidedById" | "voidReason" | "stockPostedAt" | "inputWipQty", ExtArgs["result"]["productionReport"]>
   export type ProductionReportInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     proses?: boolean | ProsesDefaultArgs<ExtArgs>
     createdBy?: boolean | ProductionReport$createdByArgs<ExtArgs>
@@ -10998,7 +10985,6 @@ export namespace Prisma {
       qtyPassOn: Prisma.Decimal | null
       qtyHold: Prisma.Decimal | null
       qtyWip: Prisma.Decimal | null
-      qtyGood: Prisma.Decimal
       qtyReject: Prisma.Decimal
       rejectBreakdown: Prisma.JsonValue | null
       downtimeBreakdown: Prisma.JsonValue | null
@@ -11413,7 +11399,6 @@ export namespace Prisma {
     readonly qtyPassOn: FieldRef<"ProductionReport", 'Decimal'>
     readonly qtyHold: FieldRef<"ProductionReport", 'Decimal'>
     readonly qtyWip: FieldRef<"ProductionReport", 'Decimal'>
-    readonly qtyGood: FieldRef<"ProductionReport", 'Decimal'>
     readonly qtyReject: FieldRef<"ProductionReport", 'Decimal'>
     readonly rejectBreakdown: FieldRef<"ProductionReport", 'Json'>
     readonly downtimeBreakdown: FieldRef<"ProductionReport", 'Json'>
@@ -14137,7 +14122,6 @@ export namespace Prisma {
     qtyPassOn: 'qtyPassOn',
     qtyHold: 'qtyHold',
     qtyWip: 'qtyWip',
-    qtyGood: 'qtyGood',
     qtyReject: 'qtyReject',
     rejectBreakdown: 'rejectBreakdown',
     downtimeBreakdown: 'downtimeBreakdown',
@@ -15069,7 +15053,6 @@ export namespace Prisma {
     qtyPassOn?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
     qtyHold?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
     qtyWip?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: JsonNullableFilter<"ProductionReport">
     downtimeBreakdown?: JsonNullableFilter<"ProductionReport">
@@ -15118,7 +15101,6 @@ export namespace Prisma {
     qtyPassOn?: SortOrderInput | SortOrder
     qtyHold?: SortOrderInput | SortOrder
     qtyWip?: SortOrderInput | SortOrder
-    qtyGood?: SortOrder
     qtyReject?: SortOrder
     rejectBreakdown?: SortOrderInput | SortOrder
     downtimeBreakdown?: SortOrderInput | SortOrder
@@ -15171,7 +15153,6 @@ export namespace Prisma {
     qtyPassOn?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
     qtyHold?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
     qtyWip?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: JsonNullableFilter<"ProductionReport">
     downtimeBreakdown?: JsonNullableFilter<"ProductionReport">
@@ -15220,7 +15201,6 @@ export namespace Prisma {
     qtyPassOn?: SortOrderInput | SortOrder
     qtyHold?: SortOrderInput | SortOrder
     qtyWip?: SortOrderInput | SortOrder
-    qtyGood?: SortOrder
     qtyReject?: SortOrder
     rejectBreakdown?: SortOrderInput | SortOrder
     downtimeBreakdown?: SortOrderInput | SortOrder
@@ -15273,7 +15253,6 @@ export namespace Prisma {
     qtyPassOn?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
     qtyHold?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
     qtyWip?: DecimalNullableWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalWithAggregatesFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: JsonNullableWithAggregatesFilter<"ProductionReport">
     downtimeBreakdown?: JsonNullableWithAggregatesFilter<"ProductionReport">
@@ -16083,7 +16062,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -16130,7 +16108,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -16175,7 +16152,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -16222,7 +16198,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -16268,7 +16243,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -16312,7 +16286,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -16355,7 +16328,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -17420,7 +17392,6 @@ export namespace Prisma {
     qtyPassOn?: SortOrder
     qtyHold?: SortOrder
     qtyWip?: SortOrder
-    qtyGood?: SortOrder
     qtyReject?: SortOrder
     rejectBreakdown?: SortOrder
     downtimeBreakdown?: SortOrder
@@ -17458,7 +17429,6 @@ export namespace Prisma {
     qtyPassOn?: SortOrder
     qtyHold?: SortOrder
     qtyWip?: SortOrder
-    qtyGood?: SortOrder
     qtyReject?: SortOrder
     totalDowntime?: SortOrder
     inputWipQty?: SortOrder
@@ -17486,7 +17456,6 @@ export namespace Prisma {
     qtyPassOn?: SortOrder
     qtyHold?: SortOrder
     qtyWip?: SortOrder
-    qtyGood?: SortOrder
     qtyReject?: SortOrder
     totalDowntime?: SortOrder
     notes?: SortOrder
@@ -17528,7 +17497,6 @@ export namespace Prisma {
     qtyPassOn?: SortOrder
     qtyHold?: SortOrder
     qtyWip?: SortOrder
-    qtyGood?: SortOrder
     qtyReject?: SortOrder
     totalDowntime?: SortOrder
     notes?: SortOrder
@@ -17563,7 +17531,6 @@ export namespace Prisma {
     qtyPassOn?: SortOrder
     qtyHold?: SortOrder
     qtyWip?: SortOrder
-    qtyGood?: SortOrder
     qtyReject?: SortOrder
     totalDowntime?: SortOrder
     inputWipQty?: SortOrder
@@ -19080,7 +19047,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -19126,7 +19092,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -19180,7 +19145,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -19226,7 +19190,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -19300,7 +19263,6 @@ export namespace Prisma {
     qtyPassOn?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
     qtyHold?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
     qtyWip?: DecimalNullableFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFilter<"ProductionReport"> | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: JsonNullableFilter<"ProductionReport">
     downtimeBreakdown?: JsonNullableFilter<"ProductionReport">
@@ -19862,7 +19824,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -19907,7 +19868,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -20734,7 +20694,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -20780,7 +20739,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -20946,7 +20904,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -20992,7 +20949,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21037,7 +20993,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21081,7 +21036,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21124,7 +21078,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21170,7 +21123,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21215,7 +21167,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21258,7 +21209,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21304,7 +21254,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21349,7 +21298,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21634,7 +21582,6 @@ export namespace Prisma {
     qtyPassOn?: Decimal | DecimalJsLike | number | string | null
     qtyHold?: Decimal | DecimalJsLike | number | string | null
     qtyWip?: Decimal | DecimalJsLike | number | string | null
-    qtyGood?: Decimal | DecimalJsLike | number | string
     qtyReject?: Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21709,7 +21656,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21754,7 +21700,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue
@@ -21799,7 +21744,6 @@ export namespace Prisma {
     qtyPassOn?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyHold?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     qtyWip?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    qtyGood?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     qtyReject?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     rejectBreakdown?: NullableJsonNullValueInput | InputJsonValue
     downtimeBreakdown?: NullableJsonNullValueInput | InputJsonValue

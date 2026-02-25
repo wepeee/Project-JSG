@@ -104,9 +104,8 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
     itemId: string;
     locationId: number;
     locationName: string;
+    proId?: number;
     proNumber?: string;
-    siblings: any[];
-    currentIndex: number;
   } | null>(null);
 
   // Queries
@@ -162,11 +161,7 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
     return Array.from(groupedData.keys()).sort();
   }, [groupedData]);
 
-  const handleOpenCard = (
-    item: WipMonitorItem,
-    siblings: WipMonitorItem[],
-    index: number,
-  ) => {
+  const handleOpenCard = (item: WipMonitorItem) => {
     // Only open for Inventory Mode or FG items in Progress which have real locationId
     if (viewMode === "PROGRESS" && item.locationId <= 0) return;
 
@@ -174,64 +169,11 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
       itemId: item.itemId,
       locationId: item.locationId,
       locationName: item.locationName ?? "Unknown",
+      proId: item.proId ?? undefined,
       proNumber: item.proNumber,
-      siblings,
-      currentIndex: index,
     });
     setCardOpen(true);
   };
-
-  const handleNextItem = () => {
-    setSelectedRow((prev) => {
-      if (!prev || !prev.siblings) return prev;
-      const nextIdx = prev.currentIndex + 1;
-
-      // Boundary check
-      if (nextIdx >= prev.siblings.length) return prev;
-
-      const nextItem = prev.siblings[nextIdx];
-      return {
-        ...prev,
-        itemId: nextItem.itemId,
-        locationId: nextItem.locationId,
-        locationName: nextItem.locationName ?? "Unknown",
-        proNumber: nextItem.proNumber,
-        currentIndex: nextIdx,
-      };
-    });
-  };
-
-  const handlePrevItem = () => {
-    setSelectedRow((prev) => {
-      if (!prev || !prev.siblings) return prev;
-      const prevIdx = prev.currentIndex - 1;
-
-      // Boundary check
-      if (prevIdx < 0) return prev;
-
-      const prevItem = prev.siblings[prevIdx];
-      return {
-        ...prev,
-        itemId: prevItem.itemId,
-        locationId: prevItem.locationId,
-        locationName: prevItem.locationName ?? "Unknown",
-        proNumber: prevItem.proNumber,
-        currentIndex: prevIdx,
-      };
-    });
-  };
-
-  const prevItemLabel =
-    selectedRow && selectedRow.currentIndex > 0
-      ? (selectedRow.siblings[selectedRow.currentIndex - 1]?.itemId ?? "Prev")
-      : undefined;
-
-  const nextItemLabel =
-    selectedRow &&
-    selectedRow.siblings &&
-    selectedRow.currentIndex < selectedRow.siblings.length - 1
-      ? (selectedRow.siblings[selectedRow.currentIndex + 1]?.itemId ?? "Next")
-      : undefined;
 
   return (
     <div className="space-y-4">
@@ -510,9 +452,7 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                                   variant="ghost"
                                   size="sm"
                                   className="h-6 w-6 p-0"
-                                  onClick={() =>
-                                    handleOpenCard(item, items, idx)
-                                  }
+                                  onClick={() => handleOpenCard(item)}
                                   title="Lihat Kartu Stok"
                                 >
                                   <FileText className="h-4 w-4" />
@@ -538,23 +478,8 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
           itemId={selectedRow.itemId}
           locationId={selectedRow.locationId}
           locationName={selectedRow.locationName}
+          proId={selectedRow.proId}
           proNumber={selectedRow.proNumber}
-          // Navigation Props (Check stock-card-dialog.tsx for types)
-          onNextItem={
-            selectedRow.siblings &&
-            selectedRow.currentIndex < selectedRow.siblings.length - 1
-              ? handleNextItem
-              : undefined
-          }
-          onPrevItem={
-            selectedRow.siblings && selectedRow.currentIndex > 0
-              ? handlePrevItem
-              : undefined
-          }
-          nextItemLabel={nextItemLabel}
-          prevItemLabel={prevItemLabel}
-          currentItemIndex={selectedRow.currentIndex}
-          totalItems={selectedRow.siblings?.length}
         />
       )}
     </div>

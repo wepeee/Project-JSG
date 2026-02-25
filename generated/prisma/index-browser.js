@@ -226,7 +226,6 @@ exports.Prisma.ProductionReportScalarFieldEnum = {
   qtyPassOn: 'qtyPassOn',
   qtyHold: 'qtyHold',
   qtyWip: 'qtyWip',
-  qtyGood: 'qtyGood',
   qtyReject: 'qtyReject',
   rejectBreakdown: 'rejectBreakdown',
   downtimeBreakdown: 'downtimeBreakdown',
