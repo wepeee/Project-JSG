@@ -12,6 +12,7 @@ import VerificationList from "./modules/verification/verification-list";
 import ProductionArchive from "./modules/archive/production-archive";
 import DashboardOverview from "./modules/overview/dashboard-overview";
 import WipMonitor from "./modules/inventory/wip-monitor";
+import StdOutput from "./modules/std-output/std-output";
 
 type Props = {
   user: {
@@ -33,7 +34,9 @@ type NavKey =
   | "verification_paper"
   | "verification_rigid"
   | "report_archive_paper"
-  | "report_archive_rigid";
+  | "report_archive_rigid"
+  | "std_output_paper"
+  | "std_output_rigid";
 
 export default function SuperadminShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("dashboard");
@@ -58,6 +61,8 @@ export default function SuperadminShell({ user }: Props) {
         return "Verifikasi Laporan Paper";
       case "report_archive_paper":
         return "Daftar Laporan Paper";
+      case "std_output_paper":
+        return "Std Output Paper";
 
       case "machines_rigid":
         return "Kelola Mesin Rigid";
@@ -67,6 +72,8 @@ export default function SuperadminShell({ user }: Props) {
         return "Verifikasi Laporan Rigid";
       case "report_archive_rigid":
         return "Daftar Laporan Rigid";
+      case "std_output_rigid":
+        return "Std Output Rigid";
 
       default:
         return "Dashboard";
@@ -133,6 +140,14 @@ export default function SuperadminShell({ user }: Props) {
               setOpen(false);
             }}
           />
+          <SidebarItem
+            label="Std Output"
+            active={active === "std_output_paper"}
+            onClick={() => {
+              setActive("std_output_paper");
+              setOpen(false);
+            }}
+          />
         </>
       )}
 
@@ -170,6 +185,14 @@ export default function SuperadminShell({ user }: Props) {
             active={active === "machines_rigid"}
             onClick={() => {
               setActive("machines_rigid");
+              setOpen(false);
+            }}
+          />
+          <SidebarItem
+            label="Std Output"
+            active={active === "std_output_rigid"}
+            onClick={() => {
+              setActive("std_output_rigid");
               setOpen(false);
             }}
           />
@@ -347,6 +370,14 @@ export default function SuperadminShell({ user }: Props) {
           )}
           {active === "report_archive_rigid" && (
             <ProductionArchive userDepartment="RIGID" />
+          )}
+
+          {/* Std Output */}
+          {active === "std_output_paper" && (
+            <StdOutput userDepartment="PAPER" />
+          )}
+          {active === "std_output_rigid" && (
+            <StdOutput userDepartment="RIGID" />
           )}
         </main>
       </div>
