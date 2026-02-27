@@ -290,6 +290,33 @@ export const verificationRouter = createTRPCRouter({
           });
         };
 
+        // B2. Helper: resolve Item master ID (strict lookup, no auto-create)
+        const resolveItemMasterId = async (
+          itemCode: string,
+        ): Promise<number> => {
+          // Normalize: trim, uppercase, collapse whitespace
+          const normalized = itemCode.trim().replace(/\s+/g, "_").toUpperCase();
+
+          const item = await tx.item.findFirst({
+            where: {
+              OR: [
+                { code: normalized },
+                { code: itemCode }, // Fallback: exact match for legacy data
+              ],
+            },
+            select: { id: true },
+          });
+
+          if (!item) {
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: `Item master tidak ditemukan untuk kode "${normalized}". PPIC harus membuat Item terlebih dahulu melalui form PRO (autocomplete Part Number).`,
+            });
+          }
+
+          return item.id;
+        };
+
         const now = new Date();
         const groupId = crypto.randomUUID(); // Atomic Group ID for this report approval
 
@@ -341,12 +368,14 @@ export const verificationRouter = createTRPCRouter({
         if (isFirstStep) {
           const totalProduced = qtyWip + totalOut;
           if (totalProduced > 0) {
+            const refillMasterId = await resolveItemMasterId(consumptionItem);
             await tx.inventoryTxn.create({
               data: {
                 groupId,
                 date: now,
                 type: TxnType.IN,
                 itemId: consumptionItem, // Refilled Item
+                itemMasterId: refillMasterId,
                 qty: totalProduced,
                 locationId: currentLoc.id,
                 proId: pro.id,
@@ -393,12 +422,14 @@ export const verificationRouter = createTRPCRouter({
           }
 
           // Execute OUT
+          const outMasterId = await resolveItemMasterId(consumptionItem);
           await tx.inventoryTxn.create({
             data: {
               groupId,
               date: now,
               type: TxnType.OUT,
               itemId: consumptionItem, // Consume INPUT item
+              itemMasterId: outMasterId,
               qty: totalOut,
               locationId: currentLoc.id,
               proId: pro.id,
@@ -432,12 +463,14 @@ export const verificationRouter = createTRPCRouter({
               nextMachineId || null,
             );
 
+            const passOnMasterId = await resolveItemMasterId(currentItem);
             await tx.inventoryTxn.create({
               data: {
                 groupId,
                 date: now,
                 type: TxnType.IN,
                 itemId: currentItem, // Uses Current Step's PartNumber
+                itemMasterId: passOnMasterId,
                 qty: qtyPassOn,
                 locationId: nextLoc.id,
                 proId: pro.id,
@@ -453,12 +486,14 @@ export const verificationRouter = createTRPCRouter({
               "FG",
               "Finish Good Warehouse",
             );
+            const fgMasterId = await resolveItemMasterId(fgItem);
             await tx.inventoryTxn.create({
               data: {
                 groupId,
                 date: now,
                 type: TxnType.IN,
                 itemId: fgItem, // Main PRO Part Number (FG)
+                itemMasterId: fgMasterId,
                 qty: qtyPassOn,
                 locationId: fgLoc.id,
                 proId: pro.id,
@@ -482,12 +517,14 @@ export const verificationRouter = createTRPCRouter({
           // Logic: "itemId = proses.partNumber (atau FG PN jika last step)" implies condition.
           const itemHold = isLastStep ? fgItem : currentItem;
 
+          const holdMasterId = await resolveItemMasterId(itemHold);
           await tx.inventoryTxn.create({
             data: {
               groupId,
               date: now,
               type: TxnType.IN,
               itemId: itemHold,
+              itemMasterId: holdMasterId,
               qty: qtyHold,
               locationId: holdLoc.id,
               proId: pro.id,
@@ -507,12 +544,14 @@ export const verificationRouter = createTRPCRouter({
           );
           const itemReject = isLastStep ? fgItem : currentItem;
 
+          const rejectMasterId = await resolveItemMasterId(itemReject);
           await tx.inventoryTxn.create({
             data: {
               groupId,
               date: now,
               type: TxnType.IN,
               itemId: itemReject,
+              itemMasterId: rejectMasterId,
               qty: qtyReject,
               locationId: scrapLoc.id,
               proId: pro.id,
@@ -681,6 +720,7 @@ export const verificationRouter = createTRPCRouter({
                 date: now,
                 type: reversalType,
                 itemId: txn.itemId,
+                itemMasterId: txn.itemMasterId, // Copy from original
                 qty: txn.qty,
                 locationId: txn.locationId,
 

@@ -12,6 +12,8 @@ export type WipMonitorItem = {
   proId: number | null;
   locationId: number;
   itemId: string;
+  itemMasterId?: number | null;
+  itemName?: string; // From Item master
   qty: number;
 
   // Details populated manually
@@ -78,7 +80,7 @@ export const inventoryRouter = createTRPCRouter({
         const uniqueProIds = [...new Set(proIds)];
         const uniqueLocIds = [...new Set(locationIds)];
 
-        const [pros, locations, allProses] = await Promise.all([
+        const [pros, locations, allProses, items] = await Promise.all([
           ctx.db.pro.findMany({
             where: { id: { in: uniqueProIds } },
             select: { id: true, proNumber: true, type: true, qtyPoPcs: true },
@@ -91,10 +93,15 @@ export const inventoryRouter = createTRPCRouter({
             where: { proId: { in: uniqueProIds } },
             select: { proId: true, machineId: true, orderNo: true },
           }),
+          ctx.db.item.findMany({
+            where: { code: { in: [...new Set(groups.map((g) => g.itemId))] } },
+            select: { id: true, code: true, name: true },
+          }),
         ]);
 
         const proMap = new Map(pros.map((p) => [p.id, p]));
         const locMap = new Map(locations.map((l) => [l.id, l]));
+        const itemMap = new Map(items.map((i) => [i.code, i]));
 
         const stepOrderMap = new Map<string, number>();
         for (const p of allProses) {
@@ -118,10 +125,14 @@ export const inventoryRouter = createTRPCRouter({
               stepOrder = stepOrderMap.get(`${pro.id}-${loc.machineId}`) ?? 999;
             }
 
+            const itemMaster = itemMap.get(g.itemId);
+
             aggregatedMap.set(key, {
               proId: g.proId,
               locationId: g.locationId,
               itemId: g.itemId,
+              itemMasterId: itemMaster?.id ?? null,
+              itemName: itemMaster?.name ?? g.itemId,
               qty: 0,
               proNumber: pro?.proNumber ?? "Unknown PRO",
               proType: pro?.type ?? "Unknown",
@@ -352,6 +363,9 @@ export const inventoryRouter = createTRPCRouter({
             },
           },
           location: true,
+          itemMaster: {
+            select: { id: true, code: true, name: true, kind: true },
+          },
           proses: {
             select: {
               orderNo: true,
@@ -421,6 +435,9 @@ export const inventoryRouter = createTRPCRouter({
         orderBy: { date: "asc" },
         include: {
           location: true,
+          itemMaster: {
+            select: { id: true, code: true, name: true, kind: true },
+          },
           productionReport: {
             select: {
               id: true,

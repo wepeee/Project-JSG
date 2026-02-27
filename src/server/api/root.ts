@@ -6,6 +6,7 @@ import { verificationRouter } from "./routers/superadmin/verification";
 import { dashboardRouter } from "./routers/superadmin/dashboard";
 import { stdOutputRouter } from "./routers/superadmin/stdOutput";
 import { materialsRouter } from "./routers/ppic/materials";
+import { itemsRouter } from "./routers/ppic/items";
 import { processesRouter } from "./routers/ppic/processes";
 import { prosRouter } from "./routers/ppic/pros";
 import { productionRouter } from "./routers/operator/production";
@@ -21,6 +22,7 @@ export const appRouter = createTRPCRouter({
   adminUsers: adminUsersRouter,
   machines: machinesRouter,
   materials: materialsRouter,
+  items: itemsRouter,
   processes: processesRouter,
   pros: prosRouter,
   production: productionRouter,

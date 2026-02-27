@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { api } from "~/trpc/react";
+import ItemCodeInput from "./item-code-input";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -1077,12 +1078,13 @@ export default function ProList({
                 <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
                   Part Number (FG)
                 </div>
-                <Input
+                <ItemCodeInput
                   value={partNumberDraft}
-                  onChange={(e) => setPartNumberDraft(e.target.value)}
-                  disabled={!editing}
+                  onChange={(code) => setPartNumberDraft(code)}
+                  defaultKind="FG"
                   placeholder="Part Number (FG)"
-                  className="bg-background font-medium"
+                  disabled={!editing}
+                  className="bg-background"
                 />
               </div>
 
@@ -1382,23 +1384,25 @@ export default function ProList({
 
                                 <TableCell className="px-4 py-3 align-top text-xs">
                                   {isMainRow && editing ? (
-                                    <Input
-                                      className="bg-background h-8 w-full min-w-[80px] border-slate-200 text-xs font-medium dark:border-slate-800"
+                                    <ItemCodeInput
                                       value={
                                         (item as StepDraft).partNumber || ""
                                       }
-                                      onChange={(e) => {
+                                      onChange={(code) => {
                                         setStepDrafts((prev) =>
                                           prev.map((x) =>
                                             x.key === (item as StepDraft).key
                                               ? {
                                                   ...x,
-                                                  partNumber: e.target.value,
+                                                  partNumber: code,
                                                 }
                                               : x,
                                           ),
                                         );
                                       }}
+                                      defaultKind="WIP"
+                                      placeholder="Part No."
+                                      className="min-w-[100px]"
                                     />
                                   ) : (
                                     <span className="text-foreground font-medium">
@@ -1678,14 +1682,15 @@ export default function ProList({
 
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Part Number (Step)</div>
-                  <Input
+                  <ItemCodeInput
                     value={stepDraft.partNumber || ""}
-                    onChange={(e) =>
+                    onChange={(code) =>
                       setStepDraft((prev) => ({
                         ...prev,
-                        partNumber: e.target.value,
+                        partNumber: code,
                       }))
                     }
+                    defaultKind="WIP"
                     placeholder="Part Number"
                   />
                 </div>

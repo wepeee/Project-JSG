@@ -11,6 +11,20 @@ const pad3 = (n: number) => String(n).padStart(3, "0"); // 001..999
 const mm = (d: Date) => String(d.getMonth() + 1).padStart(2, "0");
 const yy = (d: Date) => String(d.getFullYear()).slice(-2);
 
+/** Resolve partNumber string to Item.id (nullable, no throw) */
+async function lookupItemId(
+  tx: any,
+  partNumber: string | null | undefined,
+): Promise<number | null> {
+  if (!partNumber?.trim()) return null;
+  const normalized = partNumber.trim().replace(/\s+/g, "_").toUpperCase();
+  const item = await tx.item.findFirst({
+    where: { OR: [{ code: normalized }, { code: partNumber }] },
+    select: { id: true },
+  });
+  return item?.id ?? null;
+}
+
 const startOfDay = (d: Date) => {
   const x = new Date(d);
   x.setHours(0, 0, 0, 0);
@@ -219,7 +233,8 @@ export const prosRouter = createTRPCRouter({
             proNumber,
             proPrefixId: input.proPrefixId, // Renamed
             productName: input.productName,
-            partNumber: input.partNumber, // Added
+            partNumber: input.partNumber, // Legacy snapshot
+            fgItemId: await lookupItemId(tx, input.partNumber),
             qtyPoPcs: input.qtyPoPcs,
             startDate: firstStepDate,
             status: "OPEN",
@@ -293,6 +308,7 @@ export const prosRouter = createTRPCRouter({
                 startDate: getShiftDate(currentDay, currentShift),
                 partNumber: inputStep.partNumber,
                 batchNo: inputStep.batchNo,
+                outputItemId: await lookupItemId(tx, inputStep.partNumber),
                 materials: {
                   create: (inputStep.materials ?? []).map((m) => ({
                     materialId: m.materialId,
@@ -470,7 +486,10 @@ export const prosRouter = createTRPCRouter({
             proPrefixId: input.proPrefixId, // Renamed
             productName: input.productName,
             ...(input.partNumber !== undefined
-              ? { partNumber: input.partNumber } // Now valid
+              ? {
+                  partNumber: input.partNumber,
+                  fgItemId: await lookupItemId(tx, input.partNumber),
+                }
               : {}),
             qtyPoPcs: input.qtyPoPcs,
             startDate: input.startDate,
@@ -557,6 +576,7 @@ export const prosRouter = createTRPCRouter({
                 machineId: s.machineId ?? null,
                 partNumber: s.partNumber,
                 batchNo: s.batchNo,
+                outputItemId: await lookupItemId(tx, s.partNumber),
                 startDate: stepDate,
                 estimatedShifts: needs,
               },
@@ -572,6 +592,7 @@ export const prosRouter = createTRPCRouter({
                 startDate: stepDate,
                 partNumber: s.partNumber,
                 batchNo: s.batchNo,
+                outputItemId: await lookupItemId(tx, s.partNumber),
                 estimatedShifts: needs,
                 materials: {
                   create: matMaterials.map((m) => ({
