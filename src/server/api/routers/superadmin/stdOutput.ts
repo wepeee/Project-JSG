@@ -83,6 +83,7 @@ export const stdOutputRouter = createTRPCRouter({
         string,
         {
           productName: string;
+          manualSpeed: number | null;
           proEntries: Map<
             string,
             {
@@ -100,7 +101,6 @@ export const stdOutputRouter = createTRPCRouter({
                 speed: number; // output/hour
               }[];
               avgSpeed: number;
-              manualSpeed: number | null; // from metaData if set
             }
           >;
           avgSpeed: number;
@@ -129,8 +129,13 @@ export const stdOutputRouter = createTRPCRouter({
 
         // Get or create product group
         if (!productMap.has(productName)) {
+          // Check if any report has manualStdSpeed for this product
+          const meta = (r.metaData as any) ?? {};
           productMap.set(productName, {
             productName,
+            manualSpeed: meta.productManualStdSpeed
+              ? Number(meta.productManualStdSpeed)
+              : null,
             proEntries: new Map(),
             avgSpeed: 0,
           });
@@ -138,18 +143,22 @@ export const stdOutputRouter = createTRPCRouter({
 
         const productGroup = productMap.get(productName)!;
 
+        // Update manualSpeed from first report that has it
+        if (productGroup.manualSpeed === null) {
+          const meta = (r.metaData as any) ?? {};
+          if (meta.productManualStdSpeed) {
+            productGroup.manualSpeed = Number(meta.productManualStdSpeed);
+          }
+        }
+
         // Get or create PRO entry
         if (!productGroup.proEntries.has(proNumber)) {
-          const meta = (r.metaData as any) ?? {};
           productGroup.proEntries.set(proNumber, {
             proNumber,
             proId,
             machineName: r.proses.machine?.name ?? null,
             reports: [],
             avgSpeed: 0,
-            manualSpeed: meta.manualStdSpeed
-              ? Number(meta.manualStdSpeed)
-              : null,
           });
         }
 
@@ -175,12 +184,12 @@ export const stdOutputRouter = createTRPCRouter({
       const result: {
         productName: string;
         avgSpeed: number;
+        manualSpeed: number | null;
         proEntries: {
           proNumber: string;
           proId: number;
           machineName: string | null;
           avgSpeed: number;
-          manualSpeed: number | null;
           totalOutput: number;
           totalLeadtimeHours: number;
           reportCount: number;
@@ -210,7 +219,6 @@ export const stdOutputRouter = createTRPCRouter({
             proId: pro.proId,
             machineName: pro.machineName,
             avgSpeed: proAvgSpeed,
-            manualSpeed: pro.manualSpeed,
             totalOutput: proTotalOutput,
             totalLeadtimeHours: proTotalLeadtime,
             reportCount: pro.reports.length,
@@ -231,6 +239,7 @@ export const stdOutputRouter = createTRPCRouter({
         result.push({
           productName: product.productName,
           avgSpeed: productAvgSpeed,
+          manualSpeed: product.manualSpeed,
           proEntries,
         });
       }
@@ -242,23 +251,23 @@ export const stdOutputRouter = createTRPCRouter({
     }),
 
   /**
-   * Update manual speed for a PRO
-   * Saves to metaData.manualStdSpeed on all reports of that PRO
+   * Update manual speed for a PRODUCT (by product name)
+   * Saves to metaData.productManualStdSpeed on all reports with matching product name
    */
   setManualSpeed: superAdminProcedure
     .input(
       z.object({
-        proNumber: z.string(),
+        productName: z.string(),
         manualSpeed: z.number().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Find all reports for this PRO
+      // Find all reports for this product name
       const reports = await ctx.db.productionReport.findMany({
         where: {
           proses: {
             pro: {
-              proNumber: input.proNumber,
+              productName: input.productName,
             },
           },
         },
@@ -270,7 +279,7 @@ export const stdOutputRouter = createTRPCRouter({
         const existingMeta = (report.metaData as any) ?? {};
         const newMeta = {
           ...existingMeta,
-          manualStdSpeed: input.manualSpeed,
+          productManualStdSpeed: input.manualSpeed,
         };
 
         await ctx.db.productionReport.update({
@@ -282,3 +291,4 @@ export const stdOutputRouter = createTRPCRouter({
       return { success: true, updatedCount: reports.length };
     }),
 });
+

@@ -5,14 +5,11 @@ import { api } from "~/trpc/react";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
 import {
-  Calculator,
   Pencil,
   ChevronDown,
   ChevronRight,
@@ -36,7 +33,7 @@ export default function StdOutput({ userDepartment }: Props) {
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(
     new Set(),
   );
-  const [editingPro, setEditingPro] = useState<string | null>(null);
+  const [editingProduct, setEditingProduct] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
 
   const { data, isLoading, refetch } = api.stdOutput.getStdOutput.useQuery(
@@ -52,7 +49,7 @@ export default function StdOutput({ userDepartment }: Props) {
   const setManualSpeed = api.stdOutput.setManualSpeed.useMutation({
     onSuccess: () => {
       void refetch();
-      setEditingPro(null);
+      setEditingProduct(null);
       setEditValue("");
     },
   });
@@ -79,14 +76,14 @@ export default function StdOutput({ userDepartment }: Props) {
     setExpandedProducts(new Set());
   };
 
-  const handleSaveManualSpeed = (proNumber: string) => {
+  const handleSaveManualSpeed = (productName: string) => {
     const speed = parseFloat(editValue);
     if (isNaN(speed) || speed <= 0) return;
-    setManualSpeed.mutate({ proNumber, manualSpeed: speed });
+    setManualSpeed.mutate({ productName, manualSpeed: speed });
   };
 
-  const handleResetManualSpeed = (proNumber: string) => {
-    setManualSpeed.mutate({ proNumber, manualSpeed: null });
+  const handleResetManualSpeed = (productName: string) => {
+    setManualSpeed.mutate({ productName, manualSpeed: null });
   };
 
   const formatSpeed = (speed: number) => {
@@ -104,15 +101,11 @@ export default function StdOutput({ userDepartment }: Props) {
   // Summary stats
   const totalProducts = data?.length ?? 0;
   const totalPros = data?.reduce((acc, p) => acc + p.proEntries.length, 0) ?? 0;
-  const avgSpeedAll =
-    data && data.length > 0
-      ? data.reduce((acc, p) => acc + p.avgSpeed, 0) / data.length
-      : 0;
 
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-blue-600/10">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/15 text-blue-500">
@@ -137,25 +130,6 @@ export default function StdOutput({ userDepartment }: Props) {
                 Total PRO
               </p>
               <p className="text-2xl font-bold">{totalPros}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-amber-600/10">
-          <CardContent className="flex items-center gap-4 p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/15 text-amber-500">
-              <Gauge className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
-                Rata-rata Speed
-              </p>
-              <p className="text-2xl font-bold">
-                {formatSpeed(avgSpeedAll)}
-                <span className="text-muted-foreground ml-1 text-sm font-normal">
-                  /hour
-                </span>
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -208,6 +182,8 @@ export default function StdOutput({ userDepartment }: Props) {
         <div className="space-y-3">
           {data.map((product) => {
             const isExpanded = expandedProducts.has(product.productName);
+            const isEditing = editingProduct === product.productName;
+            const activeSpeed = product.manualSpeed ?? product.avgSpeed;
 
             return (
               <Card
@@ -215,20 +191,26 @@ export default function StdOutput({ userDepartment }: Props) {
                 className="overflow-hidden transition-all duration-200"
               >
                 {/* Product Header */}
-                <button
-                  type="button"
-                  onClick={() => toggleExpand(product.productName)}
-                  className="hover:bg-muted/30 flex w-full items-center gap-4 px-5 py-4 text-left transition-colors"
-                >
-                  <div className="text-muted-foreground shrink-0">
+                <div className="flex w-full items-center gap-4 px-5 py-4">
+                  {/* Toggle expand */}
+                  <button
+                    type="button"
+                    onClick={() => toggleExpand(product.productName)}
+                    className="text-muted-foreground shrink-0 hover:text-foreground transition-colors"
+                  >
                     {isExpanded ? (
                       <ChevronDown className="h-5 w-5" />
                     ) : (
                       <ChevronRight className="h-5 w-5" />
                     )}
-                  </div>
+                  </button>
 
-                  <div className="min-w-0 flex-1">
+                  {/* Product Name (clickable to expand) */}
+                  <button
+                    type="button"
+                    onClick={() => toggleExpand(product.productName)}
+                    className="min-w-0 flex-1 text-left"
+                  >
                     <div className="flex items-center gap-2">
                       <h3 className="truncate text-sm font-semibold">
                         {product.productName}
@@ -240,184 +222,174 @@ export default function StdOutput({ userDepartment }: Props) {
                         {product.proEntries.length} PRO
                       </Badge>
                     </div>
-                  </div>
+                  </button>
 
-                  <div className="flex shrink-0 items-center gap-2 text-right">
-                    <div>
+                  {/* Speed Display + Actions */}
+                  <div className="flex shrink-0 items-center gap-3">
+                    {/* Speed Value */}
+                    <div className="text-right">
                       <div className="text-muted-foreground text-[10px] font-medium uppercase tracking-wider">
-                        Avg Std Speed
+                        {product.manualSpeed !== null
+                          ? "Manual Speed"
+                          : "Avg Std Speed"}
                       </div>
-                      <div className="text-lg font-bold tabular-nums text-blue-600 dark:text-blue-400">
-                        {formatSpeed(product.avgSpeed)}
+                      <div
+                        className={`text-lg font-bold tabular-nums ${
+                          product.manualSpeed !== null
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-blue-600 dark:text-blue-400"
+                        }`}
+                      >
+                        {formatSpeed(activeSpeed)}
                         <span className="text-muted-foreground ml-0.5 text-xs font-normal">
                           /hour
                         </span>
                       </div>
                     </div>
+
+                    {/* Action Buttons */}
+                    {isEditing ? (
+                      <div className="flex items-center gap-1.5">
+                        <Input
+                          type="number"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          placeholder="Speed /hr"
+                          className="h-8 w-24 text-sm"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter")
+                              handleSaveManualSpeed(product.productName);
+                            if (e.key === "Escape") {
+                              setEditingProduct(null);
+                              setEditValue("");
+                            }
+                          }}
+                        />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-900/30"
+                          onClick={() =>
+                            handleSaveManualSpeed(product.productName)
+                          }
+                          disabled={setManualSpeed.isPending}
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30"
+                          onClick={() => {
+                            setEditingProduct(null);
+                            setEditValue("");
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        {product.manualSpeed !== null && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 gap-1.5 text-xs text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleResetManualSpeed(product.productName);
+                            }}
+                            disabled={setManualSpeed.isPending}
+                            title="Reset ke hitung otomatis"
+                          >
+                            <RotateCcw className="h-3 w-3" />
+                            <span className="hidden sm:inline">Auto</span>
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 gap-1.5 text-xs text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingProduct(product.productName);
+                            setEditValue(
+                              product.manualSpeed?.toString() ??
+                                product.avgSpeed.toFixed(1),
+                            );
+                          }}
+                          title="Edit manual speed"
+                        >
+                          <Pencil className="h-3 w-3" />
+                          <span className="hidden sm:inline">Edit</span>
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                </button>
+                </div>
 
                 {/* PRO Entries (expanded) */}
                 {isExpanded && (
                   <div className="border-t">
                     <div className="bg-muted/20 divide-y">
-                      {product.proEntries.map((pro) => {
-                        const isEditing = editingPro === pro.proNumber;
-                        const activeSpeed = pro.manualSpeed ?? pro.avgSpeed;
-
-                        return (
-                          <div
-                            key={pro.proNumber}
-                            className="flex flex-wrap items-center gap-3 px-5 py-3 pl-14 md:flex-nowrap"
-                          >
-                            {/* PRO Number & Machine */}
-                            <div className="flex min-w-[180px] items-center gap-3">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800">
-                                <span className="text-[10px] font-bold text-slate-500">
-                                  PRO
-                                </span>
-                              </div>
-                              <div>
-                                <div className="font-mono text-sm font-semibold">
-                                  {pro.proNumber}
-                                </div>
-                                {pro.machineName && (
-                                  <div className="text-muted-foreground text-[11px]">
-                                    {pro.machineName}
-                                  </div>
-                                )}
-                              </div>
+                      {product.proEntries.map((pro) => (
+                        <div
+                          key={pro.proNumber}
+                          className="flex flex-wrap items-center gap-3 px-5 py-3 pl-14 md:flex-nowrap"
+                        >
+                          {/* PRO Number & Machine */}
+                          <div className="flex min-w-[180px] items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800">
+                              <span className="text-[10px] font-bold text-slate-500">
+                                PRO
+                              </span>
                             </div>
-
-                            {/* Stats */}
-                            <div className="flex items-center gap-4 text-xs">
-                              <div className="text-muted-foreground flex items-center gap-1">
-                                <Package className="h-3 w-3" />
-                                <span>
-                                  {pro.totalOutput.toLocaleString()} out
-                                </span>
+                            <div>
+                              <div className="font-mono text-sm font-semibold">
+                                {pro.proNumber}
                               </div>
-                              <div className="text-muted-foreground flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                <span>
-                                  {formatHours(pro.totalLeadtimeHours)}
-                                </span>
-                              </div>
-                              <div className="text-muted-foreground flex items-center gap-1">
-                                <span>{pro.reportCount} laporan</span>
-                              </div>
-                            </div>
-
-                            {/* Speed Display */}
-                            <div className="ml-auto flex items-center gap-3">
-                              {/* Computed Speed */}
-                              <div className="text-right">
-                                <div className="text-muted-foreground text-[10px] uppercase">
-                                  {pro.manualSpeed !== null
-                                    ? "Manual"
-                                    : "Hitung Otomatis"}
-                                </div>
-                                <div
-                                  className={`font-mono text-base font-bold tabular-nums ${
-                                    pro.manualSpeed !== null
-                                      ? "text-amber-600 dark:text-amber-400"
-                                      : "text-emerald-600 dark:text-emerald-400"
-                                  }`}
-                                >
-                                  {formatSpeed(activeSpeed)}
-                                  <span className="text-muted-foreground ml-0.5 text-[10px] font-normal">
-                                    /hour
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Action Buttons */}
-                              {isEditing ? (
-                                <div className="flex items-center gap-1.5">
-                                  <Input
-                                    type="number"
-                                    value={editValue}
-                                    onChange={(e) =>
-                                      setEditValue(e.target.value)
-                                    }
-                                    placeholder="Speed /hr"
-                                    className="h-8 w-24 text-sm"
-                                    autoFocus
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter")
-                                        handleSaveManualSpeed(pro.proNumber);
-                                      if (e.key === "Escape") {
-                                        setEditingPro(null);
-                                        setEditValue("");
-                                      }
-                                    }}
-                                  />
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-900/30"
-                                    onClick={() =>
-                                      handleSaveManualSpeed(pro.proNumber)
-                                    }
-                                    disabled={setManualSpeed.isPending}
-                                  >
-                                    <Check className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30"
-                                    onClick={() => {
-                                      setEditingPro(null);
-                                      setEditValue("");
-                                    }}
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-1">
-                                  {pro.manualSpeed !== null && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-8 gap-1.5 text-xs text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/30"
-                                      onClick={() =>
-                                        handleResetManualSpeed(pro.proNumber)
-                                      }
-                                      disabled={setManualSpeed.isPending}
-                                      title="Reset ke hitung otomatis"
-                                    >
-                                      <RotateCcw className="h-3 w-3" />
-                                      <span className="hidden sm:inline">
-                                        Auto
-                                      </span>
-                                    </Button>
-                                  )}
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 gap-1.5 text-xs text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/30"
-                                    onClick={() => {
-                                      setEditingPro(pro.proNumber);
-                                      setEditValue(
-                                        pro.manualSpeed?.toString() ??
-                                          pro.avgSpeed.toFixed(1),
-                                      );
-                                    }}
-                                    title="Edit manual speed"
-                                  >
-                                    <Pencil className="h-3 w-3" />
-                                    <span className="hidden sm:inline">
-                                      Edit
-                                    </span>
-                                  </Button>
+                              {pro.machineName && (
+                                <div className="text-muted-foreground text-[11px]">
+                                  {pro.machineName}
                                 </div>
                               )}
                             </div>
                           </div>
-                        );
-                      })}
+
+                          {/* Stats */}
+                          <div className="flex items-center gap-4 text-xs">
+                            <div className="text-muted-foreground flex items-center gap-1">
+                              <Package className="h-3 w-3" />
+                              <span>
+                                {pro.totalOutput.toLocaleString()} out
+                              </span>
+                            </div>
+                            <div className="text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              <span>
+                                {formatHours(pro.totalLeadtimeHours)}
+                              </span>
+                            </div>
+                            <div className="text-muted-foreground flex items-center gap-1">
+                              <span>{pro.reportCount} laporan</span>
+                            </div>
+                          </div>
+
+                          {/* PRO Speed (read-only) */}
+                          <div className="ml-auto text-right">
+                            <div className="text-muted-foreground text-[10px] uppercase">
+                              Speed
+                            </div>
+                            <div className="font-mono text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                              {formatSpeed(pro.avgSpeed)}
+                              <span className="text-muted-foreground ml-0.5 text-[10px] font-normal">
+                                /hour
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     {/* Product Footer Summary */}
