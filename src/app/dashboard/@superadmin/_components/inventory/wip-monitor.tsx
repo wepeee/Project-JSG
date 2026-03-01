@@ -367,13 +367,13 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                         <TableRow className="border-border border-b hover:bg-transparent">
                           <TableHead className="text-muted-foreground w-[400px] text-xs font-semibold tracking-wider uppercase">
                             {groupMode === "PRO"
-                              ? "Machine / Location"
+                              ? "Step"
                               : groupMode === "MACHINE"
                                 ? "PRO Number"
-                                : "Machine / Location"}
+                                : "Step"}
                           </TableHead>
                           <TableHead className="text-muted-foreground w-[300px] text-xs font-semibold tracking-wider uppercase">
-                            {groupMode === "ITEM" ? "PRO Number" : "Item Name"}
+                            {groupMode === "ITEM" ? "PRO Number" : "Mesin / PRO"}
                           </TableHead>
                           <TableHead className="text-muted-foreground w-[150px] text-right text-xs font-semibold tracking-wider uppercase">
                             Qty (Stok)
@@ -389,15 +389,15 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                           >
                             <TableCell className="py-2">
                               {groupMode === "PRO"
-                                ? item.machineName
+                                ? (item.stepOrder ?? 999) >= 999 ? "FG (Selesai)" : `Step ${item.stepOrder}`
                                 : groupMode === "MACHINE"
                                   ? `${item.proNumber} (${item.proType})`
-                                  : item.machineName}
+                                  : (item.stepOrder ?? 999) >= 999 ? "FG (Selesai)" : `Step ${item.stepOrder}`}
                             </TableCell>
                             <TableCell className="text-foreground py-2 font-medium">
                               {groupMode === "ITEM"
                                 ? item.proNumber
-                                : item.itemId}
+                                : [item.machineName, item.productName].filter(Boolean).join(" - ") || item.itemId}
                             </TableCell>
                             <TableCell className="text-primary py-2 text-right text-sm font-bold">
                               {item.qty.toLocaleString("id-ID")}

@@ -34,6 +34,7 @@ model User {
 
   productionReports        ProductionReport[]
   checkedProductionReports ProductionReport[] @relation("ReportChecker")
+  createdItems             Item[]             @relation("ItemCreator")
 }
 
 // Mesin
@@ -112,6 +113,51 @@ model Material {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   prosesMaterials ProsesMaterial[]
+
+  // Bridge to new Item master (backfill will populate)
+  itemId Int?  @unique
+  item   Item? @relation(fields: [itemId], references: [id])
+}
+
+// --- Master Item (unified RAW/WIP/FG/CONSUMABLE) ---
+
+enum ItemKind {
+  RAW
+  WIP
+  FG
+  CONSUMABLE
+}
+
+enum ItemStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+model Item {
+  id      Int        @id @default(autoincrement())
+  code    String     @unique // Immutable identifier (PN, material name, etc.)
+  name    String // Human-readable display name
+  kind    ItemKind
+  status  ItemStatus @default(DRAFT)
+  baseUom String? // Optional base UoM (string for now)
+
+  // Audit
+  createdById String? // Who created this item
+  createdBy   User?   @relation("ItemCreator", fields: [createdById], references: [id])
+  createdFrom String? // "PPIC" | "BACKFILL" | "MASTER" etc.
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  inventoryTxns InventoryTxn[]
+  material      Material? // 1-to-1 bridge back to legacy Material
+  fgPros        Pro[]          @relation("ProFgItem")
+  outputProses  Proses[]       @relation("ProsesOutputItem")
+
+  @@index([kind])
+  @@index([status])
 }
 
 enum ProStatus {
@@ -148,7 +194,7 @@ model Pro {
   id          Int       @id @default(autoincrement())
   proNumber   String    @unique @db.VarChar(9)
   productName String
-  partNumber  String? // New: FG (Final) Part Number
+  partNumber  String? // Legacy snapshot: FG Part Number
   qtyPoPcs    Int
   startDate   DateTime?
   status      ProStatus @default(OPEN)
@@ -160,6 +206,10 @@ model Pro {
 
   proPrefixId Int?
   proPrefix   ProPrefix? @relation(fields: [proPrefixId], references: [id])
+
+  // FK to Item master for FG
+  fgItemId Int?
+  fgItem   Item? @relation("ProFgItem", fields: [fgItemId], references: [id])
 
   proses Proses[]
 
@@ -191,8 +241,12 @@ model Proses {
   machineId Int?
   machine   Machine? @relation(fields: [machineId], references: [id])
 
-  partNumber String?
+  partNumber String? // Legacy snapshot: step output Part Number
   batchNo    String?
+
+  // FK to Item master for step output
+  outputItemId Int?
+  outputItem   Item? @relation("ProsesOutputItem", fields: [outputItemId], references: [id])
 
   // --- Target / Standards (for Reporting) ---
 
@@ -270,7 +324,6 @@ model ProductionReport {
   qtyHold   Decimal? @default(0)
   qtyWip    Decimal? @default(0)
 
-  qtyGood   Decimal @default(0) // Finish Good / Total Output / Output Baik
   qtyReject Decimal @default(0) // Total Reject
 
   // --- Reject Details (JSON) ---
@@ -355,8 +408,12 @@ model InventoryTxn {
   date    DateTime @default(now())
   type    TxnType
 
-  itemId String // Part Number / Material Name
+  itemId String // Legacy: Part Number / Material Name (kept as snapshot)
   qty    Decimal @db.Decimal(12, 3)
+
+  // NEW: FK to master Item (nullable during migration)
+  itemMasterId Int?
+  itemMaster   Item? @relation(fields: [itemMasterId], references: [id])
 
   locationId Int
   location   InventoryLocation @relation(fields: [locationId], references: [id])
@@ -376,6 +433,7 @@ model InventoryTxn {
   // Prevent double posting of same item/type/location for a report
   @@unique([productionReportId, itemId, type, locationId])
   @@index([itemId])
+  @@index([itemMasterId])
   @@index([date])
   @@index([groupId])
   @@index([locationId])

@@ -18,6 +18,7 @@ export type WipMonitorItem = {
 
   // Details populated manually
   proNumber?: string;
+  productName?: string; // Product name from PRO
   proType?: string; // PAPER/RIGID
   proQty?: number; // Target PO
   machineName?: string;
@@ -83,7 +84,7 @@ export const inventoryRouter = createTRPCRouter({
         const [pros, locations, allProses, items] = await Promise.all([
           ctx.db.pro.findMany({
             where: { id: { in: uniqueProIds } },
-            select: { id: true, proNumber: true, type: true, qtyPoPcs: true },
+            select: { id: true, proNumber: true, productName: true, type: true, qtyPoPcs: true },
           }),
           ctx.db.inventoryLocation.findMany({
             where: { id: { in: uniqueLocIds } },
@@ -135,6 +136,7 @@ export const inventoryRouter = createTRPCRouter({
               itemName: itemMaster?.name ?? g.itemId,
               qty: 0,
               proNumber: pro?.proNumber ?? "Unknown PRO",
+              productName: pro?.productName ?? "",
               proType: pro?.type ?? "Unknown",
               proQty: pro?.qtyPoPcs ?? 0,
               locationName: loc?.name ?? "Unknown Loc",
@@ -221,6 +223,7 @@ export const inventoryRouter = createTRPCRouter({
             itemId: p.pro.productName || p.pro.proNumber, // Use Product Name as Item Identifier
             qty: Number(g._sum.qtyPassOn ?? 0),
             proNumber: p.pro.proNumber,
+            productName: p.pro.productName,
             proType: p.pro.type,
             proQty: p.pro.qtyPoPcs,
             machineName: p.machine?.name ?? "No Machine",
@@ -252,7 +255,7 @@ export const inventoryRouter = createTRPCRouter({
           .filter((id): id is number => id !== null);
         const fgPros = await ctx.db.pro.findMany({
           where: { id: { in: fgProIds } },
-          select: { id: true, proNumber: true, type: true, qtyPoPcs: true },
+          select: { id: true, proNumber: true, productName: true, type: true, qtyPoPcs: true },
         });
         const fgProMap = new Map(fgPros.map((p) => [p.id, p]));
 
@@ -267,6 +270,7 @@ export const inventoryRouter = createTRPCRouter({
             itemId: g.itemId,
             qty: Number(g._sum.qty ?? 0),
             proNumber: pro?.proNumber ?? "Unknown",
+            productName: pro?.productName ?? "",
             proType: pro?.type ?? "Unknown",
             proQty: pro?.qtyPoPcs ?? 0,
             machineName: "FG Received", // Virtual Machine Name

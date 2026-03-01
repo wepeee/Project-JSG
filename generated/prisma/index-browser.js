@@ -155,6 +155,20 @@ exports.Prisma.MaterialScalarFieldEnum = {
   uom: 'uom',
   type: 'type',
   createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  itemId: 'itemId'
+};
+
+exports.Prisma.ItemScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  kind: 'kind',
+  status: 'status',
+  baseUom: 'baseUom',
+  createdById: 'createdById',
+  createdFrom: 'createdFrom',
+  createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
@@ -181,6 +195,7 @@ exports.Prisma.ProScalarFieldEnum = {
   type: 'type',
   autoShiftExpansion: 'autoShiftExpansion',
   proPrefixId: 'proPrefixId',
+  fgItemId: 'fgItemId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -194,7 +209,8 @@ exports.Prisma.ProsesScalarFieldEnum = {
   startDate: 'startDate',
   machineId: 'machineId',
   partNumber: 'partNumber',
-  batchNo: 'batchNo'
+  batchNo: 'batchNo',
+  outputItemId: 'outputItemId'
 };
 
 exports.Prisma.ProsesMaterialScalarFieldEnum = {
@@ -263,6 +279,7 @@ exports.Prisma.InventoryTxnScalarFieldEnum = {
   type: 'type',
   itemId: 'itemId',
   qty: 'qty',
+  itemMasterId: 'itemMasterId',
   locationId: 'locationId',
   proId: 'proId',
   prosesId: 'prosesId',
@@ -302,6 +319,14 @@ exports.Prisma.MachineOrderByRelevanceFieldEnum = {
 exports.Prisma.MaterialOrderByRelevanceFieldEnum = {
   name: 'name',
   uom: 'uom'
+};
+
+exports.Prisma.ItemOrderByRelevanceFieldEnum = {
+  code: 'code',
+  name: 'name',
+  baseUom: 'baseUom',
+  createdById: 'createdById',
+  createdFrom: 'createdFrom'
 };
 
 exports.Prisma.ProPrefixOrderByRelevanceFieldEnum = {
@@ -387,6 +412,19 @@ exports.MaterialType = exports.$Enums.MaterialType = {
   CONSUMABLE: 'CONSUMABLE'
 };
 
+exports.ItemKind = exports.$Enums.ItemKind = {
+  RAW: 'RAW',
+  WIP: 'WIP',
+  FG: 'FG',
+  CONSUMABLE: 'CONSUMABLE'
+};
+
+exports.ItemStatus = exports.$Enums.ItemStatus = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED'
+};
+
 exports.ProType = exports.$Enums.ProType = {
   PAPER: 'PAPER',
   RIGID: 'RIGID',
@@ -434,6 +472,7 @@ exports.Prisma.ModelName = {
   User: 'User',
   Machine: 'Machine',
   Material: 'Material',
+  Item: 'Item',
   ProPrefix: 'ProPrefix',
   ProSequence: 'ProSequence',
   Pro: 'Pro',
