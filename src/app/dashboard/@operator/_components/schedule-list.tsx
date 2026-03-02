@@ -34,9 +34,20 @@ export function ScheduleList() {
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
 
+  // Mesin yang diizinkan untuk operator ini
+  const myMachines = api.machineAccess.myMachines.useQuery(undefined, {
+    enabled: mounted,
+  });
+
+  // Jika operator punya jatah mesin → filter. Jika belum diset → tampilkan semua.
+  const machineIds =
+    myMachines.data && myMachines.data.length > 0
+      ? myMachines.data.map((m) => m.id)
+      : undefined;
+
   const schedule = api.pros.getSchedule.useQuery(
-    { start: startOfDay, end: endOfDay },
-    { enabled: mounted },
+    { start: startOfDay, end: endOfDay, machineIds },
+    { enabled: mounted && myMachines.isFetched },
   );
 
   const nextDay = () => setDate((prev) => addDays(prev, 1));

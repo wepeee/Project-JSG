@@ -56,7 +56,7 @@ function formatDateShort(d: Date) {
 function materialsString(mats: ScheduleItem["proses"][number]["materials"]) {
   if (!mats || mats.length === 0) return "-";
   return mats
-    .map((m) => `${m.material.name} ${Number(m.qtyReq).toLocaleString("id-ID")} ${m.material.uom}`)
+    .map((m) => `${m.itemMaster.name} ${Number(m.qtyReq).toLocaleString("id-ID")} ${m.itemMaster.baseUom ?? ""}`)
     .join("; ");
 }
 

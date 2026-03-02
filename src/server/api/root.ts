@@ -5,6 +5,7 @@ import { machinesRouter } from "./routers/superadmin/machines";
 import { verificationRouter } from "./routers/superadmin/verification";
 import { dashboardRouter } from "./routers/superadmin/dashboard";
 import { stdOutputRouter } from "./routers/superadmin/stdOutput";
+import { machineAccessRouter } from "./routers/superadmin/machineAccess";
 import { materialsRouter } from "./routers/ppic/materials";
 import { itemsRouter } from "./routers/ppic/items";
 import { processesRouter } from "./routers/ppic/processes";
@@ -30,6 +31,7 @@ export const appRouter = createTRPCRouter({
   dashboard: dashboardRouter,
   inventory: inventoryRouter,
   stdOutput: stdOutputRouter,
+  machineAccess: machineAccessRouter,
 });
 
 // export type definition of API

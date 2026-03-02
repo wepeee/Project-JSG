@@ -22,6 +22,7 @@ import {
   Check,
   X,
   RotateCcw,
+  Calculator,
 } from "lucide-react";
 
 interface Props {
@@ -51,6 +52,19 @@ export default function StdOutput({ userDepartment }: Props) {
       void refetch();
       setEditingProduct(null);
       setEditValue("");
+    },
+  });
+
+  const computeStdSpeed = api.stdOutput.computeAndSaveStdSpeed.useMutation({
+    onSuccess: (data) => {
+      void refetch();
+      if (data.success) {
+        alert(
+          `Std Speed berhasil dihitung & disimpan ke ${data.updatedCount} laporan.\nNilai: ${data.stdSpeed?.toFixed(1)} /jam`,
+        );
+      } else {
+        alert("Tidak ada data laporan dengan jam mulai & selesai yang valid.");
+      }
     },
   });
 
@@ -307,6 +321,22 @@ export default function StdOutput({ userDepartment }: Props) {
                             <span className="hidden sm:inline">Auto</span>
                           </Button>
                         )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 gap-1.5 text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            computeStdSpeed.mutate({
+                              productName: product.productName,
+                            });
+                          }}
+                          disabled={computeStdSpeed.isPending}
+                          title="Hitung otomatis std speed dan simpan ke semua laporan"
+                        >
+                          <Calculator className="h-3 w-3" />
+                          <span className="hidden sm:inline">Hitung Otomatis</span>
+                        </Button>
                         <Button
                           size="sm"
                           variant="ghost"

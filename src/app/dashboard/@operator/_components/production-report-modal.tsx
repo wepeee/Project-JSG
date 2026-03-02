@@ -1046,6 +1046,8 @@ export function ProductionReportModal({
       reportType: lphType as any,
       startTime: formData.startTime,
       endTime: formData.endTime,
+      startDate: new Date(formData.startDate),
+      endDate: new Date(formData.endDate || formData.startDate), // endDate bisa beda hari (shift malam)
       batchNo: formData.batchNo,
 
       mpStd: parseNumber(formData.mpStd) || undefined,

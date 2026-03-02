@@ -773,43 +773,40 @@ export const prosRouter = createTRPCRouter({
       z.object({
         start: z.coerce.date(),
         end: z.coerce.date(),
+        machineIds: z.array(z.number().int()).optional(), // filter per operator
       }),
     )
     .query(async ({ ctx, input }) => {
+      const machineFilter = input.machineIds?.length
+        ? { machineId: { in: input.machineIds } }
+        : {};
+
       const items = await ctx.db.pro.findMany({
         where: {
           status: { not: ProStatus.CANCELLED },
-          OR: [
-            {
-              startDate: {
-                gte: input.start,
-                lte: input.end,
-              },
+          proses: {
+            some: {
+              startDate: { gte: input.start, lte: input.end },
+              ...machineFilter,
             },
-            {
-              proses: {
-                some: {
-                  startDate: {
-                    gte: input.start,
-                    lte: input.end,
-                  },
-                },
-              },
-            },
-          ],
+          },
         },
         select: {
           id: true,
           proNumber: true,
           productName: true,
-          partNumber: true, // Added
+          partNumber: true,
           qtyPoPcs: true,
           startDate: true,
           status: true,
           type: true,
           autoShiftExpansion: true,
-          proPrefix: { select: { name: true, code: true } }, // Renamed
+          proPrefix: { select: { name: true, code: true } },
           proses: {
+            where: {
+              startDate: { gte: input.start, lte: input.end },
+              ...machineFilter,
+            },
             orderBy: { orderNo: "asc" },
             select: {
               id: true,
@@ -849,7 +846,8 @@ export const prosRouter = createTRPCRouter({
         },
         orderBy: { startDate: "asc" },
       });
-      return items;
+      // Hapus PRO yang tidak punya proses setelah filter (edge case)
+      return items.filter((p) => p.proses.length > 0);
     }),
 });
 

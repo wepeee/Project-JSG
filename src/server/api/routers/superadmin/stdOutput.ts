@@ -280,6 +280,8 @@ export const stdOutputRouter = createTRPCRouter({
         const newMeta = {
           ...existingMeta,
           productManualStdSpeed: input.manualSpeed,
+          // Also update stdSpeed (per-minute) for the archive list
+          stdSpeed: input.manualSpeed !== null ? input.manualSpeed / 60 : null,
         };
 
         await ctx.db.productionReport.update({
@@ -289,6 +291,101 @@ export const stdOutputRouter = createTRPCRouter({
       }
 
       return { success: true, updatedCount: reports.length };
+    }),
+
+  /**
+   * Auto-compute Std Speed for a product and save to each report's metaData.stdSpeed.
+   * This is the value used in the verification/reports list columns.
+   * Speed = Total Output / Total Leadtime (in minutes, to match verification.ts convention)
+   */
+  computeAndSaveStdSpeed: superAdminProcedure
+    .input(
+      z.object({
+        productName: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // 1. Fetch all reports with valid startTime & endTime for this product
+      const allReports = await ctx.db.productionReport.findMany({
+        where: {
+          startTime: { not: null },
+          endTime: { not: null },
+          proses: {
+            pro: {
+              productName: input.productName,
+            },
+          },
+        },
+        select: {
+          id: true,
+          metaData: true,
+          qtyPassOn: true,
+          qtyWip: true,
+          qtyHold: true,
+          startTime: true,
+          endTime: true,
+        },
+      });
+
+      if (allReports.length === 0) {
+        return { success: false, updatedCount: 0, stdSpeed: null };
+      }
+
+      // 2. Compute Std Speed (output / minutes — matches verification.ts convention)
+      let totalOutput = 0;
+      let totalDurationMinutes = 0;
+
+      for (const r of allReports) {
+        if (!r.startTime || !r.endTime) continue;
+        const output =
+          Number(r.qtyPassOn || 0) +
+          Number(r.qtyWip || 0) +
+          Number(r.qtyHold || 0);
+        const mins =
+          (r.endTime.getTime() - r.startTime.getTime()) / (1000 * 60);
+        if (mins > 0) {
+          totalOutput += output;
+          totalDurationMinutes += mins;
+        }
+      }
+
+      if (totalDurationMinutes <= 0) {
+        return { success: false, updatedCount: 0, stdSpeed: null };
+      }
+
+      const stdSpeed = totalOutput / totalDurationMinutes;
+      const manualSpeedPerHour = stdSpeed * 60;
+
+      // 3. Save stdSpeed and productManualStdSpeed to all reports for this product
+      const allProductReports = await ctx.db.productionReport.findMany({
+        where: {
+          proses: {
+            pro: {
+              productName: input.productName,
+            },
+          },
+        },
+        select: { id: true, metaData: true },
+      });
+
+      for (const report of allProductReports) {
+        const existingMeta = (report.metaData as any) ?? {};
+        const newMeta = {
+          ...existingMeta,
+          stdSpeed,
+          productManualStdSpeed: manualSpeedPerHour,
+        };
+        await ctx.db.productionReport.update({
+          where: { id: report.id },
+          data: { metaData: newMeta },
+        });
+      }
+
+      return {
+        success: true,
+        updatedCount: allProductReports.length,
+        stdSpeed: manualSpeedPerHour, // Return per-hour for the UI alert
+      };
     }),
 });
 

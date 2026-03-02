@@ -13,6 +13,7 @@ import ProductionArchive from "./modules/archive/production-archive";
 import DashboardOverview from "./modules/overview/dashboard-overview";
 import WipMonitor from "./modules/inventory/wip-monitor";
 import StdOutput from "./modules/std-output/std-output";
+import MachineAccessManager from "./modules/machines/machine-access-manager";
 
 type Props = {
   user: {
@@ -36,7 +37,8 @@ type NavKey =
   | "report_archive_paper"
   | "report_archive_rigid"
   | "std_output_paper"
-  | "std_output_rigid";
+  | "std_output_rigid"
+  | "machine_access";
 
 export default function SuperadminShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("dashboard");
@@ -74,6 +76,8 @@ export default function SuperadminShell({ user }: Props) {
         return "Daftar Laporan Rigid";
       case "std_output_rigid":
         return "Std Output Rigid";
+      case "machine_access":
+        return "Akses Mesin Operator";
 
       default:
         return "Dashboard";
@@ -200,6 +204,14 @@ export default function SuperadminShell({ user }: Props) {
       )}
 
       <div className="mt-4 mb-2 border-t border-dashed" />
+      <SidebarItem
+        label="Akses Mesin Operator"
+        active={active === "machine_access"}
+        onClick={() => {
+          setActive("machine_access");
+          setOpen(false);
+        }}
+      />
       <SidebarItem
         label="Audit Log"
         active={active === "audit"}
@@ -379,6 +391,9 @@ export default function SuperadminShell({ user }: Props) {
           {active === "std_output_rigid" && (
             <StdOutput userDepartment="RIGID" />
           )}
+
+          {/* Machine Access */}
+          {active === "machine_access" && <MachineAccessManager />}
         </main>
       </div>
     </div>

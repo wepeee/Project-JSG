@@ -35,7 +35,24 @@ model User {
   productionReports        ProductionReport[]
   checkedProductionReports ProductionReport[] @relation("ReportChecker")
   createdItems             Item[]             @relation("ItemCreator")
+  machineAccesses          UserMachineAccess[]
 }
+
+/// Otorisasi mesin per user (operator → mesin yang diizinkan)
+model UserMachineAccess {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  machineId Int
+  machine   Machine  @relation("MachineUserAccess", fields: [machineId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, machineId])
+  @@index([userId])
+  @@index([machineId])
+}
+
 
 // Mesin
 
@@ -72,6 +89,13 @@ model Machine {
   updatedAt DateTime  @updatedAt
   proses    Proses[]
   
+  // Default Process Prefix (e.g. "FRONT", "BACK")
+  defaultProPrefixId Int?
+  defaultProPrefix   ProPrefix? @relation("MachineDefaultPrefix", fields: [defaultProPrefixId], references: [id])
+
+  // User Access (otorisasi operator)
+  userAccesses UserMachineAccess[] @relation("MachineUserAccess")
+
   // Inventory Link
   location  InventoryLocation?
 }
@@ -156,6 +180,7 @@ model ProPrefix {
   type ProType @default(PAPER)
 
   pros Pro[]
+  machines Machine[] @relation("MachineDefaultPrefix")
 }
 
 model ProSequence {

@@ -14,7 +14,9 @@ const productionReportInput = z.object({
   reportType: z.nativeEnum(LphType),
 
   startTime: z.string().optional(), // HH:mm
-  endTime: z.string().optional(), // HH:mm
+  endTime: z.string().optional(),   // HH:mm
+  startDate: z.coerce.date().optional(), // tanggal mulai (opsional, fallback ke reportDate)
+  endDate: z.coerce.date().optional(),   // tanggal selesai (bisa beda hari untuk shift malam)
 
   // Rigid / Resources
   batchNo: z.string().optional(),
@@ -82,8 +84,8 @@ export const productionRouter = createTRPCRouter({
           operatorName: input.operatorName,
           reportType: input.reportType,
 
-          startTime: setTime(input.reportDate, input.startTime),
-          endTime: setTime(input.reportDate, input.endTime),
+          startTime: setTime(input.startDate ?? input.reportDate, input.startTime),
+          endTime: setTime(input.endDate ?? input.reportDate, input.endTime),
 
           batchNo: input.batchNo,
           manPowerStd: input.mpStd,
@@ -212,8 +214,8 @@ export const productionRouter = createTRPCRouter({
           operatorName: input.data.operatorName,
           // reportType: input.data.reportType, // Type usually doesn't change
 
-          startTime: setTime(input.data.reportDate, input.data.startTime),
-          endTime: setTime(input.data.reportDate, input.data.endTime),
+          startTime: setTime(input.data.startDate ?? input.data.reportDate, input.data.startTime),
+          endTime: setTime(input.data.endDate ?? input.data.reportDate, input.data.endTime),
 
           batchNo: input.data.batchNo,
           manPowerStd: input.data.mpStd,

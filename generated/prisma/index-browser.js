@@ -131,6 +131,13 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.UserMachineAccessScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  machineId: 'machineId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.MachineScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -146,7 +153,8 @@ exports.Prisma.MachineScalarFieldEnum = {
   stdOutputPerDay: 'stdOutputPerDay',
   workCenter: 'workCenter',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  defaultProPrefixId: 'defaultProPrefixId'
 };
 
 exports.Prisma.ItemScalarFieldEnum = {
@@ -300,6 +308,10 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
   department: 'department'
 };
 
+exports.Prisma.UserMachineAccessOrderByRelevanceFieldEnum = {
+  userId: 'userId'
+};
+
 exports.Prisma.MachineOrderByRelevanceFieldEnum = {
   name: 'name',
   remark: 'remark',
@@ -449,6 +461,7 @@ exports.TxnType = exports.$Enums.TxnType = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  UserMachineAccess: 'UserMachineAccess',
   Machine: 'Machine',
   Item: 'Item',
   ProPrefix: 'ProPrefix',

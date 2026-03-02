@@ -66,6 +66,7 @@ const schema = z.object({
   cavity: z.number().int().optional(),
   manPower: z.number().int().optional(),
   workCenter: z.string().optional(),
+  defaultProPrefixId: z.number().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -76,8 +77,10 @@ export default function MachineManager({
   machineType?: MachineType;
 }) {
   const utils = api.useUtils();
-  // @ts-ignore
   const machines = api.machines.list.useQuery({ type: machineType });
+  const prefixes = api.processes.list.useQuery({
+    type: machineType === "RIGID" ? "RIGID" : "PAPER",
+  });
 
   const [q, setQ] = React.useState("");
   const [serverError, setServerError] = React.useState<string | null>(null);
@@ -140,6 +143,7 @@ export default function MachineManager({
       cavity: 1,
       manPower: 1,
       workCenter: "",
+      defaultProPrefixId: undefined,
     } as FormValues,
     validators: { onSubmit: schema },
     onSubmit: async ({ value }) => {
@@ -158,6 +162,7 @@ export default function MachineManager({
           cavity: Number(value.cavity),
           manPower: Number(value.manPower),
           stdOutputPerDay: Number(value.stdOutputPerShift) * 3, // auto calc approx
+          defaultProPrefixId: value.defaultProPrefixId,
         });
       } catch (e: any) {
         setServerError(e?.message ?? "Gagal menyimpan");
@@ -177,6 +182,7 @@ export default function MachineManager({
       cavity: 1,
       manPower: 1,
       workCenter: "",
+      defaultProPrefixId: undefined,
     } as FormValues,
     validators: { onSubmit: schema },
     onSubmit: async ({ value }) => {
@@ -195,6 +201,7 @@ export default function MachineManager({
           stdOutputPerDay: Number(value.stdOutputPerShift) * 3,
           workCenter: value.workCenter || undefined,
           remark: value.remark || undefined,
+          defaultProPrefixId: value.defaultProPrefixId,
         });
       } catch (e: any) {
         // handled by onError
@@ -215,6 +222,7 @@ export default function MachineManager({
         cavity: editingMachine.cavity ?? 1,
         manPower: editingMachine.manPower ?? 1,
         workCenter: editingMachine.workCenter ?? "",
+        defaultProPrefixId: editingMachine.defaultProPrefixId ?? undefined,
       });
     }
   }, [editingMachine]);
@@ -453,6 +461,30 @@ export default function MachineManager({
                   </Field>
                 )}
               />
+
+              <form.Field
+                name="defaultProPrefixId"
+                children={(field) => (
+                  <Field>
+                    <FieldLabel>Default Process Prefix</FieldLabel>
+                    <Select
+                      value={field.state.value?.toString()}
+                      onValueChange={(val) => field.handleChange(Number(val))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih Prefix" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {prefixes.data?.map((p) => (
+                          <SelectItem key={p.id} value={p.id.toString()}>
+                            [{p.code}] {p.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                )}
+              />
             </FieldGroup>
 
             {serverError ? (
@@ -575,7 +607,19 @@ export default function MachineManager({
                               : ""
                           }`}
                         >
-                          {m.name}
+                          <div>
+                            <div>{m.name}</div>
+                            {m.defaultProPrefix && (
+                              <div className="text-primary mt-0.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-tight">
+                                <span className="bg-primary/10 border-primary/20 rounded border px-1 py-0.5 leading-none">
+                                  {m.defaultProPrefix.code}
+                                </span>
+                                <span className="opacity-70">
+                                  {m.defaultProPrefix.name}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
 
                         {machineType === "RIGID" && (
@@ -858,6 +902,30 @@ export default function MachineManager({
                       value={field.state.value ?? ""}
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
+                  </Field>
+                )}
+              />
+
+              <editForm.Field
+                name="defaultProPrefixId"
+                children={(field) => (
+                  <Field>
+                    <FieldLabel>Default Process Prefix</FieldLabel>
+                    <Select
+                      value={field.state.value?.toString()}
+                      onValueChange={(val) => field.handleChange(Number(val))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih Prefix" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {prefixes.data?.map((p) => (
+                          <SelectItem key={p.id} value={p.id.toString()}>
+                            [{p.code}] {p.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </Field>
                 )}
               />

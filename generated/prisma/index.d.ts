@@ -19,6 +19,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>
 /**
+ * Model UserMachineAccess
+ * Otorisasi mesin per user (operator → mesin yang diizinkan)
+ */
+export type UserMachineAccess = $Result.DefaultSelection<Prisma.$UserMachineAccessPayload>
+/**
  * Model Machine
  * 
  */
@@ -354,6 +359,16 @@ export class PrismaClient<
     * ```
     */
   get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userMachineAccess`: Exposes CRUD operations for the **UserMachineAccess** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserMachineAccesses
+    * const userMachineAccesses = await prisma.userMachineAccess.findMany()
+    * ```
+    */
+  get userMachineAccess(): Prisma.UserMachineAccessDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.machine`: Exposes CRUD operations for the **Machine** model.
@@ -896,6 +911,7 @@ export namespace Prisma {
 
   export const ModelName: {
     User: 'User',
+    UserMachineAccess: 'UserMachineAccess',
     Machine: 'Machine',
     Item: 'Item',
     ProPrefix: 'ProPrefix',
@@ -924,7 +940,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "machine" | "item" | "proPrefix" | "proSequence" | "pro" | "proses" | "prosesMaterial" | "productionReport" | "inventoryLocation" | "inventoryTxn"
+      modelProps: "user" | "userMachineAccess" | "machine" | "item" | "proPrefix" | "proSequence" | "pro" | "proses" | "prosesMaterial" | "productionReport" | "inventoryLocation" | "inventoryTxn"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -991,6 +1007,72 @@ export namespace Prisma {
           count: {
             args: Prisma.UserCountArgs<ExtArgs>
             result: $Utils.Optional<UserCountAggregateOutputType> | number
+          }
+        }
+      }
+      UserMachineAccess: {
+        payload: Prisma.$UserMachineAccessPayload<ExtArgs>
+        fields: Prisma.UserMachineAccessFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserMachineAccessFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserMachineAccessPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserMachineAccessFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserMachineAccessPayload>
+          }
+          findFirst: {
+            args: Prisma.UserMachineAccessFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserMachineAccessPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserMachineAccessFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserMachineAccessPayload>
+          }
+          findMany: {
+            args: Prisma.UserMachineAccessFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserMachineAccessPayload>[]
+          }
+          create: {
+            args: Prisma.UserMachineAccessCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserMachineAccessPayload>
+          }
+          createMany: {
+            args: Prisma.UserMachineAccessCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.UserMachineAccessDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserMachineAccessPayload>
+          }
+          update: {
+            args: Prisma.UserMachineAccessUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserMachineAccessPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserMachineAccessDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserMachineAccessUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.UserMachineAccessUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserMachineAccessPayload>
+          }
+          aggregate: {
+            args: Prisma.UserMachineAccessAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserMachineAccess>
+          }
+          groupBy: {
+            args: Prisma.UserMachineAccessGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserMachineAccessGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserMachineAccessCountArgs<ExtArgs>
+            result: $Utils.Optional<UserMachineAccessCountAggregateOutputType> | number
           }
         }
       }
@@ -1751,6 +1833,7 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     user?: UserOmit
+    userMachineAccess?: UserMachineAccessOmit
     machine?: MachineOmit
     item?: ItemOmit
     proPrefix?: ProPrefixOmit
@@ -1844,12 +1927,14 @@ export namespace Prisma {
     productionReports: number
     checkedProductionReports: number
     createdItems: number
+    machineAccesses: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     productionReports?: boolean | UserCountOutputTypeCountProductionReportsArgs
     checkedProductionReports?: boolean | UserCountOutputTypeCountCheckedProductionReportsArgs
     createdItems?: boolean | UserCountOutputTypeCountCreatedItemsArgs
+    machineAccesses?: boolean | UserCountOutputTypeCountMachineAccessesArgs
   }
 
   // Custom InputTypes
@@ -1884,6 +1969,13 @@ export namespace Prisma {
     where?: ItemWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountMachineAccessesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserMachineAccessWhereInput
+  }
+
 
   /**
    * Count Type MachineCountOutputType
@@ -1891,10 +1983,12 @@ export namespace Prisma {
 
   export type MachineCountOutputType = {
     proses: number
+    userAccesses: number
   }
 
   export type MachineCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     proses?: boolean | MachineCountOutputTypeCountProsesArgs
+    userAccesses?: boolean | MachineCountOutputTypeCountUserAccessesArgs
   }
 
   // Custom InputTypes
@@ -1913,6 +2007,13 @@ export namespace Prisma {
    */
   export type MachineCountOutputTypeCountProsesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProsesWhereInput
+  }
+
+  /**
+   * MachineCountOutputType without action
+   */
+  export type MachineCountOutputTypeCountUserAccessesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserMachineAccessWhereInput
   }
 
 
@@ -1980,10 +2081,12 @@ export namespace Prisma {
 
   export type ProPrefixCountOutputType = {
     pros: number
+    machines: number
   }
 
   export type ProPrefixCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pros?: boolean | ProPrefixCountOutputTypeCountProsArgs
+    machines?: boolean | ProPrefixCountOutputTypeCountMachinesArgs
   }
 
   // Custom InputTypes
@@ -2002,6 +2105,13 @@ export namespace Prisma {
    */
   export type ProPrefixCountOutputTypeCountProsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProWhereInput
+  }
+
+  /**
+   * ProPrefixCountOutputType without action
+   */
+  export type ProPrefixCountOutputTypeCountMachinesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MachineWhereInput
   }
 
 
@@ -2343,6 +2453,7 @@ export namespace Prisma {
     productionReports?: boolean | User$productionReportsArgs<ExtArgs>
     checkedProductionReports?: boolean | User$checkedProductionReportsArgs<ExtArgs>
     createdItems?: boolean | User$createdItemsArgs<ExtArgs>
+    machineAccesses?: boolean | User$machineAccessesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2363,6 +2474,7 @@ export namespace Prisma {
     productionReports?: boolean | User$productionReportsArgs<ExtArgs>
     checkedProductionReports?: boolean | User$checkedProductionReportsArgs<ExtArgs>
     createdItems?: boolean | User$createdItemsArgs<ExtArgs>
+    machineAccesses?: boolean | User$machineAccessesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -2372,6 +2484,7 @@ export namespace Prisma {
       productionReports: Prisma.$ProductionReportPayload<ExtArgs>[]
       checkedProductionReports: Prisma.$ProductionReportPayload<ExtArgs>[]
       createdItems: Prisma.$ItemPayload<ExtArgs>[]
+      machineAccesses: Prisma.$UserMachineAccessPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2724,6 +2837,7 @@ export namespace Prisma {
     productionReports<T extends User$productionReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$productionReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     checkedProductionReports<T extends User$checkedProductionReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$checkedProductionReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     createdItems<T extends User$createdItemsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    machineAccesses<T extends User$machineAccessesArgs<ExtArgs> = {}>(args?: Subset<T, User$machineAccessesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3175,6 +3289,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.machineAccesses
+   */
+  export type User$machineAccessesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
+    where?: UserMachineAccessWhereInput
+    orderBy?: UserMachineAccessOrderByWithRelationInput | UserMachineAccessOrderByWithRelationInput[]
+    cursor?: UserMachineAccessWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserMachineAccessScalarFieldEnum | UserMachineAccessScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3190,6 +3328,966 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UserMachineAccess
+   */
+
+  export type AggregateUserMachineAccess = {
+    _count: UserMachineAccessCountAggregateOutputType | null
+    _avg: UserMachineAccessAvgAggregateOutputType | null
+    _sum: UserMachineAccessSumAggregateOutputType | null
+    _min: UserMachineAccessMinAggregateOutputType | null
+    _max: UserMachineAccessMaxAggregateOutputType | null
+  }
+
+  export type UserMachineAccessAvgAggregateOutputType = {
+    id: number | null
+    machineId: number | null
+  }
+
+  export type UserMachineAccessSumAggregateOutputType = {
+    id: number | null
+    machineId: number | null
+  }
+
+  export type UserMachineAccessMinAggregateOutputType = {
+    id: number | null
+    userId: string | null
+    machineId: number | null
+    createdAt: Date | null
+  }
+
+  export type UserMachineAccessMaxAggregateOutputType = {
+    id: number | null
+    userId: string | null
+    machineId: number | null
+    createdAt: Date | null
+  }
+
+  export type UserMachineAccessCountAggregateOutputType = {
+    id: number
+    userId: number
+    machineId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type UserMachineAccessAvgAggregateInputType = {
+    id?: true
+    machineId?: true
+  }
+
+  export type UserMachineAccessSumAggregateInputType = {
+    id?: true
+    machineId?: true
+  }
+
+  export type UserMachineAccessMinAggregateInputType = {
+    id?: true
+    userId?: true
+    machineId?: true
+    createdAt?: true
+  }
+
+  export type UserMachineAccessMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    machineId?: true
+    createdAt?: true
+  }
+
+  export type UserMachineAccessCountAggregateInputType = {
+    id?: true
+    userId?: true
+    machineId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type UserMachineAccessAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserMachineAccess to aggregate.
+     */
+    where?: UserMachineAccessWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserMachineAccesses to fetch.
+     */
+    orderBy?: UserMachineAccessOrderByWithRelationInput | UserMachineAccessOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserMachineAccessWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserMachineAccesses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserMachineAccesses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserMachineAccesses
+    **/
+    _count?: true | UserMachineAccessCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UserMachineAccessAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserMachineAccessSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserMachineAccessMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserMachineAccessMaxAggregateInputType
+  }
+
+  export type GetUserMachineAccessAggregateType<T extends UserMachineAccessAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserMachineAccess]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserMachineAccess[P]>
+      : GetScalarType<T[P], AggregateUserMachineAccess[P]>
+  }
+
+
+
+
+  export type UserMachineAccessGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserMachineAccessWhereInput
+    orderBy?: UserMachineAccessOrderByWithAggregationInput | UserMachineAccessOrderByWithAggregationInput[]
+    by: UserMachineAccessScalarFieldEnum[] | UserMachineAccessScalarFieldEnum
+    having?: UserMachineAccessScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserMachineAccessCountAggregateInputType | true
+    _avg?: UserMachineAccessAvgAggregateInputType
+    _sum?: UserMachineAccessSumAggregateInputType
+    _min?: UserMachineAccessMinAggregateInputType
+    _max?: UserMachineAccessMaxAggregateInputType
+  }
+
+  export type UserMachineAccessGroupByOutputType = {
+    id: number
+    userId: string
+    machineId: number
+    createdAt: Date
+    _count: UserMachineAccessCountAggregateOutputType | null
+    _avg: UserMachineAccessAvgAggregateOutputType | null
+    _sum: UserMachineAccessSumAggregateOutputType | null
+    _min: UserMachineAccessMinAggregateOutputType | null
+    _max: UserMachineAccessMaxAggregateOutputType | null
+  }
+
+  type GetUserMachineAccessGroupByPayload<T extends UserMachineAccessGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserMachineAccessGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserMachineAccessGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserMachineAccessGroupByOutputType[P]>
+            : GetScalarType<T[P], UserMachineAccessGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserMachineAccessSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    machineId?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    machine?: boolean | MachineDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userMachineAccess"]>
+
+
+
+  export type UserMachineAccessSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    machineId?: boolean
+    createdAt?: boolean
+  }
+
+  export type UserMachineAccessOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "machineId" | "createdAt", ExtArgs["result"]["userMachineAccess"]>
+  export type UserMachineAccessInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    machine?: boolean | MachineDefaultArgs<ExtArgs>
+  }
+
+  export type $UserMachineAccessPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserMachineAccess"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      machine: Prisma.$MachinePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      userId: string
+      machineId: number
+      createdAt: Date
+    }, ExtArgs["result"]["userMachineAccess"]>
+    composites: {}
+  }
+
+  type UserMachineAccessGetPayload<S extends boolean | null | undefined | UserMachineAccessDefaultArgs> = $Result.GetResult<Prisma.$UserMachineAccessPayload, S>
+
+  type UserMachineAccessCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserMachineAccessFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserMachineAccessCountAggregateInputType | true
+    }
+
+  export interface UserMachineAccessDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserMachineAccess'], meta: { name: 'UserMachineAccess' } }
+    /**
+     * Find zero or one UserMachineAccess that matches the filter.
+     * @param {UserMachineAccessFindUniqueArgs} args - Arguments to find a UserMachineAccess
+     * @example
+     * // Get one UserMachineAccess
+     * const userMachineAccess = await prisma.userMachineAccess.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserMachineAccessFindUniqueArgs>(args: SelectSubset<T, UserMachineAccessFindUniqueArgs<ExtArgs>>): Prisma__UserMachineAccessClient<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserMachineAccess that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserMachineAccessFindUniqueOrThrowArgs} args - Arguments to find a UserMachineAccess
+     * @example
+     * // Get one UserMachineAccess
+     * const userMachineAccess = await prisma.userMachineAccess.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserMachineAccessFindUniqueOrThrowArgs>(args: SelectSubset<T, UserMachineAccessFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserMachineAccessClient<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserMachineAccess that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserMachineAccessFindFirstArgs} args - Arguments to find a UserMachineAccess
+     * @example
+     * // Get one UserMachineAccess
+     * const userMachineAccess = await prisma.userMachineAccess.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserMachineAccessFindFirstArgs>(args?: SelectSubset<T, UserMachineAccessFindFirstArgs<ExtArgs>>): Prisma__UserMachineAccessClient<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserMachineAccess that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserMachineAccessFindFirstOrThrowArgs} args - Arguments to find a UserMachineAccess
+     * @example
+     * // Get one UserMachineAccess
+     * const userMachineAccess = await prisma.userMachineAccess.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserMachineAccessFindFirstOrThrowArgs>(args?: SelectSubset<T, UserMachineAccessFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserMachineAccessClient<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserMachineAccesses that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserMachineAccessFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserMachineAccesses
+     * const userMachineAccesses = await prisma.userMachineAccess.findMany()
+     * 
+     * // Get first 10 UserMachineAccesses
+     * const userMachineAccesses = await prisma.userMachineAccess.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userMachineAccessWithIdOnly = await prisma.userMachineAccess.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserMachineAccessFindManyArgs>(args?: SelectSubset<T, UserMachineAccessFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserMachineAccess.
+     * @param {UserMachineAccessCreateArgs} args - Arguments to create a UserMachineAccess.
+     * @example
+     * // Create one UserMachineAccess
+     * const UserMachineAccess = await prisma.userMachineAccess.create({
+     *   data: {
+     *     // ... data to create a UserMachineAccess
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserMachineAccessCreateArgs>(args: SelectSubset<T, UserMachineAccessCreateArgs<ExtArgs>>): Prisma__UserMachineAccessClient<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserMachineAccesses.
+     * @param {UserMachineAccessCreateManyArgs} args - Arguments to create many UserMachineAccesses.
+     * @example
+     * // Create many UserMachineAccesses
+     * const userMachineAccess = await prisma.userMachineAccess.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserMachineAccessCreateManyArgs>(args?: SelectSubset<T, UserMachineAccessCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a UserMachineAccess.
+     * @param {UserMachineAccessDeleteArgs} args - Arguments to delete one UserMachineAccess.
+     * @example
+     * // Delete one UserMachineAccess
+     * const UserMachineAccess = await prisma.userMachineAccess.delete({
+     *   where: {
+     *     // ... filter to delete one UserMachineAccess
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserMachineAccessDeleteArgs>(args: SelectSubset<T, UserMachineAccessDeleteArgs<ExtArgs>>): Prisma__UserMachineAccessClient<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserMachineAccess.
+     * @param {UserMachineAccessUpdateArgs} args - Arguments to update one UserMachineAccess.
+     * @example
+     * // Update one UserMachineAccess
+     * const userMachineAccess = await prisma.userMachineAccess.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserMachineAccessUpdateArgs>(args: SelectSubset<T, UserMachineAccessUpdateArgs<ExtArgs>>): Prisma__UserMachineAccessClient<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserMachineAccesses.
+     * @param {UserMachineAccessDeleteManyArgs} args - Arguments to filter UserMachineAccesses to delete.
+     * @example
+     * // Delete a few UserMachineAccesses
+     * const { count } = await prisma.userMachineAccess.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserMachineAccessDeleteManyArgs>(args?: SelectSubset<T, UserMachineAccessDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserMachineAccesses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserMachineAccessUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserMachineAccesses
+     * const userMachineAccess = await prisma.userMachineAccess.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserMachineAccessUpdateManyArgs>(args: SelectSubset<T, UserMachineAccessUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one UserMachineAccess.
+     * @param {UserMachineAccessUpsertArgs} args - Arguments to update or create a UserMachineAccess.
+     * @example
+     * // Update or create a UserMachineAccess
+     * const userMachineAccess = await prisma.userMachineAccess.upsert({
+     *   create: {
+     *     // ... data to create a UserMachineAccess
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserMachineAccess we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserMachineAccessUpsertArgs>(args: SelectSubset<T, UserMachineAccessUpsertArgs<ExtArgs>>): Prisma__UserMachineAccessClient<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UserMachineAccesses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserMachineAccessCountArgs} args - Arguments to filter UserMachineAccesses to count.
+     * @example
+     * // Count the number of UserMachineAccesses
+     * const count = await prisma.userMachineAccess.count({
+     *   where: {
+     *     // ... the filter for the UserMachineAccesses we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserMachineAccessCountArgs>(
+      args?: Subset<T, UserMachineAccessCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserMachineAccessCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserMachineAccess.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserMachineAccessAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserMachineAccessAggregateArgs>(args: Subset<T, UserMachineAccessAggregateArgs>): Prisma.PrismaPromise<GetUserMachineAccessAggregateType<T>>
+
+    /**
+     * Group by UserMachineAccess.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserMachineAccessGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserMachineAccessGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserMachineAccessGroupByArgs['orderBy'] }
+        : { orderBy?: UserMachineAccessGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserMachineAccessGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserMachineAccessGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserMachineAccess model
+   */
+  readonly fields: UserMachineAccessFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserMachineAccess.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserMachineAccessClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    machine<T extends MachineDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MachineDefaultArgs<ExtArgs>>): Prisma__MachineClient<$Result.GetResult<Prisma.$MachinePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserMachineAccess model
+   */
+  interface UserMachineAccessFieldRefs {
+    readonly id: FieldRef<"UserMachineAccess", 'Int'>
+    readonly userId: FieldRef<"UserMachineAccess", 'String'>
+    readonly machineId: FieldRef<"UserMachineAccess", 'Int'>
+    readonly createdAt: FieldRef<"UserMachineAccess", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserMachineAccess findUnique
+   */
+  export type UserMachineAccessFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
+    /**
+     * Filter, which UserMachineAccess to fetch.
+     */
+    where: UserMachineAccessWhereUniqueInput
+  }
+
+  /**
+   * UserMachineAccess findUniqueOrThrow
+   */
+  export type UserMachineAccessFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
+    /**
+     * Filter, which UserMachineAccess to fetch.
+     */
+    where: UserMachineAccessWhereUniqueInput
+  }
+
+  /**
+   * UserMachineAccess findFirst
+   */
+  export type UserMachineAccessFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
+    /**
+     * Filter, which UserMachineAccess to fetch.
+     */
+    where?: UserMachineAccessWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserMachineAccesses to fetch.
+     */
+    orderBy?: UserMachineAccessOrderByWithRelationInput | UserMachineAccessOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserMachineAccesses.
+     */
+    cursor?: UserMachineAccessWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserMachineAccesses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserMachineAccesses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserMachineAccesses.
+     */
+    distinct?: UserMachineAccessScalarFieldEnum | UserMachineAccessScalarFieldEnum[]
+  }
+
+  /**
+   * UserMachineAccess findFirstOrThrow
+   */
+  export type UserMachineAccessFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
+    /**
+     * Filter, which UserMachineAccess to fetch.
+     */
+    where?: UserMachineAccessWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserMachineAccesses to fetch.
+     */
+    orderBy?: UserMachineAccessOrderByWithRelationInput | UserMachineAccessOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserMachineAccesses.
+     */
+    cursor?: UserMachineAccessWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserMachineAccesses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserMachineAccesses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserMachineAccesses.
+     */
+    distinct?: UserMachineAccessScalarFieldEnum | UserMachineAccessScalarFieldEnum[]
+  }
+
+  /**
+   * UserMachineAccess findMany
+   */
+  export type UserMachineAccessFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
+    /**
+     * Filter, which UserMachineAccesses to fetch.
+     */
+    where?: UserMachineAccessWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserMachineAccesses to fetch.
+     */
+    orderBy?: UserMachineAccessOrderByWithRelationInput | UserMachineAccessOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserMachineAccesses.
+     */
+    cursor?: UserMachineAccessWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserMachineAccesses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserMachineAccesses.
+     */
+    skip?: number
+    distinct?: UserMachineAccessScalarFieldEnum | UserMachineAccessScalarFieldEnum[]
+  }
+
+  /**
+   * UserMachineAccess create
+   */
+  export type UserMachineAccessCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserMachineAccess.
+     */
+    data: XOR<UserMachineAccessCreateInput, UserMachineAccessUncheckedCreateInput>
+  }
+
+  /**
+   * UserMachineAccess createMany
+   */
+  export type UserMachineAccessCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserMachineAccesses.
+     */
+    data: UserMachineAccessCreateManyInput | UserMachineAccessCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserMachineAccess update
+   */
+  export type UserMachineAccessUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserMachineAccess.
+     */
+    data: XOR<UserMachineAccessUpdateInput, UserMachineAccessUncheckedUpdateInput>
+    /**
+     * Choose, which UserMachineAccess to update.
+     */
+    where: UserMachineAccessWhereUniqueInput
+  }
+
+  /**
+   * UserMachineAccess updateMany
+   */
+  export type UserMachineAccessUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserMachineAccesses.
+     */
+    data: XOR<UserMachineAccessUpdateManyMutationInput, UserMachineAccessUncheckedUpdateManyInput>
+    /**
+     * Filter which UserMachineAccesses to update
+     */
+    where?: UserMachineAccessWhereInput
+    /**
+     * Limit how many UserMachineAccesses to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserMachineAccess upsert
+   */
+  export type UserMachineAccessUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserMachineAccess to update in case it exists.
+     */
+    where: UserMachineAccessWhereUniqueInput
+    /**
+     * In case the UserMachineAccess found by the `where` argument doesn't exist, create a new UserMachineAccess with this data.
+     */
+    create: XOR<UserMachineAccessCreateInput, UserMachineAccessUncheckedCreateInput>
+    /**
+     * In case the UserMachineAccess was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserMachineAccessUpdateInput, UserMachineAccessUncheckedUpdateInput>
+  }
+
+  /**
+   * UserMachineAccess delete
+   */
+  export type UserMachineAccessDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
+    /**
+     * Filter which UserMachineAccess to delete.
+     */
+    where: UserMachineAccessWhereUniqueInput
+  }
+
+  /**
+   * UserMachineAccess deleteMany
+   */
+  export type UserMachineAccessDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserMachineAccesses to delete
+     */
+    where?: UserMachineAccessWhereInput
+    /**
+     * Limit how many UserMachineAccesses to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserMachineAccess without action
+   */
+  export type UserMachineAccessDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
   }
 
 
@@ -3214,6 +4312,7 @@ export namespace Prisma {
     cavity: number | null
     manPower: number | null
     stdOutputPerDay: number | null
+    defaultProPrefixId: number | null
   }
 
   export type MachineSumAggregateOutputType = {
@@ -3225,6 +4324,7 @@ export namespace Prisma {
     cavity: number | null
     manPower: number | null
     stdOutputPerDay: number | null
+    defaultProPrefixId: number | null
   }
 
   export type MachineMinAggregateOutputType = {
@@ -3243,6 +4343,7 @@ export namespace Prisma {
     workCenter: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    defaultProPrefixId: number | null
   }
 
   export type MachineMaxAggregateOutputType = {
@@ -3261,6 +4362,7 @@ export namespace Prisma {
     workCenter: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    defaultProPrefixId: number | null
   }
 
   export type MachineCountAggregateOutputType = {
@@ -3279,6 +4381,7 @@ export namespace Prisma {
     workCenter: number
     createdAt: number
     updatedAt: number
+    defaultProPrefixId: number
     _all: number
   }
 
@@ -3292,6 +4395,7 @@ export namespace Prisma {
     cavity?: true
     manPower?: true
     stdOutputPerDay?: true
+    defaultProPrefixId?: true
   }
 
   export type MachineSumAggregateInputType = {
@@ -3303,6 +4407,7 @@ export namespace Prisma {
     cavity?: true
     manPower?: true
     stdOutputPerDay?: true
+    defaultProPrefixId?: true
   }
 
   export type MachineMinAggregateInputType = {
@@ -3321,6 +4426,7 @@ export namespace Prisma {
     workCenter?: true
     createdAt?: true
     updatedAt?: true
+    defaultProPrefixId?: true
   }
 
   export type MachineMaxAggregateInputType = {
@@ -3339,6 +4445,7 @@ export namespace Prisma {
     workCenter?: true
     createdAt?: true
     updatedAt?: true
+    defaultProPrefixId?: true
   }
 
   export type MachineCountAggregateInputType = {
@@ -3357,6 +4464,7 @@ export namespace Prisma {
     workCenter?: true
     createdAt?: true
     updatedAt?: true
+    defaultProPrefixId?: true
     _all?: true
   }
 
@@ -3462,6 +4570,7 @@ export namespace Prisma {
     workCenter: string | null
     createdAt: Date
     updatedAt: Date
+    defaultProPrefixId: number | null
     _count: MachineCountAggregateOutputType | null
     _avg: MachineAvgAggregateOutputType | null
     _sum: MachineSumAggregateOutputType | null
@@ -3499,7 +4608,10 @@ export namespace Prisma {
     workCenter?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    defaultProPrefixId?: boolean
     proses?: boolean | Machine$prosesArgs<ExtArgs>
+    defaultProPrefix?: boolean | Machine$defaultProPrefixArgs<ExtArgs>
+    userAccesses?: boolean | Machine$userAccessesArgs<ExtArgs>
     location?: boolean | Machine$locationArgs<ExtArgs>
     _count?: boolean | MachineCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["machine"]>
@@ -3522,11 +4634,14 @@ export namespace Prisma {
     workCenter?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    defaultProPrefixId?: boolean
   }
 
-  export type MachineOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "stdOutputPerHour" | "stdOutputPerShift" | "uom" | "type" | "remark" | "cycleTimeSec" | "cycleTimeMin" | "cavity" | "manPower" | "stdOutputPerDay" | "workCenter" | "createdAt" | "updatedAt", ExtArgs["result"]["machine"]>
+  export type MachineOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "stdOutputPerHour" | "stdOutputPerShift" | "uom" | "type" | "remark" | "cycleTimeSec" | "cycleTimeMin" | "cavity" | "manPower" | "stdOutputPerDay" | "workCenter" | "createdAt" | "updatedAt" | "defaultProPrefixId", ExtArgs["result"]["machine"]>
   export type MachineInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     proses?: boolean | Machine$prosesArgs<ExtArgs>
+    defaultProPrefix?: boolean | Machine$defaultProPrefixArgs<ExtArgs>
+    userAccesses?: boolean | Machine$userAccessesArgs<ExtArgs>
     location?: boolean | Machine$locationArgs<ExtArgs>
     _count?: boolean | MachineCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -3535,6 +4650,8 @@ export namespace Prisma {
     name: "Machine"
     objects: {
       proses: Prisma.$ProsesPayload<ExtArgs>[]
+      defaultProPrefix: Prisma.$ProPrefixPayload<ExtArgs> | null
+      userAccesses: Prisma.$UserMachineAccessPayload<ExtArgs>[]
       location: Prisma.$InventoryLocationPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -3553,6 +4670,7 @@ export namespace Prisma {
       workCenter: string | null
       createdAt: Date
       updatedAt: Date
+      defaultProPrefixId: number | null
     }, ExtArgs["result"]["machine"]>
     composites: {}
   }
@@ -3894,6 +5012,8 @@ export namespace Prisma {
   export interface Prisma__MachineClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     proses<T extends Machine$prosesArgs<ExtArgs> = {}>(args?: Subset<T, Machine$prosesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    defaultProPrefix<T extends Machine$defaultProPrefixArgs<ExtArgs> = {}>(args?: Subset<T, Machine$defaultProPrefixArgs<ExtArgs>>): Prisma__ProPrefixClient<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    userAccesses<T extends Machine$userAccessesArgs<ExtArgs> = {}>(args?: Subset<T, Machine$userAccessesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     location<T extends Machine$locationArgs<ExtArgs> = {}>(args?: Subset<T, Machine$locationArgs<ExtArgs>>): Prisma__InventoryLocationClient<$Result.GetResult<Prisma.$InventoryLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3939,6 +5059,7 @@ export namespace Prisma {
     readonly workCenter: FieldRef<"Machine", 'String'>
     readonly createdAt: FieldRef<"Machine", 'DateTime'>
     readonly updatedAt: FieldRef<"Machine", 'DateTime'>
+    readonly defaultProPrefixId: FieldRef<"Machine", 'Int'>
   }
     
 
@@ -4303,6 +5424,49 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProsesScalarFieldEnum | ProsesScalarFieldEnum[]
+  }
+
+  /**
+   * Machine.defaultProPrefix
+   */
+  export type Machine$defaultProPrefixArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProPrefix
+     */
+    select?: ProPrefixSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProPrefix
+     */
+    omit?: ProPrefixOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProPrefixInclude<ExtArgs> | null
+    where?: ProPrefixWhereInput
+  }
+
+  /**
+   * Machine.userAccesses
+   */
+  export type Machine$userAccessesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserMachineAccess
+     */
+    select?: UserMachineAccessSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserMachineAccess
+     */
+    omit?: UserMachineAccessOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserMachineAccessInclude<ExtArgs> | null
+    where?: UserMachineAccessWhereInput
+    orderBy?: UserMachineAccessOrderByWithRelationInput | UserMachineAccessOrderByWithRelationInput[]
+    cursor?: UserMachineAccessWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserMachineAccessScalarFieldEnum | UserMachineAccessScalarFieldEnum[]
   }
 
   /**
@@ -5685,6 +6849,7 @@ export namespace Prisma {
     name?: boolean
     type?: boolean
     pros?: boolean | ProPrefix$prosArgs<ExtArgs>
+    machines?: boolean | ProPrefix$machinesArgs<ExtArgs>
     _count?: boolean | ProPrefixCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["proPrefix"]>
 
@@ -5700,6 +6865,7 @@ export namespace Prisma {
   export type ProPrefixOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "type", ExtArgs["result"]["proPrefix"]>
   export type ProPrefixInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pros?: boolean | ProPrefix$prosArgs<ExtArgs>
+    machines?: boolean | ProPrefix$machinesArgs<ExtArgs>
     _count?: boolean | ProPrefixCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -5707,6 +6873,7 @@ export namespace Prisma {
     name: "ProPrefix"
     objects: {
       pros: Prisma.$ProPayload<ExtArgs>[]
+      machines: Prisma.$MachinePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -6054,6 +7221,7 @@ export namespace Prisma {
   export interface Prisma__ProPrefixClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     pros<T extends ProPrefix$prosArgs<ExtArgs> = {}>(args?: Subset<T, ProPrefix$prosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    machines<T extends ProPrefix$machinesArgs<ExtArgs> = {}>(args?: Subset<T, ProPrefix$machinesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MachinePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6451,6 +7619,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProScalarFieldEnum | ProScalarFieldEnum[]
+  }
+
+  /**
+   * ProPrefix.machines
+   */
+  export type ProPrefix$machinesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Machine
+     */
+    select?: MachineSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Machine
+     */
+    omit?: MachineOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MachineInclude<ExtArgs> | null
+    where?: MachineWhereInput
+    orderBy?: MachineOrderByWithRelationInput | MachineOrderByWithRelationInput[]
+    cursor?: MachineWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MachineScalarFieldEnum | MachineScalarFieldEnum[]
   }
 
   /**
@@ -14349,6 +15541,16 @@ export namespace Prisma {
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+  export const UserMachineAccessScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    machineId: 'machineId',
+    createdAt: 'createdAt'
+  };
+
+  export type UserMachineAccessScalarFieldEnum = (typeof UserMachineAccessScalarFieldEnum)[keyof typeof UserMachineAccessScalarFieldEnum]
+
+
   export const MachineScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -14364,7 +15566,8 @@ export namespace Prisma {
     stdOutputPerDay: 'stdOutputPerDay',
     workCenter: 'workCenter',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    defaultProPrefixId: 'defaultProPrefixId'
   };
 
   export type MachineScalarFieldEnum = (typeof MachineScalarFieldEnum)[keyof typeof MachineScalarFieldEnum]
@@ -14558,6 +15761,13 @@ export namespace Prisma {
   };
 
   export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
+
+
+  export const UserMachineAccessOrderByRelevanceFieldEnum: {
+    userId: 'userId'
+  };
+
+  export type UserMachineAccessOrderByRelevanceFieldEnum = (typeof UserMachineAccessOrderByRelevanceFieldEnum)[keyof typeof UserMachineAccessOrderByRelevanceFieldEnum]
 
 
   export const MachineOrderByRelevanceFieldEnum: {
@@ -14820,6 +16030,7 @@ export namespace Prisma {
     productionReports?: ProductionReportListRelationFilter
     checkedProductionReports?: ProductionReportListRelationFilter
     createdItems?: ItemListRelationFilter
+    machineAccesses?: UserMachineAccessListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -14833,6 +16044,7 @@ export namespace Prisma {
     productionReports?: ProductionReportOrderByRelationAggregateInput
     checkedProductionReports?: ProductionReportOrderByRelationAggregateInput
     createdItems?: ItemOrderByRelationAggregateInput
+    machineAccesses?: UserMachineAccessOrderByRelationAggregateInput
     _relevance?: UserOrderByRelevanceInput
   }
 
@@ -14850,6 +16062,7 @@ export namespace Prisma {
     productionReports?: ProductionReportListRelationFilter
     checkedProductionReports?: ProductionReportListRelationFilter
     createdItems?: ItemListRelationFilter
+    machineAccesses?: UserMachineAccessListRelationFilter
   }, "id" | "username">
 
   export type UserOrderByWithAggregationInput = {
@@ -14878,6 +16091,63 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
 
+  export type UserMachineAccessWhereInput = {
+    AND?: UserMachineAccessWhereInput | UserMachineAccessWhereInput[]
+    OR?: UserMachineAccessWhereInput[]
+    NOT?: UserMachineAccessWhereInput | UserMachineAccessWhereInput[]
+    id?: IntFilter<"UserMachineAccess"> | number
+    userId?: StringFilter<"UserMachineAccess"> | string
+    machineId?: IntFilter<"UserMachineAccess"> | number
+    createdAt?: DateTimeFilter<"UserMachineAccess"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    machine?: XOR<MachineScalarRelationFilter, MachineWhereInput>
+  }
+
+  export type UserMachineAccessOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    machineId?: SortOrder
+    createdAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    machine?: MachineOrderByWithRelationInput
+    _relevance?: UserMachineAccessOrderByRelevanceInput
+  }
+
+  export type UserMachineAccessWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    userId_machineId?: UserMachineAccessUserIdMachineIdCompoundUniqueInput
+    AND?: UserMachineAccessWhereInput | UserMachineAccessWhereInput[]
+    OR?: UserMachineAccessWhereInput[]
+    NOT?: UserMachineAccessWhereInput | UserMachineAccessWhereInput[]
+    userId?: StringFilter<"UserMachineAccess"> | string
+    machineId?: IntFilter<"UserMachineAccess"> | number
+    createdAt?: DateTimeFilter<"UserMachineAccess"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    machine?: XOR<MachineScalarRelationFilter, MachineWhereInput>
+  }, "id" | "userId_machineId">
+
+  export type UserMachineAccessOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    machineId?: SortOrder
+    createdAt?: SortOrder
+    _count?: UserMachineAccessCountOrderByAggregateInput
+    _avg?: UserMachineAccessAvgOrderByAggregateInput
+    _max?: UserMachineAccessMaxOrderByAggregateInput
+    _min?: UserMachineAccessMinOrderByAggregateInput
+    _sum?: UserMachineAccessSumOrderByAggregateInput
+  }
+
+  export type UserMachineAccessScalarWhereWithAggregatesInput = {
+    AND?: UserMachineAccessScalarWhereWithAggregatesInput | UserMachineAccessScalarWhereWithAggregatesInput[]
+    OR?: UserMachineAccessScalarWhereWithAggregatesInput[]
+    NOT?: UserMachineAccessScalarWhereWithAggregatesInput | UserMachineAccessScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"UserMachineAccess"> | number
+    userId?: StringWithAggregatesFilter<"UserMachineAccess"> | string
+    machineId?: IntWithAggregatesFilter<"UserMachineAccess"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"UserMachineAccess"> | Date | string
+  }
+
   export type MachineWhereInput = {
     AND?: MachineWhereInput | MachineWhereInput[]
     OR?: MachineWhereInput[]
@@ -14897,7 +16167,10 @@ export namespace Prisma {
     workCenter?: StringNullableFilter<"Machine"> | string | null
     createdAt?: DateTimeFilter<"Machine"> | Date | string
     updatedAt?: DateTimeFilter<"Machine"> | Date | string
+    defaultProPrefixId?: IntNullableFilter<"Machine"> | number | null
     proses?: ProsesListRelationFilter
+    defaultProPrefix?: XOR<ProPrefixNullableScalarRelationFilter, ProPrefixWhereInput> | null
+    userAccesses?: UserMachineAccessListRelationFilter
     location?: XOR<InventoryLocationNullableScalarRelationFilter, InventoryLocationWhereInput> | null
   }
 
@@ -14917,7 +16190,10 @@ export namespace Prisma {
     workCenter?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    defaultProPrefixId?: SortOrderInput | SortOrder
     proses?: ProsesOrderByRelationAggregateInput
+    defaultProPrefix?: ProPrefixOrderByWithRelationInput
+    userAccesses?: UserMachineAccessOrderByRelationAggregateInput
     location?: InventoryLocationOrderByWithRelationInput
     _relevance?: MachineOrderByRelevanceInput
   }
@@ -14941,7 +16217,10 @@ export namespace Prisma {
     workCenter?: StringNullableFilter<"Machine"> | string | null
     createdAt?: DateTimeFilter<"Machine"> | Date | string
     updatedAt?: DateTimeFilter<"Machine"> | Date | string
+    defaultProPrefixId?: IntNullableFilter<"Machine"> | number | null
     proses?: ProsesListRelationFilter
+    defaultProPrefix?: XOR<ProPrefixNullableScalarRelationFilter, ProPrefixWhereInput> | null
+    userAccesses?: UserMachineAccessListRelationFilter
     location?: XOR<InventoryLocationNullableScalarRelationFilter, InventoryLocationWhereInput> | null
   }, "id">
 
@@ -14961,6 +16240,7 @@ export namespace Prisma {
     workCenter?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    defaultProPrefixId?: SortOrderInput | SortOrder
     _count?: MachineCountOrderByAggregateInput
     _avg?: MachineAvgOrderByAggregateInput
     _max?: MachineMaxOrderByAggregateInput
@@ -14987,6 +16267,7 @@ export namespace Prisma {
     workCenter?: StringNullableWithAggregatesFilter<"Machine"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Machine"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Machine"> | Date | string
+    defaultProPrefixId?: IntNullableWithAggregatesFilter<"Machine"> | number | null
   }
 
   export type ItemWhereInput = {
@@ -15093,6 +16374,7 @@ export namespace Prisma {
     name?: StringFilter<"ProPrefix"> | string
     type?: EnumProTypeFilter<"ProPrefix"> | $Enums.ProType
     pros?: ProListRelationFilter
+    machines?: MachineListRelationFilter
   }
 
   export type ProPrefixOrderByWithRelationInput = {
@@ -15101,6 +16383,7 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     pros?: ProOrderByRelationAggregateInput
+    machines?: MachineOrderByRelationAggregateInput
     _relevance?: ProPrefixOrderByRelevanceInput
   }
 
@@ -15113,6 +16396,7 @@ export namespace Prisma {
     NOT?: ProPrefixWhereInput | ProPrefixWhereInput[]
     type?: EnumProTypeFilter<"ProPrefix"> | $Enums.ProType
     pros?: ProListRelationFilter
+    machines?: MachineListRelationFilter
   }, "id" | "code" | "name">
 
   export type ProPrefixOrderByWithAggregationInput = {
@@ -15869,6 +17153,7 @@ export namespace Prisma {
     productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
     checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
     createdItems?: ItemCreateNestedManyWithoutCreatedByInput
+    machineAccesses?: UserMachineAccessCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -15882,6 +17167,7 @@ export namespace Prisma {
     productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
     checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
     createdItems?: ItemUncheckedCreateNestedManyWithoutCreatedByInput
+    machineAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -15895,6 +17181,7 @@ export namespace Prisma {
     productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
     checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
     createdItems?: ItemUpdateManyWithoutCreatedByNestedInput
+    machineAccesses?: UserMachineAccessUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -15908,6 +17195,7 @@ export namespace Prisma {
     productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
     checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
     createdItems?: ItemUncheckedUpdateManyWithoutCreatedByNestedInput
+    machineAccesses?: UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -15940,6 +17228,50 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UserMachineAccessCreateInput = {
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutMachineAccessesInput
+    machine: MachineCreateNestedOneWithoutUserAccessesInput
+  }
+
+  export type UserMachineAccessUncheckedCreateInput = {
+    id?: number
+    userId: string
+    machineId: number
+    createdAt?: Date | string
+  }
+
+  export type UserMachineAccessUpdateInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutMachineAccessesNestedInput
+    machine?: MachineUpdateOneRequiredWithoutUserAccessesNestedInput
+  }
+
+  export type UserMachineAccessUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    userId?: StringFieldUpdateOperationsInput | string
+    machineId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserMachineAccessCreateManyInput = {
+    id?: number
+    userId: string
+    machineId: number
+    createdAt?: Date | string
+  }
+
+  export type UserMachineAccessUpdateManyMutationInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserMachineAccessUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    userId?: StringFieldUpdateOperationsInput | string
+    machineId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type MachineCreateInput = {
     name: string
     stdOutputPerHour: number
@@ -15956,6 +17288,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     proses?: ProsesCreateNestedManyWithoutMachineInput
+    defaultProPrefix?: ProPrefixCreateNestedOneWithoutMachinesInput
+    userAccesses?: UserMachineAccessCreateNestedManyWithoutMachineInput
     location?: InventoryLocationCreateNestedOneWithoutMachineInput
   }
 
@@ -15975,7 +17309,9 @@ export namespace Prisma {
     workCenter?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    defaultProPrefixId?: number | null
     proses?: ProsesUncheckedCreateNestedManyWithoutMachineInput
+    userAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutMachineInput
     location?: InventoryLocationUncheckedCreateNestedOneWithoutMachineInput
   }
 
@@ -15995,6 +17331,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proses?: ProsesUpdateManyWithoutMachineNestedInput
+    defaultProPrefix?: ProPrefixUpdateOneWithoutMachinesNestedInput
+    userAccesses?: UserMachineAccessUpdateManyWithoutMachineNestedInput
     location?: InventoryLocationUpdateOneWithoutMachineNestedInput
   }
 
@@ -16014,7 +17352,9 @@ export namespace Prisma {
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    defaultProPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
     proses?: ProsesUncheckedUpdateManyWithoutMachineNestedInput
+    userAccesses?: UserMachineAccessUncheckedUpdateManyWithoutMachineNestedInput
     location?: InventoryLocationUncheckedUpdateOneWithoutMachineNestedInput
   }
 
@@ -16034,6 +17374,7 @@ export namespace Prisma {
     workCenter?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    defaultProPrefixId?: number | null
   }
 
   export type MachineUpdateManyMutationInput = {
@@ -16069,6 +17410,7 @@ export namespace Prisma {
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    defaultProPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ItemCreateInput = {
@@ -16179,6 +17521,7 @@ export namespace Prisma {
     name: string
     type?: $Enums.ProType
     pros?: ProCreateNestedManyWithoutProPrefixInput
+    machines?: MachineCreateNestedManyWithoutDefaultProPrefixInput
   }
 
   export type ProPrefixUncheckedCreateInput = {
@@ -16187,6 +17530,7 @@ export namespace Prisma {
     name: string
     type?: $Enums.ProType
     pros?: ProUncheckedCreateNestedManyWithoutProPrefixInput
+    machines?: MachineUncheckedCreateNestedManyWithoutDefaultProPrefixInput
   }
 
   export type ProPrefixUpdateInput = {
@@ -16194,6 +17538,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     pros?: ProUpdateManyWithoutProPrefixNestedInput
+    machines?: MachineUpdateManyWithoutDefaultProPrefixNestedInput
   }
 
   export type ProPrefixUncheckedUpdateInput = {
@@ -16202,6 +17547,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     pros?: ProUncheckedUpdateManyWithoutProPrefixNestedInput
+    machines?: MachineUncheckedUpdateManyWithoutDefaultProPrefixNestedInput
   }
 
   export type ProPrefixCreateManyInput = {
@@ -17047,6 +18393,12 @@ export namespace Prisma {
     none?: ItemWhereInput
   }
 
+  export type UserMachineAccessListRelationFilter = {
+    every?: UserMachineAccessWhereInput
+    some?: UserMachineAccessWhereInput
+    none?: UserMachineAccessWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -17057,6 +18409,10 @@ export namespace Prisma {
   }
 
   export type ItemOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type UserMachineAccessOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -17167,6 +18523,74 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type MachineScalarRelationFilter = {
+    is?: MachineWhereInput
+    isNot?: MachineWhereInput
+  }
+
+  export type UserMachineAccessOrderByRelevanceInput = {
+    fields: UserMachineAccessOrderByRelevanceFieldEnum | UserMachineAccessOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type UserMachineAccessUserIdMachineIdCompoundUniqueInput = {
+    userId: string
+    machineId: number
+  }
+
+  export type UserMachineAccessCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    machineId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UserMachineAccessAvgOrderByAggregateInput = {
+    id?: SortOrder
+    machineId?: SortOrder
+  }
+
+  export type UserMachineAccessMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    machineId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UserMachineAccessMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    machineId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UserMachineAccessSumOrderByAggregateInput = {
+    id?: SortOrder
+    machineId?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
   export type EnumUomFilter<$PrismaModel = never> = {
     equals?: $Enums.Uom | EnumUomFieldRefInput<$PrismaModel>
     in?: $Enums.Uom[]
@@ -17209,6 +18633,11 @@ export namespace Prisma {
     none?: ProsesWhereInput
   }
 
+  export type ProPrefixNullableScalarRelationFilter = {
+    is?: ProPrefixWhereInput | null
+    isNot?: ProPrefixWhereInput | null
+  }
+
   export type InventoryLocationNullableScalarRelationFilter = {
     is?: InventoryLocationWhereInput | null
     isNot?: InventoryLocationWhereInput | null
@@ -17240,6 +18669,7 @@ export namespace Prisma {
     workCenter?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    defaultProPrefixId?: SortOrder
   }
 
   export type MachineAvgOrderByAggregateInput = {
@@ -17251,6 +18681,7 @@ export namespace Prisma {
     cavity?: SortOrder
     manPower?: SortOrder
     stdOutputPerDay?: SortOrder
+    defaultProPrefixId?: SortOrder
   }
 
   export type MachineMaxOrderByAggregateInput = {
@@ -17269,6 +18700,7 @@ export namespace Prisma {
     workCenter?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    defaultProPrefixId?: SortOrder
   }
 
   export type MachineMinOrderByAggregateInput = {
@@ -17287,6 +18719,7 @@ export namespace Prisma {
     workCenter?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    defaultProPrefixId?: SortOrder
   }
 
   export type MachineSumOrderByAggregateInput = {
@@ -17298,22 +18731,7 @@ export namespace Prisma {
     cavity?: SortOrder
     manPower?: SortOrder
     stdOutputPerDay?: SortOrder
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
+    defaultProPrefixId?: SortOrder
   }
 
   export type EnumUomWithAggregatesFilter<$PrismaModel = never> = {
@@ -17497,6 +18915,16 @@ export namespace Prisma {
     not?: NestedEnumProTypeFilter<$PrismaModel> | $Enums.ProType
   }
 
+  export type MachineListRelationFilter = {
+    every?: MachineWhereInput
+    some?: MachineWhereInput
+    none?: MachineWhereInput
+  }
+
+  export type MachineOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type ProPrefixOrderByRelevanceInput = {
     fields: ProPrefixOrderByRelevanceFieldEnum | ProPrefixOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -17592,11 +19020,6 @@ export namespace Prisma {
   export type BoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type ProPrefixNullableScalarRelationFilter = {
-    is?: ProPrefixWhereInput | null
-    isNot?: ProPrefixWhereInput | null
   }
 
   export type ItemNullableScalarRelationFilter = {
@@ -18308,6 +19731,13 @@ export namespace Prisma {
     connect?: ItemWhereUniqueInput | ItemWhereUniqueInput[]
   }
 
+  export type UserMachineAccessCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserMachineAccessCreateWithoutUserInput, UserMachineAccessUncheckedCreateWithoutUserInput> | UserMachineAccessCreateWithoutUserInput[] | UserMachineAccessUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserMachineAccessCreateOrConnectWithoutUserInput | UserMachineAccessCreateOrConnectWithoutUserInput[]
+    createMany?: UserMachineAccessCreateManyUserInputEnvelope
+    connect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+  }
+
   export type ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<ProductionReportCreateWithoutCreatedByInput, ProductionReportUncheckedCreateWithoutCreatedByInput> | ProductionReportCreateWithoutCreatedByInput[] | ProductionReportUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: ProductionReportCreateOrConnectWithoutCreatedByInput | ProductionReportCreateOrConnectWithoutCreatedByInput[]
@@ -18327,6 +19757,13 @@ export namespace Prisma {
     connectOrCreate?: ItemCreateOrConnectWithoutCreatedByInput | ItemCreateOrConnectWithoutCreatedByInput[]
     createMany?: ItemCreateManyCreatedByInputEnvelope
     connect?: ItemWhereUniqueInput | ItemWhereUniqueInput[]
+  }
+
+  export type UserMachineAccessUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserMachineAccessCreateWithoutUserInput, UserMachineAccessUncheckedCreateWithoutUserInput> | UserMachineAccessCreateWithoutUserInput[] | UserMachineAccessUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserMachineAccessCreateOrConnectWithoutUserInput | UserMachineAccessCreateOrConnectWithoutUserInput[]
+    createMany?: UserMachineAccessCreateManyUserInputEnvelope
+    connect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -18387,6 +19824,20 @@ export namespace Prisma {
     deleteMany?: ItemScalarWhereInput | ItemScalarWhereInput[]
   }
 
+  export type UserMachineAccessUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserMachineAccessCreateWithoutUserInput, UserMachineAccessUncheckedCreateWithoutUserInput> | UserMachineAccessCreateWithoutUserInput[] | UserMachineAccessUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserMachineAccessCreateOrConnectWithoutUserInput | UserMachineAccessCreateOrConnectWithoutUserInput[]
+    upsert?: UserMachineAccessUpsertWithWhereUniqueWithoutUserInput | UserMachineAccessUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserMachineAccessCreateManyUserInputEnvelope
+    set?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    disconnect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    delete?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    connect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    update?: UserMachineAccessUpdateWithWhereUniqueWithoutUserInput | UserMachineAccessUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserMachineAccessUpdateManyWithWhereWithoutUserInput | UserMachineAccessUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserMachineAccessScalarWhereInput | UserMachineAccessScalarWhereInput[]
+  }
+
   export type ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<ProductionReportCreateWithoutCreatedByInput, ProductionReportUncheckedCreateWithoutCreatedByInput> | ProductionReportCreateWithoutCreatedByInput[] | ProductionReportUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: ProductionReportCreateOrConnectWithoutCreatedByInput | ProductionReportCreateOrConnectWithoutCreatedByInput[]
@@ -18429,11 +19880,74 @@ export namespace Prisma {
     deleteMany?: ItemScalarWhereInput | ItemScalarWhereInput[]
   }
 
+  export type UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserMachineAccessCreateWithoutUserInput, UserMachineAccessUncheckedCreateWithoutUserInput> | UserMachineAccessCreateWithoutUserInput[] | UserMachineAccessUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserMachineAccessCreateOrConnectWithoutUserInput | UserMachineAccessCreateOrConnectWithoutUserInput[]
+    upsert?: UserMachineAccessUpsertWithWhereUniqueWithoutUserInput | UserMachineAccessUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserMachineAccessCreateManyUserInputEnvelope
+    set?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    disconnect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    delete?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    connect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    update?: UserMachineAccessUpdateWithWhereUniqueWithoutUserInput | UserMachineAccessUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserMachineAccessUpdateManyWithWhereWithoutUserInput | UserMachineAccessUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserMachineAccessScalarWhereInput | UserMachineAccessScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutMachineAccessesInput = {
+    create?: XOR<UserCreateWithoutMachineAccessesInput, UserUncheckedCreateWithoutMachineAccessesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMachineAccessesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type MachineCreateNestedOneWithoutUserAccessesInput = {
+    create?: XOR<MachineCreateWithoutUserAccessesInput, MachineUncheckedCreateWithoutUserAccessesInput>
+    connectOrCreate?: MachineCreateOrConnectWithoutUserAccessesInput
+    connect?: MachineWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutMachineAccessesNestedInput = {
+    create?: XOR<UserCreateWithoutMachineAccessesInput, UserUncheckedCreateWithoutMachineAccessesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMachineAccessesInput
+    upsert?: UserUpsertWithoutMachineAccessesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMachineAccessesInput, UserUpdateWithoutMachineAccessesInput>, UserUncheckedUpdateWithoutMachineAccessesInput>
+  }
+
+  export type MachineUpdateOneRequiredWithoutUserAccessesNestedInput = {
+    create?: XOR<MachineCreateWithoutUserAccessesInput, MachineUncheckedCreateWithoutUserAccessesInput>
+    connectOrCreate?: MachineCreateOrConnectWithoutUserAccessesInput
+    upsert?: MachineUpsertWithoutUserAccessesInput
+    connect?: MachineWhereUniqueInput
+    update?: XOR<XOR<MachineUpdateToOneWithWhereWithoutUserAccessesInput, MachineUpdateWithoutUserAccessesInput>, MachineUncheckedUpdateWithoutUserAccessesInput>
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type ProsesCreateNestedManyWithoutMachineInput = {
     create?: XOR<ProsesCreateWithoutMachineInput, ProsesUncheckedCreateWithoutMachineInput> | ProsesCreateWithoutMachineInput[] | ProsesUncheckedCreateWithoutMachineInput[]
     connectOrCreate?: ProsesCreateOrConnectWithoutMachineInput | ProsesCreateOrConnectWithoutMachineInput[]
     createMany?: ProsesCreateManyMachineInputEnvelope
     connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+  }
+
+  export type ProPrefixCreateNestedOneWithoutMachinesInput = {
+    create?: XOR<ProPrefixCreateWithoutMachinesInput, ProPrefixUncheckedCreateWithoutMachinesInput>
+    connectOrCreate?: ProPrefixCreateOrConnectWithoutMachinesInput
+    connect?: ProPrefixWhereUniqueInput
+  }
+
+  export type UserMachineAccessCreateNestedManyWithoutMachineInput = {
+    create?: XOR<UserMachineAccessCreateWithoutMachineInput, UserMachineAccessUncheckedCreateWithoutMachineInput> | UserMachineAccessCreateWithoutMachineInput[] | UserMachineAccessUncheckedCreateWithoutMachineInput[]
+    connectOrCreate?: UserMachineAccessCreateOrConnectWithoutMachineInput | UserMachineAccessCreateOrConnectWithoutMachineInput[]
+    createMany?: UserMachineAccessCreateManyMachineInputEnvelope
+    connect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
   }
 
   export type InventoryLocationCreateNestedOneWithoutMachineInput = {
@@ -18449,18 +19963,17 @@ export namespace Prisma {
     connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
   }
 
+  export type UserMachineAccessUncheckedCreateNestedManyWithoutMachineInput = {
+    create?: XOR<UserMachineAccessCreateWithoutMachineInput, UserMachineAccessUncheckedCreateWithoutMachineInput> | UserMachineAccessCreateWithoutMachineInput[] | UserMachineAccessUncheckedCreateWithoutMachineInput[]
+    connectOrCreate?: UserMachineAccessCreateOrConnectWithoutMachineInput | UserMachineAccessCreateOrConnectWithoutMachineInput[]
+    createMany?: UserMachineAccessCreateManyMachineInputEnvelope
+    connect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+  }
+
   export type InventoryLocationUncheckedCreateNestedOneWithoutMachineInput = {
     create?: XOR<InventoryLocationCreateWithoutMachineInput, InventoryLocationUncheckedCreateWithoutMachineInput>
     connectOrCreate?: InventoryLocationCreateOrConnectWithoutMachineInput
     connect?: InventoryLocationWhereUniqueInput
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type EnumUomFieldUpdateOperationsInput = {
@@ -18501,6 +20014,30 @@ export namespace Prisma {
     deleteMany?: ProsesScalarWhereInput | ProsesScalarWhereInput[]
   }
 
+  export type ProPrefixUpdateOneWithoutMachinesNestedInput = {
+    create?: XOR<ProPrefixCreateWithoutMachinesInput, ProPrefixUncheckedCreateWithoutMachinesInput>
+    connectOrCreate?: ProPrefixCreateOrConnectWithoutMachinesInput
+    upsert?: ProPrefixUpsertWithoutMachinesInput
+    disconnect?: ProPrefixWhereInput | boolean
+    delete?: ProPrefixWhereInput | boolean
+    connect?: ProPrefixWhereUniqueInput
+    update?: XOR<XOR<ProPrefixUpdateToOneWithWhereWithoutMachinesInput, ProPrefixUpdateWithoutMachinesInput>, ProPrefixUncheckedUpdateWithoutMachinesInput>
+  }
+
+  export type UserMachineAccessUpdateManyWithoutMachineNestedInput = {
+    create?: XOR<UserMachineAccessCreateWithoutMachineInput, UserMachineAccessUncheckedCreateWithoutMachineInput> | UserMachineAccessCreateWithoutMachineInput[] | UserMachineAccessUncheckedCreateWithoutMachineInput[]
+    connectOrCreate?: UserMachineAccessCreateOrConnectWithoutMachineInput | UserMachineAccessCreateOrConnectWithoutMachineInput[]
+    upsert?: UserMachineAccessUpsertWithWhereUniqueWithoutMachineInput | UserMachineAccessUpsertWithWhereUniqueWithoutMachineInput[]
+    createMany?: UserMachineAccessCreateManyMachineInputEnvelope
+    set?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    disconnect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    delete?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    connect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    update?: UserMachineAccessUpdateWithWhereUniqueWithoutMachineInput | UserMachineAccessUpdateWithWhereUniqueWithoutMachineInput[]
+    updateMany?: UserMachineAccessUpdateManyWithWhereWithoutMachineInput | UserMachineAccessUpdateManyWithWhereWithoutMachineInput[]
+    deleteMany?: UserMachineAccessScalarWhereInput | UserMachineAccessScalarWhereInput[]
+  }
+
   export type InventoryLocationUpdateOneWithoutMachineNestedInput = {
     create?: XOR<InventoryLocationCreateWithoutMachineInput, InventoryLocationUncheckedCreateWithoutMachineInput>
     connectOrCreate?: InventoryLocationCreateOrConnectWithoutMachineInput
@@ -18523,6 +20060,20 @@ export namespace Prisma {
     update?: ProsesUpdateWithWhereUniqueWithoutMachineInput | ProsesUpdateWithWhereUniqueWithoutMachineInput[]
     updateMany?: ProsesUpdateManyWithWhereWithoutMachineInput | ProsesUpdateManyWithWhereWithoutMachineInput[]
     deleteMany?: ProsesScalarWhereInput | ProsesScalarWhereInput[]
+  }
+
+  export type UserMachineAccessUncheckedUpdateManyWithoutMachineNestedInput = {
+    create?: XOR<UserMachineAccessCreateWithoutMachineInput, UserMachineAccessUncheckedCreateWithoutMachineInput> | UserMachineAccessCreateWithoutMachineInput[] | UserMachineAccessUncheckedCreateWithoutMachineInput[]
+    connectOrCreate?: UserMachineAccessCreateOrConnectWithoutMachineInput | UserMachineAccessCreateOrConnectWithoutMachineInput[]
+    upsert?: UserMachineAccessUpsertWithWhereUniqueWithoutMachineInput | UserMachineAccessUpsertWithWhereUniqueWithoutMachineInput[]
+    createMany?: UserMachineAccessCreateManyMachineInputEnvelope
+    set?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    disconnect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    delete?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    connect?: UserMachineAccessWhereUniqueInput | UserMachineAccessWhereUniqueInput[]
+    update?: UserMachineAccessUpdateWithWhereUniqueWithoutMachineInput | UserMachineAccessUpdateWithWhereUniqueWithoutMachineInput[]
+    updateMany?: UserMachineAccessUpdateManyWithWhereWithoutMachineInput | UserMachineAccessUpdateManyWithWhereWithoutMachineInput[]
+    deleteMany?: UserMachineAccessScalarWhereInput | UserMachineAccessScalarWhereInput[]
   }
 
   export type InventoryLocationUncheckedUpdateOneWithoutMachineNestedInput = {
@@ -18734,11 +20285,25 @@ export namespace Prisma {
     connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
   }
 
+  export type MachineCreateNestedManyWithoutDefaultProPrefixInput = {
+    create?: XOR<MachineCreateWithoutDefaultProPrefixInput, MachineUncheckedCreateWithoutDefaultProPrefixInput> | MachineCreateWithoutDefaultProPrefixInput[] | MachineUncheckedCreateWithoutDefaultProPrefixInput[]
+    connectOrCreate?: MachineCreateOrConnectWithoutDefaultProPrefixInput | MachineCreateOrConnectWithoutDefaultProPrefixInput[]
+    createMany?: MachineCreateManyDefaultProPrefixInputEnvelope
+    connect?: MachineWhereUniqueInput | MachineWhereUniqueInput[]
+  }
+
   export type ProUncheckedCreateNestedManyWithoutProPrefixInput = {
     create?: XOR<ProCreateWithoutProPrefixInput, ProUncheckedCreateWithoutProPrefixInput> | ProCreateWithoutProPrefixInput[] | ProUncheckedCreateWithoutProPrefixInput[]
     connectOrCreate?: ProCreateOrConnectWithoutProPrefixInput | ProCreateOrConnectWithoutProPrefixInput[]
     createMany?: ProCreateManyProPrefixInputEnvelope
     connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+  }
+
+  export type MachineUncheckedCreateNestedManyWithoutDefaultProPrefixInput = {
+    create?: XOR<MachineCreateWithoutDefaultProPrefixInput, MachineUncheckedCreateWithoutDefaultProPrefixInput> | MachineCreateWithoutDefaultProPrefixInput[] | MachineUncheckedCreateWithoutDefaultProPrefixInput[]
+    connectOrCreate?: MachineCreateOrConnectWithoutDefaultProPrefixInput | MachineCreateOrConnectWithoutDefaultProPrefixInput[]
+    createMany?: MachineCreateManyDefaultProPrefixInputEnvelope
+    connect?: MachineWhereUniqueInput | MachineWhereUniqueInput[]
   }
 
   export type EnumProTypeFieldUpdateOperationsInput = {
@@ -18759,6 +20324,20 @@ export namespace Prisma {
     deleteMany?: ProScalarWhereInput | ProScalarWhereInput[]
   }
 
+  export type MachineUpdateManyWithoutDefaultProPrefixNestedInput = {
+    create?: XOR<MachineCreateWithoutDefaultProPrefixInput, MachineUncheckedCreateWithoutDefaultProPrefixInput> | MachineCreateWithoutDefaultProPrefixInput[] | MachineUncheckedCreateWithoutDefaultProPrefixInput[]
+    connectOrCreate?: MachineCreateOrConnectWithoutDefaultProPrefixInput | MachineCreateOrConnectWithoutDefaultProPrefixInput[]
+    upsert?: MachineUpsertWithWhereUniqueWithoutDefaultProPrefixInput | MachineUpsertWithWhereUniqueWithoutDefaultProPrefixInput[]
+    createMany?: MachineCreateManyDefaultProPrefixInputEnvelope
+    set?: MachineWhereUniqueInput | MachineWhereUniqueInput[]
+    disconnect?: MachineWhereUniqueInput | MachineWhereUniqueInput[]
+    delete?: MachineWhereUniqueInput | MachineWhereUniqueInput[]
+    connect?: MachineWhereUniqueInput | MachineWhereUniqueInput[]
+    update?: MachineUpdateWithWhereUniqueWithoutDefaultProPrefixInput | MachineUpdateWithWhereUniqueWithoutDefaultProPrefixInput[]
+    updateMany?: MachineUpdateManyWithWhereWithoutDefaultProPrefixInput | MachineUpdateManyWithWhereWithoutDefaultProPrefixInput[]
+    deleteMany?: MachineScalarWhereInput | MachineScalarWhereInput[]
+  }
+
   export type ProUncheckedUpdateManyWithoutProPrefixNestedInput = {
     create?: XOR<ProCreateWithoutProPrefixInput, ProUncheckedCreateWithoutProPrefixInput> | ProCreateWithoutProPrefixInput[] | ProUncheckedCreateWithoutProPrefixInput[]
     connectOrCreate?: ProCreateOrConnectWithoutProPrefixInput | ProCreateOrConnectWithoutProPrefixInput[]
@@ -18771,6 +20350,20 @@ export namespace Prisma {
     update?: ProUpdateWithWhereUniqueWithoutProPrefixInput | ProUpdateWithWhereUniqueWithoutProPrefixInput[]
     updateMany?: ProUpdateManyWithWhereWithoutProPrefixInput | ProUpdateManyWithWhereWithoutProPrefixInput[]
     deleteMany?: ProScalarWhereInput | ProScalarWhereInput[]
+  }
+
+  export type MachineUncheckedUpdateManyWithoutDefaultProPrefixNestedInput = {
+    create?: XOR<MachineCreateWithoutDefaultProPrefixInput, MachineUncheckedCreateWithoutDefaultProPrefixInput> | MachineCreateWithoutDefaultProPrefixInput[] | MachineUncheckedCreateWithoutDefaultProPrefixInput[]
+    connectOrCreate?: MachineCreateOrConnectWithoutDefaultProPrefixInput | MachineCreateOrConnectWithoutDefaultProPrefixInput[]
+    upsert?: MachineUpsertWithWhereUniqueWithoutDefaultProPrefixInput | MachineUpsertWithWhereUniqueWithoutDefaultProPrefixInput[]
+    createMany?: MachineCreateManyDefaultProPrefixInputEnvelope
+    set?: MachineWhereUniqueInput | MachineWhereUniqueInput[]
+    disconnect?: MachineWhereUniqueInput | MachineWhereUniqueInput[]
+    delete?: MachineWhereUniqueInput | MachineWhereUniqueInput[]
+    connect?: MachineWhereUniqueInput | MachineWhereUniqueInput[]
+    update?: MachineUpdateWithWhereUniqueWithoutDefaultProPrefixInput | MachineUpdateWithWhereUniqueWithoutDefaultProPrefixInput[]
+    updateMany?: MachineUpdateManyWithWhereWithoutDefaultProPrefixInput | MachineUpdateManyWithWhereWithoutDefaultProPrefixInput[]
+    deleteMany?: MachineScalarWhereInput | MachineScalarWhereInput[]
   }
 
   export type ProPrefixCreateNestedOneWithoutProsInput = {
@@ -19479,31 +21072,6 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type NestedEnumUomFilter<$PrismaModel = never> = {
-    equals?: $Enums.Uom | EnumUomFieldRefInput<$PrismaModel>
-    in?: $Enums.Uom[]
-    notIn?: $Enums.Uom[]
-    not?: NestedEnumUomFilter<$PrismaModel> | $Enums.Uom
-  }
-
-  export type NestedEnumMachineTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.MachineType | EnumMachineTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.MachineType[]
-    notIn?: $Enums.MachineType[]
-    not?: NestedEnumMachineTypeFilter<$PrismaModel> | $Enums.MachineType
-  }
-
-  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
@@ -19529,6 +21097,31 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedEnumUomFilter<$PrismaModel = never> = {
+    equals?: $Enums.Uom | EnumUomFieldRefInput<$PrismaModel>
+    in?: $Enums.Uom[]
+    notIn?: $Enums.Uom[]
+    not?: NestedEnumUomFilter<$PrismaModel> | $Enums.Uom
+  }
+
+  export type NestedEnumMachineTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.MachineType | EnumMachineTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MachineType[]
+    notIn?: $Enums.MachineType[]
+    not?: NestedEnumMachineTypeFilter<$PrismaModel> | $Enums.MachineType
+  }
+
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
   }
 
   export type NestedEnumUomWithAggregatesFilter<$PrismaModel = never> = {
@@ -20055,6 +21648,27 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type UserMachineAccessCreateWithoutUserInput = {
+    createdAt?: Date | string
+    machine: MachineCreateNestedOneWithoutUserAccessesInput
+  }
+
+  export type UserMachineAccessUncheckedCreateWithoutUserInput = {
+    id?: number
+    machineId: number
+    createdAt?: Date | string
+  }
+
+  export type UserMachineAccessCreateOrConnectWithoutUserInput = {
+    where: UserMachineAccessWhereUniqueInput
+    create: XOR<UserMachineAccessCreateWithoutUserInput, UserMachineAccessUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserMachineAccessCreateManyUserInputEnvelope = {
+    data: UserMachineAccessCreateManyUserInput | UserMachineAccessCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ProductionReportUpsertWithWhereUniqueWithoutCreatedByInput = {
     where: ProductionReportWhereUniqueInput
     update: XOR<ProductionReportUpdateWithoutCreatedByInput, ProductionReportUncheckedUpdateWithoutCreatedByInput>
@@ -20166,6 +21780,198 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Item"> | Date | string
   }
 
+  export type UserMachineAccessUpsertWithWhereUniqueWithoutUserInput = {
+    where: UserMachineAccessWhereUniqueInput
+    update: XOR<UserMachineAccessUpdateWithoutUserInput, UserMachineAccessUncheckedUpdateWithoutUserInput>
+    create: XOR<UserMachineAccessCreateWithoutUserInput, UserMachineAccessUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserMachineAccessUpdateWithWhereUniqueWithoutUserInput = {
+    where: UserMachineAccessWhereUniqueInput
+    data: XOR<UserMachineAccessUpdateWithoutUserInput, UserMachineAccessUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserMachineAccessUpdateManyWithWhereWithoutUserInput = {
+    where: UserMachineAccessScalarWhereInput
+    data: XOR<UserMachineAccessUpdateManyMutationInput, UserMachineAccessUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type UserMachineAccessScalarWhereInput = {
+    AND?: UserMachineAccessScalarWhereInput | UserMachineAccessScalarWhereInput[]
+    OR?: UserMachineAccessScalarWhereInput[]
+    NOT?: UserMachineAccessScalarWhereInput | UserMachineAccessScalarWhereInput[]
+    id?: IntFilter<"UserMachineAccess"> | number
+    userId?: StringFilter<"UserMachineAccess"> | string
+    machineId?: IntFilter<"UserMachineAccess"> | number
+    createdAt?: DateTimeFilter<"UserMachineAccess"> | Date | string
+  }
+
+  export type UserCreateWithoutMachineAccessesInput = {
+    id?: string
+    username: string
+    passwordHash: string
+    role?: $Enums.Role
+    department?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
+    checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
+    createdItems?: ItemCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutMachineAccessesInput = {
+    id?: string
+    username: string
+    passwordHash: string
+    role?: $Enums.Role
+    department?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
+    checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
+    createdItems?: ItemUncheckedCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutMachineAccessesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutMachineAccessesInput, UserUncheckedCreateWithoutMachineAccessesInput>
+  }
+
+  export type MachineCreateWithoutUserAccessesInput = {
+    name: string
+    stdOutputPerHour: number
+    stdOutputPerShift: number
+    uom: $Enums.Uom
+    type?: $Enums.MachineType
+    remark?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    proses?: ProsesCreateNestedManyWithoutMachineInput
+    defaultProPrefix?: ProPrefixCreateNestedOneWithoutMachinesInput
+    location?: InventoryLocationCreateNestedOneWithoutMachineInput
+  }
+
+  export type MachineUncheckedCreateWithoutUserAccessesInput = {
+    id?: number
+    name: string
+    stdOutputPerHour: number
+    stdOutputPerShift: number
+    uom: $Enums.Uom
+    type?: $Enums.MachineType
+    remark?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    defaultProPrefixId?: number | null
+    proses?: ProsesUncheckedCreateNestedManyWithoutMachineInput
+    location?: InventoryLocationUncheckedCreateNestedOneWithoutMachineInput
+  }
+
+  export type MachineCreateOrConnectWithoutUserAccessesInput = {
+    where: MachineWhereUniqueInput
+    create: XOR<MachineCreateWithoutUserAccessesInput, MachineUncheckedCreateWithoutUserAccessesInput>
+  }
+
+  export type UserUpsertWithoutMachineAccessesInput = {
+    update: XOR<UserUpdateWithoutMachineAccessesInput, UserUncheckedUpdateWithoutMachineAccessesInput>
+    create: XOR<UserCreateWithoutMachineAccessesInput, UserUncheckedCreateWithoutMachineAccessesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutMachineAccessesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutMachineAccessesInput, UserUncheckedUpdateWithoutMachineAccessesInput>
+  }
+
+  export type UserUpdateWithoutMachineAccessesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
+    checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
+    createdItems?: ItemUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutMachineAccessesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
+    createdItems?: ItemUncheckedUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type MachineUpsertWithoutUserAccessesInput = {
+    update: XOR<MachineUpdateWithoutUserAccessesInput, MachineUncheckedUpdateWithoutUserAccessesInput>
+    create: XOR<MachineCreateWithoutUserAccessesInput, MachineUncheckedCreateWithoutUserAccessesInput>
+    where?: MachineWhereInput
+  }
+
+  export type MachineUpdateToOneWithWhereWithoutUserAccessesInput = {
+    where?: MachineWhereInput
+    data: XOR<MachineUpdateWithoutUserAccessesInput, MachineUncheckedUpdateWithoutUserAccessesInput>
+  }
+
+  export type MachineUpdateWithoutUserAccessesInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    stdOutputPerHour?: IntFieldUpdateOperationsInput | number
+    stdOutputPerShift?: IntFieldUpdateOperationsInput | number
+    uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
+    remark?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    proses?: ProsesUpdateManyWithoutMachineNestedInput
+    defaultProPrefix?: ProPrefixUpdateOneWithoutMachinesNestedInput
+    location?: InventoryLocationUpdateOneWithoutMachineNestedInput
+  }
+
+  export type MachineUncheckedUpdateWithoutUserAccessesInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    stdOutputPerHour?: IntFieldUpdateOperationsInput | number
+    stdOutputPerShift?: IntFieldUpdateOperationsInput | number
+    uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
+    remark?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    defaultProPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
+    proses?: ProsesUncheckedUpdateManyWithoutMachineNestedInput
+    location?: InventoryLocationUncheckedUpdateOneWithoutMachineNestedInput
+  }
+
   export type ProsesCreateWithoutMachineInput = {
     orderNo: number
     up?: number | null
@@ -20202,6 +22008,47 @@ export namespace Prisma {
 
   export type ProsesCreateManyMachineInputEnvelope = {
     data: ProsesCreateManyMachineInput | ProsesCreateManyMachineInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ProPrefixCreateWithoutMachinesInput = {
+    code: string
+    name: string
+    type?: $Enums.ProType
+    pros?: ProCreateNestedManyWithoutProPrefixInput
+  }
+
+  export type ProPrefixUncheckedCreateWithoutMachinesInput = {
+    id?: number
+    code: string
+    name: string
+    type?: $Enums.ProType
+    pros?: ProUncheckedCreateNestedManyWithoutProPrefixInput
+  }
+
+  export type ProPrefixCreateOrConnectWithoutMachinesInput = {
+    where: ProPrefixWhereUniqueInput
+    create: XOR<ProPrefixCreateWithoutMachinesInput, ProPrefixUncheckedCreateWithoutMachinesInput>
+  }
+
+  export type UserMachineAccessCreateWithoutMachineInput = {
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutMachineAccessesInput
+  }
+
+  export type UserMachineAccessUncheckedCreateWithoutMachineInput = {
+    id?: number
+    userId: string
+    createdAt?: Date | string
+  }
+
+  export type UserMachineAccessCreateOrConnectWithoutMachineInput = {
+    where: UserMachineAccessWhereUniqueInput
+    create: XOR<UserMachineAccessCreateWithoutMachineInput, UserMachineAccessUncheckedCreateWithoutMachineInput>
+  }
+
+  export type UserMachineAccessCreateManyMachineInputEnvelope = {
+    data: UserMachineAccessCreateManyMachineInput | UserMachineAccessCreateManyMachineInput[]
     skipDuplicates?: boolean
   }
 
@@ -20257,6 +22104,48 @@ export namespace Prisma {
     outputItemId?: IntNullableFilter<"Proses"> | number | null
   }
 
+  export type ProPrefixUpsertWithoutMachinesInput = {
+    update: XOR<ProPrefixUpdateWithoutMachinesInput, ProPrefixUncheckedUpdateWithoutMachinesInput>
+    create: XOR<ProPrefixCreateWithoutMachinesInput, ProPrefixUncheckedCreateWithoutMachinesInput>
+    where?: ProPrefixWhereInput
+  }
+
+  export type ProPrefixUpdateToOneWithWhereWithoutMachinesInput = {
+    where?: ProPrefixWhereInput
+    data: XOR<ProPrefixUpdateWithoutMachinesInput, ProPrefixUncheckedUpdateWithoutMachinesInput>
+  }
+
+  export type ProPrefixUpdateWithoutMachinesInput = {
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    pros?: ProUpdateManyWithoutProPrefixNestedInput
+  }
+
+  export type ProPrefixUncheckedUpdateWithoutMachinesInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    pros?: ProUncheckedUpdateManyWithoutProPrefixNestedInput
+  }
+
+  export type UserMachineAccessUpsertWithWhereUniqueWithoutMachineInput = {
+    where: UserMachineAccessWhereUniqueInput
+    update: XOR<UserMachineAccessUpdateWithoutMachineInput, UserMachineAccessUncheckedUpdateWithoutMachineInput>
+    create: XOR<UserMachineAccessCreateWithoutMachineInput, UserMachineAccessUncheckedCreateWithoutMachineInput>
+  }
+
+  export type UserMachineAccessUpdateWithWhereUniqueWithoutMachineInput = {
+    where: UserMachineAccessWhereUniqueInput
+    data: XOR<UserMachineAccessUpdateWithoutMachineInput, UserMachineAccessUncheckedUpdateWithoutMachineInput>
+  }
+
+  export type UserMachineAccessUpdateManyWithWhereWithoutMachineInput = {
+    where: UserMachineAccessScalarWhereInput
+    data: XOR<UserMachineAccessUpdateManyMutationInput, UserMachineAccessUncheckedUpdateManyWithoutMachineInput>
+  }
+
   export type InventoryLocationUpsertWithoutMachineInput = {
     update: XOR<InventoryLocationUpdateWithoutMachineInput, InventoryLocationUncheckedUpdateWithoutMachineInput>
     create: XOR<InventoryLocationCreateWithoutMachineInput, InventoryLocationUncheckedCreateWithoutMachineInput>
@@ -20293,6 +22182,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
     checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
+    machineAccesses?: UserMachineAccessCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedItemsInput = {
@@ -20305,6 +22195,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
     checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
+    machineAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedItemsInput = {
@@ -20476,6 +22367,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
     checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
+    machineAccesses?: UserMachineAccessUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedItemsInput = {
@@ -20488,6 +22380,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
     checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
+    machineAccesses?: UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type InventoryTxnUpsertWithWhereUniqueWithoutItemMasterInput = {
@@ -20645,6 +22538,57 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type MachineCreateWithoutDefaultProPrefixInput = {
+    name: string
+    stdOutputPerHour: number
+    stdOutputPerShift: number
+    uom: $Enums.Uom
+    type?: $Enums.MachineType
+    remark?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    proses?: ProsesCreateNestedManyWithoutMachineInput
+    userAccesses?: UserMachineAccessCreateNestedManyWithoutMachineInput
+    location?: InventoryLocationCreateNestedOneWithoutMachineInput
+  }
+
+  export type MachineUncheckedCreateWithoutDefaultProPrefixInput = {
+    id?: number
+    name: string
+    stdOutputPerHour: number
+    stdOutputPerShift: number
+    uom: $Enums.Uom
+    type?: $Enums.MachineType
+    remark?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    proses?: ProsesUncheckedCreateNestedManyWithoutMachineInput
+    userAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutMachineInput
+    location?: InventoryLocationUncheckedCreateNestedOneWithoutMachineInput
+  }
+
+  export type MachineCreateOrConnectWithoutDefaultProPrefixInput = {
+    where: MachineWhereUniqueInput
+    create: XOR<MachineCreateWithoutDefaultProPrefixInput, MachineUncheckedCreateWithoutDefaultProPrefixInput>
+  }
+
+  export type MachineCreateManyDefaultProPrefixInputEnvelope = {
+    data: MachineCreateManyDefaultProPrefixInput | MachineCreateManyDefaultProPrefixInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ProUpsertWithWhereUniqueWithoutProPrefixInput = {
     where: ProWhereUniqueInput
     update: XOR<ProUpdateWithoutProPrefixInput, ProUncheckedUpdateWithoutProPrefixInput>
@@ -20661,10 +22605,49 @@ export namespace Prisma {
     data: XOR<ProUpdateManyMutationInput, ProUncheckedUpdateManyWithoutProPrefixInput>
   }
 
+  export type MachineUpsertWithWhereUniqueWithoutDefaultProPrefixInput = {
+    where: MachineWhereUniqueInput
+    update: XOR<MachineUpdateWithoutDefaultProPrefixInput, MachineUncheckedUpdateWithoutDefaultProPrefixInput>
+    create: XOR<MachineCreateWithoutDefaultProPrefixInput, MachineUncheckedCreateWithoutDefaultProPrefixInput>
+  }
+
+  export type MachineUpdateWithWhereUniqueWithoutDefaultProPrefixInput = {
+    where: MachineWhereUniqueInput
+    data: XOR<MachineUpdateWithoutDefaultProPrefixInput, MachineUncheckedUpdateWithoutDefaultProPrefixInput>
+  }
+
+  export type MachineUpdateManyWithWhereWithoutDefaultProPrefixInput = {
+    where: MachineScalarWhereInput
+    data: XOR<MachineUpdateManyMutationInput, MachineUncheckedUpdateManyWithoutDefaultProPrefixInput>
+  }
+
+  export type MachineScalarWhereInput = {
+    AND?: MachineScalarWhereInput | MachineScalarWhereInput[]
+    OR?: MachineScalarWhereInput[]
+    NOT?: MachineScalarWhereInput | MachineScalarWhereInput[]
+    id?: IntFilter<"Machine"> | number
+    name?: StringFilter<"Machine"> | string
+    stdOutputPerHour?: IntFilter<"Machine"> | number
+    stdOutputPerShift?: IntFilter<"Machine"> | number
+    uom?: EnumUomFilter<"Machine"> | $Enums.Uom
+    type?: EnumMachineTypeFilter<"Machine"> | $Enums.MachineType
+    remark?: StringNullableFilter<"Machine"> | string | null
+    cycleTimeSec?: DecimalNullableFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: DecimalNullableFilter<"Machine"> | Decimal | DecimalJsLike | number | string | null
+    cavity?: IntNullableFilter<"Machine"> | number | null
+    manPower?: IntNullableFilter<"Machine"> | number | null
+    stdOutputPerDay?: IntNullableFilter<"Machine"> | number | null
+    workCenter?: StringNullableFilter<"Machine"> | string | null
+    createdAt?: DateTimeFilter<"Machine"> | Date | string
+    updatedAt?: DateTimeFilter<"Machine"> | Date | string
+    defaultProPrefixId?: IntNullableFilter<"Machine"> | number | null
+  }
+
   export type ProPrefixCreateWithoutProsInput = {
     code: string
     name: string
     type?: $Enums.ProType
+    machines?: MachineCreateNestedManyWithoutDefaultProPrefixInput
   }
 
   export type ProPrefixUncheckedCreateWithoutProsInput = {
@@ -20672,6 +22655,7 @@ export namespace Prisma {
     code: string
     name: string
     type?: $Enums.ProType
+    machines?: MachineUncheckedCreateNestedManyWithoutDefaultProPrefixInput
   }
 
   export type ProPrefixCreateOrConnectWithoutProsInput = {
@@ -20809,6 +22793,7 @@ export namespace Prisma {
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    machines?: MachineUpdateManyWithoutDefaultProPrefixNestedInput
   }
 
   export type ProPrefixUncheckedUpdateWithoutProsInput = {
@@ -20816,6 +22801,7 @@ export namespace Prisma {
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    machines?: MachineUncheckedUpdateManyWithoutDefaultProPrefixNestedInput
   }
 
   export type ItemUpsertWithoutFgProsInput = {
@@ -20945,6 +22931,8 @@ export namespace Prisma {
     workCenter?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    defaultProPrefix?: ProPrefixCreateNestedOneWithoutMachinesInput
+    userAccesses?: UserMachineAccessCreateNestedManyWithoutMachineInput
     location?: InventoryLocationCreateNestedOneWithoutMachineInput
   }
 
@@ -20964,6 +22952,8 @@ export namespace Prisma {
     workCenter?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    defaultProPrefixId?: number | null
+    userAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutMachineInput
     location?: InventoryLocationUncheckedCreateNestedOneWithoutMachineInput
   }
 
@@ -21237,6 +23227,8 @@ export namespace Prisma {
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    defaultProPrefix?: ProPrefixUpdateOneWithoutMachinesNestedInput
+    userAccesses?: UserMachineAccessUpdateManyWithoutMachineNestedInput
     location?: InventoryLocationUpdateOneWithoutMachineNestedInput
   }
 
@@ -21256,6 +23248,8 @@ export namespace Prisma {
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    defaultProPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
+    userAccesses?: UserMachineAccessUncheckedUpdateManyWithoutMachineNestedInput
     location?: InventoryLocationUncheckedUpdateOneWithoutMachineNestedInput
   }
 
@@ -21545,6 +23539,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
     createdItems?: ItemCreateNestedManyWithoutCreatedByInput
+    machineAccesses?: UserMachineAccessCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProductionReportsInput = {
@@ -21557,6 +23552,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
     createdItems?: ItemUncheckedCreateNestedManyWithoutCreatedByInput
+    machineAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProductionReportsInput = {
@@ -21574,6 +23570,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
     createdItems?: ItemCreateNestedManyWithoutCreatedByInput
+    machineAccesses?: UserMachineAccessCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCheckedProductionReportsInput = {
@@ -21586,6 +23583,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
     createdItems?: ItemUncheckedCreateNestedManyWithoutCreatedByInput
+    machineAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCheckedProductionReportsInput = {
@@ -21694,6 +23692,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
     createdItems?: ItemUpdateManyWithoutCreatedByNestedInput
+    machineAccesses?: UserMachineAccessUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProductionReportsInput = {
@@ -21706,6 +23705,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
     createdItems?: ItemUncheckedUpdateManyWithoutCreatedByNestedInput
+    machineAccesses?: UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutCheckedProductionReportsInput = {
@@ -21729,6 +23729,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
     createdItems?: ItemUpdateManyWithoutCreatedByNestedInput
+    machineAccesses?: UserMachineAccessUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCheckedProductionReportsInput = {
@@ -21741,6 +23742,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
     createdItems?: ItemUncheckedUpdateManyWithoutCreatedByNestedInput
+    machineAccesses?: UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type InventoryTxnUpsertWithWhereUniqueWithoutProductionReportInput = {
@@ -21775,6 +23777,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     proses?: ProsesCreateNestedManyWithoutMachineInput
+    defaultProPrefix?: ProPrefixCreateNestedOneWithoutMachinesInput
+    userAccesses?: UserMachineAccessCreateNestedManyWithoutMachineInput
   }
 
   export type MachineUncheckedCreateWithoutLocationInput = {
@@ -21793,7 +23797,9 @@ export namespace Prisma {
     workCenter?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    defaultProPrefixId?: number | null
     proses?: ProsesUncheckedCreateNestedManyWithoutMachineInput
+    userAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutMachineInput
   }
 
   export type MachineCreateOrConnectWithoutLocationInput = {
@@ -21868,6 +23874,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proses?: ProsesUpdateManyWithoutMachineNestedInput
+    defaultProPrefix?: ProPrefixUpdateOneWithoutMachinesNestedInput
+    userAccesses?: UserMachineAccessUpdateManyWithoutMachineNestedInput
   }
 
   export type MachineUncheckedUpdateWithoutLocationInput = {
@@ -21886,7 +23894,9 @@ export namespace Prisma {
     workCenter?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    defaultProPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
     proses?: ProsesUncheckedUpdateManyWithoutMachineNestedInput
+    userAccesses?: UserMachineAccessUncheckedUpdateManyWithoutMachineNestedInput
   }
 
   export type InventoryTxnUpsertWithWhereUniqueWithoutLocationInput = {
@@ -22475,6 +24485,12 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type UserMachineAccessCreateManyUserInput = {
+    id?: number
+    machineId: number
+    createdAt?: Date | string
+  }
+
   export type ProductionReportUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22780,6 +24796,23 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UserMachineAccessUpdateWithoutUserInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    machine?: MachineUpdateOneRequiredWithoutUserAccessesNestedInput
+  }
+
+  export type UserMachineAccessUncheckedUpdateWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    machineId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserMachineAccessUncheckedUpdateManyWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    machineId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ProsesCreateManyMachineInput = {
     id?: number
     proId: number
@@ -22790,6 +24823,12 @@ export namespace Prisma {
     partNumber?: string | null
     batchNo?: string | null
     outputItemId?: number | null
+  }
+
+  export type UserMachineAccessCreateManyMachineInput = {
+    id?: number
+    userId: string
+    createdAt?: Date | string
   }
 
   export type ProsesUpdateWithoutMachineInput = {
@@ -22831,6 +24870,23 @@ export namespace Prisma {
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
     outputItemId?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type UserMachineAccessUpdateWithoutMachineInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutMachineAccessesNestedInput
+  }
+
+  export type UserMachineAccessUncheckedUpdateWithoutMachineInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserMachineAccessUncheckedUpdateManyWithoutMachineInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type InventoryTxnCreateManyItemMasterInput = {
@@ -23047,6 +25103,24 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type MachineCreateManyDefaultProPrefixInput = {
+    id?: number
+    name: string
+    stdOutputPerHour: number
+    stdOutputPerShift: number
+    uom: $Enums.Uom
+    type?: $Enums.MachineType
+    remark?: string | null
+    cycleTimeSec?: Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: Decimal | DecimalJsLike | number | string | null
+    cavity?: number | null
+    manPower?: number | null
+    stdOutputPerDay?: number | null
+    workCenter?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type ProUpdateWithoutProPrefixInput = {
     proNumber?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
@@ -23091,6 +25165,65 @@ export namespace Prisma {
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     fgItemId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MachineUpdateWithoutDefaultProPrefixInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    stdOutputPerHour?: IntFieldUpdateOperationsInput | number
+    stdOutputPerShift?: IntFieldUpdateOperationsInput | number
+    uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
+    remark?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    proses?: ProsesUpdateManyWithoutMachineNestedInput
+    userAccesses?: UserMachineAccessUpdateManyWithoutMachineNestedInput
+    location?: InventoryLocationUpdateOneWithoutMachineNestedInput
+  }
+
+  export type MachineUncheckedUpdateWithoutDefaultProPrefixInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    stdOutputPerHour?: IntFieldUpdateOperationsInput | number
+    stdOutputPerShift?: IntFieldUpdateOperationsInput | number
+    uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
+    remark?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    proses?: ProsesUncheckedUpdateManyWithoutMachineNestedInput
+    userAccesses?: UserMachineAccessUncheckedUpdateManyWithoutMachineNestedInput
+    location?: InventoryLocationUncheckedUpdateOneWithoutMachineNestedInput
+  }
+
+  export type MachineUncheckedUpdateManyWithoutDefaultProPrefixInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    stdOutputPerHour?: IntFieldUpdateOperationsInput | number
+    stdOutputPerShift?: IntFieldUpdateOperationsInput | number
+    uom?: EnumUomFieldUpdateOperationsInput | $Enums.Uom
+    type?: EnumMachineTypeFieldUpdateOperationsInput | $Enums.MachineType
+    remark?: NullableStringFieldUpdateOperationsInput | string | null
+    cycleTimeSec?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cycleTimeMin?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    cavity?: NullableIntFieldUpdateOperationsInput | number | null
+    manPower?: NullableIntFieldUpdateOperationsInput | number | null
+    stdOutputPerDay?: NullableIntFieldUpdateOperationsInput | number | null
+    workCenter?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

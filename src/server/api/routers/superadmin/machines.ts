@@ -38,6 +38,7 @@ export const machinesRouter = createTRPCRouter({
 
       return ctx.db.machine.findMany({
         where,
+        include: { defaultProPrefix: true },
         orderBy: { name: "asc" },
         take: 200,
       });
@@ -61,6 +62,7 @@ export const machinesRouter = createTRPCRouter({
         manPower: z.number().int().optional(),
         stdOutputPerDay: z.number().int().optional(),
         workCenter: z.string().optional(),
+        defaultProPrefixId: z.number().int().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -81,6 +83,7 @@ export const machinesRouter = createTRPCRouter({
           manPower: input.manPower,
           stdOutputPerDay: input.stdOutputPerDay,
           workCenter: input.workCenter,
+          defaultProPrefixId: input.defaultProPrefixId,
         },
       });
     }),
@@ -100,6 +103,7 @@ export const machinesRouter = createTRPCRouter({
         manPower: z.number().int().optional(),
         stdOutputPerDay: z.number().int().optional(),
         workCenter: z.string().optional(),
+        defaultProPrefixId: z.number().int().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
