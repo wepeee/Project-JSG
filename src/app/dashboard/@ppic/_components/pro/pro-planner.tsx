@@ -6,6 +6,7 @@ import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import ItemCodeInput from "./item-code-input";
 import { Separator } from "~/components/ui/separator";
 import {
   Dialog,
@@ -121,27 +122,34 @@ function parseCSV(text: string) {
   return result;
 }
 
-export default function ProPlanner() {
+export default function ProPlanner({
+  proType,
+}: {
+  proType: "PAPER" | "RIGID";
+}) {
   // Header PRO
   const [productName, setProductName] = React.useState("");
   const [partNumber, setPartNumber] = React.useState(""); // Added
   const [processId, setProcessId] = React.useState<number | null>(null);
   const [qtyPoPcs, setQtyPoPcs] = React.useState<string>("");
-  const [proType, setProType] = React.useState<"PAPER" | "RIGID" | "OTHER">(
-    "PAPER",
-  ); // Added
   const [manualProNumber, setManualProNumber] = React.useState("");
   const [headerBatchNo, setHeaderBatchNo] = React.useState(""); // Added for RIGID batch
 
+  // RIGID-specific inline state (single process)
+  const [rigidMachineId, setRigidMachineId] = React.useState<number | null>(
+    null,
+  );
+  const [rigidPN, setRigidPN] = React.useState("");
+  const [rigidUp, setRigidUp] = React.useState("1");
+  const [rigidStartDate, setRigidStartDate] = React.useState("");
+  const [rigidMaterials, setRigidMaterials] = React.useState<
+    StepDraftMaterial[]
+  >([{ key: uid(), materialId: null, qtyReq: "" }]);
+
   const utils = api.useUtils();
   const processes = api.processes.list.useQuery({ type: proType });
-  const machines = api.machines.list.useQuery({
-    // @ts-ignore
-    type: proType === "OTHER" ? undefined : proType,
-  });
-  const materials = api.materials.list.useQuery({
-    type: proType === "OTHER" ? undefined : proType,
-  });
+  const machines = api.machines.list.useQuery({ type: proType });
+  const materials = api.materials.list.useQuery({ type: proType });
 
   const createPro = api.pros.create.useMutation({
     onSuccess: async (created) => {
@@ -150,12 +158,16 @@ export default function ProPlanner() {
       setOk(`PRO dibuat: ${created.proNumber}`);
       setProductName("");
       setPartNumber(""); // Reset
-      // setProcessId(null);
-      // setProType("PAPER"); // Keep selected type for convenience
       setQtyPoPcs("");
       setManualProNumber("");
       setHeaderBatchNo("");
       setSteps([]);
+      // Reset rigid state
+      setRigidMachineId(null);
+      setRigidPN("");
+      setRigidUp("1");
+      setRigidStartDate("");
+      setRigidMaterials([{ key: uid(), materialId: null, qtyReq: "" }]);
     },
   });
 
@@ -626,34 +638,60 @@ export default function ProPlanner() {
       return setErr("Jumlah PO (pcs) wajib > 0");
     }
 
-    if (steps.length === 0) return setErr("Minimal 1 proses harus ditambahkan");
+    // Build proses array
+    let prosesPayload;
 
-    const payload = {
-      productName: prod,
-      partNumber: partNumber.trim() || undefined, // Added
-      qtyPoPcs: qty,
-      proPrefixId: processId, // Updated
-      type: proType, // Added
-      proNumber: manualProNumber ? manualProNumber.trim() : undefined,
-      proses: steps.map((s) => ({
+    if (proType === "RIGID") {
+      // Rigid: auto-wrap single inline form into 1 step
+      if (!rigidMachineId) return setErr("Mesin wajib dipilih untuk Rigid");
+
+      prosesPayload = [
+        {
+          up: Number(rigidUp) || 1,
+          machineId: rigidMachineId,
+          startDate: rigidStartDate ? new Date(rigidStartDate) : undefined,
+          partNumber: rigidPN.trim() || undefined,
+          batchNo: headerBatchNo?.trim() || undefined,
+          materials: rigidMaterials
+            .filter((m) => m.materialId)
+            .map((m) => ({
+              materialId: m.materialId!,
+              qtyReq: Number(m.qtyReq),
+            })),
+        },
+      ];
+    } else {
+      // Paper: use multi-step table
+      if (steps.length === 0)
+        return setErr("Minimal 1 proses harus ditambahkan");
+
+      prosesPayload = steps.map((s) => ({
         up: Number(s.up),
         machineId: s.machineId ?? null,
         startDate: s.startDate ? new Date(s.startDate) : undefined,
         partNumber: s.partNumber?.trim() || undefined,
-        batchNo: headerBatchNo?.trim() || s.batchNo?.trim() || undefined, // Prioritize header
+        batchNo: headerBatchNo?.trim() || s.batchNo?.trim() || undefined,
         materials: s.materials
           .filter((m) => m.materialId)
           .map((m) => ({
             materialId: m.materialId!,
             qtyReq: Number(m.qtyReq),
           })),
-        // Standard Params removed
-      })),
+      }));
+    }
+
+    const payload = {
+      productName: prod,
+      partNumber: partNumber.trim() || undefined,
+      qtyPoPcs: qty,
+      proPrefixId: processId,
+      type: proType,
+      proNumber: manualProNumber ? manualProNumber.trim() : undefined,
+      proses: prosesPayload,
     };
 
     try {
       const created = await createPro.mutateAsync(payload);
-      // onSuccess handles reset
     } catch (e: any) {
       setErr(e?.message ?? "Gagal membuat PRO");
     }
@@ -704,45 +742,14 @@ export default function ProPlanner() {
                 <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
                   FG Part Number
                 </div>
-                <Input
+                <ItemCodeInput
                   value={partNumber}
-                  onChange={(e) => setPartNumber(e.target.value)}
+                  onChange={setPartNumber}
+                  defaultKind="FG"
+                  defaultName={productName}
                   placeholder="Part No. FG"
-                  className="bg-background h-11 font-mono text-sm"
+                  className="bg-background"
                 />
-              </div>
-
-              {/* Tipe Box Toggle */}
-              <div className="space-y-2">
-                <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
-                  Tipe Box
-                </div>
-                <div className="bg-muted flex h-11 items-center rounded-lg p-1">
-                  <Button
-                    type="button"
-                    variant={proType === "PAPER" ? "default" : "ghost"}
-                    onClick={() => setProType("PAPER")}
-                    className={`flex-1 rounded-md text-xs font-bold uppercase transition-all ${
-                      proType === "PAPER"
-                        ? "bg-background text-primary shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Paper Box
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={proType === "RIGID" ? "default" : "ghost"}
-                    onClick={() => setProType("RIGID")}
-                    className={`flex-1 rounded-md text-xs font-bold uppercase transition-all ${
-                      proType === "RIGID"
-                        ? "bg-background text-primary shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Rigid Box
-                  </Button>
-                </div>
               </div>
 
               {/* Row 2 */}
@@ -816,116 +823,302 @@ export default function ProPlanner() {
           </CardContent>
         </Card>
 
-        {/* 2. Process List */}
-        <Card className="border-none shadow-md">
-          <CardHeader className="bg-muted/20 border-border flex flex-row items-center justify-between border-b pb-4">
-            <CardTitle className="text-foreground flex items-center gap-2 text-lg font-bold tracking-tight uppercase">
-              <div className="bg-primary h-8 w-1 rounded-full" />
-              Daftar Proses Produksi
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={loadingMaster}
-                className="h-9 gap-2 border-dashed"
-              >
-                <Upload className="text-muted-foreground h-4 w-4" />
-                Import CSV
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={openAdd}
-                disabled={loadingMaster || !processId}
-                className="h-9 gap-2 font-bold"
-              >
-                <Plus className="h-4 w-4" />
-                Tambah Proses
-              </Button>
-            </div>
-          </CardHeader>
+        {/* 2. Process Section — RIGID vs PAPER */}
+        {proType === "RIGID" ? (
+          /* ── RIGID: Simple inline form (always 1 step) ── */
+          <Card className="border-none shadow-md">
+            <CardHeader className="bg-muted/20 border-border border-b pb-4">
+              <CardTitle className="text-foreground flex items-center gap-2 text-lg font-bold tracking-tight uppercase">
+                <div className="bg-primary h-8 w-1 rounded-full" />
+                Proses Produksi (Rigid)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+              {err && (
+                <div className="bg-destructive/10 text-destructive border-destructive/20 flex items-center rounded-lg border p-3 text-sm font-medium">
+                  <span className="mr-2 text-lg">⚠️</span> {err}
+                </div>
+              )}
+              {ok && (
+                <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  <span className="mr-2 text-lg">✅</span> {ok}
+                </div>
+              )}
 
-          <CardContent className="p-0">
-            {err && (
-              <div className="bg-destructive/10 text-destructive border-destructive/20 m-4 flex items-center rounded-lg border p-3 text-sm font-medium">
-                <span className="mr-2 text-lg">⚠️</span> {err}
-              </div>
-            )}
-            {ok && (
-              <div className="m-4 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-700 dark:text-emerald-400">
-                <span className="mr-2 text-lg">✅</span> {ok}
-              </div>
-            )}
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Machine */}
+                <div className="space-y-2">
+                  <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    Mesin *
+                  </div>
+                  <select
+                    value={rigidMachineId ?? ""}
+                    onChange={(e) =>
+                      setRigidMachineId(
+                        e.target.value ? Number(e.target.value) : null,
+                      )
+                    }
+                    className={control}
+                    disabled={loadingMaster}
+                  >
+                    <option value="">Pilih mesin...</option>
+                    {(machines.data ?? []).map((m: any) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-muted/30">
-                    <TableRow className="border-border border-b hover:bg-transparent">
-                      <TableHead className="w-12 text-center">#</TableHead>
-                      <TableHead className="w-16 text-center">No.</TableHead>
-                      <TableHead className="w-48">Output PN (Step)</TableHead>
-                      <TableHead className="min-w-[150px]">Machine</TableHead>
-                      <TableHead className="w-32 text-center">Starts</TableHead>
-                      <TableHead className="w-24 text-center">UP/Cav</TableHead>
-                      <TableHead className="min-w-[200px]">Material</TableHead>
-                      <TableHead className="w-24 text-right">Qty</TableHead>
-                      <TableHead className="w-20 text-right">UoM</TableHead>
-                      <TableHead className="w-[140px] text-right">
-                        Aksi
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {steps.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={10} className="h-48 text-center">
-                          <div className="text-muted-foreground flex flex-col items-center justify-center gap-2">
-                            <div className="bg-muted rounded-full p-4">
-                              <GripVertical className="h-6 w-6 opacity-20" />
-                            </div>
-                            <p className="font-medium">
-                              Belum ada proses ditambahkan
-                            </p>
-                            <p className="mx-auto max-w-xs text-xs opacity-70">
-                              Gunakan tombol "Import CSV" atau "Tambah Proses"
-                              di atas untuk mengisi alur produksi.
-                            </p>
-                          </div>
-                        </TableCell>
+                {/* Output PN */}
+                <div className="space-y-2">
+                  <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    Output Part Number
+                  </div>
+                  <ItemCodeInput
+                    value={rigidPN}
+                    onChange={setRigidPN}
+                    defaultKind="WIP"
+                    defaultName={`${getMachine(rigidMachineId)?.name ?? ""} ${productName}`.trim()}
+                    placeholder="PN untuk proses ini"
+                  />
+                </div>
+
+                {/* UP/Cavity */}
+                <div className="space-y-2">
+                  <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    UP / Cavity
+                  </div>
+                  <Input
+                    type="number"
+                    value={rigidUp}
+                    onChange={(e) => setRigidUp(e.target.value)}
+                    placeholder="contoh: 4"
+                    className="font-mono"
+                  />
+                </div>
+
+                {/* Start Date */}
+                <div className="space-y-2">
+                  <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    Tanggal Mulai
+                  </div>
+                  <Input
+                    type="date"
+                    value={rigidStartDate}
+                    onChange={(e) => setRigidStartDate(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Materials */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                    Material (Optional)
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 border text-xs"
+                    onClick={() =>
+                      setRigidMaterials((prev) => [
+                        ...prev,
+                        { key: uid(), materialId: null, qtyReq: "" },
+                      ])
+                    }
+                  >
+                    + Tambah Material
+                  </Button>
+                </div>
+
+                {rigidMaterials.map((mat, mIdx) => (
+                  <div
+                    key={mat.key}
+                    className="grid grid-cols-[1fr_120px_40px] items-center gap-2"
+                  >
+                    <select
+                      value={mat.materialId ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value
+                          ? Number(e.target.value)
+                          : null;
+                        setRigidMaterials((prev) => {
+                          const next = [...prev];
+                          next[mIdx] = { ...mat, materialId: val };
+                          return next;
+                        });
+                      }}
+                      className="border-input bg-background h-9 w-full rounded-md border px-2 text-xs"
+                    >
+                      <option value="">(pilih)</option>
+                      {(materials.data ?? []).map((item: any) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                          {item.kind === "WIP"
+                            ? ` (Stok: ${item.wipStock ?? 0})`
+                            : ""}
+                        </option>
+                      ))}
+                    </select>
+                    <Input
+                      type="number"
+                      value={mat.qtyReq}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setRigidMaterials((prev) => {
+                          const next = [...prev];
+                          next[mIdx] = { ...mat, qtyReq: val };
+                          return next;
+                        });
+                      }}
+                      disabled={!mat.materialId}
+                      placeholder="Qty"
+                      className="h-9 text-xs"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive h-8 w-8"
+                      onClick={() =>
+                        setRigidMaterials((prev) =>
+                          prev.filter((m) => m.key !== mat.key),
+                        )
+                      }
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ))}
+
+                {rigidMaterials.length === 0 && (
+                  <div className="text-muted-foreground rounded border border-dashed py-3 text-center text-xs">
+                    Tidak ada material.
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          /* ── PAPER: Multi-step table with DnD ── */
+          <Card className="border-none shadow-md">
+            <CardHeader className="bg-muted/20 border-border flex flex-row items-center justify-between border-b pb-4">
+              <CardTitle className="text-foreground flex items-center gap-2 text-lg font-bold tracking-tight uppercase">
+                <div className="bg-primary h-8 w-1 rounded-full" />
+                Daftar Proses Produksi
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={loadingMaster}
+                  className="h-9 gap-2 border-dashed"
+                >
+                  <Upload className="text-muted-foreground h-4 w-4" />
+                  Import CSV
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={openAdd}
+                  disabled={loadingMaster || !processId}
+                  className="h-9 gap-2 font-bold"
+                >
+                  <Plus className="h-4 w-4" />
+                  Tambah Proses
+                </Button>
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-0">
+              {err && (
+                <div className="bg-destructive/10 text-destructive border-destructive/20 m-4 flex items-center rounded-lg border p-3 text-sm font-medium">
+                  <span className="mr-2 text-lg">⚠️</span> {err}
+                </div>
+              )}
+              {ok && (
+                <div className="m-4 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  <span className="mr-2 text-lg">✅</span> {ok}
+                </div>
+              )}
+
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader className="bg-muted/30">
+                      <TableRow className="border-border border-b hover:bg-transparent">
+                        <TableHead className="w-12 text-center">#</TableHead>
+                        <TableHead className="w-16 text-center">No.</TableHead>
+                        <TableHead className="w-48">Output PN (Step)</TableHead>
+                        <TableHead className="min-w-[150px]">Machine</TableHead>
+                        <TableHead className="w-32 text-center">
+                          Starts
+                        </TableHead>
+                        <TableHead className="w-24 text-center">
+                          UP/Cav
+                        </TableHead>
+                        <TableHead className="min-w-[200px]">
+                          Material
+                        </TableHead>
+                        <TableHead className="w-24 text-right">Qty</TableHead>
+                        <TableHead className="w-20 text-right">UoM</TableHead>
+                        <TableHead className="w-[140px] text-right">
+                          Aksi
+                        </TableHead>
                       </TableRow>
-                    ) : (
-                      <SortableContext
-                        items={steps.map((s) => s.key)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        {steps.map((s, idx) => (
-                          <SortableRow
-                            key={s.key}
-                            step={s}
-                            idx={idx}
-                            machines={machines.data ?? []}
-                            materialsList={materials.data ?? []}
-                            qtyPo={Number(qtyPoPcs) || 0}
-                            onEdit={openEdit}
-                            onRemove={removeStep}
-                          />
-                        ))}
-                      </SortableContext>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </DndContext>
-          </CardContent>
-        </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {steps.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={10} className="h-48 text-center">
+                            <div className="text-muted-foreground flex flex-col items-center justify-center gap-2">
+                              <div className="bg-muted rounded-full p-4">
+                                <GripVertical className="h-6 w-6 opacity-20" />
+                              </div>
+                              <p className="font-medium">
+                                Belum ada proses ditambahkan
+                              </p>
+                              <p className="mx-auto max-w-xs text-xs opacity-70">
+                                Gunakan tombol "Import CSV" atau "Tambah Proses"
+                                di atas untuk mengisi alur produksi.
+                              </p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        <SortableContext
+                          items={steps.map((s) => s.key)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          {steps.map((s, idx) => (
+                            <SortableRow
+                              key={s.key}
+                              step={s}
+                              idx={idx}
+                              machines={machines.data ?? []}
+                              materialsList={materials.data ?? []}
+                              qtyPo={Number(qtyPoPcs) || 0}
+                              onEdit={openEdit}
+                              onRemove={removeStep}
+                            />
+                          ))}
+                        </SortableContext>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </DndContext>
+            </CardContent>
+          </Card>
+        )}
 
         {/* 3. Action Bar */}
         <div className="bg-card/80 sticky bottom-4 z-10 flex items-center justify-between rounded-xl border p-4 shadow-xl backdrop-blur-md">
@@ -934,8 +1127,10 @@ export default function ProPlanner() {
               Summary
             </span>
             <span className="text-foreground font-mono text-sm font-medium">
-              {steps.length} Proses •{" "}
-              {qtyPoPcs ? Number(qtyPoPcs).toLocaleString() : 0} Pcs Output
+              {proType === "RIGID"
+                ? `1 Proses (Rigid)${rigidMachineId ? ` • ${getMachine(rigidMachineId)?.name ?? ""}` : ""}`
+                : `${steps.length} Proses`}{" "}
+              • {qtyPoPcs ? Number(qtyPoPcs).toLocaleString() : 0} Pcs Output
             </span>
           </div>
           <Button
@@ -1006,14 +1201,16 @@ export default function ProPlanner() {
                 <div className="text-sm font-medium">
                   Output Part Number (Step)
                 </div>
-                <Input
+                <ItemCodeInput
                   value={draft.partNumber || ""}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(code) =>
                     setDraft((d: StepDraft) => ({
                       ...d,
-                      partNumber: e.target.value,
+                      partNumber: code,
                     }))
                   }
+                  defaultKind="WIP"
+                  defaultName={`${getMachine(draft.machineId)?.name ?? ""} ${productName}`.trim()}
                   placeholder="Part Number untuk proses ini"
                 />
               </div>
@@ -1304,6 +1501,16 @@ function SortableRow({
   const getMatUom = (id: number) =>
     materialsList.find((x) => x.id === id)?.uom ?? "-";
 
+  // Lookup stock for this step's partNumber
+  const pn = step.partNumber?.trim() || "";
+  const { data: pnResults } = api.items.search.useQuery(
+    { q: pn, limit: 1 },
+    { enabled: pn.length >= 1 },
+  );
+  const pnItem = pnResults?.find(
+    (r) => r.code === pn.toUpperCase().replace(/\s+/g, "_"),
+  );
+
   return (
     <TableRow ref={setNodeRef} style={style} className="group">
       <TableCell className="w-10 p-0 pl-2 text-center">
@@ -1316,7 +1523,22 @@ function SortableRow({
         </button>
       </TableCell>
       <TableCell>{idx + 1}</TableCell>
-      <TableCell>{step.partNumber || "-"}</TableCell>
+      <TableCell>
+        <div className="flex flex-col">
+          <span className="font-mono text-sm">{pn || "-"}</span>
+          {pn && (
+            <span className="mt-0.5 text-[10px]">
+              {pnItem ? (
+                <span className="text-green-500">
+                  ✓ Stok: {pnItem.stock ?? 0} {pnItem.baseUom || "Pcs"}
+                </span>
+              ) : (
+                <span className="text-amber-500">⚠ Belum terdaftar</span>
+              )}
+            </span>
+          )}
+        </div>
+      </TableCell>
       <TableCell>
         <div className="flex flex-col">
           <span className="text-sm font-medium">

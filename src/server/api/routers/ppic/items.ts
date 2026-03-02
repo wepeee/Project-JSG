@@ -52,10 +52,29 @@ export const itemsRouter = createTRPCRouter({
           kind: true,
           status: true,
           baseUom: true,
+          inventoryTxns: {
+            select: { qty: true, type: true },
+          },
         },
       });
 
-      return items;
+      return items.map((item) => {
+        let stock = 0;
+        for (const tx of item.inventoryTxns) {
+          const q = Number(tx.qty);
+          if (tx.type === "IN" || tx.type === "ADJUST") stock += q;
+          else if (tx.type === "OUT") stock -= q;
+        }
+        return {
+          id: item.id,
+          code: item.code,
+          name: item.name,
+          kind: item.kind,
+          status: item.status,
+          baseUom: item.baseUom,
+          stock,
+        };
+      });
     }),
 
   /**
@@ -104,7 +123,7 @@ export const itemsRouter = createTRPCRouter({
         });
       }
 
-      const userId = ctx.session.user.id;
+      const userId = ctx.session?.user?.id;
 
       const item = await ctx.db.item.create({
         data: {
@@ -113,7 +132,7 @@ export const itemsRouter = createTRPCRouter({
           kind: input.kind as any,
           status: "DRAFT",
           baseUom: input.baseUom?.trim() || null,
-          createdById: userId,
+          ...(userId ? { createdById: userId } : {}),
           createdFrom: "PPIC",
         },
       });

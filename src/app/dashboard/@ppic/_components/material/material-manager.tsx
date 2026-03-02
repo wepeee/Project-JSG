@@ -59,20 +59,31 @@ export default function MaterialManager() {
   const deleteMat = api.materials.delete.useMutation({
     onSuccess: async () => utils.materials.list.invalidate(),
   });
+  const activateMat = api.materials.activate.useMutation({
+    onSuccess: async () => {
+      utils.materials.list.invalidate();
+      setOk("Item berhasil diaktifkan");
+    },
+  });
 
   // CREATE form state
   const [name, setName] = React.useState("");
   const [uom, setUom] = React.useState<Uom>("sheet");
   const [type, setType] = React.useState("RAW");
+  const [code, setCode] = React.useState("");
 
-  // SEARCH state
+  // SEARCH & FILTER state
   const [q, setQ] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState<
+    "ALL" | "DRAFT" | "ACTIVE"
+  >("ALL");
 
   // EDIT state
   const [editingId, setEditingId] = React.useState<number | null>(null);
   const [editingName, setEditingName] = React.useState("");
   const [editingUom, setEditingUom] = React.useState<Uom>("sheet");
   const [editingType, setEditingType] = React.useState("");
+  const [editingCode, setEditingCode] = React.useState("");
 
   const [err, setErr] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
@@ -81,14 +92,25 @@ export default function MaterialManager() {
   const filtered = React.useMemo(() => {
     const data = materials.data ?? [];
     const needle = q.trim().toLowerCase();
-    if (!needle) return data;
 
     return data.filter((m) => {
+      // Status filter
+      if (statusFilter !== "ALL" && (m as any).status !== statusFilter)
+        return false;
+
+      // Text search
+      if (!needle) return true;
       const n = m.name.toLowerCase();
       const u = String(m.uom).toLowerCase();
-      return n.includes(needle) || u.includes(needle);
+      const c = (m.code ?? "").toLowerCase();
+      return n.includes(needle) || u.includes(needle) || c.includes(needle);
     });
-  }, [q, materials.data]);
+  }, [q, statusFilter, materials.data]);
+
+  const draftCount = React.useMemo(() => {
+    return (materials.data ?? []).filter((m) => (m as any).status === "DRAFT")
+      .length;
+  }, [materials.data]);
 
   const resetMessages = () => {
     setErr(null);
@@ -106,12 +128,14 @@ export default function MaterialManager() {
         name: n,
         uom,
         type: type as any,
+        code: code.trim(),
       });
 
       setOk("Material berhasil ditambahkan");
       setName("");
       setUom("sheet");
       setType("RAW");
+      setCode("");
     } catch (e: any) {
       setErr(e?.message ?? "Gagal menambah material");
     }
@@ -123,12 +147,14 @@ export default function MaterialManager() {
     setEditingName(m.name);
     setEditingUom(m.uom as Uom);
     setEditingType(m.type ?? "RAW");
+    setEditingCode(m.code ?? "");
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditingName("");
     setEditingUom("sheet");
+    setEditingCode("");
   };
 
   const onSave = async () => {
@@ -144,6 +170,7 @@ export default function MaterialManager() {
         name: n,
         uom: editingUom,
         type: editingType as any,
+        code: editingCode.trim(),
       });
 
       setOk("Material berhasil diupdate");
@@ -179,10 +206,32 @@ export default function MaterialManager() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {/* Status Filter */}
+          <div className="bg-muted flex h-9 items-center rounded-lg p-0.5">
+            {(["ALL", "DRAFT", "ACTIVE"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStatusFilter(s)}
+                className={`relative rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+                  statusFilter === s
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {s === "ALL" ? "Semua" : s}
+                {s === "DRAFT" && draftCount > 0 && (
+                  <span className="ml-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white">
+                    {draftCount}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
           <div className="relative">
             <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input
-              placeholder="Cari nama/uom..."
+              placeholder="Cari nama/kode/uom..."
               value={q}
               onChange={(e) => setQ(e.target.value)}
               className="bg-background w-[250px] pl-9"
@@ -203,15 +252,27 @@ export default function MaterialManager() {
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="mat-name">Nama Material</Label>
-                  <Input
-                    id="mat-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Contoh: KERTAS A4 70GSM"
-                    autoComplete="off"
-                  />
+                <div className="grid grid-cols-[1fr_2fr] gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="mat-code">Kode (PN)</Label>
+                    <Input
+                      id="mat-code"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                      placeholder="Opsional, ct: 2061007"
+                      autoComplete="off"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="mat-name">Nama Material</Label>
+                    <Input
+                      id="mat-name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Contoh: KERTAS A4 70GSM"
+                      autoComplete="off"
+                    />
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -293,9 +354,11 @@ export default function MaterialManager() {
               <Table>
                 <TableHeader className="bg-muted/30">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-[40%]">Nama Material</TableHead>
+                    <TableHead className="w-32">Kode (PN)</TableHead>
+                    <TableHead className="w-[35%]">Nama Material</TableHead>
                     <TableHead className="w-24">UoM</TableHead>
-                    <TableHead className="w-40">Tipe</TableHead>
+                    <TableHead className="w-28">Tipe</TableHead>
+                    <TableHead className="w-28">Status</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -303,7 +366,7 @@ export default function MaterialManager() {
                   {filtered.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={4}
+                        colSpan={6}
                         className="text-muted-foreground h-32 text-center"
                       >
                         <div className="flex flex-col items-center justify-center gap-2">
@@ -322,6 +385,24 @@ export default function MaterialManager() {
 
                       return (
                         <TableRow key={m.id} className="group">
+                          <TableCell className="font-mono text-sm">
+                            {isEdit ? (
+                              <Input
+                                value={editingCode}
+                                onChange={(e) => setEditingCode(e.target.value)}
+                                placeholder="Kode PN"
+                                className="h-8 font-mono text-xs"
+                                autoComplete="off"
+                              />
+                            ) : m.code ? (
+                              <span className="font-bold">{m.code}</span>
+                            ) : (
+                              <span className="text-muted-foreground text-[10px] italic">
+                                Gen. Otomatis
+                              </span>
+                            )}
+                          </TableCell>
+
                           <TableCell className="font-medium">
                             {isEdit ? (
                               <Input
@@ -330,18 +411,6 @@ export default function MaterialManager() {
                                 autoComplete="off"
                                 className="h-8"
                               />
-                            ) : (m as any).relatedPro ? (
-                              <div className="flex flex-col">
-                                <span className="text-sm font-semibold">
-                                  {(m as any).relatedPro.machineNames?.join(
-                                    ", ",
-                                  ) || "No Machine"}{" "}
-                                  - {(m as any).relatedPro.productName}
-                                </span>
-                                <span className="text-muted-foreground bg-muted/50 w-fit rounded px-1 font-mono text-[10px] font-bold">
-                                  {(m as any).relatedPro.proNumber}
-                                </span>
-                              </div>
                             ) : (
                               <div className="flex flex-col">
                                 <span>{m.name}</span>
@@ -400,6 +469,18 @@ export default function MaterialManager() {
                             )}
                           </TableCell>
 
+                          <TableCell>
+                            {(m as any).status === "DRAFT" ? (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/50 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-500">
+                                ● DRAFT
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-green-300/50 bg-green-500/15 px-2 py-0.5 text-[10px] font-bold text-green-500">
+                                ✓ ACTIVE
+                              </span>
+                            )}
+                          </TableCell>
+
                           <TableCell className="text-right">
                             {isEdit ? (
                               <div className="flex justify-end gap-1">
@@ -423,6 +504,20 @@ export default function MaterialManager() {
                               </div>
                             ) : (
                               <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                {(m as any).status === "DRAFT" && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 border-green-500/30 px-2 text-[11px] font-bold text-green-500 hover:bg-green-500/10 hover:text-green-400"
+                                    onClick={() =>
+                                      activateMat.mutate({ id: m.id })
+                                    }
+                                    disabled={activateMat.isPending}
+                                  >
+                                    <CheckCircle2 className="mr-1 h-3 w-3" />
+                                    Aktifkan
+                                  </Button>
+                                )}
                                 <Button
                                   variant="secondary"
                                   size="icon"
@@ -433,6 +528,7 @@ export default function MaterialManager() {
                                       name: m.name,
                                       uom: m.uom as Uom,
                                       type: (m as any).type,
+                                      code: m.code ?? "",
                                     })
                                   }
                                 >

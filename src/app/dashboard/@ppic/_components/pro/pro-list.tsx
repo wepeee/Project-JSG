@@ -716,9 +716,9 @@ export default function ProList({
         orderNo: s.orderNo,
         up: String(s.up ?? 1),
         machineId: s.machineId ?? null,
-        materials: (s.materials ?? []).map((m, idx) => ({
-          key: `${s.id}-${m.materialId}-${idx}`,
-          materialId: m.materialId,
+        materials: (s.materials ?? []).map((m: any, idx: number) => ({
+          key: `${s.id}-${m.itemMasterId}-${idx}`,
+          materialId: m.itemMasterId,
           qtyReq: m.qtyReq ? String(m.qtyReq) : "",
         })),
         startDate: dt
@@ -1235,9 +1235,9 @@ export default function ProList({
                             };
                           })
                         : (item as any).materials.map((m: any) => ({
-                            name: m.material?.name ?? "-",
+                            name: m.itemMaster?.name ?? "-",
                             qtyReq: String(m.qtyReq),
-                            uom: m.material?.uom ?? "-",
+                            uom: m.itemMaster?.baseUom ?? "-",
                           }));
 
                       const firstQtyReq = materialsDisplay[0]?.qtyReq ?? "0";

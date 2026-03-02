@@ -12,6 +12,7 @@ type ItemResult = {
   kind: string;
   status: string;
   baseUom: string | null;
+  stock?: number;
 };
 
 type Props = {
@@ -19,6 +20,8 @@ type Props = {
   onChange: (code: string) => void;
   /** Auto-infer kind from context: "FG" for Pro.partNumber, "WIP" for Proses.partNumber */
   defaultKind?: "RAW" | "WIP" | "FG" | "CONSUMABLE";
+  /** Auto-fill name saat buat item baru (misal: "NamaMesin + NamaPRO") */
+  defaultName?: string;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -28,6 +31,7 @@ export default function ItemCodeInput({
   value,
   onChange,
   defaultKind = "FG",
+  defaultName = "",
   placeholder = "Cari / ketik Part Number...",
   disabled = false,
   className = "",
@@ -107,7 +111,7 @@ export default function ItemCodeInput({
     }
   };
 
-  const exactMatch = results?.some(
+  const exactMatch = results?.find(
     (r) => r.code === query.trim().toUpperCase().replace(/\s+/g, "_"),
   );
 
@@ -133,6 +137,22 @@ export default function ItemCodeInput({
         className="text-xs"
       />
 
+      {/* Note under input */}
+      {!open && query.trim() && (
+        <div className="mt-1 text-[10px]">
+          {exactMatch ? (
+            <span className="text-green-500">
+              ✓ Item ditemukan — Stok: {exactMatch.stock ?? 0}{" "}
+              {exactMatch.baseUom || "Pcs"}
+            </span>
+          ) : (
+            <span className="text-amber-500">
+              ⚠ PN belum terdaftar, akan membuat item master baru (DRAFT)
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Dropdown */}
       {open && query.length >= 1 && (
         <div className="border-border bg-popover absolute z-50 mt-1 max-h-60 w-full min-w-[280px] overflow-auto rounded-md border shadow-lg">
@@ -155,7 +175,10 @@ export default function ItemCodeInput({
                       {item.name}
                     </span>
                   )}
-                  <div className="ml-auto flex gap-1">
+                  <div className="ml-auto flex items-center gap-1">
+                    <span className="text-muted-foreground mr-1 font-mono text-[10px]">
+                      Stok: {item.stock ?? 0}
+                    </span>
                     <Badge variant="outline" className="px-1 py-0 text-[10px]">
                       {item.kind}
                     </Badge>
@@ -189,7 +212,7 @@ export default function ItemCodeInput({
                 onMouseDown={(e) => {
                   e.preventDefault();
                   setShowCreate(true);
-                  setCreateName("");
+                  setCreateName(defaultName);
                 }}
               >
                 <span className="text-lg leading-none">+</span>

@@ -24,11 +24,6 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Machine = $Result.DefaultSelection<Prisma.$MachinePayload>
 /**
- * Model Material
- * 
- */
-export type Material = $Result.DefaultSelection<Prisma.$MaterialPayload>
-/**
  * Model Item
  * 
  */
@@ -105,15 +100,6 @@ export const MachineType: {
 };
 
 export type MachineType = (typeof MachineType)[keyof typeof MachineType]
-
-
-export const MaterialType: {
-  RAW: 'RAW',
-  WIP: 'WIP',
-  CONSUMABLE: 'CONSUMABLE'
-};
-
-export type MaterialType = (typeof MaterialType)[keyof typeof MaterialType]
 
 
 export const ItemKind: {
@@ -208,10 +194,6 @@ export const Uom: typeof $Enums.Uom
 export type MachineType = $Enums.MachineType
 
 export const MachineType: typeof $Enums.MachineType
-
-export type MaterialType = $Enums.MaterialType
-
-export const MaterialType: typeof $Enums.MaterialType
 
 export type ItemKind = $Enums.ItemKind
 
@@ -382,16 +364,6 @@ export class PrismaClient<
     * ```
     */
   get machine(): Prisma.MachineDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.material`: Exposes CRUD operations for the **Material** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Materials
-    * const materials = await prisma.material.findMany()
-    * ```
-    */
-  get material(): Prisma.MaterialDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.item`: Exposes CRUD operations for the **Item** model.
@@ -925,7 +897,6 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Machine: 'Machine',
-    Material: 'Material',
     Item: 'Item',
     ProPrefix: 'ProPrefix',
     ProSequence: 'ProSequence',
@@ -953,7 +924,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "machine" | "material" | "item" | "proPrefix" | "proSequence" | "pro" | "proses" | "prosesMaterial" | "productionReport" | "inventoryLocation" | "inventoryTxn"
+      modelProps: "user" | "machine" | "item" | "proPrefix" | "proSequence" | "pro" | "proses" | "prosesMaterial" | "productionReport" | "inventoryLocation" | "inventoryTxn"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1086,72 +1057,6 @@ export namespace Prisma {
           count: {
             args: Prisma.MachineCountArgs<ExtArgs>
             result: $Utils.Optional<MachineCountAggregateOutputType> | number
-          }
-        }
-      }
-      Material: {
-        payload: Prisma.$MaterialPayload<ExtArgs>
-        fields: Prisma.MaterialFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.MaterialFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MaterialPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.MaterialFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MaterialPayload>
-          }
-          findFirst: {
-            args: Prisma.MaterialFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MaterialPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.MaterialFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MaterialPayload>
-          }
-          findMany: {
-            args: Prisma.MaterialFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MaterialPayload>[]
-          }
-          create: {
-            args: Prisma.MaterialCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MaterialPayload>
-          }
-          createMany: {
-            args: Prisma.MaterialCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          delete: {
-            args: Prisma.MaterialDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MaterialPayload>
-          }
-          update: {
-            args: Prisma.MaterialUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MaterialPayload>
-          }
-          deleteMany: {
-            args: Prisma.MaterialDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.MaterialUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.MaterialUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MaterialPayload>
-          }
-          aggregate: {
-            args: Prisma.MaterialAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateMaterial>
-          }
-          groupBy: {
-            args: Prisma.MaterialGroupByArgs<ExtArgs>
-            result: $Utils.Optional<MaterialGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.MaterialCountArgs<ExtArgs>
-            result: $Utils.Optional<MaterialCountAggregateOutputType> | number
           }
         }
       }
@@ -1847,7 +1752,6 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     user?: UserOmit
     machine?: MachineOmit
-    material?: MaterialOmit
     item?: ItemOmit
     proPrefix?: ProPrefixOmit
     proSequence?: ProSequenceOmit
@@ -2013,37 +1917,6 @@ export namespace Prisma {
 
 
   /**
-   * Count Type MaterialCountOutputType
-   */
-
-  export type MaterialCountOutputType = {
-    prosesMaterials: number
-  }
-
-  export type MaterialCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    prosesMaterials?: boolean | MaterialCountOutputTypeCountProsesMaterialsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * MaterialCountOutputType without action
-   */
-  export type MaterialCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MaterialCountOutputType
-     */
-    select?: MaterialCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * MaterialCountOutputType without action
-   */
-  export type MaterialCountOutputTypeCountProsesMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ProsesMaterialWhereInput
-  }
-
-
-  /**
    * Count Type ItemCountOutputType
    */
 
@@ -2051,12 +1924,14 @@ export namespace Prisma {
     inventoryTxns: number
     fgPros: number
     outputProses: number
+    prosesMaterials: number
   }
 
   export type ItemCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     inventoryTxns?: boolean | ItemCountOutputTypeCountInventoryTxnsArgs
     fgPros?: boolean | ItemCountOutputTypeCountFgProsArgs
     outputProses?: boolean | ItemCountOutputTypeCountOutputProsesArgs
+    prosesMaterials?: boolean | ItemCountOutputTypeCountProsesMaterialsArgs
   }
 
   // Custom InputTypes
@@ -2089,6 +1964,13 @@ export namespace Prisma {
    */
   export type ItemCountOutputTypeCountOutputProsesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProsesWhereInput
+  }
+
+  /**
+   * ItemCountOutputType without action
+   */
+  export type ItemCountOutputTypeCountProsesMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProsesMaterialWhereInput
   }
 
 
@@ -4462,1044 +4344,6 @@ export namespace Prisma {
 
 
   /**
-   * Model Material
-   */
-
-  export type AggregateMaterial = {
-    _count: MaterialCountAggregateOutputType | null
-    _avg: MaterialAvgAggregateOutputType | null
-    _sum: MaterialSumAggregateOutputType | null
-    _min: MaterialMinAggregateOutputType | null
-    _max: MaterialMaxAggregateOutputType | null
-  }
-
-  export type MaterialAvgAggregateOutputType = {
-    id: number | null
-    itemId: number | null
-  }
-
-  export type MaterialSumAggregateOutputType = {
-    id: number | null
-    itemId: number | null
-  }
-
-  export type MaterialMinAggregateOutputType = {
-    id: number | null
-    name: string | null
-    uom: string | null
-    type: $Enums.MaterialType | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    itemId: number | null
-  }
-
-  export type MaterialMaxAggregateOutputType = {
-    id: number | null
-    name: string | null
-    uom: string | null
-    type: $Enums.MaterialType | null
-    createdAt: Date | null
-    updatedAt: Date | null
-    itemId: number | null
-  }
-
-  export type MaterialCountAggregateOutputType = {
-    id: number
-    name: number
-    uom: number
-    type: number
-    createdAt: number
-    updatedAt: number
-    itemId: number
-    _all: number
-  }
-
-
-  export type MaterialAvgAggregateInputType = {
-    id?: true
-    itemId?: true
-  }
-
-  export type MaterialSumAggregateInputType = {
-    id?: true
-    itemId?: true
-  }
-
-  export type MaterialMinAggregateInputType = {
-    id?: true
-    name?: true
-    uom?: true
-    type?: true
-    createdAt?: true
-    updatedAt?: true
-    itemId?: true
-  }
-
-  export type MaterialMaxAggregateInputType = {
-    id?: true
-    name?: true
-    uom?: true
-    type?: true
-    createdAt?: true
-    updatedAt?: true
-    itemId?: true
-  }
-
-  export type MaterialCountAggregateInputType = {
-    id?: true
-    name?: true
-    uom?: true
-    type?: true
-    createdAt?: true
-    updatedAt?: true
-    itemId?: true
-    _all?: true
-  }
-
-  export type MaterialAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Material to aggregate.
-     */
-    where?: MaterialWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Materials to fetch.
-     */
-    orderBy?: MaterialOrderByWithRelationInput | MaterialOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: MaterialWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Materials from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Materials.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned Materials
-    **/
-    _count?: true | MaterialCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: MaterialAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: MaterialSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: MaterialMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: MaterialMaxAggregateInputType
-  }
-
-  export type GetMaterialAggregateType<T extends MaterialAggregateArgs> = {
-        [P in keyof T & keyof AggregateMaterial]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateMaterial[P]>
-      : GetScalarType<T[P], AggregateMaterial[P]>
-  }
-
-
-
-
-  export type MaterialGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MaterialWhereInput
-    orderBy?: MaterialOrderByWithAggregationInput | MaterialOrderByWithAggregationInput[]
-    by: MaterialScalarFieldEnum[] | MaterialScalarFieldEnum
-    having?: MaterialScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: MaterialCountAggregateInputType | true
-    _avg?: MaterialAvgAggregateInputType
-    _sum?: MaterialSumAggregateInputType
-    _min?: MaterialMinAggregateInputType
-    _max?: MaterialMaxAggregateInputType
-  }
-
-  export type MaterialGroupByOutputType = {
-    id: number
-    name: string
-    uom: string
-    type: $Enums.MaterialType
-    createdAt: Date
-    updatedAt: Date
-    itemId: number | null
-    _count: MaterialCountAggregateOutputType | null
-    _avg: MaterialAvgAggregateOutputType | null
-    _sum: MaterialSumAggregateOutputType | null
-    _min: MaterialMinAggregateOutputType | null
-    _max: MaterialMaxAggregateOutputType | null
-  }
-
-  type GetMaterialGroupByPayload<T extends MaterialGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<MaterialGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof MaterialGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], MaterialGroupByOutputType[P]>
-            : GetScalarType<T[P], MaterialGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type MaterialSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    name?: boolean
-    uom?: boolean
-    type?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    itemId?: boolean
-    prosesMaterials?: boolean | Material$prosesMaterialsArgs<ExtArgs>
-    item?: boolean | Material$itemArgs<ExtArgs>
-    _count?: boolean | MaterialCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["material"]>
-
-
-
-  export type MaterialSelectScalar = {
-    id?: boolean
-    name?: boolean
-    uom?: boolean
-    type?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    itemId?: boolean
-  }
-
-  export type MaterialOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "uom" | "type" | "createdAt" | "updatedAt" | "itemId", ExtArgs["result"]["material"]>
-  export type MaterialInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    prosesMaterials?: boolean | Material$prosesMaterialsArgs<ExtArgs>
-    item?: boolean | Material$itemArgs<ExtArgs>
-    _count?: boolean | MaterialCountOutputTypeDefaultArgs<ExtArgs>
-  }
-
-  export type $MaterialPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Material"
-    objects: {
-      prosesMaterials: Prisma.$ProsesMaterialPayload<ExtArgs>[]
-      item: Prisma.$ItemPayload<ExtArgs> | null
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: number
-      name: string
-      uom: string
-      type: $Enums.MaterialType
-      createdAt: Date
-      updatedAt: Date
-      itemId: number | null
-    }, ExtArgs["result"]["material"]>
-    composites: {}
-  }
-
-  type MaterialGetPayload<S extends boolean | null | undefined | MaterialDefaultArgs> = $Result.GetResult<Prisma.$MaterialPayload, S>
-
-  type MaterialCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<MaterialFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: MaterialCountAggregateInputType | true
-    }
-
-  export interface MaterialDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Material'], meta: { name: 'Material' } }
-    /**
-     * Find zero or one Material that matches the filter.
-     * @param {MaterialFindUniqueArgs} args - Arguments to find a Material
-     * @example
-     * // Get one Material
-     * const material = await prisma.material.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends MaterialFindUniqueArgs>(args: SelectSubset<T, MaterialFindUniqueArgs<ExtArgs>>): Prisma__MaterialClient<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one Material that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {MaterialFindUniqueOrThrowArgs} args - Arguments to find a Material
-     * @example
-     * // Get one Material
-     * const material = await prisma.material.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends MaterialFindUniqueOrThrowArgs>(args: SelectSubset<T, MaterialFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MaterialClient<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Material that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MaterialFindFirstArgs} args - Arguments to find a Material
-     * @example
-     * // Get one Material
-     * const material = await prisma.material.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends MaterialFindFirstArgs>(args?: SelectSubset<T, MaterialFindFirstArgs<ExtArgs>>): Prisma__MaterialClient<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Material that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MaterialFindFirstOrThrowArgs} args - Arguments to find a Material
-     * @example
-     * // Get one Material
-     * const material = await prisma.material.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends MaterialFindFirstOrThrowArgs>(args?: SelectSubset<T, MaterialFindFirstOrThrowArgs<ExtArgs>>): Prisma__MaterialClient<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more Materials that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MaterialFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Materials
-     * const materials = await prisma.material.findMany()
-     * 
-     * // Get first 10 Materials
-     * const materials = await prisma.material.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const materialWithIdOnly = await prisma.material.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends MaterialFindManyArgs>(args?: SelectSubset<T, MaterialFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a Material.
-     * @param {MaterialCreateArgs} args - Arguments to create a Material.
-     * @example
-     * // Create one Material
-     * const Material = await prisma.material.create({
-     *   data: {
-     *     // ... data to create a Material
-     *   }
-     * })
-     * 
-     */
-    create<T extends MaterialCreateArgs>(args: SelectSubset<T, MaterialCreateArgs<ExtArgs>>): Prisma__MaterialClient<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many Materials.
-     * @param {MaterialCreateManyArgs} args - Arguments to create many Materials.
-     * @example
-     * // Create many Materials
-     * const material = await prisma.material.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends MaterialCreateManyArgs>(args?: SelectSubset<T, MaterialCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a Material.
-     * @param {MaterialDeleteArgs} args - Arguments to delete one Material.
-     * @example
-     * // Delete one Material
-     * const Material = await prisma.material.delete({
-     *   where: {
-     *     // ... filter to delete one Material
-     *   }
-     * })
-     * 
-     */
-    delete<T extends MaterialDeleteArgs>(args: SelectSubset<T, MaterialDeleteArgs<ExtArgs>>): Prisma__MaterialClient<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one Material.
-     * @param {MaterialUpdateArgs} args - Arguments to update one Material.
-     * @example
-     * // Update one Material
-     * const material = await prisma.material.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends MaterialUpdateArgs>(args: SelectSubset<T, MaterialUpdateArgs<ExtArgs>>): Prisma__MaterialClient<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more Materials.
-     * @param {MaterialDeleteManyArgs} args - Arguments to filter Materials to delete.
-     * @example
-     * // Delete a few Materials
-     * const { count } = await prisma.material.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends MaterialDeleteManyArgs>(args?: SelectSubset<T, MaterialDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Materials.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MaterialUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Materials
-     * const material = await prisma.material.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends MaterialUpdateManyArgs>(args: SelectSubset<T, MaterialUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one Material.
-     * @param {MaterialUpsertArgs} args - Arguments to update or create a Material.
-     * @example
-     * // Update or create a Material
-     * const material = await prisma.material.upsert({
-     *   create: {
-     *     // ... data to create a Material
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Material we want to update
-     *   }
-     * })
-     */
-    upsert<T extends MaterialUpsertArgs>(args: SelectSubset<T, MaterialUpsertArgs<ExtArgs>>): Prisma__MaterialClient<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of Materials.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MaterialCountArgs} args - Arguments to filter Materials to count.
-     * @example
-     * // Count the number of Materials
-     * const count = await prisma.material.count({
-     *   where: {
-     *     // ... the filter for the Materials we want to count
-     *   }
-     * })
-    **/
-    count<T extends MaterialCountArgs>(
-      args?: Subset<T, MaterialCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], MaterialCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Material.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MaterialAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends MaterialAggregateArgs>(args: Subset<T, MaterialAggregateArgs>): Prisma.PrismaPromise<GetMaterialAggregateType<T>>
-
-    /**
-     * Group by Material.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MaterialGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends MaterialGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: MaterialGroupByArgs['orderBy'] }
-        : { orderBy?: MaterialGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, MaterialGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMaterialGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the Material model
-   */
-  readonly fields: MaterialFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for Material.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__MaterialClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    prosesMaterials<T extends Material$prosesMaterialsArgs<ExtArgs> = {}>(args?: Subset<T, Material$prosesMaterialsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    item<T extends Material$itemArgs<ExtArgs> = {}>(args?: Subset<T, Material$itemArgs<ExtArgs>>): Prisma__ItemClient<$Result.GetResult<Prisma.$ItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the Material model
-   */
-  interface MaterialFieldRefs {
-    readonly id: FieldRef<"Material", 'Int'>
-    readonly name: FieldRef<"Material", 'String'>
-    readonly uom: FieldRef<"Material", 'String'>
-    readonly type: FieldRef<"Material", 'MaterialType'>
-    readonly createdAt: FieldRef<"Material", 'DateTime'>
-    readonly updatedAt: FieldRef<"Material", 'DateTime'>
-    readonly itemId: FieldRef<"Material", 'Int'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * Material findUnique
-   */
-  export type MaterialFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Material
-     */
-    select?: MaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Material
-     */
-    omit?: MaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MaterialInclude<ExtArgs> | null
-    /**
-     * Filter, which Material to fetch.
-     */
-    where: MaterialWhereUniqueInput
-  }
-
-  /**
-   * Material findUniqueOrThrow
-   */
-  export type MaterialFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Material
-     */
-    select?: MaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Material
-     */
-    omit?: MaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MaterialInclude<ExtArgs> | null
-    /**
-     * Filter, which Material to fetch.
-     */
-    where: MaterialWhereUniqueInput
-  }
-
-  /**
-   * Material findFirst
-   */
-  export type MaterialFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Material
-     */
-    select?: MaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Material
-     */
-    omit?: MaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MaterialInclude<ExtArgs> | null
-    /**
-     * Filter, which Material to fetch.
-     */
-    where?: MaterialWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Materials to fetch.
-     */
-    orderBy?: MaterialOrderByWithRelationInput | MaterialOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Materials.
-     */
-    cursor?: MaterialWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Materials from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Materials.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Materials.
-     */
-    distinct?: MaterialScalarFieldEnum | MaterialScalarFieldEnum[]
-  }
-
-  /**
-   * Material findFirstOrThrow
-   */
-  export type MaterialFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Material
-     */
-    select?: MaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Material
-     */
-    omit?: MaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MaterialInclude<ExtArgs> | null
-    /**
-     * Filter, which Material to fetch.
-     */
-    where?: MaterialWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Materials to fetch.
-     */
-    orderBy?: MaterialOrderByWithRelationInput | MaterialOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Materials.
-     */
-    cursor?: MaterialWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Materials from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Materials.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Materials.
-     */
-    distinct?: MaterialScalarFieldEnum | MaterialScalarFieldEnum[]
-  }
-
-  /**
-   * Material findMany
-   */
-  export type MaterialFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Material
-     */
-    select?: MaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Material
-     */
-    omit?: MaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MaterialInclude<ExtArgs> | null
-    /**
-     * Filter, which Materials to fetch.
-     */
-    where?: MaterialWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Materials to fetch.
-     */
-    orderBy?: MaterialOrderByWithRelationInput | MaterialOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing Materials.
-     */
-    cursor?: MaterialWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Materials from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Materials.
-     */
-    skip?: number
-    distinct?: MaterialScalarFieldEnum | MaterialScalarFieldEnum[]
-  }
-
-  /**
-   * Material create
-   */
-  export type MaterialCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Material
-     */
-    select?: MaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Material
-     */
-    omit?: MaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MaterialInclude<ExtArgs> | null
-    /**
-     * The data needed to create a Material.
-     */
-    data: XOR<MaterialCreateInput, MaterialUncheckedCreateInput>
-  }
-
-  /**
-   * Material createMany
-   */
-  export type MaterialCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many Materials.
-     */
-    data: MaterialCreateManyInput | MaterialCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Material update
-   */
-  export type MaterialUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Material
-     */
-    select?: MaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Material
-     */
-    omit?: MaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MaterialInclude<ExtArgs> | null
-    /**
-     * The data needed to update a Material.
-     */
-    data: XOR<MaterialUpdateInput, MaterialUncheckedUpdateInput>
-    /**
-     * Choose, which Material to update.
-     */
-    where: MaterialWhereUniqueInput
-  }
-
-  /**
-   * Material updateMany
-   */
-  export type MaterialUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update Materials.
-     */
-    data: XOR<MaterialUpdateManyMutationInput, MaterialUncheckedUpdateManyInput>
-    /**
-     * Filter which Materials to update
-     */
-    where?: MaterialWhereInput
-    /**
-     * Limit how many Materials to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * Material upsert
-   */
-  export type MaterialUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Material
-     */
-    select?: MaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Material
-     */
-    omit?: MaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MaterialInclude<ExtArgs> | null
-    /**
-     * The filter to search for the Material to update in case it exists.
-     */
-    where: MaterialWhereUniqueInput
-    /**
-     * In case the Material found by the `where` argument doesn't exist, create a new Material with this data.
-     */
-    create: XOR<MaterialCreateInput, MaterialUncheckedCreateInput>
-    /**
-     * In case the Material was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<MaterialUpdateInput, MaterialUncheckedUpdateInput>
-  }
-
-  /**
-   * Material delete
-   */
-  export type MaterialDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Material
-     */
-    select?: MaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Material
-     */
-    omit?: MaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MaterialInclude<ExtArgs> | null
-    /**
-     * Filter which Material to delete.
-     */
-    where: MaterialWhereUniqueInput
-  }
-
-  /**
-   * Material deleteMany
-   */
-  export type MaterialDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Materials to delete
-     */
-    where?: MaterialWhereInput
-    /**
-     * Limit how many Materials to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * Material.prosesMaterials
-   */
-  export type Material$prosesMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ProsesMaterial
-     */
-    select?: ProsesMaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ProsesMaterial
-     */
-    omit?: ProsesMaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProsesMaterialInclude<ExtArgs> | null
-    where?: ProsesMaterialWhereInput
-    orderBy?: ProsesMaterialOrderByWithRelationInput | ProsesMaterialOrderByWithRelationInput[]
-    cursor?: ProsesMaterialWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ProsesMaterialScalarFieldEnum | ProsesMaterialScalarFieldEnum[]
-  }
-
-  /**
-   * Material.item
-   */
-  export type Material$itemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Item
-     */
-    select?: ItemSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Item
-     */
-    omit?: ItemOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ItemInclude<ExtArgs> | null
-    where?: ItemWhereInput
-  }
-
-  /**
-   * Material without action
-   */
-  export type MaterialDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Material
-     */
-    select?: MaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Material
-     */
-    omit?: MaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MaterialInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model Item
    */
 
@@ -5739,9 +4583,9 @@ export namespace Prisma {
     updatedAt?: boolean
     createdBy?: boolean | Item$createdByArgs<ExtArgs>
     inventoryTxns?: boolean | Item$inventoryTxnsArgs<ExtArgs>
-    material?: boolean | Item$materialArgs<ExtArgs>
     fgPros?: boolean | Item$fgProsArgs<ExtArgs>
     outputProses?: boolean | Item$outputProsesArgs<ExtArgs>
+    prosesMaterials?: boolean | Item$prosesMaterialsArgs<ExtArgs>
     _count?: boolean | ItemCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["item"]>
 
@@ -5764,9 +4608,9 @@ export namespace Prisma {
   export type ItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdBy?: boolean | Item$createdByArgs<ExtArgs>
     inventoryTxns?: boolean | Item$inventoryTxnsArgs<ExtArgs>
-    material?: boolean | Item$materialArgs<ExtArgs>
     fgPros?: boolean | Item$fgProsArgs<ExtArgs>
     outputProses?: boolean | Item$outputProsesArgs<ExtArgs>
+    prosesMaterials?: boolean | Item$prosesMaterialsArgs<ExtArgs>
     _count?: boolean | ItemCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -5775,9 +4619,9 @@ export namespace Prisma {
     objects: {
       createdBy: Prisma.$UserPayload<ExtArgs> | null
       inventoryTxns: Prisma.$InventoryTxnPayload<ExtArgs>[]
-      material: Prisma.$MaterialPayload<ExtArgs> | null
       fgPros: Prisma.$ProPayload<ExtArgs>[]
       outputProses: Prisma.$ProsesPayload<ExtArgs>[]
+      prosesMaterials: Prisma.$ProsesMaterialPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -6132,9 +4976,9 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     createdBy<T extends Item$createdByArgs<ExtArgs> = {}>(args?: Subset<T, Item$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     inventoryTxns<T extends Item$inventoryTxnsArgs<ExtArgs> = {}>(args?: Subset<T, Item$inventoryTxnsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    material<T extends Item$materialArgs<ExtArgs> = {}>(args?: Subset<T, Item$materialArgs<ExtArgs>>): Prisma__MaterialClient<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     fgPros<T extends Item$fgProsArgs<ExtArgs> = {}>(args?: Subset<T, Item$fgProsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     outputProses<T extends Item$outputProsesArgs<ExtArgs> = {}>(args?: Subset<T, Item$outputProsesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    prosesMaterials<T extends Item$prosesMaterialsArgs<ExtArgs> = {}>(args?: Subset<T, Item$prosesMaterialsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsesMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6560,25 +5404,6 @@ export namespace Prisma {
   }
 
   /**
-   * Item.material
-   */
-  export type Item$materialArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Material
-     */
-    select?: MaterialSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Material
-     */
-    omit?: MaterialOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MaterialInclude<ExtArgs> | null
-    where?: MaterialWhereInput
-  }
-
-  /**
    * Item.fgPros
    */
   export type Item$fgProsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6624,6 +5449,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProsesScalarFieldEnum | ProsesScalarFieldEnum[]
+  }
+
+  /**
+   * Item.prosesMaterials
+   */
+  export type Item$prosesMaterialsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProsesMaterial
+     */
+    select?: ProsesMaterialSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProsesMaterial
+     */
+    omit?: ProsesMaterialOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProsesMaterialInclude<ExtArgs> | null
+    where?: ProsesMaterialWhereInput
+    orderBy?: ProsesMaterialOrderByWithRelationInput | ProsesMaterialOrderByWithRelationInput[]
+    cursor?: ProsesMaterialWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProsesMaterialScalarFieldEnum | ProsesMaterialScalarFieldEnum[]
   }
 
   /**
@@ -10858,35 +9707,35 @@ export namespace Prisma {
   export type ProsesMaterialAvgAggregateOutputType = {
     id: number | null
     prosesId: number | null
-    materialId: number | null
+    itemMasterId: number | null
     qtyReq: Decimal | null
   }
 
   export type ProsesMaterialSumAggregateOutputType = {
     id: number | null
     prosesId: number | null
-    materialId: number | null
+    itemMasterId: number | null
     qtyReq: Decimal | null
   }
 
   export type ProsesMaterialMinAggregateOutputType = {
     id: number | null
     prosesId: number | null
-    materialId: number | null
+    itemMasterId: number | null
     qtyReq: Decimal | null
   }
 
   export type ProsesMaterialMaxAggregateOutputType = {
     id: number | null
     prosesId: number | null
-    materialId: number | null
+    itemMasterId: number | null
     qtyReq: Decimal | null
   }
 
   export type ProsesMaterialCountAggregateOutputType = {
     id: number
     prosesId: number
-    materialId: number
+    itemMasterId: number
     qtyReq: number
     _all: number
   }
@@ -10895,35 +9744,35 @@ export namespace Prisma {
   export type ProsesMaterialAvgAggregateInputType = {
     id?: true
     prosesId?: true
-    materialId?: true
+    itemMasterId?: true
     qtyReq?: true
   }
 
   export type ProsesMaterialSumAggregateInputType = {
     id?: true
     prosesId?: true
-    materialId?: true
+    itemMasterId?: true
     qtyReq?: true
   }
 
   export type ProsesMaterialMinAggregateInputType = {
     id?: true
     prosesId?: true
-    materialId?: true
+    itemMasterId?: true
     qtyReq?: true
   }
 
   export type ProsesMaterialMaxAggregateInputType = {
     id?: true
     prosesId?: true
-    materialId?: true
+    itemMasterId?: true
     qtyReq?: true
   }
 
   export type ProsesMaterialCountAggregateInputType = {
     id?: true
     prosesId?: true
-    materialId?: true
+    itemMasterId?: true
     qtyReq?: true
     _all?: true
   }
@@ -11017,7 +9866,7 @@ export namespace Prisma {
   export type ProsesMaterialGroupByOutputType = {
     id: number
     prosesId: number
-    materialId: number
+    itemMasterId: number
     qtyReq: Decimal
     _count: ProsesMaterialCountAggregateOutputType | null
     _avg: ProsesMaterialAvgAggregateOutputType | null
@@ -11043,10 +9892,10 @@ export namespace Prisma {
   export type ProsesMaterialSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     prosesId?: boolean
-    materialId?: boolean
+    itemMasterId?: boolean
     qtyReq?: boolean
     proses?: boolean | ProsesDefaultArgs<ExtArgs>
-    material?: boolean | MaterialDefaultArgs<ExtArgs>
+    itemMaster?: boolean | ItemDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["prosesMaterial"]>
 
 
@@ -11054,26 +9903,26 @@ export namespace Prisma {
   export type ProsesMaterialSelectScalar = {
     id?: boolean
     prosesId?: boolean
-    materialId?: boolean
+    itemMasterId?: boolean
     qtyReq?: boolean
   }
 
-  export type ProsesMaterialOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "prosesId" | "materialId" | "qtyReq", ExtArgs["result"]["prosesMaterial"]>
+  export type ProsesMaterialOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "prosesId" | "itemMasterId" | "qtyReq", ExtArgs["result"]["prosesMaterial"]>
   export type ProsesMaterialInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     proses?: boolean | ProsesDefaultArgs<ExtArgs>
-    material?: boolean | MaterialDefaultArgs<ExtArgs>
+    itemMaster?: boolean | ItemDefaultArgs<ExtArgs>
   }
 
   export type $ProsesMaterialPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "ProsesMaterial"
     objects: {
       proses: Prisma.$ProsesPayload<ExtArgs>
-      material: Prisma.$MaterialPayload<ExtArgs>
+      itemMaster: Prisma.$ItemPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
       prosesId: number
-      materialId: number
+      itemMasterId: number
       qtyReq: Prisma.Decimal
     }, ExtArgs["result"]["prosesMaterial"]>
     composites: {}
@@ -11416,7 +10265,7 @@ export namespace Prisma {
   export interface Prisma__ProsesMaterialClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     proses<T extends ProsesDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProsesDefaultArgs<ExtArgs>>): Prisma__ProsesClient<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    material<T extends MaterialDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MaterialDefaultArgs<ExtArgs>>): Prisma__MaterialClient<$Result.GetResult<Prisma.$MaterialPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    itemMaster<T extends ItemDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ItemDefaultArgs<ExtArgs>>): Prisma__ItemClient<$Result.GetResult<Prisma.$ItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11448,7 +10297,7 @@ export namespace Prisma {
   interface ProsesMaterialFieldRefs {
     readonly id: FieldRef<"ProsesMaterial", 'Int'>
     readonly prosesId: FieldRef<"ProsesMaterial", 'Int'>
-    readonly materialId: FieldRef<"ProsesMaterial", 'Int'>
+    readonly itemMasterId: FieldRef<"ProsesMaterial", 'Int'>
     readonly qtyReq: FieldRef<"ProsesMaterial", 'Decimal'>
   }
     
@@ -15521,19 +14370,6 @@ export namespace Prisma {
   export type MachineScalarFieldEnum = (typeof MachineScalarFieldEnum)[keyof typeof MachineScalarFieldEnum]
 
 
-  export const MaterialScalarFieldEnum: {
-    id: 'id',
-    name: 'name',
-    uom: 'uom',
-    type: 'type',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    itemId: 'itemId'
-  };
-
-  export type MaterialScalarFieldEnum = (typeof MaterialScalarFieldEnum)[keyof typeof MaterialScalarFieldEnum]
-
-
   export const ItemScalarFieldEnum: {
     id: 'id',
     code: 'code',
@@ -15606,7 +14442,7 @@ export namespace Prisma {
   export const ProsesMaterialScalarFieldEnum: {
     id: 'id',
     prosesId: 'prosesId',
-    materialId: 'materialId',
+    itemMasterId: 'itemMasterId',
     qtyReq: 'qtyReq'
   };
 
@@ -15731,14 +14567,6 @@ export namespace Prisma {
   };
 
   export type MachineOrderByRelevanceFieldEnum = (typeof MachineOrderByRelevanceFieldEnum)[keyof typeof MachineOrderByRelevanceFieldEnum]
-
-
-  export const MaterialOrderByRelevanceFieldEnum: {
-    name: 'name',
-    uom: 'uom'
-  };
-
-  export type MaterialOrderByRelevanceFieldEnum = (typeof MaterialOrderByRelevanceFieldEnum)[keyof typeof MaterialOrderByRelevanceFieldEnum]
 
 
   export const ItemOrderByRelevanceFieldEnum: {
@@ -15888,13 +14716,6 @@ export namespace Prisma {
    * Reference to a field of type 'Decimal'
    */
   export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
-    
-
-
-  /**
-   * Reference to a field of type 'MaterialType'
-   */
-  export type EnumMaterialTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MaterialType'>
     
 
 
@@ -16168,77 +14989,6 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Machine"> | Date | string
   }
 
-  export type MaterialWhereInput = {
-    AND?: MaterialWhereInput | MaterialWhereInput[]
-    OR?: MaterialWhereInput[]
-    NOT?: MaterialWhereInput | MaterialWhereInput[]
-    id?: IntFilter<"Material"> | number
-    name?: StringFilter<"Material"> | string
-    uom?: StringFilter<"Material"> | string
-    type?: EnumMaterialTypeFilter<"Material"> | $Enums.MaterialType
-    createdAt?: DateTimeFilter<"Material"> | Date | string
-    updatedAt?: DateTimeFilter<"Material"> | Date | string
-    itemId?: IntNullableFilter<"Material"> | number | null
-    prosesMaterials?: ProsesMaterialListRelationFilter
-    item?: XOR<ItemNullableScalarRelationFilter, ItemWhereInput> | null
-  }
-
-  export type MaterialOrderByWithRelationInput = {
-    id?: SortOrder
-    name?: SortOrder
-    uom?: SortOrder
-    type?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    itemId?: SortOrderInput | SortOrder
-    prosesMaterials?: ProsesMaterialOrderByRelationAggregateInput
-    item?: ItemOrderByWithRelationInput
-    _relevance?: MaterialOrderByRelevanceInput
-  }
-
-  export type MaterialWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
-    name?: string
-    itemId?: number
-    AND?: MaterialWhereInput | MaterialWhereInput[]
-    OR?: MaterialWhereInput[]
-    NOT?: MaterialWhereInput | MaterialWhereInput[]
-    uom?: StringFilter<"Material"> | string
-    type?: EnumMaterialTypeFilter<"Material"> | $Enums.MaterialType
-    createdAt?: DateTimeFilter<"Material"> | Date | string
-    updatedAt?: DateTimeFilter<"Material"> | Date | string
-    prosesMaterials?: ProsesMaterialListRelationFilter
-    item?: XOR<ItemNullableScalarRelationFilter, ItemWhereInput> | null
-  }, "id" | "name" | "itemId">
-
-  export type MaterialOrderByWithAggregationInput = {
-    id?: SortOrder
-    name?: SortOrder
-    uom?: SortOrder
-    type?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    itemId?: SortOrderInput | SortOrder
-    _count?: MaterialCountOrderByAggregateInput
-    _avg?: MaterialAvgOrderByAggregateInput
-    _max?: MaterialMaxOrderByAggregateInput
-    _min?: MaterialMinOrderByAggregateInput
-    _sum?: MaterialSumOrderByAggregateInput
-  }
-
-  export type MaterialScalarWhereWithAggregatesInput = {
-    AND?: MaterialScalarWhereWithAggregatesInput | MaterialScalarWhereWithAggregatesInput[]
-    OR?: MaterialScalarWhereWithAggregatesInput[]
-    NOT?: MaterialScalarWhereWithAggregatesInput | MaterialScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"Material"> | number
-    name?: StringWithAggregatesFilter<"Material"> | string
-    uom?: StringWithAggregatesFilter<"Material"> | string
-    type?: EnumMaterialTypeWithAggregatesFilter<"Material"> | $Enums.MaterialType
-    createdAt?: DateTimeWithAggregatesFilter<"Material"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"Material"> | Date | string
-    itemId?: IntNullableWithAggregatesFilter<"Material"> | number | null
-  }
-
   export type ItemWhereInput = {
     AND?: ItemWhereInput | ItemWhereInput[]
     OR?: ItemWhereInput[]
@@ -16255,9 +15005,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Item"> | Date | string
     createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     inventoryTxns?: InventoryTxnListRelationFilter
-    material?: XOR<MaterialNullableScalarRelationFilter, MaterialWhereInput> | null
     fgPros?: ProListRelationFilter
     outputProses?: ProsesListRelationFilter
+    prosesMaterials?: ProsesMaterialListRelationFilter
   }
 
   export type ItemOrderByWithRelationInput = {
@@ -16273,9 +15023,9 @@ export namespace Prisma {
     updatedAt?: SortOrder
     createdBy?: UserOrderByWithRelationInput
     inventoryTxns?: InventoryTxnOrderByRelationAggregateInput
-    material?: MaterialOrderByWithRelationInput
     fgPros?: ProOrderByRelationAggregateInput
     outputProses?: ProsesOrderByRelationAggregateInput
+    prosesMaterials?: ProsesMaterialOrderByRelationAggregateInput
     _relevance?: ItemOrderByRelevanceInput
   }
 
@@ -16295,9 +15045,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Item"> | Date | string
     createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     inventoryTxns?: InventoryTxnListRelationFilter
-    material?: XOR<MaterialNullableScalarRelationFilter, MaterialWhereInput> | null
     fgPros?: ProListRelationFilter
     outputProses?: ProsesListRelationFilter
+    prosesMaterials?: ProsesMaterialListRelationFilter
   }, "id" | "code">
 
   export type ItemOrderByWithAggregationInput = {
@@ -16639,38 +15389,38 @@ export namespace Prisma {
     NOT?: ProsesMaterialWhereInput | ProsesMaterialWhereInput[]
     id?: IntFilter<"ProsesMaterial"> | number
     prosesId?: IntFilter<"ProsesMaterial"> | number
-    materialId?: IntFilter<"ProsesMaterial"> | number
+    itemMasterId?: IntFilter<"ProsesMaterial"> | number
     qtyReq?: DecimalFilter<"ProsesMaterial"> | Decimal | DecimalJsLike | number | string
     proses?: XOR<ProsesScalarRelationFilter, ProsesWhereInput>
-    material?: XOR<MaterialScalarRelationFilter, MaterialWhereInput>
+    itemMaster?: XOR<ItemScalarRelationFilter, ItemWhereInput>
   }
 
   export type ProsesMaterialOrderByWithRelationInput = {
     id?: SortOrder
     prosesId?: SortOrder
-    materialId?: SortOrder
+    itemMasterId?: SortOrder
     qtyReq?: SortOrder
     proses?: ProsesOrderByWithRelationInput
-    material?: MaterialOrderByWithRelationInput
+    itemMaster?: ItemOrderByWithRelationInput
   }
 
   export type ProsesMaterialWhereUniqueInput = Prisma.AtLeast<{
     id?: number
-    prosesId_materialId?: ProsesMaterialProsesIdMaterialIdCompoundUniqueInput
+    prosesId_itemMasterId?: ProsesMaterialProsesIdItemMasterIdCompoundUniqueInput
     AND?: ProsesMaterialWhereInput | ProsesMaterialWhereInput[]
     OR?: ProsesMaterialWhereInput[]
     NOT?: ProsesMaterialWhereInput | ProsesMaterialWhereInput[]
     prosesId?: IntFilter<"ProsesMaterial"> | number
-    materialId?: IntFilter<"ProsesMaterial"> | number
+    itemMasterId?: IntFilter<"ProsesMaterial"> | number
     qtyReq?: DecimalFilter<"ProsesMaterial"> | Decimal | DecimalJsLike | number | string
     proses?: XOR<ProsesScalarRelationFilter, ProsesWhereInput>
-    material?: XOR<MaterialScalarRelationFilter, MaterialWhereInput>
-  }, "id" | "prosesId_materialId">
+    itemMaster?: XOR<ItemScalarRelationFilter, ItemWhereInput>
+  }, "id" | "prosesId_itemMasterId">
 
   export type ProsesMaterialOrderByWithAggregationInput = {
     id?: SortOrder
     prosesId?: SortOrder
-    materialId?: SortOrder
+    itemMasterId?: SortOrder
     qtyReq?: SortOrder
     _count?: ProsesMaterialCountOrderByAggregateInput
     _avg?: ProsesMaterialAvgOrderByAggregateInput
@@ -16685,7 +15435,7 @@ export namespace Prisma {
     NOT?: ProsesMaterialScalarWhereWithAggregatesInput | ProsesMaterialScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"ProsesMaterial"> | number
     prosesId?: IntWithAggregatesFilter<"ProsesMaterial"> | number
-    materialId?: IntWithAggregatesFilter<"ProsesMaterial"> | number
+    itemMasterId?: IntWithAggregatesFilter<"ProsesMaterial"> | number
     qtyReq?: DecimalWithAggregatesFilter<"ProsesMaterial"> | Decimal | DecimalJsLike | number | string
   }
 
@@ -17321,76 +16071,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type MaterialCreateInput = {
-    name: string
-    uom: string
-    type?: $Enums.MaterialType
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    prosesMaterials?: ProsesMaterialCreateNestedManyWithoutMaterialInput
-    item?: ItemCreateNestedOneWithoutMaterialInput
-  }
-
-  export type MaterialUncheckedCreateInput = {
-    id?: number
-    name: string
-    uom: string
-    type?: $Enums.MaterialType
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    itemId?: number | null
-    prosesMaterials?: ProsesMaterialUncheckedCreateNestedManyWithoutMaterialInput
-  }
-
-  export type MaterialUpdateInput = {
-    name?: StringFieldUpdateOperationsInput | string
-    uom?: StringFieldUpdateOperationsInput | string
-    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    prosesMaterials?: ProsesMaterialUpdateManyWithoutMaterialNestedInput
-    item?: ItemUpdateOneWithoutMaterialNestedInput
-  }
-
-  export type MaterialUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
-    uom?: StringFieldUpdateOperationsInput | string
-    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    itemId?: NullableIntFieldUpdateOperationsInput | number | null
-    prosesMaterials?: ProsesMaterialUncheckedUpdateManyWithoutMaterialNestedInput
-  }
-
-  export type MaterialCreateManyInput = {
-    id?: number
-    name: string
-    uom: string
-    type?: $Enums.MaterialType
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    itemId?: number | null
-  }
-
-  export type MaterialUpdateManyMutationInput = {
-    name?: StringFieldUpdateOperationsInput | string
-    uom?: StringFieldUpdateOperationsInput | string
-    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type MaterialUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
-    uom?: StringFieldUpdateOperationsInput | string
-    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    itemId?: NullableIntFieldUpdateOperationsInput | number | null
-  }
-
   export type ItemCreateInput = {
     code: string
     name: string
@@ -17402,9 +16082,9 @@ export namespace Prisma {
     updatedAt?: Date | string
     createdBy?: UserCreateNestedOneWithoutCreatedItemsInput
     inventoryTxns?: InventoryTxnCreateNestedManyWithoutItemMasterInput
-    material?: MaterialCreateNestedOneWithoutItemInput
     fgPros?: ProCreateNestedManyWithoutFgItemInput
     outputProses?: ProsesCreateNestedManyWithoutOutputItemInput
+    prosesMaterials?: ProsesMaterialCreateNestedManyWithoutItemMasterInput
   }
 
   export type ItemUncheckedCreateInput = {
@@ -17419,9 +16099,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutItemMasterInput
-    material?: MaterialUncheckedCreateNestedOneWithoutItemInput
     fgPros?: ProUncheckedCreateNestedManyWithoutFgItemInput
     outputProses?: ProsesUncheckedCreateNestedManyWithoutOutputItemInput
+    prosesMaterials?: ProsesMaterialUncheckedCreateNestedManyWithoutItemMasterInput
   }
 
   export type ItemUpdateInput = {
@@ -17435,9 +16115,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneWithoutCreatedItemsNestedInput
     inventoryTxns?: InventoryTxnUpdateManyWithoutItemMasterNestedInput
-    material?: MaterialUpdateOneWithoutItemNestedInput
     fgPros?: ProUpdateManyWithoutFgItemNestedInput
     outputProses?: ProsesUpdateManyWithoutOutputItemNestedInput
+    prosesMaterials?: ProsesMaterialUpdateManyWithoutItemMasterNestedInput
   }
 
   export type ItemUncheckedUpdateInput = {
@@ -17452,9 +16132,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutItemMasterNestedInput
-    material?: MaterialUncheckedUpdateOneWithoutItemNestedInput
     fgPros?: ProUncheckedUpdateManyWithoutFgItemNestedInput
     outputProses?: ProsesUncheckedUpdateManyWithoutOutputItemNestedInput
+    prosesMaterials?: ProsesMaterialUncheckedUpdateManyWithoutItemMasterNestedInput
   }
 
   export type ItemCreateManyInput = {
@@ -17794,33 +16474,33 @@ export namespace Prisma {
   export type ProsesMaterialCreateInput = {
     qtyReq: Decimal | DecimalJsLike | number | string
     proses: ProsesCreateNestedOneWithoutMaterialsInput
-    material: MaterialCreateNestedOneWithoutProsesMaterialsInput
+    itemMaster: ItemCreateNestedOneWithoutProsesMaterialsInput
   }
 
   export type ProsesMaterialUncheckedCreateInput = {
     id?: number
     prosesId: number
-    materialId: number
+    itemMasterId: number
     qtyReq: Decimal | DecimalJsLike | number | string
   }
 
   export type ProsesMaterialUpdateInput = {
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     proses?: ProsesUpdateOneRequiredWithoutMaterialsNestedInput
-    material?: MaterialUpdateOneRequiredWithoutProsesMaterialsNestedInput
+    itemMaster?: ItemUpdateOneRequiredWithoutProsesMaterialsNestedInput
   }
 
   export type ProsesMaterialUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     prosesId?: IntFieldUpdateOperationsInput | number
-    materialId?: IntFieldUpdateOperationsInput | number
+    itemMasterId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
   export type ProsesMaterialCreateManyInput = {
     id?: number
     prosesId: number
-    materialId: number
+    itemMasterId: number
     qtyReq: Decimal | DecimalJsLike | number | string
   }
 
@@ -17831,7 +16511,7 @@ export namespace Prisma {
   export type ProsesMaterialUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     prosesId?: IntFieldUpdateOperationsInput | number
-    materialId?: IntFieldUpdateOperationsInput | number
+    itemMasterId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
@@ -18688,84 +17368,6 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
-  export type EnumMaterialTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.MaterialType | EnumMaterialTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.MaterialType[]
-    notIn?: $Enums.MaterialType[]
-    not?: NestedEnumMaterialTypeFilter<$PrismaModel> | $Enums.MaterialType
-  }
-
-  export type ProsesMaterialListRelationFilter = {
-    every?: ProsesMaterialWhereInput
-    some?: ProsesMaterialWhereInput
-    none?: ProsesMaterialWhereInput
-  }
-
-  export type ItemNullableScalarRelationFilter = {
-    is?: ItemWhereInput | null
-    isNot?: ItemWhereInput | null
-  }
-
-  export type ProsesMaterialOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type MaterialOrderByRelevanceInput = {
-    fields: MaterialOrderByRelevanceFieldEnum | MaterialOrderByRelevanceFieldEnum[]
-    sort: SortOrder
-    search: string
-  }
-
-  export type MaterialCountOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-    uom?: SortOrder
-    type?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    itemId?: SortOrder
-  }
-
-  export type MaterialAvgOrderByAggregateInput = {
-    id?: SortOrder
-    itemId?: SortOrder
-  }
-
-  export type MaterialMaxOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-    uom?: SortOrder
-    type?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    itemId?: SortOrder
-  }
-
-  export type MaterialMinOrderByAggregateInput = {
-    id?: SortOrder
-    name?: SortOrder
-    uom?: SortOrder
-    type?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    itemId?: SortOrder
-  }
-
-  export type MaterialSumOrderByAggregateInput = {
-    id?: SortOrder
-    itemId?: SortOrder
-  }
-
-  export type EnumMaterialTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.MaterialType | EnumMaterialTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.MaterialType[]
-    notIn?: $Enums.MaterialType[]
-    not?: NestedEnumMaterialTypeWithAggregatesFilter<$PrismaModel> | $Enums.MaterialType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumMaterialTypeFilter<$PrismaModel>
-    _max?: NestedEnumMaterialTypeFilter<$PrismaModel>
-  }
-
   export type EnumItemKindFilter<$PrismaModel = never> = {
     equals?: $Enums.ItemKind | EnumItemKindFieldRefInput<$PrismaModel>
     in?: $Enums.ItemKind[]
@@ -18791,15 +17393,16 @@ export namespace Prisma {
     none?: InventoryTxnWhereInput
   }
 
-  export type MaterialNullableScalarRelationFilter = {
-    is?: MaterialWhereInput | null
-    isNot?: MaterialWhereInput | null
-  }
-
   export type ProListRelationFilter = {
     every?: ProWhereInput
     some?: ProWhereInput
     none?: ProWhereInput
+  }
+
+  export type ProsesMaterialListRelationFilter = {
+    every?: ProsesMaterialWhereInput
+    some?: ProsesMaterialWhereInput
+    none?: ProsesMaterialWhereInput
   }
 
   export type InventoryTxnOrderByRelationAggregateInput = {
@@ -18807,6 +17410,10 @@ export namespace Prisma {
   }
 
   export type ProOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ProsesMaterialOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -18990,6 +17597,11 @@ export namespace Prisma {
   export type ProPrefixNullableScalarRelationFilter = {
     is?: ProPrefixWhereInput | null
     isNot?: ProPrefixWhereInput | null
+  }
+
+  export type ItemNullableScalarRelationFilter = {
+    is?: ItemWhereInput | null
+    isNot?: ItemWhereInput | null
   }
 
   export type ProOrderByRelevanceInput = {
@@ -19188,48 +17800,48 @@ export namespace Prisma {
     isNot?: ProsesWhereInput
   }
 
-  export type MaterialScalarRelationFilter = {
-    is?: MaterialWhereInput
-    isNot?: MaterialWhereInput
+  export type ItemScalarRelationFilter = {
+    is?: ItemWhereInput
+    isNot?: ItemWhereInput
   }
 
-  export type ProsesMaterialProsesIdMaterialIdCompoundUniqueInput = {
+  export type ProsesMaterialProsesIdItemMasterIdCompoundUniqueInput = {
     prosesId: number
-    materialId: number
+    itemMasterId: number
   }
 
   export type ProsesMaterialCountOrderByAggregateInput = {
     id?: SortOrder
     prosesId?: SortOrder
-    materialId?: SortOrder
+    itemMasterId?: SortOrder
     qtyReq?: SortOrder
   }
 
   export type ProsesMaterialAvgOrderByAggregateInput = {
     id?: SortOrder
     prosesId?: SortOrder
-    materialId?: SortOrder
+    itemMasterId?: SortOrder
     qtyReq?: SortOrder
   }
 
   export type ProsesMaterialMaxOrderByAggregateInput = {
     id?: SortOrder
     prosesId?: SortOrder
-    materialId?: SortOrder
+    itemMasterId?: SortOrder
     qtyReq?: SortOrder
   }
 
   export type ProsesMaterialMinOrderByAggregateInput = {
     id?: SortOrder
     prosesId?: SortOrder
-    materialId?: SortOrder
+    itemMasterId?: SortOrder
     qtyReq?: SortOrder
   }
 
   export type ProsesMaterialSumOrderByAggregateInput = {
     id?: SortOrder
     prosesId?: SortOrder
-    materialId?: SortOrder
+    itemMasterId?: SortOrder
     qtyReq?: SortOrder
   }
 
@@ -19923,68 +18535,6 @@ export namespace Prisma {
     update?: XOR<XOR<InventoryLocationUpdateToOneWithWhereWithoutMachineInput, InventoryLocationUpdateWithoutMachineInput>, InventoryLocationUncheckedUpdateWithoutMachineInput>
   }
 
-  export type ProsesMaterialCreateNestedManyWithoutMaterialInput = {
-    create?: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput> | ProsesMaterialCreateWithoutMaterialInput[] | ProsesMaterialUncheckedCreateWithoutMaterialInput[]
-    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutMaterialInput | ProsesMaterialCreateOrConnectWithoutMaterialInput[]
-    createMany?: ProsesMaterialCreateManyMaterialInputEnvelope
-    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
-  }
-
-  export type ItemCreateNestedOneWithoutMaterialInput = {
-    create?: XOR<ItemCreateWithoutMaterialInput, ItemUncheckedCreateWithoutMaterialInput>
-    connectOrCreate?: ItemCreateOrConnectWithoutMaterialInput
-    connect?: ItemWhereUniqueInput
-  }
-
-  export type ProsesMaterialUncheckedCreateNestedManyWithoutMaterialInput = {
-    create?: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput> | ProsesMaterialCreateWithoutMaterialInput[] | ProsesMaterialUncheckedCreateWithoutMaterialInput[]
-    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutMaterialInput | ProsesMaterialCreateOrConnectWithoutMaterialInput[]
-    createMany?: ProsesMaterialCreateManyMaterialInputEnvelope
-    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
-  }
-
-  export type EnumMaterialTypeFieldUpdateOperationsInput = {
-    set?: $Enums.MaterialType
-  }
-
-  export type ProsesMaterialUpdateManyWithoutMaterialNestedInput = {
-    create?: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput> | ProsesMaterialCreateWithoutMaterialInput[] | ProsesMaterialUncheckedCreateWithoutMaterialInput[]
-    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutMaterialInput | ProsesMaterialCreateOrConnectWithoutMaterialInput[]
-    upsert?: ProsesMaterialUpsertWithWhereUniqueWithoutMaterialInput | ProsesMaterialUpsertWithWhereUniqueWithoutMaterialInput[]
-    createMany?: ProsesMaterialCreateManyMaterialInputEnvelope
-    set?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
-    disconnect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
-    delete?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
-    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
-    update?: ProsesMaterialUpdateWithWhereUniqueWithoutMaterialInput | ProsesMaterialUpdateWithWhereUniqueWithoutMaterialInput[]
-    updateMany?: ProsesMaterialUpdateManyWithWhereWithoutMaterialInput | ProsesMaterialUpdateManyWithWhereWithoutMaterialInput[]
-    deleteMany?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
-  }
-
-  export type ItemUpdateOneWithoutMaterialNestedInput = {
-    create?: XOR<ItemCreateWithoutMaterialInput, ItemUncheckedCreateWithoutMaterialInput>
-    connectOrCreate?: ItemCreateOrConnectWithoutMaterialInput
-    upsert?: ItemUpsertWithoutMaterialInput
-    disconnect?: ItemWhereInput | boolean
-    delete?: ItemWhereInput | boolean
-    connect?: ItemWhereUniqueInput
-    update?: XOR<XOR<ItemUpdateToOneWithWhereWithoutMaterialInput, ItemUpdateWithoutMaterialInput>, ItemUncheckedUpdateWithoutMaterialInput>
-  }
-
-  export type ProsesMaterialUncheckedUpdateManyWithoutMaterialNestedInput = {
-    create?: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput> | ProsesMaterialCreateWithoutMaterialInput[] | ProsesMaterialUncheckedCreateWithoutMaterialInput[]
-    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutMaterialInput | ProsesMaterialCreateOrConnectWithoutMaterialInput[]
-    upsert?: ProsesMaterialUpsertWithWhereUniqueWithoutMaterialInput | ProsesMaterialUpsertWithWhereUniqueWithoutMaterialInput[]
-    createMany?: ProsesMaterialCreateManyMaterialInputEnvelope
-    set?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
-    disconnect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
-    delete?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
-    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
-    update?: ProsesMaterialUpdateWithWhereUniqueWithoutMaterialInput | ProsesMaterialUpdateWithWhereUniqueWithoutMaterialInput[]
-    updateMany?: ProsesMaterialUpdateManyWithWhereWithoutMaterialInput | ProsesMaterialUpdateManyWithWhereWithoutMaterialInput[]
-    deleteMany?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
-  }
-
   export type UserCreateNestedOneWithoutCreatedItemsInput = {
     create?: XOR<UserCreateWithoutCreatedItemsInput, UserUncheckedCreateWithoutCreatedItemsInput>
     connectOrCreate?: UserCreateOrConnectWithoutCreatedItemsInput
@@ -19996,12 +18546,6 @@ export namespace Prisma {
     connectOrCreate?: InventoryTxnCreateOrConnectWithoutItemMasterInput | InventoryTxnCreateOrConnectWithoutItemMasterInput[]
     createMany?: InventoryTxnCreateManyItemMasterInputEnvelope
     connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
-  }
-
-  export type MaterialCreateNestedOneWithoutItemInput = {
-    create?: XOR<MaterialCreateWithoutItemInput, MaterialUncheckedCreateWithoutItemInput>
-    connectOrCreate?: MaterialCreateOrConnectWithoutItemInput
-    connect?: MaterialWhereUniqueInput
   }
 
   export type ProCreateNestedManyWithoutFgItemInput = {
@@ -20018,17 +18562,18 @@ export namespace Prisma {
     connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
   }
 
+  export type ProsesMaterialCreateNestedManyWithoutItemMasterInput = {
+    create?: XOR<ProsesMaterialCreateWithoutItemMasterInput, ProsesMaterialUncheckedCreateWithoutItemMasterInput> | ProsesMaterialCreateWithoutItemMasterInput[] | ProsesMaterialUncheckedCreateWithoutItemMasterInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutItemMasterInput | ProsesMaterialCreateOrConnectWithoutItemMasterInput[]
+    createMany?: ProsesMaterialCreateManyItemMasterInputEnvelope
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+  }
+
   export type InventoryTxnUncheckedCreateNestedManyWithoutItemMasterInput = {
     create?: XOR<InventoryTxnCreateWithoutItemMasterInput, InventoryTxnUncheckedCreateWithoutItemMasterInput> | InventoryTxnCreateWithoutItemMasterInput[] | InventoryTxnUncheckedCreateWithoutItemMasterInput[]
     connectOrCreate?: InventoryTxnCreateOrConnectWithoutItemMasterInput | InventoryTxnCreateOrConnectWithoutItemMasterInput[]
     createMany?: InventoryTxnCreateManyItemMasterInputEnvelope
     connect?: InventoryTxnWhereUniqueInput | InventoryTxnWhereUniqueInput[]
-  }
-
-  export type MaterialUncheckedCreateNestedOneWithoutItemInput = {
-    create?: XOR<MaterialCreateWithoutItemInput, MaterialUncheckedCreateWithoutItemInput>
-    connectOrCreate?: MaterialCreateOrConnectWithoutItemInput
-    connect?: MaterialWhereUniqueInput
   }
 
   export type ProUncheckedCreateNestedManyWithoutFgItemInput = {
@@ -20043,6 +18588,13 @@ export namespace Prisma {
     connectOrCreate?: ProsesCreateOrConnectWithoutOutputItemInput | ProsesCreateOrConnectWithoutOutputItemInput[]
     createMany?: ProsesCreateManyOutputItemInputEnvelope
     connect?: ProsesWhereUniqueInput | ProsesWhereUniqueInput[]
+  }
+
+  export type ProsesMaterialUncheckedCreateNestedManyWithoutItemMasterInput = {
+    create?: XOR<ProsesMaterialCreateWithoutItemMasterInput, ProsesMaterialUncheckedCreateWithoutItemMasterInput> | ProsesMaterialCreateWithoutItemMasterInput[] | ProsesMaterialUncheckedCreateWithoutItemMasterInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutItemMasterInput | ProsesMaterialCreateOrConnectWithoutItemMasterInput[]
+    createMany?: ProsesMaterialCreateManyItemMasterInputEnvelope
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
   }
 
   export type EnumItemKindFieldUpdateOperationsInput = {
@@ -20077,16 +18629,6 @@ export namespace Prisma {
     deleteMany?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
   }
 
-  export type MaterialUpdateOneWithoutItemNestedInput = {
-    create?: XOR<MaterialCreateWithoutItemInput, MaterialUncheckedCreateWithoutItemInput>
-    connectOrCreate?: MaterialCreateOrConnectWithoutItemInput
-    upsert?: MaterialUpsertWithoutItemInput
-    disconnect?: MaterialWhereInput | boolean
-    delete?: MaterialWhereInput | boolean
-    connect?: MaterialWhereUniqueInput
-    update?: XOR<XOR<MaterialUpdateToOneWithWhereWithoutItemInput, MaterialUpdateWithoutItemInput>, MaterialUncheckedUpdateWithoutItemInput>
-  }
-
   export type ProUpdateManyWithoutFgItemNestedInput = {
     create?: XOR<ProCreateWithoutFgItemInput, ProUncheckedCreateWithoutFgItemInput> | ProCreateWithoutFgItemInput[] | ProUncheckedCreateWithoutFgItemInput[]
     connectOrCreate?: ProCreateOrConnectWithoutFgItemInput | ProCreateOrConnectWithoutFgItemInput[]
@@ -20115,6 +18657,20 @@ export namespace Prisma {
     deleteMany?: ProsesScalarWhereInput | ProsesScalarWhereInput[]
   }
 
+  export type ProsesMaterialUpdateManyWithoutItemMasterNestedInput = {
+    create?: XOR<ProsesMaterialCreateWithoutItemMasterInput, ProsesMaterialUncheckedCreateWithoutItemMasterInput> | ProsesMaterialCreateWithoutItemMasterInput[] | ProsesMaterialUncheckedCreateWithoutItemMasterInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutItemMasterInput | ProsesMaterialCreateOrConnectWithoutItemMasterInput[]
+    upsert?: ProsesMaterialUpsertWithWhereUniqueWithoutItemMasterInput | ProsesMaterialUpsertWithWhereUniqueWithoutItemMasterInput[]
+    createMany?: ProsesMaterialCreateManyItemMasterInputEnvelope
+    set?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    disconnect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    delete?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    update?: ProsesMaterialUpdateWithWhereUniqueWithoutItemMasterInput | ProsesMaterialUpdateWithWhereUniqueWithoutItemMasterInput[]
+    updateMany?: ProsesMaterialUpdateManyWithWhereWithoutItemMasterInput | ProsesMaterialUpdateManyWithWhereWithoutItemMasterInput[]
+    deleteMany?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
+  }
+
   export type InventoryTxnUncheckedUpdateManyWithoutItemMasterNestedInput = {
     create?: XOR<InventoryTxnCreateWithoutItemMasterInput, InventoryTxnUncheckedCreateWithoutItemMasterInput> | InventoryTxnCreateWithoutItemMasterInput[] | InventoryTxnUncheckedCreateWithoutItemMasterInput[]
     connectOrCreate?: InventoryTxnCreateOrConnectWithoutItemMasterInput | InventoryTxnCreateOrConnectWithoutItemMasterInput[]
@@ -20127,16 +18683,6 @@ export namespace Prisma {
     update?: InventoryTxnUpdateWithWhereUniqueWithoutItemMasterInput | InventoryTxnUpdateWithWhereUniqueWithoutItemMasterInput[]
     updateMany?: InventoryTxnUpdateManyWithWhereWithoutItemMasterInput | InventoryTxnUpdateManyWithWhereWithoutItemMasterInput[]
     deleteMany?: InventoryTxnScalarWhereInput | InventoryTxnScalarWhereInput[]
-  }
-
-  export type MaterialUncheckedUpdateOneWithoutItemNestedInput = {
-    create?: XOR<MaterialCreateWithoutItemInput, MaterialUncheckedCreateWithoutItemInput>
-    connectOrCreate?: MaterialCreateOrConnectWithoutItemInput
-    upsert?: MaterialUpsertWithoutItemInput
-    disconnect?: MaterialWhereInput | boolean
-    delete?: MaterialWhereInput | boolean
-    connect?: MaterialWhereUniqueInput
-    update?: XOR<XOR<MaterialUpdateToOneWithWhereWithoutItemInput, MaterialUpdateWithoutItemInput>, MaterialUncheckedUpdateWithoutItemInput>
   }
 
   export type ProUncheckedUpdateManyWithoutFgItemNestedInput = {
@@ -20165,6 +18711,20 @@ export namespace Prisma {
     update?: ProsesUpdateWithWhereUniqueWithoutOutputItemInput | ProsesUpdateWithWhereUniqueWithoutOutputItemInput[]
     updateMany?: ProsesUpdateManyWithWhereWithoutOutputItemInput | ProsesUpdateManyWithWhereWithoutOutputItemInput[]
     deleteMany?: ProsesScalarWhereInput | ProsesScalarWhereInput[]
+  }
+
+  export type ProsesMaterialUncheckedUpdateManyWithoutItemMasterNestedInput = {
+    create?: XOR<ProsesMaterialCreateWithoutItemMasterInput, ProsesMaterialUncheckedCreateWithoutItemMasterInput> | ProsesMaterialCreateWithoutItemMasterInput[] | ProsesMaterialUncheckedCreateWithoutItemMasterInput[]
+    connectOrCreate?: ProsesMaterialCreateOrConnectWithoutItemMasterInput | ProsesMaterialCreateOrConnectWithoutItemMasterInput[]
+    upsert?: ProsesMaterialUpsertWithWhereUniqueWithoutItemMasterInput | ProsesMaterialUpsertWithWhereUniqueWithoutItemMasterInput[]
+    createMany?: ProsesMaterialCreateManyItemMasterInputEnvelope
+    set?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    disconnect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    delete?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    connect?: ProsesMaterialWhereUniqueInput | ProsesMaterialWhereUniqueInput[]
+    update?: ProsesMaterialUpdateWithWhereUniqueWithoutItemMasterInput | ProsesMaterialUpdateWithWhereUniqueWithoutItemMasterInput[]
+    updateMany?: ProsesMaterialUpdateManyWithWhereWithoutItemMasterInput | ProsesMaterialUpdateManyWithWhereWithoutItemMasterInput[]
+    deleteMany?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
   }
 
   export type ProCreateNestedManyWithoutProPrefixInput = {
@@ -20519,10 +19079,10 @@ export namespace Prisma {
     connect?: ProsesWhereUniqueInput
   }
 
-  export type MaterialCreateNestedOneWithoutProsesMaterialsInput = {
-    create?: XOR<MaterialCreateWithoutProsesMaterialsInput, MaterialUncheckedCreateWithoutProsesMaterialsInput>
-    connectOrCreate?: MaterialCreateOrConnectWithoutProsesMaterialsInput
-    connect?: MaterialWhereUniqueInput
+  export type ItemCreateNestedOneWithoutProsesMaterialsInput = {
+    create?: XOR<ItemCreateWithoutProsesMaterialsInput, ItemUncheckedCreateWithoutProsesMaterialsInput>
+    connectOrCreate?: ItemCreateOrConnectWithoutProsesMaterialsInput
+    connect?: ItemWhereUniqueInput
   }
 
   export type DecimalFieldUpdateOperationsInput = {
@@ -20541,12 +19101,12 @@ export namespace Prisma {
     update?: XOR<XOR<ProsesUpdateToOneWithWhereWithoutMaterialsInput, ProsesUpdateWithoutMaterialsInput>, ProsesUncheckedUpdateWithoutMaterialsInput>
   }
 
-  export type MaterialUpdateOneRequiredWithoutProsesMaterialsNestedInput = {
-    create?: XOR<MaterialCreateWithoutProsesMaterialsInput, MaterialUncheckedCreateWithoutProsesMaterialsInput>
-    connectOrCreate?: MaterialCreateOrConnectWithoutProsesMaterialsInput
-    upsert?: MaterialUpsertWithoutProsesMaterialsInput
-    connect?: MaterialWhereUniqueInput
-    update?: XOR<XOR<MaterialUpdateToOneWithWhereWithoutProsesMaterialsInput, MaterialUpdateWithoutProsesMaterialsInput>, MaterialUncheckedUpdateWithoutProsesMaterialsInput>
+  export type ItemUpdateOneRequiredWithoutProsesMaterialsNestedInput = {
+    create?: XOR<ItemCreateWithoutProsesMaterialsInput, ItemUncheckedCreateWithoutProsesMaterialsInput>
+    connectOrCreate?: ItemCreateOrConnectWithoutProsesMaterialsInput
+    upsert?: ItemUpsertWithoutProsesMaterialsInput
+    connect?: ItemWhereUniqueInput
+    update?: XOR<XOR<ItemUpdateToOneWithWhereWithoutProsesMaterialsInput, ItemUpdateWithoutProsesMaterialsInput>, ItemUncheckedUpdateWithoutProsesMaterialsInput>
   }
 
   export type ProsesCreateNestedOneWithoutProductionReportsInput = {
@@ -21034,23 +19594,6 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
-  export type NestedEnumMaterialTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.MaterialType | EnumMaterialTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.MaterialType[]
-    notIn?: $Enums.MaterialType[]
-    not?: NestedEnumMaterialTypeFilter<$PrismaModel> | $Enums.MaterialType
-  }
-
-  export type NestedEnumMaterialTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.MaterialType | EnumMaterialTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.MaterialType[]
-    notIn?: $Enums.MaterialType[]
-    not?: NestedEnumMaterialTypeWithAggregatesFilter<$PrismaModel> | $Enums.MaterialType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumMaterialTypeFilter<$PrismaModel>
-    _max?: NestedEnumMaterialTypeFilter<$PrismaModel>
-  }
-
   export type NestedEnumItemKindFilter<$PrismaModel = never> = {
     equals?: $Enums.ItemKind | EnumItemKindFieldRefInput<$PrismaModel>
     in?: $Enums.ItemKind[]
@@ -21481,9 +20024,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inventoryTxns?: InventoryTxnCreateNestedManyWithoutItemMasterInput
-    material?: MaterialCreateNestedOneWithoutItemInput
     fgPros?: ProCreateNestedManyWithoutFgItemInput
     outputProses?: ProsesCreateNestedManyWithoutOutputItemInput
+    prosesMaterials?: ProsesMaterialCreateNestedManyWithoutItemMasterInput
   }
 
   export type ItemUncheckedCreateWithoutCreatedByInput = {
@@ -21497,9 +20040,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutItemMasterInput
-    material?: MaterialUncheckedCreateNestedOneWithoutItemInput
     fgPros?: ProUncheckedCreateNestedManyWithoutFgItemInput
     outputProses?: ProsesUncheckedCreateNestedManyWithoutOutputItemInput
+    prosesMaterials?: ProsesMaterialUncheckedCreateNestedManyWithoutItemMasterInput
   }
 
   export type ItemCreateOrConnectWithoutCreatedByInput = {
@@ -21740,131 +20283,6 @@ export namespace Prisma {
     txns?: InventoryTxnUncheckedUpdateManyWithoutLocationNestedInput
   }
 
-  export type ProsesMaterialCreateWithoutMaterialInput = {
-    qtyReq: Decimal | DecimalJsLike | number | string
-    proses: ProsesCreateNestedOneWithoutMaterialsInput
-  }
-
-  export type ProsesMaterialUncheckedCreateWithoutMaterialInput = {
-    id?: number
-    prosesId: number
-    qtyReq: Decimal | DecimalJsLike | number | string
-  }
-
-  export type ProsesMaterialCreateOrConnectWithoutMaterialInput = {
-    where: ProsesMaterialWhereUniqueInput
-    create: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput>
-  }
-
-  export type ProsesMaterialCreateManyMaterialInputEnvelope = {
-    data: ProsesMaterialCreateManyMaterialInput | ProsesMaterialCreateManyMaterialInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type ItemCreateWithoutMaterialInput = {
-    code: string
-    name: string
-    kind: $Enums.ItemKind
-    status?: $Enums.ItemStatus
-    baseUom?: string | null
-    createdFrom?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    createdBy?: UserCreateNestedOneWithoutCreatedItemsInput
-    inventoryTxns?: InventoryTxnCreateNestedManyWithoutItemMasterInput
-    fgPros?: ProCreateNestedManyWithoutFgItemInput
-    outputProses?: ProsesCreateNestedManyWithoutOutputItemInput
-  }
-
-  export type ItemUncheckedCreateWithoutMaterialInput = {
-    id?: number
-    code: string
-    name: string
-    kind: $Enums.ItemKind
-    status?: $Enums.ItemStatus
-    baseUom?: string | null
-    createdById?: string | null
-    createdFrom?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutItemMasterInput
-    fgPros?: ProUncheckedCreateNestedManyWithoutFgItemInput
-    outputProses?: ProsesUncheckedCreateNestedManyWithoutOutputItemInput
-  }
-
-  export type ItemCreateOrConnectWithoutMaterialInput = {
-    where: ItemWhereUniqueInput
-    create: XOR<ItemCreateWithoutMaterialInput, ItemUncheckedCreateWithoutMaterialInput>
-  }
-
-  export type ProsesMaterialUpsertWithWhereUniqueWithoutMaterialInput = {
-    where: ProsesMaterialWhereUniqueInput
-    update: XOR<ProsesMaterialUpdateWithoutMaterialInput, ProsesMaterialUncheckedUpdateWithoutMaterialInput>
-    create: XOR<ProsesMaterialCreateWithoutMaterialInput, ProsesMaterialUncheckedCreateWithoutMaterialInput>
-  }
-
-  export type ProsesMaterialUpdateWithWhereUniqueWithoutMaterialInput = {
-    where: ProsesMaterialWhereUniqueInput
-    data: XOR<ProsesMaterialUpdateWithoutMaterialInput, ProsesMaterialUncheckedUpdateWithoutMaterialInput>
-  }
-
-  export type ProsesMaterialUpdateManyWithWhereWithoutMaterialInput = {
-    where: ProsesMaterialScalarWhereInput
-    data: XOR<ProsesMaterialUpdateManyMutationInput, ProsesMaterialUncheckedUpdateManyWithoutMaterialInput>
-  }
-
-  export type ProsesMaterialScalarWhereInput = {
-    AND?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
-    OR?: ProsesMaterialScalarWhereInput[]
-    NOT?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
-    id?: IntFilter<"ProsesMaterial"> | number
-    prosesId?: IntFilter<"ProsesMaterial"> | number
-    materialId?: IntFilter<"ProsesMaterial"> | number
-    qtyReq?: DecimalFilter<"ProsesMaterial"> | Decimal | DecimalJsLike | number | string
-  }
-
-  export type ItemUpsertWithoutMaterialInput = {
-    update: XOR<ItemUpdateWithoutMaterialInput, ItemUncheckedUpdateWithoutMaterialInput>
-    create: XOR<ItemCreateWithoutMaterialInput, ItemUncheckedCreateWithoutMaterialInput>
-    where?: ItemWhereInput
-  }
-
-  export type ItemUpdateToOneWithWhereWithoutMaterialInput = {
-    where?: ItemWhereInput
-    data: XOR<ItemUpdateWithoutMaterialInput, ItemUncheckedUpdateWithoutMaterialInput>
-  }
-
-  export type ItemUpdateWithoutMaterialInput = {
-    code?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    kind?: EnumItemKindFieldUpdateOperationsInput | $Enums.ItemKind
-    status?: EnumItemStatusFieldUpdateOperationsInput | $Enums.ItemStatus
-    baseUom?: NullableStringFieldUpdateOperationsInput | string | null
-    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdBy?: UserUpdateOneWithoutCreatedItemsNestedInput
-    inventoryTxns?: InventoryTxnUpdateManyWithoutItemMasterNestedInput
-    fgPros?: ProUpdateManyWithoutFgItemNestedInput
-    outputProses?: ProsesUpdateManyWithoutOutputItemNestedInput
-  }
-
-  export type ItemUncheckedUpdateWithoutMaterialInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    code?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    kind?: EnumItemKindFieldUpdateOperationsInput | $Enums.ItemKind
-    status?: EnumItemStatusFieldUpdateOperationsInput | $Enums.ItemStatus
-    baseUom?: NullableStringFieldUpdateOperationsInput | string | null
-    createdById?: NullableStringFieldUpdateOperationsInput | string | null
-    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutItemMasterNestedInput
-    fgPros?: ProUncheckedUpdateManyWithoutFgItemNestedInput
-    outputProses?: ProsesUncheckedUpdateManyWithoutOutputItemNestedInput
-  }
-
   export type UserCreateWithoutCreatedItemsInput = {
     id?: string
     username: string
@@ -21932,30 +20350,6 @@ export namespace Prisma {
   export type InventoryTxnCreateManyItemMasterInputEnvelope = {
     data: InventoryTxnCreateManyItemMasterInput | InventoryTxnCreateManyItemMasterInput[]
     skipDuplicates?: boolean
-  }
-
-  export type MaterialCreateWithoutItemInput = {
-    name: string
-    uom: string
-    type?: $Enums.MaterialType
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    prosesMaterials?: ProsesMaterialCreateNestedManyWithoutMaterialInput
-  }
-
-  export type MaterialUncheckedCreateWithoutItemInput = {
-    id?: number
-    name: string
-    uom: string
-    type?: $Enums.MaterialType
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    prosesMaterials?: ProsesMaterialUncheckedCreateNestedManyWithoutMaterialInput
-  }
-
-  export type MaterialCreateOrConnectWithoutItemInput = {
-    where: MaterialWhereUniqueInput
-    create: XOR<MaterialCreateWithoutItemInput, MaterialUncheckedCreateWithoutItemInput>
   }
 
   export type ProCreateWithoutFgItemInput = {
@@ -22040,6 +20434,27 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ProsesMaterialCreateWithoutItemMasterInput = {
+    qtyReq: Decimal | DecimalJsLike | number | string
+    proses: ProsesCreateNestedOneWithoutMaterialsInput
+  }
+
+  export type ProsesMaterialUncheckedCreateWithoutItemMasterInput = {
+    id?: number
+    prosesId: number
+    qtyReq: Decimal | DecimalJsLike | number | string
+  }
+
+  export type ProsesMaterialCreateOrConnectWithoutItemMasterInput = {
+    where: ProsesMaterialWhereUniqueInput
+    create: XOR<ProsesMaterialCreateWithoutItemMasterInput, ProsesMaterialUncheckedCreateWithoutItemMasterInput>
+  }
+
+  export type ProsesMaterialCreateManyItemMasterInputEnvelope = {
+    data: ProsesMaterialCreateManyItemMasterInput | ProsesMaterialCreateManyItemMasterInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutCreatedItemsInput = {
     update: XOR<UserUpdateWithoutCreatedItemsInput, UserUncheckedUpdateWithoutCreatedItemsInput>
     create: XOR<UserCreateWithoutCreatedItemsInput, UserUncheckedCreateWithoutCreatedItemsInput>
@@ -22110,36 +20525,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"InventoryTxn"> | Date | string
   }
 
-  export type MaterialUpsertWithoutItemInput = {
-    update: XOR<MaterialUpdateWithoutItemInput, MaterialUncheckedUpdateWithoutItemInput>
-    create: XOR<MaterialCreateWithoutItemInput, MaterialUncheckedCreateWithoutItemInput>
-    where?: MaterialWhereInput
-  }
-
-  export type MaterialUpdateToOneWithWhereWithoutItemInput = {
-    where?: MaterialWhereInput
-    data: XOR<MaterialUpdateWithoutItemInput, MaterialUncheckedUpdateWithoutItemInput>
-  }
-
-  export type MaterialUpdateWithoutItemInput = {
-    name?: StringFieldUpdateOperationsInput | string
-    uom?: StringFieldUpdateOperationsInput | string
-    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    prosesMaterials?: ProsesMaterialUpdateManyWithoutMaterialNestedInput
-  }
-
-  export type MaterialUncheckedUpdateWithoutItemInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    name?: StringFieldUpdateOperationsInput | string
-    uom?: StringFieldUpdateOperationsInput | string
-    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    prosesMaterials?: ProsesMaterialUncheckedUpdateManyWithoutMaterialNestedInput
-  }
-
   export type ProUpsertWithWhereUniqueWithoutFgItemInput = {
     where: ProWhereUniqueInput
     update: XOR<ProUpdateWithoutFgItemInput, ProUncheckedUpdateWithoutFgItemInput>
@@ -22189,6 +20574,32 @@ export namespace Prisma {
   export type ProsesUpdateManyWithWhereWithoutOutputItemInput = {
     where: ProsesScalarWhereInput
     data: XOR<ProsesUpdateManyMutationInput, ProsesUncheckedUpdateManyWithoutOutputItemInput>
+  }
+
+  export type ProsesMaterialUpsertWithWhereUniqueWithoutItemMasterInput = {
+    where: ProsesMaterialWhereUniqueInput
+    update: XOR<ProsesMaterialUpdateWithoutItemMasterInput, ProsesMaterialUncheckedUpdateWithoutItemMasterInput>
+    create: XOR<ProsesMaterialCreateWithoutItemMasterInput, ProsesMaterialUncheckedCreateWithoutItemMasterInput>
+  }
+
+  export type ProsesMaterialUpdateWithWhereUniqueWithoutItemMasterInput = {
+    where: ProsesMaterialWhereUniqueInput
+    data: XOR<ProsesMaterialUpdateWithoutItemMasterInput, ProsesMaterialUncheckedUpdateWithoutItemMasterInput>
+  }
+
+  export type ProsesMaterialUpdateManyWithWhereWithoutItemMasterInput = {
+    where: ProsesMaterialScalarWhereInput
+    data: XOR<ProsesMaterialUpdateManyMutationInput, ProsesMaterialUncheckedUpdateManyWithoutItemMasterInput>
+  }
+
+  export type ProsesMaterialScalarWhereInput = {
+    AND?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
+    OR?: ProsesMaterialScalarWhereInput[]
+    NOT?: ProsesMaterialScalarWhereInput | ProsesMaterialScalarWhereInput[]
+    id?: IntFilter<"ProsesMaterial"> | number
+    prosesId?: IntFilter<"ProsesMaterial"> | number
+    itemMasterId?: IntFilter<"ProsesMaterial"> | number
+    qtyReq?: DecimalFilter<"ProsesMaterial"> | Decimal | DecimalJsLike | number | string
   }
 
   export type ProCreateWithoutProPrefixInput = {
@@ -22279,8 +20690,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     createdBy?: UserCreateNestedOneWithoutCreatedItemsInput
     inventoryTxns?: InventoryTxnCreateNestedManyWithoutItemMasterInput
-    material?: MaterialCreateNestedOneWithoutItemInput
     outputProses?: ProsesCreateNestedManyWithoutOutputItemInput
+    prosesMaterials?: ProsesMaterialCreateNestedManyWithoutItemMasterInput
   }
 
   export type ItemUncheckedCreateWithoutFgProsInput = {
@@ -22295,8 +20706,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutItemMasterInput
-    material?: MaterialUncheckedCreateNestedOneWithoutItemInput
     outputProses?: ProsesUncheckedCreateNestedManyWithoutOutputItemInput
+    prosesMaterials?: ProsesMaterialUncheckedCreateNestedManyWithoutItemMasterInput
   }
 
   export type ItemCreateOrConnectWithoutFgProsInput = {
@@ -22429,8 +20840,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneWithoutCreatedItemsNestedInput
     inventoryTxns?: InventoryTxnUpdateManyWithoutItemMasterNestedInput
-    material?: MaterialUpdateOneWithoutItemNestedInput
     outputProses?: ProsesUpdateManyWithoutOutputItemNestedInput
+    prosesMaterials?: ProsesMaterialUpdateManyWithoutItemMasterNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutFgProsInput = {
@@ -22445,8 +20856,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutItemMasterNestedInput
-    material?: MaterialUncheckedUpdateOneWithoutItemNestedInput
     outputProses?: ProsesUncheckedUpdateManyWithoutOutputItemNestedInput
+    prosesMaterials?: ProsesMaterialUncheckedUpdateManyWithoutItemMasterNestedInput
   }
 
   export type ProsesUpsertWithWhereUniqueWithoutProInput = {
@@ -22572,8 +20983,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     createdBy?: UserCreateNestedOneWithoutCreatedItemsInput
     inventoryTxns?: InventoryTxnCreateNestedManyWithoutItemMasterInput
-    material?: MaterialCreateNestedOneWithoutItemInput
     fgPros?: ProCreateNestedManyWithoutFgItemInput
+    prosesMaterials?: ProsesMaterialCreateNestedManyWithoutItemMasterInput
   }
 
   export type ItemUncheckedCreateWithoutOutputProsesInput = {
@@ -22588,8 +20999,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutItemMasterInput
-    material?: MaterialUncheckedCreateNestedOneWithoutItemInput
     fgPros?: ProUncheckedCreateNestedManyWithoutFgItemInput
+    prosesMaterials?: ProsesMaterialUncheckedCreateNestedManyWithoutItemMasterInput
   }
 
   export type ItemCreateOrConnectWithoutOutputProsesInput = {
@@ -22599,12 +21010,12 @@ export namespace Prisma {
 
   export type ProsesMaterialCreateWithoutProsesInput = {
     qtyReq: Decimal | DecimalJsLike | number | string
-    material: MaterialCreateNestedOneWithoutProsesMaterialsInput
+    itemMaster: ItemCreateNestedOneWithoutProsesMaterialsInput
   }
 
   export type ProsesMaterialUncheckedCreateWithoutProsesInput = {
     id?: number
-    materialId: number
+    itemMasterId: number
     qtyReq: Decimal | DecimalJsLike | number | string
   }
 
@@ -22870,8 +21281,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneWithoutCreatedItemsNestedInput
     inventoryTxns?: InventoryTxnUpdateManyWithoutItemMasterNestedInput
-    material?: MaterialUpdateOneWithoutItemNestedInput
     fgPros?: ProUpdateManyWithoutFgItemNestedInput
+    prosesMaterials?: ProsesMaterialUpdateManyWithoutItemMasterNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutOutputProsesInput = {
@@ -22886,8 +21297,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutItemMasterNestedInput
-    material?: MaterialUncheckedUpdateOneWithoutItemNestedInput
     fgPros?: ProUncheckedUpdateManyWithoutFgItemNestedInput
+    prosesMaterials?: ProsesMaterialUncheckedUpdateManyWithoutItemMasterNestedInput
   }
 
   export type ProsesMaterialUpsertWithWhereUniqueWithoutProsesInput = {
@@ -22972,28 +21383,40 @@ export namespace Prisma {
     create: XOR<ProsesCreateWithoutMaterialsInput, ProsesUncheckedCreateWithoutMaterialsInput>
   }
 
-  export type MaterialCreateWithoutProsesMaterialsInput = {
+  export type ItemCreateWithoutProsesMaterialsInput = {
+    code: string
     name: string
-    uom: string
-    type?: $Enums.MaterialType
+    kind: $Enums.ItemKind
+    status?: $Enums.ItemStatus
+    baseUom?: string | null
+    createdFrom?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    item?: ItemCreateNestedOneWithoutMaterialInput
+    createdBy?: UserCreateNestedOneWithoutCreatedItemsInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutItemMasterInput
+    fgPros?: ProCreateNestedManyWithoutFgItemInput
+    outputProses?: ProsesCreateNestedManyWithoutOutputItemInput
   }
 
-  export type MaterialUncheckedCreateWithoutProsesMaterialsInput = {
+  export type ItemUncheckedCreateWithoutProsesMaterialsInput = {
     id?: number
+    code: string
     name: string
-    uom: string
-    type?: $Enums.MaterialType
+    kind: $Enums.ItemKind
+    status?: $Enums.ItemStatus
+    baseUom?: string | null
+    createdById?: string | null
+    createdFrom?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    itemId?: number | null
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutItemMasterInput
+    fgPros?: ProUncheckedCreateNestedManyWithoutFgItemInput
+    outputProses?: ProsesUncheckedCreateNestedManyWithoutOutputItemInput
   }
 
-  export type MaterialCreateOrConnectWithoutProsesMaterialsInput = {
-    where: MaterialWhereUniqueInput
-    create: XOR<MaterialCreateWithoutProsesMaterialsInput, MaterialUncheckedCreateWithoutProsesMaterialsInput>
+  export type ItemCreateOrConnectWithoutProsesMaterialsInput = {
+    where: ItemWhereUniqueInput
+    create: XOR<ItemCreateWithoutProsesMaterialsInput, ItemUncheckedCreateWithoutProsesMaterialsInput>
   }
 
   export type ProsesUpsertWithoutMaterialsInput = {
@@ -23036,34 +21459,46 @@ export namespace Prisma {
     inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProsesNestedInput
   }
 
-  export type MaterialUpsertWithoutProsesMaterialsInput = {
-    update: XOR<MaterialUpdateWithoutProsesMaterialsInput, MaterialUncheckedUpdateWithoutProsesMaterialsInput>
-    create: XOR<MaterialCreateWithoutProsesMaterialsInput, MaterialUncheckedCreateWithoutProsesMaterialsInput>
-    where?: MaterialWhereInput
+  export type ItemUpsertWithoutProsesMaterialsInput = {
+    update: XOR<ItemUpdateWithoutProsesMaterialsInput, ItemUncheckedUpdateWithoutProsesMaterialsInput>
+    create: XOR<ItemCreateWithoutProsesMaterialsInput, ItemUncheckedCreateWithoutProsesMaterialsInput>
+    where?: ItemWhereInput
   }
 
-  export type MaterialUpdateToOneWithWhereWithoutProsesMaterialsInput = {
-    where?: MaterialWhereInput
-    data: XOR<MaterialUpdateWithoutProsesMaterialsInput, MaterialUncheckedUpdateWithoutProsesMaterialsInput>
+  export type ItemUpdateToOneWithWhereWithoutProsesMaterialsInput = {
+    where?: ItemWhereInput
+    data: XOR<ItemUpdateWithoutProsesMaterialsInput, ItemUncheckedUpdateWithoutProsesMaterialsInput>
   }
 
-  export type MaterialUpdateWithoutProsesMaterialsInput = {
+  export type ItemUpdateWithoutProsesMaterialsInput = {
+    code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    uom?: StringFieldUpdateOperationsInput | string
-    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
+    kind?: EnumItemKindFieldUpdateOperationsInput | $Enums.ItemKind
+    status?: EnumItemStatusFieldUpdateOperationsInput | $Enums.ItemStatus
+    baseUom?: NullableStringFieldUpdateOperationsInput | string | null
+    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    item?: ItemUpdateOneWithoutMaterialNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedItemsNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutItemMasterNestedInput
+    fgPros?: ProUpdateManyWithoutFgItemNestedInput
+    outputProses?: ProsesUpdateManyWithoutOutputItemNestedInput
   }
 
-  export type MaterialUncheckedUpdateWithoutProsesMaterialsInput = {
+  export type ItemUncheckedUpdateWithoutProsesMaterialsInput = {
     id?: IntFieldUpdateOperationsInput | number
+    code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    uom?: StringFieldUpdateOperationsInput | string
-    type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
+    kind?: EnumItemKindFieldUpdateOperationsInput | $Enums.ItemKind
+    status?: EnumItemStatusFieldUpdateOperationsInput | $Enums.ItemStatus
+    baseUom?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    itemId?: NullableIntFieldUpdateOperationsInput | number | null
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutItemMasterNestedInput
+    fgPros?: ProUncheckedUpdateManyWithoutFgItemNestedInput
+    outputProses?: ProsesUncheckedUpdateManyWithoutOutputItemNestedInput
   }
 
   export type ProsesCreateWithoutProductionReportsInput = {
@@ -23480,9 +21915,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy?: UserCreateNestedOneWithoutCreatedItemsInput
-    material?: MaterialCreateNestedOneWithoutItemInput
     fgPros?: ProCreateNestedManyWithoutFgItemInput
     outputProses?: ProsesCreateNestedManyWithoutOutputItemInput
+    prosesMaterials?: ProsesMaterialCreateNestedManyWithoutItemMasterInput
   }
 
   export type ItemUncheckedCreateWithoutInventoryTxnsInput = {
@@ -23496,9 +21931,9 @@ export namespace Prisma {
     createdFrom?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    material?: MaterialUncheckedCreateNestedOneWithoutItemInput
     fgPros?: ProUncheckedCreateNestedManyWithoutFgItemInput
     outputProses?: ProsesUncheckedCreateNestedManyWithoutOutputItemInput
+    prosesMaterials?: ProsesMaterialUncheckedCreateNestedManyWithoutItemMasterInput
   }
 
   export type ItemCreateOrConnectWithoutInventoryTxnsInput = {
@@ -23712,9 +22147,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneWithoutCreatedItemsNestedInput
-    material?: MaterialUpdateOneWithoutItemNestedInput
     fgPros?: ProUpdateManyWithoutFgItemNestedInput
     outputProses?: ProsesUpdateManyWithoutOutputItemNestedInput
+    prosesMaterials?: ProsesMaterialUpdateManyWithoutItemMasterNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutInventoryTxnsInput = {
@@ -23728,9 +22163,9 @@ export namespace Prisma {
     createdFrom?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    material?: MaterialUncheckedUpdateOneWithoutItemNestedInput
     fgPros?: ProUncheckedUpdateManyWithoutFgItemNestedInput
     outputProses?: ProsesUncheckedUpdateManyWithoutOutputItemNestedInput
+    prosesMaterials?: ProsesMaterialUncheckedUpdateManyWithoutItemMasterNestedInput
   }
 
   export type InventoryLocationUpsertWithoutTxnsInput = {
@@ -24312,9 +22747,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inventoryTxns?: InventoryTxnUpdateManyWithoutItemMasterNestedInput
-    material?: MaterialUpdateOneWithoutItemNestedInput
     fgPros?: ProUpdateManyWithoutFgItemNestedInput
     outputProses?: ProsesUpdateManyWithoutOutputItemNestedInput
+    prosesMaterials?: ProsesMaterialUpdateManyWithoutItemMasterNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutCreatedByInput = {
@@ -24328,9 +22763,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutItemMasterNestedInput
-    material?: MaterialUncheckedUpdateOneWithoutItemNestedInput
     fgPros?: ProUncheckedUpdateManyWithoutFgItemNestedInput
     outputProses?: ProsesUncheckedUpdateManyWithoutOutputItemNestedInput
+    prosesMaterials?: ProsesMaterialUncheckedUpdateManyWithoutItemMasterNestedInput
   }
 
   export type ItemUncheckedUpdateManyWithoutCreatedByInput = {
@@ -24398,29 +22833,6 @@ export namespace Prisma {
     outputItemId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
-  export type ProsesMaterialCreateManyMaterialInput = {
-    id?: number
-    prosesId: number
-    qtyReq: Decimal | DecimalJsLike | number | string
-  }
-
-  export type ProsesMaterialUpdateWithoutMaterialInput = {
-    qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    proses?: ProsesUpdateOneRequiredWithoutMaterialsNestedInput
-  }
-
-  export type ProsesMaterialUncheckedUpdateWithoutMaterialInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    prosesId?: IntFieldUpdateOperationsInput | number
-    qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-  }
-
-  export type ProsesMaterialUncheckedUpdateManyWithoutMaterialInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    prosesId?: IntFieldUpdateOperationsInput | number
-    qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-  }
-
   export type InventoryTxnCreateManyItemMasterInput = {
     id?: string
     groupId?: string
@@ -24461,6 +22873,12 @@ export namespace Prisma {
     machineId?: number | null
     partNumber?: string | null
     batchNo?: string | null
+  }
+
+  export type ProsesMaterialCreateManyItemMasterInput = {
+    id?: number
+    prosesId: number
+    qtyReq: Decimal | DecimalJsLike | number | string
   }
 
   export type InventoryTxnUpdateWithoutItemMasterInput = {
@@ -24595,6 +23013,23 @@ export namespace Prisma {
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type ProsesMaterialUpdateWithoutItemMasterInput = {
+    qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    proses?: ProsesUpdateOneRequiredWithoutMaterialsNestedInput
+  }
+
+  export type ProsesMaterialUncheckedUpdateWithoutItemMasterInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
+    qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type ProsesMaterialUncheckedUpdateManyWithoutItemMasterInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    prosesId?: IntFieldUpdateOperationsInput | number
+    qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
   export type ProCreateManyProPrefixInput = {
@@ -24775,7 +23210,7 @@ export namespace Prisma {
 
   export type ProsesMaterialCreateManyProsesInput = {
     id?: number
-    materialId: number
+    itemMasterId: number
     qtyReq: Decimal | DecimalJsLike | number | string
   }
 
@@ -24839,18 +23274,18 @@ export namespace Prisma {
 
   export type ProsesMaterialUpdateWithoutProsesInput = {
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    material?: MaterialUpdateOneRequiredWithoutProsesMaterialsNestedInput
+    itemMaster?: ItemUpdateOneRequiredWithoutProsesMaterialsNestedInput
   }
 
   export type ProsesMaterialUncheckedUpdateWithoutProsesInput = {
     id?: IntFieldUpdateOperationsInput | number
-    materialId?: IntFieldUpdateOperationsInput | number
+    itemMasterId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 
   export type ProsesMaterialUncheckedUpdateManyWithoutProsesInput = {
     id?: IntFieldUpdateOperationsInput | number
-    materialId?: IntFieldUpdateOperationsInput | number
+    itemMasterId?: IntFieldUpdateOperationsInput | number
     qtyReq?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
   }
 

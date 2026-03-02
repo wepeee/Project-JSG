@@ -11,19 +11,33 @@ const pad3 = (n: number) => String(n).padStart(3, "0"); // 001..999
 const mm = (d: Date) => String(d.getMonth() + 1).padStart(2, "0");
 const yy = (d: Date) => String(d.getFullYear()).slice(-2);
 
-/** Resolve partNumber string to Item.id (nullable, no throw) */
-async function lookupItemId(
+/** Resolve partNumber string to Item.id (auto-registers missing items as DRAFT) */
+const lookupItemId = async (
   tx: any,
-  partNumber: string | null | undefined,
-): Promise<number | null> {
+  partNumber?: string | null,
+  defaultKind: "FG" | "WIP" = "FG",
+  userId?: string,
+  fallbackName?: string,
+) => {
   if (!partNumber?.trim()) return null;
-  const normalized = partNumber.trim().replace(/\s+/g, "_").toUpperCase();
-  const item = await tx.item.findFirst({
-    where: { OR: [{ code: normalized }, { code: partNumber }] },
-    select: { id: true },
+  const raw = partNumber.trim();
+  const code = raw.replace(/\s+/g, "_").toUpperCase();
+  const item = await tx.item.findUnique({ where: { code } });
+  if (item) return item.id;
+
+  // Auto-register unregistered Part Numbers
+  const newItem = await tx.item.create({
+    data: {
+      code,
+      name: fallbackName?.trim() || raw,
+      kind: defaultKind,
+      status: "DRAFT",
+      createdFrom: "PRO_AUTO",
+      ...(userId ? { createdById: userId } : {}),
+    },
   });
-  return item?.id ?? null;
-}
+  return newItem.id;
+};
 
 const startOfDay = (d: Date) => {
   const x = new Date(d);
@@ -112,7 +126,10 @@ export const prosRouter = createTRPCRouter({
               materials: {
                 select: {
                   qtyReq: true,
-                  material: { select: { name: true, uom: true } },
+                  itemMasterId: true,
+                  itemMaster: {
+                    select: { id: true, name: true, baseUom: true },
+                  },
                 },
               },
               productionReports: {
@@ -234,7 +251,13 @@ export const prosRouter = createTRPCRouter({
             proPrefixId: input.proPrefixId, // Renamed
             productName: input.productName,
             partNumber: input.partNumber, // Legacy snapshot
-            fgItemId: await lookupItemId(tx, input.partNumber),
+            fgItemId: await lookupItemId(
+              tx,
+              input.partNumber,
+              "FG",
+              ctx.session?.user?.id,
+              input.productName,
+            ),
             qtyPoPcs: input.qtyPoPcs,
             startDate: firstStepDate,
             status: "OPEN",
@@ -261,13 +284,15 @@ export const prosRouter = createTRPCRouter({
 
           let machineStd = std;
           let isSheet = false;
+          let machineName = "";
           if (inputStep.machineId) {
             const m = await tx.machine.findUnique({
               where: { id: inputStep.machineId },
-              select: { stdOutputPerShift: true, uom: true },
+              select: { stdOutputPerShift: true, uom: true, name: true },
             });
             if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
             if (m?.uom === "sheet") isSheet = true;
+            if (m?.name) machineName = m.name;
           }
 
           const need =
@@ -308,10 +333,16 @@ export const prosRouter = createTRPCRouter({
                 startDate: getShiftDate(currentDay, currentShift),
                 partNumber: inputStep.partNumber,
                 batchNo: inputStep.batchNo,
-                outputItemId: await lookupItemId(tx, inputStep.partNumber),
+                outputItemId: await lookupItemId(
+                  tx,
+                  inputStep.partNumber,
+                  "WIP",
+                  ctx.session?.user?.id,
+                  `${machineName} ${input.productName}`.trim(),
+                ),
                 materials: {
                   create: (inputStep.materials ?? []).map((m) => ({
-                    materialId: m.materialId,
+                    itemMasterId: m.materialId,
                     qtyReq: new Prisma.Decimal(m.qtyReq * portion),
                   })),
                 },
@@ -372,9 +403,11 @@ export const prosRouter = createTRPCRouter({
               },
               materials: {
                 select: {
-                  materialId: true,
+                  itemMasterId: true,
                   qtyReq: true,
-                  material: { select: { name: true, uom: true } },
+                  itemMaster: {
+                    select: { id: true, name: true, baseUom: true, code: true },
+                  },
                 },
               },
               productionReports: {
@@ -488,7 +521,12 @@ export const prosRouter = createTRPCRouter({
             ...(input.partNumber !== undefined
               ? {
                   partNumber: input.partNumber,
-                  fgItemId: await lookupItemId(tx, input.partNumber),
+                  fgItemId: await lookupItemId(
+                    tx,
+                    input.partNumber,
+                    "FG",
+                    ctx.session.user.id,
+                  ),
                 }
               : {}),
             qtyPoPcs: input.qtyPoPcs,
@@ -560,12 +598,22 @@ export const prosRouter = createTRPCRouter({
               await tx.prosesMaterial.createMany({
                 data: matMaterials.map((m) => ({
                   prosesId,
-                  materialId: m.materialId,
+                  itemMasterId: m.materialId,
                   qtyReq: new Prisma.Decimal(m.qtyReq),
                 })),
               });
             }
           };
+
+          // Resolve machine name for item fallback
+          let stepMachineName = "";
+          if (s.machineId) {
+            const mach = await tx.machine.findUnique({
+              where: { id: s.machineId },
+              select: { name: true },
+            });
+            if (mach?.name) stepMachineName = mach.name;
+          }
 
           if (s.id && existingIds.has(s.id)) {
             await tx.proses.update({
@@ -576,7 +624,13 @@ export const prosRouter = createTRPCRouter({
                 machineId: s.machineId ?? null,
                 partNumber: s.partNumber,
                 batchNo: s.batchNo,
-                outputItemId: await lookupItemId(tx, s.partNumber),
+                outputItemId: await lookupItemId(
+                  tx,
+                  s.partNumber,
+                  "WIP",
+                  ctx.session?.user?.id,
+                  `${stepMachineName} ${input.productName}`.trim(),
+                ),
                 startDate: stepDate,
                 estimatedShifts: needs,
               },
@@ -592,11 +646,17 @@ export const prosRouter = createTRPCRouter({
                 startDate: stepDate,
                 partNumber: s.partNumber,
                 batchNo: s.batchNo,
-                outputItemId: await lookupItemId(tx, s.partNumber),
+                outputItemId: await lookupItemId(
+                  tx,
+                  s.partNumber,
+                  "WIP",
+                  ctx.session?.user?.id,
+                  `${stepMachineName} ${input.productName}`.trim(),
+                ),
                 estimatedShifts: needs,
                 materials: {
                   create: matMaterials.map((m) => ({
-                    materialId: m.materialId,
+                    itemMasterId: m.materialId,
                     qtyReq: new Prisma.Decimal(m.qtyReq),
                   })),
                 },
@@ -771,7 +831,10 @@ export const prosRouter = createTRPCRouter({
               estimatedShifts: true,
               materials: {
                 select: {
-                  material: { select: { name: true, uom: true } },
+                  itemMasterId: true,
+                  itemMaster: {
+                    select: { id: true, name: true, baseUom: true },
+                  },
                   qtyReq: true,
                 },
               },
@@ -809,13 +872,15 @@ async function checkCapacity(
       pro: { status: { notIn: [ProStatus.CLOSED, ProStatus.CANCELLED] } },
     },
     include: {
-      materials: { include: { material: true } },
+      materials: { include: { itemMaster: true } },
     },
   });
 
   let currentLoad = 0;
   for (const s of existingSteps) {
-    const sheetMat = s.materials.find((m) => m.material.uom === "sheet");
+    const sheetMat = s.materials.find(
+      (m) => m.itemMaster?.baseUom?.toLowerCase() === "sheet",
+    );
     if (sheetMat) {
       currentLoad += Number(sheetMat.qtyReq);
     }

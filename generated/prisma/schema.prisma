@@ -96,28 +96,8 @@ model Machine {
 //   @@index([machineId])
 // }
 
-// material / bahan baku
-
-enum MaterialType {
-  RAW
-  WIP
-  CONSUMABLE
-}
-
-model Material {
-  id              Int              @id @default(autoincrement())
-  name            String           @unique
-  uom             String
-  type            MaterialType     @default(RAW)
-  // stock removed, track via InventoryTxn
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  prosesMaterials ProsesMaterial[]
-
-  // Bridge to new Item master (backfill will populate)
-  itemId Int?  @unique
-  item   Item? @relation(fields: [itemId], references: [id])
-}
+// --- Master Item (unified RAW/WIP/FG/CONSUMABLE) ---
+// Material table has been merged into Item.
 
 // --- Master Item (unified RAW/WIP/FG/CONSUMABLE) ---
 
@@ -151,10 +131,10 @@ model Item {
   updatedAt DateTime @updatedAt
 
   // Relations
-  inventoryTxns InventoryTxn[]
-  material      Material? // 1-to-1 bridge back to legacy Material
-  fgPros        Pro[]          @relation("ProFgItem")
-  outputProses  Proses[]       @relation("ProsesOutputItem")
+  inventoryTxns   InventoryTxn[]
+  fgPros          Pro[]            @relation("ProFgItem")
+  outputProses    Proses[]         @relation("ProsesOutputItem")
+  prosesMaterials ProsesMaterial[] @relation("ProsesMaterialItem")
 
   @@index([kind])
   @@index([status])
@@ -263,14 +243,14 @@ model ProsesMaterial {
   prosesId Int
   proses   Proses @relation(fields: [prosesId], references: [id], onDelete: Cascade)
 
-  materialId Int
-  material   Material @relation(fields: [materialId], references: [id])
+  itemMasterId Int
+  itemMaster   Item @relation("ProsesMaterialItem", fields: [itemMasterId], references: [id])
 
   qtyReq Decimal @db.Decimal(12, 3)
-  // --- Laporan Produksi Harian (LPH) ---
 
-  @@unique([prosesId, materialId])
+  @@unique([prosesId, itemMasterId])
   @@index([prosesId])
+  @@index([itemMasterId])
 }
 
 enum LphType {

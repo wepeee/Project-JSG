@@ -20,7 +20,13 @@ type Props = {
   };
 };
 
-type NavKey = "schedule" | "prolist" | "materials" | "processes" | "planning";
+type NavKey =
+  | "schedule"
+  | "prolist"
+  | "materials"
+  | "processes"
+  | "planning-paper"
+  | "planning-rigid";
 
 export default function PPICShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("prolist");
@@ -34,13 +40,15 @@ export default function PPICShell({ user }: Props) {
   const title =
     active === "prolist"
       ? "Daftar PRO"
-      : active === "planning"
-        ? "Perencanaan PRO"
-        : active === "schedule"
-          ? "Schedule"
-          : active === "processes"
-            ? "Proses"
-            : "Materials";
+      : active === "planning-paper"
+        ? "Perencanaan PRO — Paper Box"
+        : active === "planning-rigid"
+          ? "Perencanaan PRO — Rigid Box"
+          : active === "schedule"
+            ? "Schedule"
+            : active === "processes"
+              ? "Proses"
+              : "Materials";
 
   return (
     <div className="bg-background min-h-screen w-full">
@@ -107,10 +115,22 @@ export default function PPICShell({ user }: Props) {
                 },
               ]}
             />
-            <SidebarItem
+            <SidebarItemWithSubmenu
               label="Perencanaan PRO"
-              active={active === "planning"}
-              onClick={() => setActive("planning")}
+              active={
+                active === "planning-paper" || active === "planning-rigid"
+              }
+              onClick={() => setActive("planning-paper")}
+              submenu={[
+                {
+                  label: "Paper Box",
+                  onClick: () => setActive("planning-paper"),
+                },
+                {
+                  label: "Rigid Box",
+                  onClick: () => setActive("planning-rigid"),
+                },
+              ]}
             />
             <SidebarItem
               label="Schedule"
@@ -203,13 +223,31 @@ export default function PPICShell({ user }: Props) {
                     },
                   ]}
                 />
-                <SidebarItem
+                <SidebarItemWithSubmenu
                   label="Perencanaan PRO"
-                  active={active === "planning"}
+                  active={
+                    active === "planning-paper" || active === "planning-rigid"
+                  }
                   onClick={() => {
-                    setActive("planning");
+                    setActive("planning-paper");
                     setOpen(false);
                   }}
+                  submenu={[
+                    {
+                      label: "Paper Box",
+                      onClick: () => {
+                        setActive("planning-paper");
+                        setOpen(false);
+                      },
+                    },
+                    {
+                      label: "Rigid Box",
+                      onClick: () => {
+                        setActive("planning-rigid");
+                        setOpen(false);
+                      },
+                    },
+                  ]}
                 />
                 <SidebarItem
                   label="Schedule"
@@ -272,8 +310,10 @@ export default function PPICShell({ user }: Props) {
               onClearJump={() => setJumpToProId(null)}
               initialTypeFilter={proTypeFilter} // Added
             />
-          ) : active === "planning" ? (
-            <ProPlanner />
+          ) : active === "planning-paper" ? (
+            <ProPlanner proType="PAPER" />
+          ) : active === "planning-rigid" ? (
+            <ProPlanner proType="RIGID" />
           ) : active === "schedule" ? (
             <PPICSchedule
               onSelectPro={(id) => {

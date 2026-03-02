@@ -103,7 +103,7 @@ export default function ProEditDialog({ proId, open, onOpenChange }: Props) {
           partNumber: (s as any).partNumber ?? "", // Added
           up: String(s.up ?? ""),
           machineId: s.machineId ?? null,
-          materialId: mat0?.materialId ?? null,
+          materialId: mat0?.itemMasterId ?? null,
           qtyReq: mat0?.qtyReq ? String(mat0.qtyReq) : "",
         };
       }),

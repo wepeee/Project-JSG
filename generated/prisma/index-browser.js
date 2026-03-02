@@ -149,16 +149,6 @@ exports.Prisma.MachineScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.MaterialScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  uom: 'uom',
-  type: 'type',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  itemId: 'itemId'
-};
-
 exports.Prisma.ItemScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -216,7 +206,7 @@ exports.Prisma.ProsesScalarFieldEnum = {
 exports.Prisma.ProsesMaterialScalarFieldEnum = {
   id: 'id',
   prosesId: 'prosesId',
-  materialId: 'materialId',
+  itemMasterId: 'itemMasterId',
   qtyReq: 'qtyReq'
 };
 
@@ -316,11 +306,6 @@ exports.Prisma.MachineOrderByRelevanceFieldEnum = {
   workCenter: 'workCenter'
 };
 
-exports.Prisma.MaterialOrderByRelevanceFieldEnum = {
-  name: 'name',
-  uom: 'uom'
-};
-
 exports.Prisma.ItemOrderByRelevanceFieldEnum = {
   code: 'code',
   name: 'name',
@@ -406,12 +391,6 @@ exports.MachineType = exports.$Enums.MachineType = {
   RIGID: 'RIGID'
 };
 
-exports.MaterialType = exports.$Enums.MaterialType = {
-  RAW: 'RAW',
-  WIP: 'WIP',
-  CONSUMABLE: 'CONSUMABLE'
-};
-
 exports.ItemKind = exports.$Enums.ItemKind = {
   RAW: 'RAW',
   WIP: 'WIP',
@@ -471,7 +450,6 @@ exports.TxnType = exports.$Enums.TxnType = {
 exports.Prisma.ModelName = {
   User: 'User',
   Machine: 'Machine',
-  Material: 'Material',
   Item: 'Item',
   ProPrefix: 'ProPrefix',
   ProSequence: 'ProSequence',
