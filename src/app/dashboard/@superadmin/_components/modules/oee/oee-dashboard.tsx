@@ -319,22 +319,165 @@ export default function OeeDashboard() {
             </div>
           </div>
 
-          {/* Radar Chart */}
-          {radarData.length > 1 && (
+          {/* Radar Chart — Per Mesin Individual */}
+          {data.machineOee.length > 0 && (
             <div className="bg-card border-border rounded-xl border p-5">
-              <h3 className="mb-4 font-bold">Radar OEE Komponen per Mesin</h3>
-              <ResponsiveContainer width="100%" height={320}>
-                <RadarChart data={radarData}>
-                  <PolarGrid className="stroke-border" />
-                  <PolarAngleAxis dataKey="machine" tick={{ fontSize: 11 }} className="text-muted-foreground fill-muted-foreground" />
-                  <Radar name="OEE" dataKey="OEE" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.3} strokeWidth={2} />
-                  <Radar name="Availability" dataKey="Availability" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.1} strokeWidth={1.5} />
-                  <Radar name="Performance" dataKey="Performance" stroke="#a855f7" fill="#a855f7" fillOpacity={0.1} strokeWidth={1.5} />
-                  <Radar name="Quality" dataKey="Quality" stroke="#22c55e" fill="#22c55e" fillOpacity={0.1} strokeWidth={1.5} />
-                  <Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: any) => `${Number(v).toFixed(1)}%`} />
-                </RadarChart>
-              </ResponsiveContainer>
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold">Profil OEE per Mesin</h3>
+                  <p className="text-muted-foreground mt-0.5 text-xs">Radar komponen A × P × Q tiap mesin · Ring target {OEE_WORLD_CLASS}%</p>
+                </div>
+                <div className="flex gap-3 text-[10px]">
+                  <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-[#3b82f6]" /> Availability</span>
+                  <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-[#a855f7]" /> Performance</span>
+                  <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-[#22c55e]" /> Quality</span>
+                </div>
+              </div>
+              <div className={`grid gap-4 ${data.machineOee.length === 1 ? "grid-cols-1" : data.machineOee.length === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"}`}>
+                {data.machineOee.sort((a, b) => b.oee - a.oee).map((m) => {
+                  const mColor = oeeColor(m.oee);
+                  const radarItems = [
+                    { metric: "Availability", value: m.availability, target: AVAIL_TARGET, color: "#3b82f6" },
+                    { metric: "Performance", value: m.performance, target: PERF_TARGET, color: "#a855f7" },
+                    { metric: "Quality", value: m.quality, target: QUAL_TARGET, color: "#22c55e" },
+                  ];
+                  return (
+                    <div
+                      key={m.machineId}
+                      className="border-border bg-muted/20 rounded-xl border p-4 transition-colors hover:bg-muted/40"
+                    >
+                      {/* Mesin header */}
+                      <div className="mb-2 flex items-center justify-between">
+                        <h4 className="text-foreground truncate text-sm font-bold">{m.machineName}</h4>
+                        <div
+                          className="rounded-full px-2.5 py-0.5 text-[11px] font-bold"
+                          style={{ background: `${mColor}18`, color: mColor, border: `1px solid ${mColor}40` }}
+                        >
+                          OEE {m.oee.toFixed(1)}%
+                        </div>
+                      </div>
+
+                      {/* Radar */}
+                      <ResponsiveContainer width="100%" height={200}>
+                        <RadarChart data={radarItems} cx="50%" cy="50%" outerRadius="70%">
+                          <PolarGrid
+                            gridType="polygon"
+                            stroke="currentColor"
+                            className="text-border"
+                            opacity={0.5}
+                          />
+                          <PolarAngleAxis
+                            dataKey="metric"
+                            tick={({ x, y, payload }: any) => (
+                              <text
+                                x={x}
+                                y={y}
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                fontSize={10}
+                                fontWeight={600}
+                                fill={radarItems.find((r) => r.metric === payload.value)?.color ?? "#888"}
+                              >
+                                {payload.value}
+                              </text>
+                            )}
+                          />
+                          {/* Target ring (dashed) */}
+                          <Radar
+                            name="Target"
+                            dataKey="target"
+                            stroke="#64748b"
+                            fill="none"
+                            strokeWidth={1}
+                            strokeDasharray="3 3"
+                            dot={false}
+                          />
+                          {/* Actual values */}
+                          <Radar
+                            name="Aktual"
+                            dataKey="value"
+                            stroke={mColor}
+                            fill={mColor}
+                            fillOpacity={0.25}
+                            strokeWidth={2.5}
+                            dot={{ r: 4, fill: mColor, stroke: "#fff", strokeWidth: 1.5 }}
+                          />
+                          <Tooltip
+                            content={({ active, payload }: any) => {
+                              if (!active || !payload?.length) return null;
+                              const item = payload[0]?.payload;
+                              if (!item) return null;
+                              const diff = item.value - item.target;
+                              return (
+                                <div className="bg-popover border-border rounded-lg border px-3 py-2 shadow-xl text-xs">
+                                  <p className="font-bold" style={{ color: item.color }}>{item.metric}</p>
+                                  <div className="mt-1 space-y-0.5">
+                                    <div className="flex justify-between gap-4">
+                                      <span className="text-muted-foreground">Aktual:</span>
+                                      <span className="font-bold">{item.value.toFixed(1)}%</span>
+                                    </div>
+                                    <div className="flex justify-between gap-4">
+                                      <span className="text-muted-foreground">Target:</span>
+                                      <span>{item.target}%</span>
+                                    </div>
+                                    <div className="flex justify-between gap-4">
+                                      <span className="text-muted-foreground">Gap:</span>
+                                      <span className={diff >= 0 ? "text-green-400 font-semibold" : "text-red-400 font-semibold"}>
+                                        {diff >= 0 ? "+" : ""}{diff.toFixed(1)}%
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            }}
+                          />
+                        </RadarChart>
+                      </ResponsiveContainer>
+
+                      {/* Value bars di bawah radar */}
+                      <div className="mt-1 space-y-1.5">
+                        {radarItems.map((r) => {
+                          const pct = Math.min(100, r.value);
+                          const gap = r.value - r.target;
+                          return (
+                            <div key={r.metric} className="flex items-center gap-2 text-[10px]">
+                              <span className="w-[72px] truncate font-medium" style={{ color: r.color }}>
+                                {r.metric}
+                              </span>
+                              <div className="bg-muted relative h-1.5 flex-1 overflow-hidden rounded-full">
+                                <div
+                                  className="absolute top-0 left-0 h-full rounded-full transition-all duration-700"
+                                  style={{ width: `${pct}%`, background: r.color }}
+                                />
+                                {/* Target marker */}
+                                <div
+                                  className="absolute top-0 h-full w-px"
+                                  style={{ left: `${r.target}%`, background: "#94a3b8" }}
+                                />
+                              </div>
+                              <span className="text-foreground w-[40px] text-right font-bold">{r.value.toFixed(1)}%</span>
+                              <span className={`w-[38px] text-right font-semibold ${gap >= 0 ? "text-green-400" : "text-red-400"}`}>
+                                {gap >= 0 ? "+" : ""}{gap.toFixed(0)}%
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Footer */}
+                      <div className="text-muted-foreground mt-2 flex items-center justify-between border-t border-dashed pt-2 text-[10px]">
+                        <span>{m.totalReports} LPH · {m.totalOutput.toLocaleString("id-ID")} pcs</span>
+                        <span
+                          className="rounded px-1.5 py-0.5 text-[9px] font-bold"
+                          style={{ background: `${mColor}15`, color: mColor }}
+                        >
+                          {m.oee >= OEE_WORLD_CLASS ? "WORLD CLASS" : m.oee >= 65 ? "ACCEPTABLE" : "NEEDS IMPROVEMENT"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </>
@@ -342,3 +485,4 @@ export default function OeeDashboard() {
     </div>
   );
 }
+

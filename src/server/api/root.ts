@@ -6,13 +6,13 @@ import { verificationRouter } from "./routers/superadmin/verification";
 import { dashboardRouter } from "./routers/superadmin/dashboard";
 import { stdOutputRouter } from "./routers/superadmin/stdOutput";
 import { machineAccessRouter } from "./routers/superadmin/machineAccess";
+import { oeeRouter } from "./routers/superadmin/oee";
 import { materialsRouter } from "./routers/ppic/materials";
 import { itemsRouter } from "./routers/ppic/items";
 import { processesRouter } from "./routers/ppic/processes";
 import { prosRouter } from "./routers/ppic/pros";
 import { productionRouter } from "./routers/operator/production";
 import { inventoryRouter } from "./routers/ppic/inventory";
-import { oeeRouter } from "./routers/ppic/oee";
 
 /**
  * This is the primary router for your server.
