@@ -183,12 +183,19 @@ function PdfPage({
       className="pdf-page"
       style={{
         width: "100%",
-        padding: "8mm 10mm",
+        height: "210mm",
+        maxHeight: "210mm",
+        padding: "6mm 10mm",
         backgroundColor: "white",
         fontFamily: "'Arial', 'Helvetica Neue', sans-serif",
         fontSize: "8.5pt",
         color: "#000",
         boxSizing: "border-box",
+        overflow: "hidden",
+        pageBreakInside: "avoid",
+        breakInside: "avoid",
+        pageBreakAfter: "always",
+        breakAfter: "page",
       }}
     >
       {/* ═══════════════ HEADER ═══════════════ */}
@@ -356,7 +363,7 @@ function PdfPage({
         }}
       >
         {/* Column widths — mirrors the original PDF */}
-        <colgroup><col style={{ width: "3%" }} /><col style={{ width: "8%" }} /><col style={{ width: "8%" }} /><col style={{ width: "18%" }} /><col style={{ width: "4%" }} /><col style={{ width: "5%" }} /><col style={{ width: "4%" }} /><col style={{ width: "14%" }} /><col style={{ width: "6%" }} /><col style={{ width: "6%" }} /><col style={{ width: "6%" }} /><col style={{ width: "5.5%" }} /><col style={{ width: "5.5%" }} /><col style={{ width: "5%" }} /><col style={{ width: "5%" }} /></colgroup>
+        <colgroup><col style={{ width: "3%" }} /><col style={{ width: "8%" }} /><col style={{ width: "8%" }} /><col style={{ width: "17%" }} /><col style={{ width: "4%" }} /><col style={{ width: "5%" }} /><col style={{ width: "4%" }} /><col style={{ width: "13%" }} /><col style={{ width: "6%" }} /><col style={{ width: "6%" }} /><col style={{ width: "6%" }} /><col style={{ width: "5.5%" }} /><col style={{ width: "5.5%" }} /><col style={{ width: "5%" }} /><col style={{ width: "9%" }} /></colgroup>
 
         <thead>
           {/* ── Group header row ── */}
@@ -566,9 +573,18 @@ function PdfPage({
                   padding: "4pt 3pt",
                   textAlign: "center",
                   fontWeight: 700,
+                  fontSize: "6pt",
+                  wordBreak: "break-word",
+                  lineHeight: "1.2",
                 }}
               >
-                {row.status}
+                {row.status === "IN_PROGRESS"
+                  ? "IN-PROG"
+                  : row.status === "CANCELLED"
+                    ? "CANCEL"
+                    : row.status === "COMPLETE"
+                      ? "DONE"
+                      : row.status}
               </td>
             </tr>
           ))}
@@ -580,7 +596,7 @@ function PdfPage({
                 {Array.from({ length: 15 }).map((__, j) => (
                   <td
                     key={j}
-                    style={{ border: B, padding: "8pt 3pt" }}
+                    style={{ border: B, padding: "5pt 3pt" }}
                   />
                 ))}
               </tr>
@@ -591,7 +607,7 @@ function PdfPage({
       {/* ═══════════════ SIGNATURE ═══════════════ */}
       <div style={{ marginTop: "16pt" }}>
         <div style={{ fontSize: "8pt", marginBottom: "2pt" }}>Menyetujui,</div>
-        <div style={{ height: "36pt" }} /> {/* space for signature */}
+        <div style={{ height: "24pt" }} /> {/* space for signature */}
         <div style={{ width: "160pt" }}>
           <div
             style={{
@@ -643,18 +659,37 @@ export function SchedulePdfExport({
     style.id = "pdf-print-styles";
     style.textContent = `
       @media print {
-        /* Hide everything */
+        /* Hide everything except print clone */
         body > * { display: none !important; }
-        /* Show only the cloned print area */
         body > #schedule-print-clone { display: block !important; }
+
+        #schedule-print-clone {
+          margin: 0;
+          padding: 0;
+        }
+
         #schedule-print-clone .pdf-page {
           width: 297mm !important;
-          page-break-after: always;
+          height: 210mm !important;
+          max-height: 210mm !important;
+          overflow: hidden !important;
+          box-sizing: border-box !important;
+          page-break-after: always !important;
+          break-after: page !important;
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+          display: block !important;
         }
+
         #schedule-print-clone .pdf-page:last-child {
-          page-break-after: auto;
+          page-break-after: auto !important;
+          break-after: auto !important;
         }
-        @page { size: A4 landscape; margin: 0; }
+
+        @page {
+          size: A4 landscape;
+          margin: 0;
+        }
       }
     `;
     // Clone the print area to body root so it's not nested inside hidden elements

@@ -388,11 +388,41 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                             className="border-border hover:bg-muted/50 border-b last:border-0"
                           >
                             <TableCell className="py-2">
-                              {groupMode === "PRO"
-                                ? (item.stepOrder ?? 999) >= 999 ? "FG (Selesai)" : `Step ${item.stepOrder}`
-                                : groupMode === "MACHINE"
-                                  ? `${item.proNumber} (${item.proType})`
-                                  : (item.stepOrder ?? 999) >= 999 ? "FG (Selesai)" : `Step ${item.stepOrder}`}
+                              <div className="flex items-center gap-2">
+                                <span>
+                                  {groupMode === "PRO"
+                                    ? (item.stepOrder ?? 999) >= 999 ? "FG (Selesai)" : `Step ${item.stepOrder}`
+                                    : groupMode === "MACHINE"
+                                      ? `${item.proNumber} (${item.proType})`
+                                      : (item.stepOrder ?? 999) >= 999 ? "FG (Selesai)" : `Step ${item.stepOrder}`}
+                                </span>
+                                {/* Badge tipe lokasi: deteksi dari locationName */}
+                                {(() => {
+                                  const locType = item.locationTypeName;
+                                  const locName = (item.locationName ?? "").toLowerCase();
+
+                                  // Fallback: deteksi dari nama lokasi jika locationTypeName belum ada
+                                  const isScrap = locType === "SCRAP" || locName.includes("scrap");
+                                  const isFG = locType === "FG" || locName.includes("finish good") || locName.includes("fg warehouse") || locName.includes("warehouse fg");
+                                  const isHold = locType === "HOLD" || locName.includes("hold") || locName.includes("qa");
+
+                                  if (!isScrap && !isFG && !isHold) return null;
+
+                                  return (
+                                    <span
+                                      className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-bold tracking-wide ${
+                                        isScrap
+                                          ? "border-red-500/40 bg-red-500/20 text-red-400"
+                                          : isFG
+                                            ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-400"
+                                            : "border-amber-500/40 bg-amber-500/20 text-amber-400"
+                                      }`}
+                                    >
+                                      {isScrap ? "✕ Reject" : isFG ? "✓ Stok" : "⏸ Hold"}
+                                    </span>
+                                  );
+                                })()}
+                              </div>
                             </TableCell>
                             <TableCell className="text-foreground py-2 font-medium">
                               {groupMode === "ITEM"

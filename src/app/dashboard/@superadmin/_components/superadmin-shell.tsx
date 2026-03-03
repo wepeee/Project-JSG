@@ -14,6 +14,7 @@ import DashboardOverview from "./modules/overview/dashboard-overview";
 import WipMonitor from "./modules/inventory/wip-monitor";
 import StdOutput from "./modules/std-output/std-output";
 import MachineAccessManager from "./modules/machines/machine-access-manager";
+import OeeDashboard from "./modules/oee/oee-dashboard";
 
 type Props = {
   user: {
@@ -38,7 +39,8 @@ type NavKey =
   | "report_archive_rigid"
   | "std_output_paper"
   | "std_output_rigid"
-  | "machine_access";
+  | "machine_access"
+  | "oee_paper";
 
 export default function SuperadminShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("dashboard");
@@ -59,6 +61,8 @@ export default function SuperadminShell({ user }: Props) {
         return "Kelola Mesin Paper";
       case "inventory_paper":
         return "WIP Monitor Paper";
+      case "oee_paper":
+        return "OEE Analytics — Paper";
       case "verification_paper":
         return "Verifikasi Laporan Paper";
       case "report_archive_paper":
@@ -103,6 +107,14 @@ export default function SuperadminShell({ user }: Props) {
         active={active === "users"}
         onClick={() => {
           setActive("users");
+          setOpen(false);
+        }}
+      />
+      <SidebarItem
+        label="OEE Analytics"
+        active={active === "oee_paper"}
+        onClick={() => {
+          setActive("oee_paper");
           setOpen(false);
         }}
       />
@@ -391,6 +403,9 @@ export default function SuperadminShell({ user }: Props) {
           {active === "std_output_rigid" && (
             <StdOutput userDepartment="RIGID" />
           )}
+
+          {/* OEE Analytics */}
+          {active === "oee_paper" && <OeeDashboard />}
 
           {/* Machine Access */}
           {active === "machine_access" && <MachineAccessManager />}

@@ -191,7 +191,11 @@ export default function DashboardOverview({ department }: Props) {
             title="PLAN DOWNTIME"
             description="Analisa mingguan Plan Downtime per kategori"
             weeklyData={data.weeklyPlanned} 
-            downtimeTypes={downtimeTypes} 
+            downtimeTypes={downtimeTypes.filter((d) => {
+              const k = d.type.toUpperCase();
+              return k.startsWith("PLANNED:") ||
+                ["ISTIRAHAT","TROUBLE PLN","TROUBLE_PLN","TRIAL","PREVENTIVE"].some((kw) => k.includes(kw));
+            })} 
             maxCategories={5}
         />
 
@@ -200,7 +204,13 @@ export default function DashboardOverview({ department }: Props) {
             title="UNPLAN DOWNTIME"
             description="Analisa mingguan Unplan Downtime per kategori"
             weeklyData={data.weeklyUnplanned} 
-            downtimeTypes={downtimeTypes} 
+            downtimeTypes={downtimeTypes.filter((d) => {
+              const k = d.type.toUpperCase();
+              return k.startsWith("UNPLANNED:") ||
+                ["OPERATOR","TUNGGU","MACHINE PROBLEM","MACHINE_PROBLEM",
+                 "SET UP","SETUP","CHANGE OVER","MENCARI","ADJUSTMENT","RUNNING IN","RUNIN","LAIN"]
+                  .some((kw) => k.includes(kw));
+            })} 
             maxCategories={10}
         />
 

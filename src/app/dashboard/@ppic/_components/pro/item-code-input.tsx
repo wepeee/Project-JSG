@@ -41,10 +41,13 @@ export default function ItemCodeInput({
   const [showCreate, setShowCreate] = React.useState(false);
   const [createName, setCreateName] = React.useState("");
   const containerRef = React.useRef<HTMLDivElement>(null);
+  // Ref selalu menyimpan query terbaru agar bisa dibaca segera saat blur/save
+  const queryRef = React.useRef(value);
 
   // Sync external value
   React.useEffect(() => {
     setQuery(value);
+    queryRef.current = value;
   }, [value]);
 
   // Search query
@@ -91,17 +94,23 @@ export default function ItemCodeInput({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
+    queryRef.current = val; // Selalu update ref agar blur/save bisa baca nilai terbaru
     setOpen(true);
     // Don't update parent until user selects or blurs
   };
 
   const handleBlur = () => {
-    // On blur, commit whatever is typed
+    // Flush commit segera (tanpa setTimeout) agar tidak race dengan klik tombol Save
+    const current = queryRef.current;
+    const normalized = current.trim().toUpperCase().replace(/\s+/g, "_");
+    if (normalized !== value) {
+      onChange(normalized);
+    }
+    // Tutup dropdown setelah delay kecil agar onMouseDown item bisa jalan dulu
     setTimeout(() => {
-      if (query !== value) {
-        onChange(query.trim().toUpperCase().replace(/\s+/g, "_"));
-      }
-    }, 200);
+      setOpen(false);
+      setShowCreate(false);
+    }, 150);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

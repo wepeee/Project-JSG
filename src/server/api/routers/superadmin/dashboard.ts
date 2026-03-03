@@ -78,23 +78,44 @@ export const dashboardRouter = createTRPCRouter({
       });
 
       // 0. Constants
-      const PLANNED_KEYS = [
+      // ──────────────────────────────────────────────────────────────────
+      // Klasifikasi downtime sesuai format laporan perusahaan (Excel)
+      // PLANNED: ISTIRAHAT, TROUBLE PLN, TRIAL, PREVENTIVE MAINTENANCE
+      // UNPLANNED: Operator Issue, Tunggu Approval, Tunggu Material,
+      //            Machine Problem, Set Up/Change Over, Mencari Tools,
+      //            Adjustment Process, Machine RunIn, dll.
+      // ──────────────────────────────────────────────────────────────────
+      const PLANNED_KEYWORDS = [
         "ISTIRAHAT",
+        "TROUBLE PLN",
         "TROUBLE_PLN",
+        "TROUBLEPLN",
         "TRIAL",
-        "PREVENTIVE_MAINTENANCE",
-        "SETUP_CHANGE_OVER"
+        "PREVENTIVE",   // covers "PREVENTIVE MAINTENANCE", "PREVENTIVE_MAINTENANCE"
+        "PREV MAINTE",  // abbreviasi
       ];
 
-      const UNPLANNED_KEYS = [
+      const UNPLANNED_KEYWORDS = [
+        "OPERATOR",       // "Operator Issue", "OPERATOR_ISSUE"
+        "TUNGGU APPROVAL",
         "TUNGGU_APPROVAL",
+        "TUNGGU MATERIAL",
         "TUNGGU_MATERIAL",
+        "MACHINE PROBLEM",
         "MACHINE_PROBLEM",
-        "MENCARI_TOOLS",
+        "SET UP",         // "Set Up/Change Over", "SETUP_CHANGE_OVER"
+        "SETUP",          // "SETUP CHANGE OVER"
+        "CHANGE OVER",
+        "CHANGE_OVER",
+        "MENCARI",        // "Mencari Tools", "MENCARI_TOOLS"
+        "ADJUSTMENT",     // "Adjustment Process", "ADJUSTMENT_PROCESS"
+        "RUNNING IN",
         "RUNNING_IN",
-        "ADJUSTMENT_PROCESS",
-        "OPERATOR_ISSUE", 
+        "RUN IN",
+        "RUNIN",
+        "LAIN",           // "Lain-lain"
       ];
+
       
       // 1. Summary
       let totalGood = 0;
@@ -155,13 +176,27 @@ export const dashboardRouter = createTRPCRouter({
 
             for (const [key, val] of Object.entries(breakdown)) {
                 const minutes = Number(val);
-                if (!isNaN(minutes)) {
+                if (!isNaN(minutes) && minutes > 0) {
                     downtimeMap.set(key, (downtimeMap.get(key) ?? 0) + minutes);
 
-                    if (PLANNED_KEYS.includes(key)) {
+                    // Key bisa berupa: "PLANNED:ISTIRAHAT", "UNPLANNED:TUNGGU APPROVAL",
+                    // atau tanpa prefix: "ISTIRAHAT", "TUNGGU_APPROVAL"
+                    const keyUpper = key.toUpperCase();
+                    const isPlanned =
+                      keyUpper.startsWith("PLANNED:") ||
+                      PLANNED_KEYWORDS.some((pk: string) => keyUpper.includes(pk.toUpperCase()));
+                    const isUnplanned =
+                      keyUpper.startsWith("UNPLANNED:") ||
+                      UNPLANNED_KEYWORDS.some((uk: string) => keyUpper.includes(uk.toUpperCase()));
+
+                    if (isPlanned && !keyUpper.startsWith("UNPLANNED:")) {
                         totalPlannedDowntime += minutes;
                         currentWeekPlanned[key] = (currentWeekPlanned[key] ?? 0) + minutes;
+                    } else if (isUnplanned || keyUpper.startsWith("UNPLANNED:")) {
+                        totalUnplannedDowntime += minutes;
+                        currentWeekUnplanned[key] = (currentWeekUnplanned[key] ?? 0) + minutes;
                     } else {
+                        // Tidak dikenali → masukkan ke unplanned sebagai fallback
                         totalUnplannedDowntime += minutes;
                         currentWeekUnplanned[key] = (currentWeekUnplanned[key] ?? 0) + minutes;
                     }

@@ -23,6 +23,7 @@ export type WipMonitorItem = {
   proQty?: number; // Target PO
   machineName?: string;
   locationName?: string;
+  locationTypeName?: string; // e.g. "FG", "SCRAP", "WIP", "HOLD"
   stepOrder?: number;
 };
 
@@ -140,6 +141,7 @@ export const inventoryRouter = createTRPCRouter({
               proType: pro?.type ?? "Unknown",
               proQty: pro?.qtyPoPcs ?? 0,
               locationName: loc?.name ?? "Unknown Loc",
+              locationTypeName: loc?.type ?? undefined,
               machineName: loc?.machine?.name ?? loc?.name ?? "Unassigned",
               stepOrder,
             });

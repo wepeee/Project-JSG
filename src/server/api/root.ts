@@ -12,6 +12,7 @@ import { processesRouter } from "./routers/ppic/processes";
 import { prosRouter } from "./routers/ppic/pros";
 import { productionRouter } from "./routers/operator/production";
 import { inventoryRouter } from "./routers/ppic/inventory";
+import { oeeRouter } from "./routers/ppic/oee";
 
 /**
  * This is the primary router for your server.
@@ -32,6 +33,7 @@ export const appRouter = createTRPCRouter({
   inventory: inventoryRouter,
   stdOutput: stdOutputRouter,
   machineAccess: machineAccessRouter,
+  oee: oeeRouter,
 });
 
 // export type definition of API

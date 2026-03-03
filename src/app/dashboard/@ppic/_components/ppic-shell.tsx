@@ -308,7 +308,7 @@ export default function PPICShell({ user }: Props) {
             <ProList
               initialSelectedId={jumpToProId}
               onClearJump={() => setJumpToProId(null)}
-              initialTypeFilter={proTypeFilter} // Added
+              initialTypeFilter={proTypeFilter}
             />
           ) : active === "planning-paper" ? (
             <ProPlanner proType="PAPER" />

@@ -273,10 +273,11 @@ export default function ProList({
     "ALL" | "PAPER" | "RIGID" | "OTHER"
   >(initialTypeFilter || "PAPER"); // Use prop or default to PAPER
 
-  // Sync with external filter changes
+  // Sync with external filter changes — juga reset detail view
   React.useEffect(() => {
     if (initialTypeFilter) {
       setTypeFilter(initialTypeFilter);
+      setSelectedId(null); // Kembali ke daftar saat filter berubah dari sidebar
     }
   }, [initialTypeFilter]);
 
