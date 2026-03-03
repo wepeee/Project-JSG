@@ -248,6 +248,33 @@ export const productionRouter = createTRPCRouter({
       });
     }),
 
+  // Endpoint untuk ambil daftar material per proses (untuk checklist reject FG)
+  getProsesMaterials: protectedProcedure
+    .input(z.object({ prosesId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const materials = await ctx.db.prosesMaterial.findMany({
+        where: { prosesId: input.prosesId },
+        select: {
+          id: true,
+          itemMaster: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              baseUom: true,
+            },
+          },
+        },
+        orderBy: { id: "asc" },
+      });
+      return materials.map((m) => ({
+        id: m.id,
+        name: m.itemMaster.name,
+        code: m.itemMaster.code,
+        uom: m.itemMaster.baseUom,
+      }));
+    }),
+
   getHistory: protectedProcedure
     .input(
       z

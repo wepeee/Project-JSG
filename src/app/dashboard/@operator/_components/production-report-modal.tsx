@@ -528,6 +528,16 @@ export function ProductionReportModal({
     othersNote: "",
   });
 
+  // Checklist material penyebab reject FG (untuk PAPER)
+  const [rejectMaterials, setRejectMaterials] = React.useState<string[]>([]);
+
+  // Fetch materials per proses dari PPIC
+  const prosesId = task?.step?.id as number | undefined;
+  const { data: prosesMaterials } = api.production.getProsesMaterials.useQuery(
+    { prosesId: prosesId! },
+    { enabled: !!prosesId && lphType === "PAPER" },
+  );
+
   // Calculate Totals
   const totalReject = React.useMemo(() => {
     const listTotal = Object.values(formData.rejects).reduce(
@@ -836,6 +846,14 @@ export function ProductionReportModal({
           othersNote: editReport.othersNote || "",
         };
 
+        // Load rejectMaterials dari metaData editReport
+        const savedMaterials = (editReport.metaData as any)?.rejectMaterials;
+        if (Array.isArray(savedMaterials)) {
+          setRejectMaterials(savedMaterials as string[]);
+        } else {
+          setRejectMaterials([]);
+        }
+
         setFormData(newFormData);
 
         setIsLoaded(true);
@@ -868,6 +886,7 @@ export function ProductionReportModal({
           }
         } else {
           // Reset form
+          setRejectMaterials([]);
           setFormData({
             startTime: new Date().toTimeString().slice(0, 5),
             endTime: "",
@@ -1094,6 +1113,10 @@ export function ProductionReportModal({
         materialPassOn: parseNumber(formData.materialPassOn) || undefined,
         materialHold: parseNumber(formData.materialHold) || undefined,
         materialWip: parseNumber(formData.materialWip) || undefined,
+        // Checklist material penyebab reject FG (PAPER only)
+        ...(lphType === "PAPER" && rejectMaterials.length > 0
+          ? { rejectMaterials }
+          : {}),
       },
     };
 
@@ -1814,6 +1837,64 @@ export function ProductionReportModal({
                       </div>
                     )}
                   </div>
+
+                  {/* ── Checklist Material Penyebab Reject FG (PAPER only) ── */}
+                  {lphType === "PAPER" && prosesMaterials && prosesMaterials.length > 0 && (
+                    <div className="mt-4 rounded-xl border border-red-900/40 bg-red-950/20 p-4">
+                      <div className="mb-3 flex items-center gap-2">
+                        <span className="text-[10px] font-bold tracking-widest text-red-400 uppercase">
+                          Penyebab Reject FG — Material
+                        </span>
+                        <span className="text-[9px] text-slate-500">(centang material yang bermasalah)</span>
+                        {rejectMaterials.length > 0 && (
+                          <span className="ml-auto rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-bold text-red-400">
+                            {rejectMaterials.length} dipilih
+                          </span>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                        {prosesMaterials.map((mat) => {
+                          const checked = rejectMaterials.includes(mat.name);
+                          return (
+                            <button
+                              key={mat.id}
+                              type="button"
+                              onClick={() => {
+                                setRejectMaterials((prev) =>
+                                  checked
+                                    ? prev.filter((n) => n !== mat.name)
+                                    : [...prev, mat.name],
+                                );
+                              }}
+                              className={`flex items-center gap-2.5 rounded-lg border px-3 py-2 text-left text-xs transition-all ${
+                                checked
+                                  ? "border-red-500/60 bg-red-900/30 text-red-200"
+                                  : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600 hover:text-slate-300"
+                              }`}
+                            >
+                              <div
+                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                                  checked
+                                    ? "border-red-500 bg-red-500 text-white"
+                                    : "border-slate-600 bg-transparent"
+                                }`}
+                              >
+                                {checked && (
+                                  <svg viewBox="0 0 10 8" fill="none" className="h-2.5 w-2.5">
+                                    <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                )}
+                              </div>
+                              <span className="truncate leading-tight">{mat.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {rejectMaterials.length === 0 && (
+                        <p className="mt-2 text-center text-[10px] text-slate-600 italic">Tidak ada material yang dipilih</p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Others Note for Rigid */}
                   {isRigid && (
