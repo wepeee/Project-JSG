@@ -550,8 +550,23 @@ export default function ProPlanner({
         setProductName(lastProductName);
       }
 
-      setSteps((prev) => [...prev, ...newSteps]);
-      setOk(`Berhasil import ${newSteps.length} proses.`);
+      if (proType === "RIGID" && newSteps.length > 0) {
+        // Fill rigid inline state from first imported row
+        const first = newSteps[0]!;
+        setRigidMachineId(first.machineId);
+        setRigidPN(first.partNumber ?? "");
+        setRigidUp(first.up || "1");
+        setRigidStartDate(first.startDate || "");
+        setRigidMaterials(
+          first.materials.length > 0
+            ? first.materials
+            : [{ key: uid(), materialId: null, qtyReq: "" }],
+        );
+        setOk(`Berhasil import data dari CSV.`);
+      } else {
+        setSteps((prev) => [...prev, ...newSteps]);
+        setOk(`Berhasil import ${newSteps.length} proses.`);
+      }
     } catch (err: any) {
       setErr("Gagal import: " + err.message);
     } finally {
@@ -827,11 +842,22 @@ export default function ProPlanner({
         {proType === "RIGID" ? (
           /* ── RIGID: Simple inline form (always 1 step) ── */
           <Card className="border-none shadow-md">
-            <CardHeader className="bg-muted/20 border-border border-b pb-4">
+            <CardHeader className="bg-muted/20 border-border flex flex-row items-center justify-between border-b pb-4">
               <CardTitle className="text-foreground flex items-center gap-2 text-lg font-bold tracking-tight uppercase">
                 <div className="bg-primary h-8 w-1 rounded-full" />
                 Proses Produksi (Rigid)
               </CardTitle>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loadingMaster}
+                className="h-9 gap-2 border-dashed"
+              >
+                <Upload className="text-muted-foreground h-4 w-4" />
+                Import CSV
+              </Button>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
               {err && (

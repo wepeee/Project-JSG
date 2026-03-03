@@ -1872,40 +1872,18 @@ export default function ProList({
     <Card>
       <CardHeader className="border-border bg-muted/20 border-b pb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="hover:bg-muted text-foreground -ml-2 h-auto px-3 py-1.5 text-lg font-bold"
-              >
-                Daftar PRO{" "}
-                <span className="text-muted-foreground ml-2 font-normal">
-                  {typeFilter === "PAPER"
-                    ? "(Paper Box)"
-                    : typeFilter === "RIGID"
-                      ? "(Rigid Box)"
-                      : typeFilter === "OTHER"
-                        ? "(Other)"
-                        : "(Semua)"}
-                </span>
-                <ChevronDown className="ml-2 h-4 w-4 text-slate-400" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem onClick={() => setTypeFilter("PAPER")}>
-                Paper Box
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTypeFilter("RIGID")}>
-                Rigid Box
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTypeFilter("OTHER")}>
-                Other
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTypeFilter("ALL")}>
-                Semua
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <h2 className="text-foreground -ml-2 h-auto px-3 py-1.5 text-lg font-bold">
+            Daftar PRO{" "}
+            <span className="text-muted-foreground ml-2 font-normal">
+              {typeFilter === "PAPER"
+                ? "(Paper Box)"
+                : typeFilter === "RIGID"
+                  ? "(Rigid Box)"
+                  : typeFilter === "OTHER"
+                    ? "(Other)"
+                    : "(Semua)"}
+            </span>
+          </h2>
 
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <div className="relative">

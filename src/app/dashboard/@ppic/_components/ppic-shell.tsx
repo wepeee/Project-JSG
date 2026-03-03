@@ -33,7 +33,7 @@ export default function PPICShell({ user }: Props) {
   const [open, setOpen] = React.useState(false);
   const [proTypeFilter, setProTypeFilter] = React.useState<
     "PAPER" | "RIGID" | "ALL"
-  >("PAPER"); // Added
+  >("PAPER");
 
   const [jumpToProId, setJumpToProId] = React.useState<number | null>(null);
 
@@ -90,9 +90,11 @@ export default function PPICShell({ user }: Props) {
             <SidebarItemWithSubmenu
               label="Daftar PRO"
               active={active === "prolist"}
+              activeKey={proTypeFilter}
               onClick={() => setActive("prolist")}
               submenu={[
                 {
+                  key: "PAPER",
                   label: "Paper Box",
                   onClick: () => {
                     setActive("prolist");
@@ -100,6 +102,7 @@ export default function PPICShell({ user }: Props) {
                   },
                 },
                 {
+                  key: "RIGID",
                   label: "Rigid Box",
                   onClick: () => {
                     setActive("prolist");
@@ -107,6 +110,7 @@ export default function PPICShell({ user }: Props) {
                   },
                 },
                 {
+                  key: "ALL",
                   label: "Semua",
                   onClick: () => {
                     setActive("prolist");
@@ -120,13 +124,22 @@ export default function PPICShell({ user }: Props) {
               active={
                 active === "planning-paper" || active === "planning-rigid"
               }
+              activeKey={
+                active === "planning-paper"
+                  ? "paper"
+                  : active === "planning-rigid"
+                    ? "rigid"
+                    : undefined
+              }
               onClick={() => setActive("planning-paper")}
               submenu={[
                 {
+                  key: "paper",
                   label: "Paper Box",
                   onClick: () => setActive("planning-paper"),
                 },
                 {
+                  key: "rigid",
                   label: "Rigid Box",
                   onClick: () => setActive("planning-rigid"),
                 },
@@ -192,12 +205,14 @@ export default function PPICShell({ user }: Props) {
                 <SidebarItemWithSubmenu
                   label="Daftar PRO"
                   active={active === "prolist"}
+                  activeKey={proTypeFilter}
                   onClick={() => {
                     setActive("prolist");
                     setOpen(false);
                   }}
                   submenu={[
                     {
+                      key: "PAPER",
                       label: "Paper Box",
                       onClick: () => {
                         setActive("prolist");
@@ -206,6 +221,7 @@ export default function PPICShell({ user }: Props) {
                       },
                     },
                     {
+                      key: "RIGID",
                       label: "Rigid Box",
                       onClick: () => {
                         setActive("prolist");
@@ -214,6 +230,7 @@ export default function PPICShell({ user }: Props) {
                       },
                     },
                     {
+                      key: "ALL",
                       label: "Semua",
                       onClick: () => {
                         setActive("prolist");
@@ -228,12 +245,20 @@ export default function PPICShell({ user }: Props) {
                   active={
                     active === "planning-paper" || active === "planning-rigid"
                   }
+                  activeKey={
+                    active === "planning-paper"
+                      ? "paper"
+                      : active === "planning-rigid"
+                        ? "rigid"
+                        : undefined
+                  }
                   onClick={() => {
                     setActive("planning-paper");
                     setOpen(false);
                   }}
                   submenu={[
                     {
+                      key: "paper",
                       label: "Paper Box",
                       onClick: () => {
                         setActive("planning-paper");
@@ -241,6 +266,7 @@ export default function PPICShell({ user }: Props) {
                       },
                     },
                     {
+                      key: "rigid",
                       label: "Rigid Box",
                       onClick: () => {
                         setActive("planning-rigid");
@@ -358,15 +384,22 @@ function SidebarItem({
 function SidebarItemWithSubmenu({
   label,
   active,
+  activeKey,
   onClick,
   submenu,
 }: {
   label: string;
   active: boolean;
+  activeKey?: string;
   onClick: () => void;
-  submenu: Array<{ label: string; onClick: () => void }>;
+  submenu: Array<{ key?: string; label: string; onClick: () => void }>;
 }) {
   const [showSubmenu, setShowSubmenu] = React.useState(false);
+
+  // Auto-open when a child is active
+  React.useEffect(() => {
+    if (active) setShowSubmenu(true);
+  }, [active]);
 
   return (
     <div className="relative">
@@ -397,17 +430,26 @@ function SidebarItemWithSubmenu({
         </svg>
       </button>
       {showSubmenu && (
-        <div className="mt-1 ml-4 space-y-1">
-          {submenu.map((item, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={item.onClick}
-              className="hover:bg-muted/60 w-full rounded-md px-3 py-1.5 text-left text-xs"
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="mt-1 ml-4 space-y-0.5">
+          {submenu.map((item, idx) => {
+            const isActive =
+              active && activeKey != null && item.key === activeKey;
+            return (
+              <button
+                key={item.key ?? idx}
+                type="button"
+                onClick={item.onClick}
+                className={[
+                  "w-full rounded-md px-3 py-1.5 text-left text-xs transition-colors",
+                  isActive
+                    ? "bg-primary/10 text-primary font-semibold"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                ].join(" ")}
+              >
+                {item.label}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

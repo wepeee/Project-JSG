@@ -11,10 +11,7 @@ import {
 const ITEM_CODE_REGEX = /^[A-Z0-9_\-\.]{2,50}$/;
 const VALID_WIP_PREFIXES = ["WIP_INJ_", "WIP_BLOW_", "WIP_PRINT_"];
 
-/** Normalize item code: trim, uppercase, collapse whitespace */
-function normalizeCode(raw: string): string {
-  return raw.trim().replace(/\s+/g, "_").toUpperCase();
-}
+import { normalizeCode } from "~/utils/normalize";
 
 export const itemsRouter = createTRPCRouter({
   /**
