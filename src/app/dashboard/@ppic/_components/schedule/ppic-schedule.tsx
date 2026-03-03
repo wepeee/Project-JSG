@@ -261,7 +261,7 @@ function PROTooltipContent({
                 key={idx}
                 className="text-muted-foreground text-[10px] opacity-80"
               >
-                • {m.material.name}: {m.qtyReq.toString()} {m.material.uom}
+                • {m.material?.name ?? m.itemMaster?.name ?? "Material"}: {m.qtyReq?.toString()} {m.material?.uom ?? m.itemMaster?.baseUom ?? ""}
               </div>
             ))}
           </div>
