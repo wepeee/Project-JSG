@@ -5,10 +5,13 @@ import { execSync } from "child_process";
 import { PrismaClient } from "../generated/prisma";
 import { resetDatabase } from "./helpers/reset";
 
-dotenv.config({
-  path: path.join(process.cwd(), ".env.test.local"),
-  override: true,
-});
+if (!process.env.DATABASE_URL && process.env.CI !== "true") {
+  dotenv.config({
+    path: path.join(process.cwd(), ".env.test.local"),
+    override: false,
+    quiet: true,
+  });
+}
 
 const testDbUrl = process.env.DATABASE_URL;
 const parsedTestDbUrl = testDbUrl ? new URL(testDbUrl) : null;
@@ -16,7 +19,7 @@ const parsedDbName = parsedTestDbUrl?.pathname.replace("/", "");
 
 if (!testDbUrl || !parsedDbName || !parsedDbName.toLowerCase().includes("test")) {
   throw new Error(
-    "DATABASE_URL in .env.test.local must target a database with 'test' in its name.",
+    "DATABASE_URL must target a database with 'test' in its name.",
   );
 }
 
