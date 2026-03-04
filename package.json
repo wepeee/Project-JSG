@@ -24,8 +24,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
-    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/unit --runInBand",
-    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/integration --runInBand"
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js --selectProjects unit --runInBand",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --selectProjects integration --runInBand"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",

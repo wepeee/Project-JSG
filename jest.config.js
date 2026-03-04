@@ -1,28 +1,33 @@
-import nextJest from "next/jest.js";
-
-const createJestConfig = nextJest({
-  // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
-  dir: "./",
-});
-
-// Add any custom config to be passed to Jest
 /** @type {import('jest').Config} */
-const customJestConfig = {
-  setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
+const baseProjectConfig = {
+  preset: "ts-jest/presets/default-esm",
   testEnvironment: "node",
+  extensionsToTreatAsEsm: [".ts", ".tsx"],
   moduleNameMapper: {
-    // Handle module aliases (this will be automatically configured for you soon)
     "^~/(.*)$": "<rootDir>/src/$1",
   },
-  testMatch: [
-    "<rootDir>/tests/unit/**/*.test.ts(?:x)?",
-    "<rootDir>/tests/integration/**/*.test.ts(?:x)?",
-  ],
   transform: {
-    // Use ts-jest for typescript files
-    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.json" }],
+    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.json", useESM: true }],
   },
 };
 
-// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-export default createJestConfig(customJestConfig);
+/** @type {import('jest').Config} */
+const config = {
+  projects: [
+    {
+      ...baseProjectConfig,
+      displayName: "unit",
+      setupFilesAfterEnv: ["<rootDir>/tests/setup-unit.ts"],
+      testMatch: ["<rootDir>/tests/unit/**/*.test.ts"],
+    },
+    {
+      ...baseProjectConfig,
+      displayName: "integration",
+      setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
+      testMatch: ["<rootDir>/tests/integration/**/*.test.ts"],
+      testTimeout: 60000,
+    },
+  ],
+};
+
+export default config;
