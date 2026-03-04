@@ -1,0 +1,127 @@
+﻿Running one project: integration
+node : 
+At line:1 char:1
++ node --experimental-vm-modules 
+node_modules/jest/bin/jest.js --select ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: 
+    (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommand 
+   Error
+ 
+ReferenceError: You are trying to `import` 
+a file after the Jest environment has been 
+torn down. From 
+tests/integration/rigid-flow.test.ts.
+FAIL integration 
+tests/integration/rigid-flow.test.ts
+  ΓùÅ Test suite failed to run
+
+    Cannot find module 'generated/prisma' 
+from 
+'src/server/api/routers/ppic/processes.ts'
+
+      at Resolver._throwModNotFoundError (no
+de_modules/.pnpm/jest-resolve@30.2.0/node_mo
+dules/jest-resolve/build/index.js:863:11)
+
+(node:16820) ExperimentalWarning: VM 
+Modules is an experimental feature and 
+might change at any time
+(Use `node --trace-warnings ...` to show 
+where the warning was created)
+
+ReferenceError: You are trying to `import` 
+a file after the Jest environment has been 
+torn down. From 
+tests/integration/item-governance.test.ts.
+FAIL integration 
+tests/integration/item-governance.test.ts
+  ΓùÅ Test suite failed to run
+
+    Cannot find module 'generated/prisma' 
+from 
+'src/server/api/routers/ppic/processes.ts'
+
+      at Resolver._throwModNotFoundError (no
+de_modules/.pnpm/jest-resolve@30.2.0/node_mo
+dules/jest-resolve/build/index.js:863:11)
+
+(node:30528) ExperimentalWarning: VM 
+Modules is an experimental feature and 
+might change at any time
+(Use `node --trace-warnings ...` to show 
+where the warning was created)
+
+ReferenceError: You are trying to `import` 
+a file after the Jest environment has been 
+torn down. From 
+tests/integration/fk-integrity.test.ts.
+
+ReferenceError: You are trying to `import` 
+a file after the Jest environment has been 
+torn down. From tests/integration/inventory-
+posting-invariants.test.ts.
+FAIL integration 
+tests/integration/fk-integrity.test.ts
+  ΓùÅ Test suite failed to run
+
+    Cannot find module 'generated/prisma' 
+from 
+'src/server/api/routers/ppic/processes.ts'
+
+      at Resolver._throwModNotFoundError (no
+de_modules/.pnpm/jest-resolve@30.2.0/node_mo
+dules/jest-resolve/build/index.js:863:11)
+
+(node:29020) ExperimentalWarning: VM 
+Modules is an experimental feature and 
+might change at any time
+(Use `node --trace-warnings ...` to show 
+where the warning was created)
+FAIL integration tests/integration/inventory
+-posting-invariants.test.ts
+  ΓùÅ Test suite failed to run
+
+    Cannot find module 'generated/prisma' 
+from 
+'src/server/api/routers/ppic/processes.ts'
+
+      at Resolver._throwModNotFoundError (no
+de_modules/.pnpm/jest-resolve@30.2.0/node_mo
+dules/jest-resolve/build/index.js:863:11)
+
+(node:21316) ExperimentalWarning: VM 
+Modules is an experimental feature and 
+might change at any time
+(Use `node --trace-warnings ...` to show 
+where the warning was created)
+
+ReferenceError: You are trying to `import` 
+a file after the Jest environment has been 
+torn down. From 
+tests/integration/paper-regression.test.ts.
+FAIL integration 
+tests/integration/paper-regression.test.ts
+  ΓùÅ Test suite failed to run
+
+    Cannot find module 'generated/prisma' 
+from 
+'src/server/api/routers/ppic/processes.ts'
+
+      at Resolver._throwModNotFoundError (no
+de_modules/.pnpm/jest-resolve@30.2.0/node_mo
+dules/jest-resolve/build/index.js:863:11)
+
+(node:29888) ExperimentalWarning: VM 
+Modules is an experimental feature and 
+might change at any time
+(Use `node --trace-warnings ...` to show 
+where the warning was created)
+Test Suites: 5 failed, 5 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        1.376 s
+Ran all test suites.
+

@@ -121,25 +121,37 @@ export async function seedBaseContext(db: PrismaClient): Promise<SeedContext> {
   const locations = {
     injection: await db.inventoryLocation.create({
       data: {
-        code: "WIP_POOL_INJECTION",
+        code: `WIP_M_${machines.injection.id}`,
         name: "WIP Pool Injection",
         type: "WIP",
+        machineId: machines.injection.id,
       },
       select: { id: true, code: true },
     }),
     printing: await db.inventoryLocation.create({
       data: {
-        code: "WIP_POOL_PRINTING",
+        code: `WIP_M_${machines.printing.id}`,
         name: "WIP Pool Printing",
         type: "WIP",
+        machineId: machines.printing.id,
       },
       select: { id: true, code: true },
     }),
     blow: await db.inventoryLocation.create({
       data: {
-        code: "WIP_POOL_BLOW",
+        code: `WIP_M_${machines.blow.id}`,
         name: "WIP Pool Blow",
         type: "WIP",
+        machineId: machines.blow.id,
+      },
+      select: { id: true, code: true },
+    }),
+    packing: await db.inventoryLocation.create({
+      data: {
+        code: `WIP_M_${machines.packing.id}`,
+        name: "WIP Pool Packing",
+        type: "WIP",
+        machineId: machines.packing.id,
       },
       select: { id: true, code: true },
     }),

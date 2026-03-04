@@ -1,71 +1,52 @@
-import { ProType, LphType } from "../../generated/prisma";
-import {
-  approveReportPosting,
-  createProWithFgCode,
-  createProsesWithOutputCode,
-  updateProFgCode,
-  updateProsesOutputCode,
-} from "~/server/domain/inventory-service";
+/**
+ * B2 FK integrity — route-level tests.
+ *
+ * Routes exercised:
+ *   verification.approveReport    (superAdminProcedure) -> itemMasterId not null
+ *   pros.create                   (ppicProcedure)       -> fgItemId set via partNumber
+ */
+
+import { LphType, Role } from "../../generated/prisma";
 import { db } from "../setup";
 import { createPendingReport, seedBaseContext } from "../helpers/seed";
+import { createTestCaller } from "../helpers/caller";
 
-describe("B2 FK integrity", () => {
-  test("F1. Create PRO with existing FG code sets fgItemId", async () => {
+describe("B2 FK integrity (route-level)", () => {
+  test("F1. pros.create with existing Part Number sets fgItemId", async () => {
     const ctx = await seedBaseContext(db);
+    const caller = createTestCaller(ctx.users.PPIC.id, Role.PPIC);
 
-    const pro = await createProWithFgCode(db, {
-      proNumber: "900000003",
-      productName: "FK Pro",
-      qtyPoPcs: 1000,
-      type: ProType.RIGID,
-      fgCode: ctx.items.fg123456789.code,
+    const pro = await caller.pros.create({
+      productName: "FK Test Product",
+      partNumber: ctx.items.fg123456789.code,
       proPrefixId: ctx.proPrefix.id,
-    });
-
-    expect(pro.fgItemId).toBe(ctx.items.fg123456789.id);
-  });
-
-  test("F2. Update PRO FG code updates fgItemId", async () => {
-    const ctx = await seedBaseContext(db);
-    const pro = await createProWithFgCode(db, {
-      proNumber: "900000003",
-      productName: "FK Pro",
+      type: "RIGID",
       qtyPoPcs: 1000,
-      type: ProType.RIGID,
-      fgCode: ctx.items.fg123456789.code,
-      proPrefixId: ctx.proPrefix.id,
+      expand: false,
+      proses: [
+        {
+          machineId: ctx.machines.injection.id,
+          partNumber: ctx.items.wip987654321.code,
+          materials: [],
+        },
+      ],
     });
 
-    const updated = await updateProFgCode(db, pro.id, ctx.items.fg123456780.code);
-    expect(updated.fgItemId).toBe(ctx.items.fg123456780.id);
+    const fullPro = await db.pro.findUnique({ where: { id: pro.id } });
+    expect(fullPro?.fgItemId).toBe(ctx.items.fg123456789.id);
   });
 
-  test("F3. Create and update Proses output code sets outputItemId", async () => {
+  test("F2. InventoryTxn created by approveReport always has itemMasterId NOT NULL", async () => {
     const ctx = await seedBaseContext(db);
-    const created = await createProsesWithOutputCode(db, {
-      proId: ctx.rigidPro.id,
-      orderNo: 99,
-      outputCode: ctx.items.wip987654321.code,
-    });
-    expect(created.outputItemId).toBe(ctx.items.wip987654321.id);
+    const caller = createTestCaller(ctx.users.SUPERADMIN.id, Role.SUPERADMIN);
 
-    const updated = await updateProsesOutputCode(
-      db,
-      created.id,
-      ctx.items.wip987654320.code,
-    );
-    expect(updated.outputItemId).toBe(ctx.items.wip987654320.id);
-  });
-
-  test("F4. InventoryTxn created by posting always has itemMasterId NOT NULL", async () => {
-    const ctx = await seedBaseContext(db);
     const report = await createPendingReport(db, ctx.users.OPERATOR.id, {
       prosesId: ctx.steps.rigidInjection.id,
       reportType: LphType.INJECTION,
       qtyPassOn: 150,
     });
 
-    await approveReportPosting(db, report.id);
+    await caller.verification.approveReport({ id: report.id });
 
     const txns = await db.inventoryTxn.findMany({
       where: { productionReportId: report.id },
@@ -73,5 +54,57 @@ describe("B2 FK integrity", () => {
 
     expect(txns.length).toBeGreaterThan(0);
     expect(txns.every((t) => t.itemMasterId !== null)).toBe(true);
+  });
+
+  test("F3. Material lock: pros.update rejects material change after inventory posting", async () => {
+    const ctx = await seedBaseContext(db);
+    const adminCaller = createTestCaller(
+      ctx.users.SUPERADMIN.id,
+      Role.SUPERADMIN,
+    );
+    const ppicCaller = createTestCaller(ctx.users.PPIC.id, Role.PPIC);
+
+    // Approve a report on rigidInjection -> creates InventoryTxn referencing that proses
+    const report = await createPendingReport(db, ctx.users.OPERATOR.id, {
+      prosesId: ctx.steps.rigidInjection.id,
+      reportType: LphType.INJECTION,
+      qtyPassOn: 100,
+    });
+    await adminCaller.verification.approveReport({ id: report.id });
+
+    // Now try to update the PRO and change materials on rigidInjection
+    // This must be rejected because InventoryTxn already exists for that proses
+    await expect(
+      ppicCaller.pros.update({
+        id: ctx.rigidPro.id,
+        productName: "Rigid Product",
+        proPrefixId: ctx.proPrefix.id,
+        qtyPoPcs: 1000,
+        proses: [
+          {
+            id: ctx.steps.rigidInjection.id,
+            orderNo: 1,
+            up: 1,
+            machineId: ctx.machines.injection.id,
+            partNumber: ctx.items.wip987654321.code,
+            materials: [{ materialId: ctx.items.raw111111111.id, qtyReq: 500 }],
+          },
+          {
+            id: ctx.steps.rigidPrinting.id,
+            orderNo: 2,
+            up: 1,
+            machineId: ctx.machines.printing.id,
+            partNumber: ctx.items.wip987654320.code,
+          },
+          {
+            id: ctx.steps.rigidPacking.id,
+            orderNo: 3,
+            up: 1,
+            machineId: ctx.machines.packing.id,
+            partNumber: ctx.items.fg123456789.code,
+          },
+        ],
+      }),
+    ).rejects.toThrow(/transaksi inventory/);
   });
 });

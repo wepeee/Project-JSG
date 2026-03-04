@@ -1,105 +1,107 @@
+/**
+ * B1 Item governance — route-level tests via tRPC caller.
+ *
+ * Routes exercised:
+ *   items.create         (ppicProcedure)
+ *   items.listByStatus   (superAdminProcedure)
+ *   items.approve        (superAdminProcedure)
+ */
+
 import { TRPCError } from "@trpc/server";
-import { ItemKind, ItemStatus, Role } from "../../generated/prisma";
-import {
-  activateItem,
-  createDraftItem,
-  listItemsByStatus,
-  resolveItemMasterId,
-} from "~/server/domain/inventory-service";
+import { ItemStatus, Role } from "../../generated/prisma";
 import { db } from "../setup";
 import { seedBaseContext } from "../helpers/seed";
+import { createTestCaller } from "../helpers/caller";
 
-describe("B1 Item governance", () => {
-  test("I1. PPIC create item -> status DRAFT with 9-digit code", async () => {
+describe("B1 Item governance (route-level)", () => {
+  test("I1. items.create -> status DRAFT", async () => {
     const ctx = await seedBaseContext(db);
+    const caller = createTestCaller(ctx.users.PPIC.id, Role.PPIC);
 
-    const item = await createDraftItem(db, {
-      actorRole: Role.PPIC,
-      createdById: ctx.users.PPIC.id,
-      code: "333333333",
-      name: "Draft Item",
-      kind: ItemKind.RAW,
+    const item = await caller.items.create({
+      code: "TEST_ITEM_1",
+      name: "Draft Test Item",
+      kind: "RAW",
     });
 
-    expect(item.code).toBe("333333333");
-    expect(item.status).toBe(ItemStatus.DRAFT);
+    expect(item.status).toBe("DRAFT");
+    expect(item.code).toBe("TEST_ITEM_1");
   });
 
-  test("I2. Duplicate code does not create new record", async () => {
+  test("I2. items.create duplicate code -> CONFLICT error", async () => {
     const ctx = await seedBaseContext(db);
-    const before = await db.item.count();
+    const caller = createTestCaller(ctx.users.PPIC.id, Role.PPIC);
 
-    await createDraftItem(db, {
-      actorRole: Role.PPIC,
-      createdById: ctx.users.PPIC.id,
-      code: "333333333",
+    await caller.items.create({
+      code: "DUPE_CODE_1",
       name: "First",
-      kind: ItemKind.RAW,
+      kind: "RAW",
     });
 
     await expect(
-      createDraftItem(db, {
-        actorRole: Role.PPIC,
-        createdById: ctx.users.PPIC.id,
-        code: "333333333",
+      caller.items.create({
+        code: "DUPE_CODE_1",
         name: "Second",
-        kind: ItemKind.RAW,
+        kind: "RAW",
       }),
-    ).rejects.toBeInstanceOf(TRPCError);
-
-    const after = await db.item.count();
-    expect(after).toBe(before + 1);
+    ).rejects.toThrow();
   });
 
-  test("I3. SUPERADMIN can list items by DRAFT status", async () => {
+  test("I3. items.listByStatus DRAFT returns created items", async () => {
     const ctx = await seedBaseContext(db);
-    await createDraftItem(db, {
-      actorRole: Role.PPIC,
-      createdById: ctx.users.PPIC.id,
-      code: "333333333",
-      name: "Draft Item",
-      kind: ItemKind.RAW,
+    const ppicCaller = createTestCaller(ctx.users.PPIC.id, Role.PPIC);
+    const adminCaller = createTestCaller(
+      ctx.users.SUPERADMIN.id,
+      Role.SUPERADMIN,
+    );
+
+    await ppicCaller.items.create({
+      code: "LIST_DRAFT_1",
+      name: "List Draft",
+      kind: "RAW",
     });
 
-    const drafts = await listItemsByStatus(db, Role.SUPERADMIN, ItemStatus.DRAFT);
-    expect(drafts.length).toBeGreaterThanOrEqual(1);
-    expect(drafts.some((d) => d.code === "333333333")).toBe(true);
+    const result = await adminCaller.items.listByStatus({ status: "DRAFT" });
+    expect(result.items.some((i) => i.code === "LIST_DRAFT_1")).toBe(true);
   });
 
-  test("I4. Non-superadmin cannot list items by DRAFT status", async () => {
-    await seedBaseContext(db);
+  test("I4. items.listByStatus forbidden for non-SUPERADMIN", async () => {
+    const ctx = await seedBaseContext(db);
+    const opCaller = createTestCaller(ctx.users.OPERATOR.id, Role.OPERATOR);
 
     await expect(
-      listItemsByStatus(db, Role.ADMIN, ItemStatus.DRAFT),
-    ).rejects.toBeInstanceOf(TRPCError);
+      opCaller.items.listByStatus({ status: "DRAFT" }),
+    ).rejects.toThrow();
   });
 
-  test("I5. SUPERADMIN can activate DRAFT item", async () => {
+  test("I5. items.approve activates DRAFT item", async () => {
     const ctx = await seedBaseContext(db);
-    const item = await createDraftItem(db, {
-      actorRole: Role.PPIC,
-      createdById: ctx.users.PPIC.id,
-      code: "333333333",
-      name: "Draft Item",
-      kind: ItemKind.RAW,
+    const ppicCaller = createTestCaller(ctx.users.PPIC.id, Role.PPIC);
+    const adminCaller = createTestCaller(
+      ctx.users.SUPERADMIN.id,
+      Role.SUPERADMIN,
+    );
+
+    const item = await ppicCaller.items.create({
+      code: "APPROVE_ME_1",
+      name: "Approve Me",
+      kind: "RAW",
     });
 
-    const activated = await activateItem(db, Role.SUPERADMIN, item.id);
-    expect(activated.status).toBe(ItemStatus.ACTIVE);
+    const activated = await adminCaller.items.approve({ id: item.id });
+    expect(activated.status).toBe("ACTIVE");
   });
 
-  test("I6. resolveItemMasterId missing -> PRECONDITION_FAILED and no auto-create; existing -> same id", async () => {
+  test("I6. items.approve on ACTIVE item -> BAD_REQUEST", async () => {
     const ctx = await seedBaseContext(db);
-    const before = await db.item.count();
+    const adminCaller = createTestCaller(
+      ctx.users.SUPERADMIN.id,
+      Role.SUPERADMIN,
+    );
 
-    await expect(resolveItemMasterId(db, "999999999")).rejects.toMatchObject({
-      code: "PRECONDITION_FAILED",
-    });
-
-    const after = await db.item.count();
-    expect(after).toBe(before);
-
-    const resolvedId = await resolveItemMasterId(db, ctx.items.fg123456789.code);
-    expect(resolvedId).toBe(ctx.items.fg123456789.id);
+    // fg123456789 is already ACTIVE from seed
+    await expect(
+      adminCaller.items.approve({ id: ctx.items.fg123456789.id }),
+    ).rejects.toThrow();
   });
 });

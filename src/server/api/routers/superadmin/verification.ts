@@ -338,6 +338,24 @@ export const verificationRouter = createTRPCRouter({
         // === PHASE 2: TRANSFER LOGIC (OUT + IN) ===
 
         const currentItem = proses.partNumber ?? "UNKNOWN_ITEM";
+
+        // === BUG FIX: AMBIGUOUS WIP GUARD ===
+        const materials = await tx.prosesMaterial.findMany({
+          where: { prosesId: proses.id },
+          include: { itemMaster: true },
+        });
+
+        const wipMaterials = materials.filter(
+          (m) => m.itemMaster.kind === "WIP",
+        );
+
+        if (wipMaterials.length > 1) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: `Ambiguous WIP input: Proses ini memiliki ${wipMaterials.length} material WIP. Sistem hanya mendukung 1 WIP input per step untuk auto-routing.`,
+          });
+        }
+
         // Correction: For consumption (OUT), we use the INPUT item (Previous Step's Output).
         // For Step 1, Input = Output (Auto-Refill context).
         const consumptionItem = isFirstStep
@@ -345,6 +363,17 @@ export const verificationRouter = createTRPCRouter({
           : (prevStep?.partNumber ?? "UNKNOWN_ITEM");
 
         const fgItem = pro.partNumber ?? currentItem;
+
+        // === DRAFT FLAG DETECTION ===
+        const involvedItemCodes = [consumptionItem, currentItem, fgItem];
+        const draftItems = await tx.item.findMany({
+          where: {
+            code: { in: involvedItemCodes },
+            status: "DRAFT",
+          },
+        });
+        const isDraft = draftItems.length > 0;
+
         const qtyWip = report.qtyWip ? Number(report.qtyWip.toString()) : 0;
         const totalOut = qtyPassOn + qtyHold + qtyReject;
 
@@ -656,7 +685,10 @@ export const verificationRouter = createTRPCRouter({
           }
         }
 
-        return report;
+        return {
+          ...report,
+          isDraft,
+        };
       });
     }),
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { Prisma, ProStatus } from "generated/prisma";
+import { Prisma, Role, ProStatus } from "../../../../../generated/prisma";
 import {
   createTRPCRouter,
   ppicProcedure,
@@ -593,6 +593,18 @@ export const prosRouter = createTRPCRouter({
           const needs = 1;
 
           const recreateMaterials = async (prosesId: number) => {
+            // MATERIAL LOCK GUARD: reject material changes if inventory txns exist
+            const hasTxns = await tx.inventoryTxn.findFirst({
+              where: { prosesId },
+              select: { id: true },
+            });
+            if (hasTxns) {
+              throw new TRPCError({
+                code: "PRECONDITION_FAILED",
+                message: `Tidak bisa mengubah material proses (ID: ${prosesId}) karena sudah ada transaksi inventory.`,
+              });
+            }
+
             await tx.prosesMaterial.deleteMany({ where: { prosesId } });
             if (matMaterials.length > 0) {
               await tx.prosesMaterial.createMany({

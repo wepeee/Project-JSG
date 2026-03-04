@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { Prisma } from "generated/prisma";
+import { Prisma } from "../../../../../generated/prisma";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 
 // kalau kamu punya ppicProcedure, pakai itu. Ini versi aman minimal.
