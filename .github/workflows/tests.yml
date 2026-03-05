@@ -47,4 +47,4 @@ jobs:
         run: pnpm test:unit
 
       - name: Run integration tests
-        run: pnpm test:integration -- --runInBand
+        run: pnpm test:integration
