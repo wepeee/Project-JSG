@@ -17,6 +17,7 @@ type SeedContext = {
     injection: { id: number; code: string };
     printing: { id: number; code: string };
     blow: { id: number; code: string };
+    packing: { id: number; code: string };
     fg: { id: number; code: string };
     hold: { id: number; code: string };
   };
