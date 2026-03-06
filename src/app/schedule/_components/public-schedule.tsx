@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileDown, Search } from "lucide-react";
 import { Card } from "~/components/ui/card";
 
 import { api, type RouterOutputs } from "~/trpc/react";
@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { Input } from "~/components/ui/input";
+import { SchedulePdfExport } from "~/app/dashboard/@ppic/_components/schedule/schedule-pdf-export";
 
 type ScheduleItem = RouterOutputs["pros"]["getSchedule"][number];
 
@@ -216,12 +217,12 @@ function PROTooltipContent({
         <div className="border-border border-t pt-2">
           <div className="mb-1 font-medium">Materials:</div>
           <div className="space-y-0.5">
-            {materials.map((m: any, idx: number) => (
+            {materials.filter((m: any) => m?.itemMaster).map((m: any, idx: number) => (
               <div
                 key={idx}
                 className="text-muted-foreground text-[10px] opacity-80"
               >
-                • {m.material.name}: {m.qtyReq.toString()} {m.material.uom}
+                • {m.itemMaster?.name ?? "-"}: {m.qtyReq?.toString() ?? "?"} {m.itemMaster?.baseUom ?? ""}
               </div>
             ))}
           </div>
@@ -319,7 +320,7 @@ function StaticCell({
 // MAIN COMPONENT
 // ═════════════════════════════════════════════════════════════════════
 export default function PublicSchedule() {
-  const [tab, setTab] = React.useState<"shift" | "month">("shift");
+  const [tab, setTab] = React.useState<"shift" | "month" | "day">("shift");
   const [viewMode, setViewMode] = React.useState<"shift" | "machine">("shift");
   const [proType, setProType] = React.useState<"PAPER" | "RIGID">("PAPER");
 
@@ -328,6 +329,8 @@ export default function PublicSchedule() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
   const [weekCursor, setWeekCursor] = React.useState(new Date());
+  const [dayCursor, setDayCursor] = React.useState(new Date());
+  const [pdfOpen, setPdfOpen] = React.useState(false);
 
   const calStart = React.useMemo(
     () => startOfCalendar(currentMonth),
@@ -349,6 +352,13 @@ export default function PublicSchedule() {
     return d;
   }, [weekStart]);
 
+  const dayStart = React.useMemo(() => startOfDay(dayCursor), [dayCursor]);
+  const dayEnd = React.useMemo(() => {
+    const d = new Date(dayStart);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }, [dayStart]);
+
   const monthSchedule = api.pros.getSchedule.useQuery(
     { start: calStart, end: calEnd },
     { enabled: tab === "month" },
@@ -359,12 +369,24 @@ export default function PublicSchedule() {
     { enabled: tab === "shift" },
   );
 
+  const daySchedule = api.pros.getSchedule.useQuery(
+    { start: dayStart, end: dayEnd },
+    { enabled: tab === "day" },
+  );
+
   const monthLabel = currentMonth.toLocaleDateString("id-ID", {
     month: "long",
     year: "numeric",
   });
 
   const weekLabel = `${weekStart.toLocaleDateString("id-ID", { day: "2-digit", month: "short" })} - ${weekEnd.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}`;
+
+  const dayLabel = dayCursor.toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 
   const weekDays = React.useMemo(() => {
     const arr: Date[] = [];
@@ -473,6 +495,21 @@ export default function PublicSchedule() {
     return buildShiftSlots(filtered, { start: weekStart, end: weekEnd });
   }, [weekSchedule.data, weekStart, weekEnd, searchQuery, proType]);
 
+  // Day grid data (single day)
+  const daySlotMap = React.useMemo(() => {
+    const data = daySchedule.data ?? [];
+    const q = searchQuery.toLowerCase().trim();
+    const filtered = data
+      .filter((pro) => pro.type === proType)
+      .filter((pro) =>
+        q
+          ? pro.proNumber.toLowerCase().includes(q) ||
+            pro.productName.toLowerCase().includes(q)
+          : true,
+      );
+    return buildShiftSlots(filtered, { start: dayStart, end: dayEnd });
+  }, [daySchedule.data, dayStart, dayEnd, searchQuery, proType]);
+
   // Machine grid data (week)
   const machineSlotData = React.useMemo(() => {
     const data = weekSchedule.data ?? [];
@@ -543,7 +580,7 @@ export default function PublicSchedule() {
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold tracking-tight">Jadwal Produksi</h1>
         <p className="text-muted-foreground text-sm">
-          Lihat jadwal produksi mingguan (per shift/mesin) atau bulanan.
+          Lihat jadwal produksi harian, mingguan (per shift/mesin), atau bulanan.
         </p>
       </div>
 
@@ -562,6 +599,12 @@ export default function PublicSchedule() {
                 className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:ring-border rounded-md px-3 py-1.5 text-xs font-bold data-[state=active]:shadow-sm data-[state=active]:ring-1"
               >
                 Mingguan
+              </TabsTrigger>
+              <TabsTrigger
+                value="day"
+                className="text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:ring-border rounded-md px-3 py-1.5 text-xs font-bold data-[state=active]:shadow-sm data-[state=active]:ring-1"
+              >
+                Harian
               </TabsTrigger>
               <TabsTrigger
                 value="month"
@@ -633,6 +676,16 @@ export default function PublicSchedule() {
                 className="bg-background placeholder:text-muted-foreground focus:ring-ring h-9 w-[250px] pl-9 text-xs font-medium"
               />
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 gap-2 text-xs font-bold"
+              onClick={() => setPdfOpen(true)}
+            >
+              <FileDown className="h-4 w-4" />
+              Export PDF
+            </Button>
           </div>
         </div>
 
@@ -955,6 +1008,181 @@ export default function PublicSchedule() {
               </div>
             </TabsContent>
 
+            {/* ════ DAY TAB ════ */}
+            <TabsContent value="day" className="m-0 p-0">
+              {/* Day Navigation */}
+              <div className="bg-muted/20 flex items-center justify-between border-b px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      const d = new Date(dayCursor);
+                      d.setDate(d.getDate() - 1);
+                      setDayCursor(d);
+                    }}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="w-64 text-center text-sm font-medium capitalize">
+                    {dayLabel}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      const d = new Date(dayCursor);
+                      d.setDate(d.getDate() + 1);
+                      setDayCursor(d);
+                    }}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDayCursor(new Date())}
+                  className="h-8 text-xs"
+                >
+                  Hari Ini
+                </Button>
+              </div>
+
+              {/* Day Content — 3 shift sections */}
+              <div className="space-y-4 p-4">
+                {SHIFTS.map((s) => {
+                  const slotId = `${dateKey(dayStart)}::${s.no}`;
+                  const slotItems = daySlotMap.get(slotId) ?? [];
+                  return (
+                    <div key={s.no} className="overflow-hidden rounded-xl border">
+                      {/* Shift Header */}
+                      <div className="bg-muted/30 flex items-center gap-3 border-b px-4 py-3">
+                        <div>
+                          <div className="text-primary text-sm font-bold">{s.label}</div>
+                          <div className="text-muted-foreground text-xs">{s.time}</div>
+                        </div>
+                        <span className="text-muted-foreground ml-auto text-xs">
+                          {slotItems.length} item
+                        </span>
+                      </div>
+                      {/* Items Grid */}
+                      <div className="bg-background p-4">
+                        {daySchedule.isLoading ? (
+                          <div className="text-muted-foreground animate-pulse py-6 text-center text-xs">
+                            Loading...
+                          </div>
+                        ) : slotItems.length === 0 ? (
+                          <div className="text-muted-foreground/40 py-6 text-center text-xs italic">
+                            Tidak ada jadwal
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                            {slotItems.map((it) => {
+                              const { key, ...rest } = it;
+                              return (
+                                <StaticChip
+                                  key={it.key}
+                                  tooltip={<PROTooltipContent {...rest} />}
+                                >
+                                  <div className="flex flex-col gap-1.5">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <div className="text-primary truncate text-xs font-bold">
+                                        {it.proNumber}
+                                      </div>
+                                      <Badge
+                                        variant="outline"
+                                        className={`h-4 border px-1 text-[9px] ${
+                                          it.status === "OPEN"
+                                            ? "border-primary/20 bg-primary/10 text-primary"
+                                            : ""
+                                        } ${
+                                          it.status === "IN_PROGRESS"
+                                            ? "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                            : ""
+                                        } ${
+                                          it.status === "COMPLETE"
+                                            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                            : ""
+                                        } ${
+                                          it.status === "CLOSED"
+                                            ? "border-muted bg-muted text-muted-foreground"
+                                            : ""
+                                        } ${
+                                          it.status === "CANCELLED"
+                                            ? "border-destructive/20 bg-destructive/10 text-destructive"
+                                            : ""
+                                        }`}
+                                      >
+                                        {it.status}
+                                      </Badge>
+                                    </div>
+                                    <div className="truncate text-[10px] font-medium opacity-90">
+                                      {it.productName}
+                                    </div>
+                                    <div className="flex flex-wrap gap-1">
+                                      <span className="bg-muted text-muted-foreground inline-flex items-center rounded-sm border px-1 py-0.5 text-[9px] font-medium">
+                                        {it.processCode} - {it.processName}
+                                      </span>
+                                      {it.machineName && (
+                                        <span className="border-primary/20 bg-primary/5 text-primary inline-flex items-center rounded-sm border px-1 py-0.5 text-[9px] font-medium">
+                                          🔧 {it.machineName}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {(() => {
+                                      const totalAchieved =
+                                        it.productionReports?.reduce(
+                                          (acc: number, r: any) =>
+                                            acc +
+                                            (r.status === "APPROVED"
+                                              ? Number(r.qtyPassOn) || 0
+                                              : 0),
+                                          0,
+                                        ) ?? 0;
+                                      const percentage = Math.min(
+                                        100,
+                                        Math.round(
+                                          (totalAchieved / (it.qtyPoPcs || 1)) * 100,
+                                        ),
+                                      );
+                                      return (
+                                        <div className="mt-1 w-full space-y-1">
+                                          <div className="text-muted-foreground flex justify-between text-[8px]">
+                                            <span>{percentage}%</span>
+                                            <span>
+                                              {totalAchieved.toLocaleString()} /{" "}
+                                              {it.qtyPoPcs.toLocaleString()}
+                                            </span>
+                                          </div>
+                                          <div className="bg-secondary h-1.5 w-full overflow-hidden rounded-full">
+                                            <div
+                                              className={`h-full rounded-full transition-all ${
+                                                percentage >= 100
+                                                  ? "bg-emerald-500"
+                                                  : "bg-blue-500"
+                                              }`}
+                                              style={{ width: `${percentage}%` }}
+                                            />
+                                          </div>
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
+                                </StaticChip>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </TabsContent>
+
             {/* ════ MONTH TAB ════ */}
             <TabsContent value="month" className="m-0 p-0">
               {/* Month Navigation */}
@@ -1094,6 +1322,27 @@ export default function PublicSchedule() {
           </TooltipProvider>
         </Card>
       </Tabs>
+      <SchedulePdfExport
+        open={pdfOpen}
+        onOpenChange={setPdfOpen}
+        items={
+          tab === "shift"
+            ? (weekSchedule.data ?? [])
+            : tab === "day"
+              ? (daySchedule.data ?? [])
+              : (monthSchedule.data ?? [])
+        }
+        weekLabel={
+          tab === "shift" ? weekLabel : tab === "day" ? dayLabel : monthLabel
+        }
+        weekStart={
+          tab === "shift" ? weekStart : tab === "day" ? dayStart : calStart
+        }
+        weekEnd={
+          tab === "shift" ? weekEnd : tab === "day" ? dayEnd : calEnd
+        }
+        proType={proType}
+      />
     </div>
   );
 }

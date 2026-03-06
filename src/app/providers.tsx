@@ -4,6 +4,7 @@ import * as React from "react";
 import { ThemeProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
 import { type Session } from "next-auth";
+import { AppAlertProvider } from "~/components/ui/app-alert";
 
 export function Providers({
   children,
@@ -20,7 +21,9 @@ export function Providers({
         enableSystem
         disableTransitionOnChange
       >
-        {children}
+        <AppAlertProvider>
+          {children}
+        </AppAlertProvider>
       </ThemeProvider>
     </SessionProvider>
   );

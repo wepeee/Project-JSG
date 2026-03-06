@@ -38,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { useAppAlert } from "~/components/ui/app-alert";
 
 // --- CONSTANTS ---
 
@@ -471,6 +472,7 @@ export function ProductionReportModal({
   editReport,
 }: ProductionReportModalProps) {
   const { data: session } = useSession();
+  const { showAlert, showConfirm } = useAppAlert();
   const [activeTab, setActiveTab] = React.useState("info");
   const [loading, setLoading] = React.useState(false);
   // const [showRumus, setShowRumus] = React.useState(false); // Removed formula toggle
@@ -955,11 +957,11 @@ export function ProductionReportModal({
   const utils = api.useUtils();
   const createReportMutation = api.production.createReport.useMutation({
     onSuccess: () => {
-      utils.production.getHistory.invalidate(); // Refresh history
-      utils.pros.getSchedule.invalidate(); // Refresh schedule status
-      utils.pros.list.invalidate(); // Refresh PRO list status
-      utils.pros.getById.invalidate(); // Refresh PRO details
-      alert("Laporan berhasil disimpan!");
+      utils.production.getHistory.invalidate();
+      utils.pros.getSchedule.invalidate();
+      utils.pros.list.invalidate();
+      utils.pros.getById.invalidate();
+      void showAlert({ title: "Berhasil!", message: "Laporan berhasil disimpan dan menunggu verifikasi PPIC.", variant: "success" });
       if (draftKey) localStorage.removeItem(draftKey);
       window.dispatchEvent(new Event("draft-update"));
       onDraftChange?.();
@@ -968,7 +970,7 @@ export function ProductionReportModal({
     },
     onError: (err) => {
       console.error(err);
-      alert("Gagal menyimpan laporan: " + err.message);
+      void showAlert({ title: "Gagal Menyimpan", message: err.message, variant: "error" });
       setLoading(false);
     },
   });
@@ -979,7 +981,7 @@ export function ProductionReportModal({
       utils.pros.getSchedule.invalidate();
       utils.pros.list.invalidate();
       utils.pros.getById.invalidate();
-      alert("Laporan berhasil diperbarui!");
+      void showAlert({ title: "Berhasil!", message: "Laporan berhasil diperbarui.", variant: "success" });
       window.dispatchEvent(new Event("draft-update"));
       onDraftChange?.();
       setLoading(false);
@@ -987,7 +989,7 @@ export function ProductionReportModal({
     },
     onError: (err) => {
       console.error(err);
-      alert("Gagal memperbarui laporan: " + err.message);
+      void showAlert({ title: "Gagal Memperbarui", message: err.message, variant: "error" });
       setLoading(false);
     },
   });
@@ -1013,45 +1015,57 @@ export function ProductionReportModal({
 
     // Guard: machineId and partNumber must be set by PPIC
     if (!task?.step?.machineId) {
-      alert("Mesin belum di-assign oleh PPIC untuk proses ini. Hubungi PPIC.");
+      await showAlert({
+        title: "Mesin Belum Di-assign",
+        message: "Mesin belum di-assign oleh PPIC untuk proses ini. Hubungi PPIC.",
+        variant: "warning",
+      });
       return;
     }
     if (!task?.step?.partNumber) {
-      alert(
-        "Part Number belum diisi oleh PPIC untuk proses ini. Hubungi PPIC.",
-      );
+      await showAlert({
+        title: "Part Number Kosong",
+        message: "Part Number belum diisi oleh PPIC untuk proses ini. Hubungi PPIC.",
+        variant: "warning",
+      });
       return;
     }
 
     if (!formData.operatorName.trim()) {
-      alert("Nama Operator wajib diisi!");
+      await showAlert({ message: "Nama Operator wajib diisi!", variant: "warning" });
       return;
     }
 
     if (!formData.startTime || !formData.endTime) {
-      alert("Jam Mulai dan Jam Selesai wajib diisi!");
+      await showAlert({ message: "Jam Mulai dan Jam Selesai wajib diisi!", variant: "warning" });
       return;
     }
 
     // Guard: qtyPassOn must be explicitly provided
     if (formData.qtyPassOn === "") {
-      alert("Output (Qty Pass On) wajib diisi!");
+      await showAlert({ message: "Output (Qty Pass On) wajib diisi!", variant: "warning" });
       return;
     }
 
     // Confirm if qtyPassOn is 0
     const passOnVal = parseInteger(formData.qtyPassOn);
     if (passOnVal === 0) {
-      const zeroConfirm = window.confirm(
-        "Output Pass On = 0. Apakah Anda yakin? (misal: shift full downtime)",
-      );
-      if (!zeroConfirm) return;
+      const zeroOk = await showConfirm({
+        title: "Output Pass On = 0",
+        message: "Output Pass On = 0. Apakah Anda yakin? (misal: shift full downtime)",
+        variant: "warning",
+        confirmLabel: "Ya, Lanjutkan",
+      });
+      if (!zeroOk) return;
     }
 
     // Final confirmation
-    const confirmed = window.confirm(
-      "Apakah Anda yakin data sudah benar dan siap dikirim untuk verifikasi?",
-    );
+    const confirmed = await showConfirm({
+      title: "Kirim Laporan?",
+      message: "Apakah Anda yakin data sudah benar dan siap dikirim untuk verifikasi PPIC?",
+      variant: "info",
+      confirmLabel: "Ya, Kirim Sekarang",
+    });
     if (!confirmed) return;
 
     setLoading(true);
@@ -2500,7 +2514,7 @@ export function ProductionReportModal({
             </span>
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 const isPaper = lphType === "PAPER";
                 let prefilledCtStd = "";
                 if (task?.step.machine) {
@@ -2512,7 +2526,12 @@ export function ProductionReportModal({
                   }
                 }
 
-                if (confirm("Reset formulir & hapus draft?")) {
+                if (await showConfirm({
+                  title: "Reset Formulir?",
+                  message: "Semua data akan direset dan draft akan dihapus. Lanjutkan?",
+                  variant: "warning",
+                  confirmLabel: "Ya, Reset",
+                })) {
                   skipNextSave.current = true;
                   setFormData({
                     startTime: new Date().toTimeString().slice(0, 5),

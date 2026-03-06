@@ -306,12 +306,12 @@ export function ScheduleList() {
                                 className="bg-muted/30 flex items-center justify-between rounded-xl border p-2.5"
                               >
                                 <span className="truncate pr-2 text-xs font-bold">
-                                  {m.material?.name}
+                                  {m.itemMaster?.name ?? "-"}
                                 </span>
                                 <div className="bg-card rounded-md px-2 py-0.5 text-xs font-black whitespace-nowrap shadow-sm">
                                   {Number(m.qtyReq).toLocaleString("id-ID")}{" "}
                                   <span className="text-muted-foreground text-[10px] font-bold">
-                                    {m.material?.uom}
+                                    {m.itemMaster?.baseUom}
                                   </span>
                                 </div>
                               </div>

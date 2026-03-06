@@ -22,6 +22,7 @@ import {
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Textarea } from "~/components/ui/textarea";
+import { useAppAlert } from "~/components/ui/app-alert";
 
 type ReportStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -40,6 +41,7 @@ export default function VerificationList({
   const [rejectId, setRejectId] = React.useState<string | null>(null);
   const [rejectNote, setRejectNote] = React.useState("");
   const [expandedId, setExpandedId] = React.useState<string | null>(null);
+  const { showAlert, showConfirm } = useAppAlert();
 
   // Collapsed PROs state
   const [collapsedPros, setCollapsedPros] = React.useState<Set<string>>(
@@ -92,7 +94,11 @@ export default function VerificationList({
       utils.inventory.invalidate();
     },
     onError: (error) => {
-      alert(`Gagal menyetujui laporan: ${error.message}`);
+      void showAlert({
+        title: "Gagal Menyetujui Laporan",
+        message: error.message,
+        variant: "error",
+      });
     },
   });
 
@@ -104,8 +110,14 @@ export default function VerificationList({
     },
   });
 
-  const handleApprove = (id: string) => {
-    if (confirm("Setujui laporan ini?")) {
+  const handleApprove = async (id: string) => {
+    const ok = await showConfirm({
+      title: "Setujui Laporan?",
+      message: "Laporan akan disetujui dan inventory akan diperbarui. Tindakan ini tidak dapat dibatalkan.",
+      variant: "success",
+      confirmLabel: "Ya, Setujui",
+    });
+    if (ok) {
       approveMutation.mutate({ id });
     }
   };

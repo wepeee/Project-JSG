@@ -14,6 +14,8 @@ export const stdOutputRouter = createTRPCRouter({
         .object({
           department: z.enum(["PAPER", "RIGID"]).optional(),
           search: z.string().optional(),
+          month: z.number().int().min(1).max(12).optional(), // 1-12
+          year: z.number().int().min(2020).max(2100).optional(),
         })
         .optional(),
     )
@@ -29,6 +31,13 @@ export const stdOutputRouter = createTRPCRouter({
         where.reportType = "PAPER";
       } else if (input?.department === "RIGID") {
         where.reportType = { not: "PAPER" };
+      }
+
+      // Month/Year filter
+      if (input?.month && input?.year) {
+        const start = new Date(input.year, input.month - 1, 1);
+        const end = new Date(input.year, input.month, 0, 23, 59, 59, 999);
+        where.reportDate = { gte: start, lte: end };
       }
 
       // Search filter
@@ -302,20 +311,25 @@ export const stdOutputRouter = createTRPCRouter({
     .input(
       z.object({
         productName: z.string(),
+        month: z.number().int().min(1).max(12).optional(),
+        year: z.number().int().min(2020).max(2100).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // 1. Fetch all reports with valid startTime & endTime for this product
+      // 1. Fetch reports with valid startTime & endTime for this product (+ optional month filter)
+      const monthWhere: any = {
+        startTime: { not: null },
+        endTime: { not: null },
+        proses: { pro: { productName: input.productName } },
+      };
+      if (input.month && input.year) {
+        const start = new Date(input.year, input.month - 1, 1);
+        const end = new Date(input.year, input.month, 0, 23, 59, 59, 999);
+        monthWhere.reportDate = { gte: start, lte: end };
+      }
+
       const allReports = await ctx.db.productionReport.findMany({
-        where: {
-          startTime: { not: null },
-          endTime: { not: null },
-          proses: {
-            pro: {
-              productName: input.productName,
-            },
-          },
-        },
+        where: monthWhere,
         select: {
           id: true,
           metaData: true,
@@ -356,15 +370,18 @@ export const stdOutputRouter = createTRPCRouter({
       const stdSpeed = totalOutput / totalDurationMinutes;
       const manualSpeedPerHour = stdSpeed * 60;
 
-      // 3. Save stdSpeed and productManualStdSpeed to all reports for this product
+      // 3. Save stdSpeed and productManualStdSpeed to reports for this product (same month scope)
+      const saveWhere: any = {
+        proses: { pro: { productName: input.productName } },
+      };
+      if (input.month && input.year) {
+        const start = new Date(input.year, input.month - 1, 1);
+        const end = new Date(input.year, input.month, 0, 23, 59, 59, 999);
+        saveWhere.reportDate = { gte: start, lte: end };
+      }
+
       const allProductReports = await ctx.db.productionReport.findMany({
-        where: {
-          proses: {
-            pro: {
-              productName: input.productName,
-            },
-          },
-        },
+        where: saveWhere,
         select: { id: true, metaData: true },
       });
 

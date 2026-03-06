@@ -23,6 +23,7 @@ import {
   X,
   RotateCcw,
   Calculator,
+  CalendarDays,
 } from "lucide-react";
 
 interface Props {
@@ -37,10 +38,19 @@ export default function StdOutput({ userDepartment }: Props) {
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
 
+  // Month filter — default to current month (YYYY-MM)
+  const now = new Date();
+  const defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
+
+  const [selYear, selMonth] = selectedMonth.split("-").map(Number) as [number, number];
+
   const { data, isLoading, refetch } = api.stdOutput.getStdOutput.useQuery(
     {
       department: userDepartment,
       search: search || undefined,
+      month: selMonth,
+      year: selYear,
     },
     {
       refetchOnWindowFocus: false,
@@ -151,7 +161,19 @@ export default function StdOutput({ userDepartment }: Props) {
 
       {/* Search & Actions */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[280px] flex-1">
+        {/* Month Picker */}
+        <div className="flex items-center gap-2 rounded-lg border bg-background px-3 py-1.5">
+          <CalendarDays className="h-4 w-4 text-muted-foreground" />
+          <input
+            type="month"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="bg-transparent text-sm font-medium outline-none"
+          />
+        </div>
+
+        {/* Search */}
+        <div className="relative min-w-[240px] flex-1">
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Cari nama produk atau kode PRO..."
@@ -329,6 +351,8 @@ export default function StdOutput({ userDepartment }: Props) {
                             e.stopPropagation();
                             computeStdSpeed.mutate({
                               productName: product.productName,
+                              month: selMonth,
+                              year: selYear,
                             });
                           }}
                           disabled={computeStdSpeed.isPending}
