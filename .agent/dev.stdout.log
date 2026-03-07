@@ -1,0 +1,20 @@
+
+> belajar@0.1.0 dev E:\Kuliah\KP\belajar
+> next dev --turbo
+
+   ▲ Next.js 15.5.9 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.15:3000
+   - Environments: .env
+
+ ✓ Starting...
+Creating turbopack project { dir: 'E:\\Kuliah\\KP\\belajar', testMode: true }
+ ✓ Ready in 1318ms
+ ○ Compiling / ...
+ ✓ Compiled / in 5.2s
+ GET / 307 in 5930ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 2.6s
+ GET /dashboard 307 in 3107ms
+ ✓ Compiled /login in 438ms
+ GET /login 200 in 608ms

@@ -1,0 +1,70 @@
+
+> belajar@0.1.0 dev E:\Kuliah\KP\belajar
+> next dev --turbo
+
+   ▲ Next.js 15.5.9 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.15:3000
+   - Environments: .env
+
+ ✓ Starting...
+Creating turbopack project { dir: 'E:\\Kuliah\\KP\\belajar', testMode: true }
+ ✓ Ready in 1111ms
+ ELIFECYCLE  Command failed with exit code 3221225786.
+4624ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 2.3s
+ GET /dashboard 307 in 2612ms
+ ✓ Compiled /login in 349ms
+ GET /login 200 in 504ms
+ GET /dashboard 200 in 276ms
+ ○ Compiling /api/trpc/[trpc] ...
+ ✓ Compiled /api/trpc/[trpc] in 768ms
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."ProPrefix"."id", "public"."ProPrefix"."code", "public"."ProPrefix"."name", "public"."ProPrefix"."type"::text FROM "public"."ProPrefix" WHERE 1=1 ORDER BY "public"."ProPrefix"."code" ASC OFFSET $1
+prisma:query COMMIT
+[TRPC] processes.list took 2573ms to execute
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Item"."id", "public"."Item"."code", "public"."Item"."name", "public"."Item"."kind"::text, "public"."Item"."status"::text, "public"."Item"."baseUom", "public"."Item"."createdById", "public"."Item"."createdFrom", "public"."Item"."createdAt", "public"."Item"."updatedAt" FROM "public"."Item" WHERE ("public"."Item"."kind" IN (CAST($1::text AS "public"."ItemKind"),CAST($2::text AS "public"."ItemKind"),CAST($3::text AS "public"."ItemKind")) AND "public"."Item"."status" <> CAST($4::text AS "public"."ItemStatus")) ORDER BY "public"."Item"."name" ASC LIMIT $5 OFFSET $6
+prisma:query SELECT "public"."InventoryTxn"."id", "public"."InventoryTxn"."qty", "public"."InventoryTxn"."type"::text, "public"."InventoryTxn"."itemMasterId" FROM "public"."InventoryTxn" WHERE "public"."InventoryTxn"."itemMasterId" IN ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60,$61,$62,$63,$64,$65,$66,$67,$68,$69,$70,$71,$72,$73,$74,$75,$76,$77,$78,$79,$80,$81,$82,$83,$84,$85,$86,$87,$88,$89,$90,$91,$92,$93,$94,$95,$96,$97,$98,$99,$100,$101,$102,$103,$104,$105,$106,$107,$108,$109,$110,$111,$112,$113,$114,$115,$116,$117,$118,$119,$120,$121,$122,$123,$124,$125,$126,$127,$128,$129,$130,$131,$132,$133,$134,$135,$136,$137,$138,$139,$140,$141,$142,$143,$144,$145,$146,$147,$148,$149,$150,$151,$152,$153,$154,$155,$156,$157,$158,$159,$160,$161,$162,$163,$164,$165,$166,$167,$168,$169,$170) OFFSET $171
+prisma:query COMMIT
+[TRPC] materials.list took 3699ms to execute
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Machine"."id", "public"."Machine"."name", "public"."Machine"."stdOutputPerHour", "public"."Machine"."stdOutputPerShift", "public"."Machine"."uom"::text, "public"."Machine"."type"::text, "public"."Machine"."remark", "public"."Machine"."cycleTimeSec", "public"."Machine"."cycleTimeMin", "public"."Machine"."cavity", "public"."Machine"."manPower", "public"."Machine"."stdOutputPerDay", "public"."Machine"."workCenter", "public"."Machine"."createdAt", "public"."Machine"."updatedAt", "public"."Machine"."defaultProPrefixId" FROM "public"."Machine" WHERE 1=1 ORDER BY "public"."Machine"."name" ASC LIMIT $1 OFFSET $2
+prisma:query COMMIT
+[TRPC] machines.list took 4412ms to execute
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Pro"."id", "public"."Pro"."proNumber", "public"."Pro"."productName", "public"."Pro"."partNumber", "public"."Pro"."qtyPoPcs", "public"."Pro"."startDate", "public"."Pro"."status"::text, "public"."Pro"."type"::text, "public"."Pro"."autoShiftExpansion", "public"."Pro"."createdAt", "public"."Pro"."proPrefixId" FROM "public"."Pro" WHERE "public"."Pro"."type" = CAST($1::text AS "public"."ProType") ORDER BY "public"."Pro"."id" DESC LIMIT $2 OFFSET $3
+prisma:query COMMIT
+[TRPC] pros.list took 4910ms to execute
+ GET /api/trpc/processes.list,machines.list,materials.list,pros.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%223%22%3A%7B%22json%22%3A%7B%22q%22%3Anull%2C%22status%22%3Anull%2C%22type%22%3A%22PAPER%22%2C%22take%22%3A50%7D%2C%22meta%22%3A%7B%22values%22%3A%7B%22q%22%3A%5B%22undefined%22%5D%2C%22status%22%3A%5B%22undefined%22%5D%7D%2C%22v%22%3A1%7D%7D%7D 200 in 6763ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ GET /api/trpc/processes.list,machines.list,materials.list,pros.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%223%22%3A%7B%22json%22%3A%7B%22q%22%3Anull%2C%22status%22%3Anull%2C%22type%22%3A%22PAPER%22%2C%22take%22%3A50%7D%2C%22meta%22%3A%7B%22values%22%3A%7B%22q%22%3A%5B%22undefined%22%5D%2C%22status%22%3A%5B%22undefined%22%5D%7D%2C%22v%22%3A1%7D%7D%7D 200 in 1346ms
+ ✓ Compiled /api/auth/[...nextauth] in 1388ms
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Pro"."id", "public"."Pro"."proNumber", "public"."Pro"."productName", "public"."Pro"."partNumber", "public"."Pro"."qtyPoPcs", "public"."Pro"."startDate", "public"."Pro"."status"::text, "public"."Pro"."type"::text, "public"."Pro"."autoShiftExpansion", "public"."Pro"."createdAt", "public"."Pro"."proPrefixId" FROM "public"."Pro" WHERE "public"."Pro"."type" = CAST($1::text AS "public"."ProType") ORDER BY "public"."Pro"."id" DESC LIMIT $2 OFFSET $3
+prisma:query COMMIT
+[TRPC] pros.list took 854ms to execute
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Machine"."id", "public"."Machine"."name", "public"."Machine"."stdOutputPerHour", "public"."Machine"."stdOutputPerShift", "public"."Machine"."uom"::text, "public"."Machine"."type"::text, "public"."Machine"."remark", "public"."Machine"."cycleTimeSec", "public"."Machine"."cycleTimeMin", "public"."Machine"."cavity", "public"."Machine"."manPower", "public"."Machine"."stdOutputPerDay", "public"."Machine"."workCenter", "public"."Machine"."createdAt", "public"."Machine"."updatedAt", "public"."Machine"."defaultProPrefixId" FROM "public"."Machine" WHERE 1=1 ORDER BY "public"."Machine"."name" ASC LIMIT $1 OFFSET $2
+prisma:query COMMIT
+[TRPC] machines.list took 1763ms to execute
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Item"."id", "public"."Item"."code", "public"."Item"."name", "public"."Item"."kind"::text, "public"."Item"."status"::text, "public"."Item"."baseUom", "public"."Item"."createdById", "public"."Item"."createdFrom", "public"."Item"."createdAt", "public"."Item"."updatedAt" FROM "public"."Item" WHERE ("public"."Item"."kind" IN (CAST($1::text AS "public"."ItemKind"),CAST($2::text AS "public"."ItemKind"),CAST($3::text AS "public"."ItemKind")) AND "public"."Item"."status" <> CAST($4::text AS "public"."ItemStatus")) ORDER BY "public"."Item"."name" ASC LIMIT $5 OFFSET $6
+prisma:query SELECT "public"."InventoryTxn"."id", "public"."InventoryTxn"."qty", "public"."InventoryTxn"."type"::text, "public"."InventoryTxn"."itemMasterId" FROM "public"."InventoryTxn" WHERE "public"."InventoryTxn"."itemMasterId" IN ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60,$61,$62,$63,$64,$65,$66,$67,$68,$69,$70,$71,$72,$73,$74,$75,$76,$77,$78,$79,$80,$81,$82,$83,$84,$85,$86,$87,$88,$89,$90,$91,$92,$93,$94,$95,$96,$97,$98,$99,$100,$101,$102,$103,$104,$105,$106,$107,$108,$109,$110,$111,$112,$113,$114,$115,$116,$117,$118,$119,$120,$121,$122,$123,$124,$125,$126,$127,$128,$129,$130,$131,$132,$133,$134,$135,$136,$137,$138,$139,$140,$141,$142,$143,$144,$145,$146,$147,$148,$149,$150,$151,$152,$153,$154,$155,$156,$157,$158,$159,$160,$161,$162,$163,$164,$165,$166,$167,$168,$169,$170) OFFSET $171
+prisma:query COMMIT
+[TRPC] materials.list took 3025ms to execute
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."ProPrefix"."id", "public"."ProPrefix"."code", "public"."ProPrefix"."name", "public"."ProPrefix"."type"::text FROM "public"."ProPrefix" WHERE 1=1 ORDER BY "public"."ProPrefix"."code" ASC OFFSET $1
+prisma:query COMMIT
+[TRPC] processes.list took 3528ms to execute
+ GET /login 200 in 209ms

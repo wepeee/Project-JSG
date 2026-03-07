@@ -296,92 +296,20 @@ exports.Prisma.NullableJsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
-};
-
-exports.Prisma.UserOrderByRelevanceFieldEnum = {
-  id: 'id',
-  username: 'username',
-  passwordHash: 'passwordHash',
-  department: 'department'
-};
-
-exports.Prisma.UserMachineAccessOrderByRelevanceFieldEnum = {
-  userId: 'userId'
-};
-
-exports.Prisma.MachineOrderByRelevanceFieldEnum = {
-  name: 'name',
-  remark: 'remark',
-  workCenter: 'workCenter'
-};
-
-exports.Prisma.ItemOrderByRelevanceFieldEnum = {
-  code: 'code',
-  name: 'name',
-  baseUom: 'baseUom',
-  createdById: 'createdById',
-  createdFrom: 'createdFrom'
-};
-
-exports.Prisma.ProPrefixOrderByRelevanceFieldEnum = {
-  code: 'code',
-  name: 'name'
-};
-
-exports.Prisma.ProSequenceOrderByRelevanceFieldEnum = {
-  prefix: 'prefix'
-};
-
-exports.Prisma.ProOrderByRelevanceFieldEnum = {
-  proNumber: 'proNumber',
-  productName: 'productName',
-  partNumber: 'partNumber'
-};
-
-exports.Prisma.ProsesOrderByRelevanceFieldEnum = {
-  partNumber: 'partNumber',
-  batchNo: 'batchNo'
 };
 
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
-};
-
-exports.Prisma.QueryMode = {
-  default: 'default',
-  insensitive: 'insensitive'
-};
-
-exports.Prisma.ProductionReportOrderByRelevanceFieldEnum = {
-  id: 'id',
-  operatorName: 'operatorName',
-  batchNo: 'batchNo',
-  notes: 'notes',
-  othersNote: 'othersNote',
-  adminNote: 'adminNote',
-  createdById: 'createdById',
-  rejectionNote: 'rejectionNote',
-  checkedById: 'checkedById',
-  voidedById: 'voidedById',
-  voidReason: 'voidReason'
-};
-
-exports.Prisma.InventoryLocationOrderByRelevanceFieldEnum = {
-  code: 'code',
-  name: 'name'
-};
-
-exports.Prisma.InventoryTxnOrderByRelevanceFieldEnum = {
-  id: 'id',
-  groupId: 'groupId',
-  itemId: 'itemId',
-  productionReportId: 'productionReportId',
-  notes: 'notes'
 };
 exports.Role = exports.$Enums.Role = {
   SUPERADMIN: 'SUPERADMIN',

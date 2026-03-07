@@ -1,9 +1,8 @@
 import * as dotenv from "dotenv";
 import path from "path";
-import mysql from "mysql2/promise";
 import { execSync } from "child_process";
 import { PrismaClient } from "../generated/prisma";
-import { resetDatabase } from "./helpers/reset";
+import { resetDatabase, type SupportedDbProvider } from "./helpers/reset";
 
 if (process.env.CI !== "true") {
   dotenv.config({
@@ -14,8 +13,11 @@ if (process.env.CI !== "true") {
 }
 
 const testDbUrl = process.env.DATABASE_URL;
+const testDirectUrl = process.env.DIRECT_URL ?? testDbUrl;
 const parsedTestDbUrl = testDbUrl ? new URL(testDbUrl) : null;
 const parsedDbName = parsedTestDbUrl?.pathname.replace("/", "");
+const dbProvider =
+  parsedTestDbUrl?.protocol.replace(":", "") as SupportedDbProvider | undefined;
 
 if (
   !testDbUrl ||
@@ -25,6 +27,10 @@ if (
   throw new Error(
     "DATABASE_URL must target a database with 'test' in its name.",
   );
+}
+
+if (!dbProvider || !["postgresql", "postgres", "mysql"].includes(dbProvider)) {
+  throw new Error("DATABASE_URL must use postgresql://, postgres://, or mysql://");
 }
 
 const db = new PrismaClient();
@@ -38,39 +44,31 @@ function getDbNameFromUrl(url: string): string {
   return dbName;
 }
 
-async function ensureDatabaseExists(url: string): Promise<void> {
-  const parsed = new URL(url);
-  const dbName = getDbNameFromUrl(url);
-  const serverUrl = `${parsed.protocol}//${parsed.username}${parsed.password ? `:${parsed.password}` : ""}@${parsed.host}`;
-
-  const connection = await mysql.createConnection(serverUrl);
-  await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);
-  await connection.end();
-}
-
 beforeAll(async () => {
   try {
-    await ensureDatabaseExists(testDbUrl);
-  } catch {
-    // If CREATE DATABASE is forbidden we continue to migration attempt.
-  }
-
-  try {
-    execSync("npx prisma migrate deploy", {
+    execSync("pnpm prisma migrate deploy", {
       stdio: "inherit",
-      env: { ...process.env, DATABASE_URL: testDbUrl },
+      env: {
+        ...process.env,
+        DATABASE_URL: testDbUrl,
+        DIRECT_URL: testDirectUrl,
+      },
     });
   } catch {
-    execSync("npx prisma db push --accept-data-loss", {
+    execSync("pnpm prisma db push --accept-data-loss", {
       stdio: "inherit",
-      env: { ...process.env, DATABASE_URL: testDbUrl },
+      env: {
+        ...process.env,
+        DATABASE_URL: testDbUrl,
+        DIRECT_URL: testDirectUrl,
+      },
     });
   }
 });
 
 afterEach(async () => {
   const dbName = getDbNameFromUrl(testDbUrl);
-  await resetDatabase(db, dbName);
+  await resetDatabase(db, dbName, dbProvider);
 });
 
 afterAll(async () => {

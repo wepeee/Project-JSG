@@ -3,14 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "scripts": {
-    "build": "next build",
+    "build": "prisma generate && next build",
     "check": "next lint && tsc --noEmit",
-    "db:generate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
     "db:migrate": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset --skip-generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "prisma db seed",
@@ -79,7 +78,6 @@
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.3",
     "jest": "^30.2.0",
-    "mysql2": "^3.18.2",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",

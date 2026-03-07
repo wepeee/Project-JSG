@@ -2,7 +2,19 @@ import { PrismaClient } from "../generated/prisma"; // penting: sesuai schema ou
 import { hash } from "bcryptjs";
 import { seedRigid } from "./seed_rigid";
 
-const db = new PrismaClient();
+const seedDbUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+
+const db = new PrismaClient(
+  seedDbUrl
+    ? {
+        datasources: {
+          db: {
+            url: seedDbUrl,
+          },
+        },
+      }
+    : undefined,
+);
 
 async function main() {
   const username = "superadmin";

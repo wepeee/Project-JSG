@@ -10,22 +10,24 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:16
         env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: belajar_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: belajar_test
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-cmd="pg_isready -U postgres -d belajar_test"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=20
 
     env:
       NODE_ENV: test
-      DATABASE_URL: mysql://root:root@127.0.0.1:3306/belajar_test
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/belajar_test?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:5432/belajar_test?schema=public
 
     steps:
       - name: Checkout
