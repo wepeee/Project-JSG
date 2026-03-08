@@ -34,6 +34,18 @@ export default function LoginForm() {
 
   const [authError, setAuthError] = React.useState<string | null>(null);
 
+  const toInternalPath = React.useCallback((url: string | null | undefined) => {
+    if (!url) return "/dashboard";
+    if (url.startsWith("/")) return url;
+    try {
+      const parsed = new URL(url);
+      const path = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+      return path || "/dashboard";
+    } catch {
+      return "/dashboard";
+    }
+  }, []);
+
   const form = useForm({
     defaultValues: {
       username: "",
@@ -62,7 +74,7 @@ export default function LoginForm() {
         return;
       }
 
-      router.push(res.url ?? callbackUrl);
+      router.push(toInternalPath(res.url ?? callbackUrl));
       router.refresh();
     },
   });

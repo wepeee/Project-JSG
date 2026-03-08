@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useAppAlert } from "~/components/ui/app-alert";
+import { SubmitReportConfirmModal } from "./submit-report-confirm-modal";
 
 // --- CONSTANTS ---
 
@@ -475,6 +476,10 @@ export function ProductionReportModal({
   const { showAlert, showConfirm } = useAppAlert();
   const [activeTab, setActiveTab] = React.useState("info");
   const [loading, setLoading] = React.useState(false);
+  const [submitConfirmOpen, setSubmitConfirmOpen] = React.useState(false);
+  const submitConfirmResolverRef = React.useRef<
+    ((confirmed: boolean) => void) | null
+  >(null);
   // const [showRumus, setShowRumus] = React.useState(false); // Removed formula toggle
 
   // Initial State derived from task
@@ -994,6 +999,39 @@ export function ProductionReportModal({
     },
   });
 
+  const resolveSubmitConfirmation = React.useCallback((confirmed: boolean) => {
+    const resolver = submitConfirmResolverRef.current;
+    submitConfirmResolverRef.current = null;
+    setSubmitConfirmOpen(false);
+    resolver?.(confirmed);
+  }, []);
+
+  const askSubmitConfirmation = React.useCallback(() => {
+    if (submitConfirmResolverRef.current) {
+      submitConfirmResolverRef.current(false);
+      submitConfirmResolverRef.current = null;
+    }
+
+    setSubmitConfirmOpen(true);
+    return new Promise<boolean>((resolve) => {
+      submitConfirmResolverRef.current = resolve;
+    });
+  }, []);
+
+  React.useEffect(() => {
+    if (!open && submitConfirmOpen) {
+      resolveSubmitConfirmation(false);
+    }
+  }, [open, submitConfirmOpen, resolveSubmitConfirmation]);
+
+  React.useEffect(() => {
+    return () => {
+      const resolver = submitConfirmResolverRef.current;
+      submitConfirmResolverRef.current = null;
+      resolver?.(false);
+    };
+  }, []);
+
   // Helper to parse localized numbers (ID: . = thousand, , = decimal)
   const parseNumber = (v: string) => {
     if (!v) return 0;
@@ -1013,7 +1051,7 @@ export function ProductionReportModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Guard: machineId and partNumber must be set by PPIC
+    // Guard: machineId must be set by PPIC
     if (!task?.step?.machineId) {
       await showAlert({
         title: "Mesin Belum Di-assign",
@@ -1022,15 +1060,6 @@ export function ProductionReportModal({
       });
       return;
     }
-    if (!task?.step?.partNumber) {
-      await showAlert({
-        title: "Part Number Kosong",
-        message: "Part Number belum diisi oleh PPIC untuk proses ini. Hubungi PPIC.",
-        variant: "warning",
-      });
-      return;
-    }
-
     if (!formData.operatorName.trim()) {
       await showAlert({ message: "Nama Operator wajib diisi!", variant: "warning" });
       return;
@@ -1060,12 +1089,7 @@ export function ProductionReportModal({
     }
 
     // Final confirmation
-    const confirmed = await showConfirm({
-      title: "Kirim Laporan?",
-      message: "Apakah Anda yakin data sudah benar dan siap dikirim untuk verifikasi PPIC?",
-      variant: "info",
-      confirmLabel: "Ya, Kirim Sekarang",
-    });
+    const confirmed = await askSubmitConfirmation();
     if (!confirmed) return;
 
     setLoading(true);
@@ -2583,7 +2607,9 @@ export function ProductionReportModal({
                   {!task?.step?.machineId
                     ? "Mesin belum di-assign oleh PPIC."
                     : "Part Number belum diisi oleh PPIC."}{" "}
-                  Hubungi PPIC untuk melengkapi data sebelum submit.
+                  {!task?.step?.machineId
+                    ? "Hubungi PPIC untuk melengkapi data sebelum submit."
+                    : "Anda tetap bisa submit laporan, namun mohon lengkapi Part Number ke PPIC agar proses verifikasi lancar."}
                 </span>
               </div>
             )}
@@ -2598,15 +2624,18 @@ export function ProductionReportModal({
             <Button
               form="lph-form"
               type="submit"
-              disabled={
-                loading || !task?.step?.machineId || !task?.step?.partNumber
-              }
+              disabled={loading || !task?.step?.machineId}
               className="flex-1 bg-blue-600 px-8 font-bold shadow-lg shadow-blue-900/20 hover:bg-blue-700 disabled:opacity-50 sm:flex-none"
             >
               {loading ? "Mengirim..." : "Kirim Laporan"}
             </Button>
           </div>
         </DialogFooter>
+        <SubmitReportConfirmModal
+          open={submitConfirmOpen}
+          onCancel={() => resolveSubmitConfirmation(false)}
+          onConfirm={() => resolveSubmitConfirmation(true)}
+        />
       </DialogContent>
     </Dialog>
   );
