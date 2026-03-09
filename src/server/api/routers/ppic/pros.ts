@@ -245,24 +245,28 @@ export const prosRouter = createTRPCRouter({
         // AUTO-SET PRO.startDate from first step's startDate
         const firstStepDate = input.proses[0]?.startDate ?? undefined;
 
+        const fgItemId = await lookupItemId(
+          tx,
+          input.partNumber,
+          "FG",
+          ctx.session?.user?.id,
+          input.productName,
+        );
+
         const created = await tx.pro.create({
           data: {
             proNumber,
-            proPrefixId: input.proPrefixId, // Renamed
+            proPrefix: { connect: { id: input.proPrefixId } },
             productName: input.productName,
             partNumber: input.partNumber, // Legacy snapshot
-            fgItemId: await lookupItemId(
-              tx,
-              input.partNumber,
-              "FG",
-              ctx.session?.user?.id,
-              input.productName,
-            ),
+            ...(fgItemId ? { fgItem: { connect: { id: fgItemId } } } : {}),
             qtyPoPcs: input.qtyPoPcs,
             startDate: firstStepDate,
             status: "OPEN",
             type: input.type,
             autoShiftExpansion: input.autoShiftExpansion ?? false,
+            createdBy: { connect: { id: ctx.session.user.id } },
+            updatedBy: { connect: { id: ctx.session.user.id } },
           },
         });
 
@@ -511,28 +515,31 @@ export const prosRouter = createTRPCRouter({
           }
         }
 
+        const nextFgItemId =
+          input.partNumber !== undefined
+            ? await lookupItemId(tx, input.partNumber, "FG", ctx.session.user.id)
+            : undefined;
+
         // 2. Update header
         await tx.pro.update({
           where: { id: input.id },
           data: {
             ...(newProNumber ? { proNumber: newProNumber } : {}),
-            proPrefixId: input.proPrefixId, // Renamed
+            proPrefix: { connect: { id: input.proPrefixId } },
             productName: input.productName,
             ...(input.partNumber !== undefined
               ? {
                   partNumber: input.partNumber,
-                  fgItemId: await lookupItemId(
-                    tx,
-                    input.partNumber,
-                    "FG",
-                    ctx.session.user.id,
-                  ),
+                  fgItem: nextFgItemId
+                    ? { connect: { id: nextFgItemId } }
+                    : { disconnect: true },
                 }
               : {}),
             qtyPoPcs: input.qtyPoPcs,
             startDate: input.startDate,
             ...(input.status ? { status: input.status } : {}),
             ...(input.type ? { type: input.type } : {}),
+            updatedBy: { connect: { id: ctx.session.user.id } },
           },
         });
 
@@ -767,7 +774,10 @@ export const prosRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       return ctx.db.pro.update({
         where: { id: input.id },
-        data: { startDate: input.startDate },
+        data: {
+          startDate: input.startDate,
+          updatedBy: { connect: { id: ctx.session.user.id } },
+        },
       });
     }),
 

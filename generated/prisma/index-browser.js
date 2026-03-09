@@ -194,6 +194,8 @@ exports.Prisma.ProScalarFieldEnum = {
   autoShiftExpansion: 'autoShiftExpansion',
   proPrefixId: 'proPrefixId',
   fgItemId: 'fgItemId',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

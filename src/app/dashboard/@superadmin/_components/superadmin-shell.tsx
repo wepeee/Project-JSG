@@ -15,6 +15,7 @@ import WipMonitor from "./modules/inventory/wip-monitor";
 import StdOutput from "./modules/std-output/std-output";
 import MachineAccessManager from "./modules/machines/machine-access-manager";
 import OeeDashboard from "./modules/oee/oee-dashboard";
+import AuditLog from "./modules/audit/audit-log";
 
 type Props = {
   user: {
@@ -357,11 +358,7 @@ export default function SuperadminShell({ user }: Props) {
             <DashboardOverview department={user.department} />
           )}
           {active === "users" && <CreateUserForm />}
-          {active === "audit" && (
-            <div className="rounded-md border p-4 text-sm opacity-80">
-              Audit log belum dibuat. Nanti kita tambah (read-only) dari DB.
-            </div>
-          )}
+          {active === "audit" && <AuditLog />}
           {active === "settings" && (
             <div className="rounded-md border p-4 text-sm opacity-80">
               Pengaturan belum dibuat. Nanti kita rapihin.

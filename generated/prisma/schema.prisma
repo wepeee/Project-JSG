@@ -32,6 +32,8 @@ model User {
   productionReports        ProductionReport[]
   checkedProductionReports ProductionReport[]  @relation("ReportChecker")
   createdItems             Item[]              @relation("ItemCreator")
+  createdPros              Pro[]               @relation("ProCreator")
+  updatedPros              Pro[]               @relation("ProUpdater")
   machineAccesses          UserMachineAccess[]
 }
 
@@ -211,6 +213,12 @@ model Pro {
   // FK to Item master for FG
   fgItemId Int?
   fgItem   Item? @relation("ProFgItem", fields: [fgItemId], references: [id])
+
+  // Audit
+  createdById String?
+  createdBy   User?   @relation("ProCreator", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("ProUpdater", fields: [updatedById], references: [id])
 
   proses Proses[]
 

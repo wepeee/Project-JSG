@@ -2023,6 +2023,8 @@ export namespace Prisma {
     productionReports: number
     checkedProductionReports: number
     createdItems: number
+    createdPros: number
+    updatedPros: number
     machineAccesses: number
   }
 
@@ -2030,6 +2032,8 @@ export namespace Prisma {
     productionReports?: boolean | UserCountOutputTypeCountProductionReportsArgs
     checkedProductionReports?: boolean | UserCountOutputTypeCountCheckedProductionReportsArgs
     createdItems?: boolean | UserCountOutputTypeCountCreatedItemsArgs
+    createdPros?: boolean | UserCountOutputTypeCountCreatedProsArgs
+    updatedPros?: boolean | UserCountOutputTypeCountUpdatedProsArgs
     machineAccesses?: boolean | UserCountOutputTypeCountMachineAccessesArgs
   }
 
@@ -2063,6 +2067,20 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountCreatedItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ItemWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCreatedProsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountUpdatedProsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProWhereInput
   }
 
   /**
@@ -2549,6 +2567,8 @@ export namespace Prisma {
     productionReports?: boolean | User$productionReportsArgs<ExtArgs>
     checkedProductionReports?: boolean | User$checkedProductionReportsArgs<ExtArgs>
     createdItems?: boolean | User$createdItemsArgs<ExtArgs>
+    createdPros?: boolean | User$createdProsArgs<ExtArgs>
+    updatedPros?: boolean | User$updatedProsArgs<ExtArgs>
     machineAccesses?: boolean | User$machineAccessesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -2588,6 +2608,8 @@ export namespace Prisma {
     productionReports?: boolean | User$productionReportsArgs<ExtArgs>
     checkedProductionReports?: boolean | User$checkedProductionReportsArgs<ExtArgs>
     createdItems?: boolean | User$createdItemsArgs<ExtArgs>
+    createdPros?: boolean | User$createdProsArgs<ExtArgs>
+    updatedPros?: boolean | User$updatedProsArgs<ExtArgs>
     machineAccesses?: boolean | User$machineAccessesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -2600,6 +2622,8 @@ export namespace Prisma {
       productionReports: Prisma.$ProductionReportPayload<ExtArgs>[]
       checkedProductionReports: Prisma.$ProductionReportPayload<ExtArgs>[]
       createdItems: Prisma.$ItemPayload<ExtArgs>[]
+      createdPros: Prisma.$ProPayload<ExtArgs>[]
+      updatedPros: Prisma.$ProPayload<ExtArgs>[]
       machineAccesses: Prisma.$UserMachineAccessPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -3007,6 +3031,8 @@ export namespace Prisma {
     productionReports<T extends User$productionReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$productionReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     checkedProductionReports<T extends User$checkedProductionReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$checkedProductionReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductionReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     createdItems<T extends User$createdItemsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    createdPros<T extends User$createdProsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdProsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    updatedPros<T extends User$updatedProsArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedProsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     machineAccesses<T extends User$machineAccessesArgs<ExtArgs> = {}>(args?: Subset<T, User$machineAccessesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserMachineAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3501,6 +3527,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ItemScalarFieldEnum | ItemScalarFieldEnum[]
+  }
+
+  /**
+   * User.createdPros
+   */
+  export type User$createdProsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Pro
+     */
+    select?: ProSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Pro
+     */
+    omit?: ProOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProInclude<ExtArgs> | null
+    where?: ProWhereInput
+    orderBy?: ProOrderByWithRelationInput | ProOrderByWithRelationInput[]
+    cursor?: ProWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProScalarFieldEnum | ProScalarFieldEnum[]
+  }
+
+  /**
+   * User.updatedPros
+   */
+  export type User$updatedProsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Pro
+     */
+    select?: ProSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Pro
+     */
+    omit?: ProOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProInclude<ExtArgs> | null
+    where?: ProWhereInput
+    orderBy?: ProOrderByWithRelationInput | ProOrderByWithRelationInput[]
+    cursor?: ProWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProScalarFieldEnum | ProScalarFieldEnum[]
   }
 
   /**
@@ -9441,6 +9515,8 @@ export namespace Prisma {
     autoShiftExpansion: boolean | null
     proPrefixId: number | null
     fgItemId: number | null
+    createdById: string | null
+    updatedById: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -9457,6 +9533,8 @@ export namespace Prisma {
     autoShiftExpansion: boolean | null
     proPrefixId: number | null
     fgItemId: number | null
+    createdById: string | null
+    updatedById: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -9473,6 +9551,8 @@ export namespace Prisma {
     autoShiftExpansion: number
     proPrefixId: number
     fgItemId: number
+    createdById: number
+    updatedById: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -9505,6 +9585,8 @@ export namespace Prisma {
     autoShiftExpansion?: true
     proPrefixId?: true
     fgItemId?: true
+    createdById?: true
+    updatedById?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -9521,6 +9603,8 @@ export namespace Prisma {
     autoShiftExpansion?: true
     proPrefixId?: true
     fgItemId?: true
+    createdById?: true
+    updatedById?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -9537,6 +9621,8 @@ export namespace Prisma {
     autoShiftExpansion?: true
     proPrefixId?: true
     fgItemId?: true
+    createdById?: true
+    updatedById?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -9640,6 +9726,8 @@ export namespace Prisma {
     autoShiftExpansion: boolean
     proPrefixId: number | null
     fgItemId: number | null
+    createdById: string | null
+    updatedById: string | null
     createdAt: Date
     updatedAt: Date
     _count: ProCountAggregateOutputType | null
@@ -9675,10 +9763,14 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     proPrefixId?: boolean
     fgItemId?: boolean
+    createdById?: boolean
+    updatedById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     proPrefix?: boolean | Pro$proPrefixArgs<ExtArgs>
     fgItem?: boolean | Pro$fgItemArgs<ExtArgs>
+    createdBy?: boolean | Pro$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Pro$updatedByArgs<ExtArgs>
     proses?: boolean | Pro$prosesArgs<ExtArgs>
     inventoryTxns?: boolean | Pro$inventoryTxnsArgs<ExtArgs>
     _count?: boolean | ProCountOutputTypeDefaultArgs<ExtArgs>
@@ -9696,10 +9788,14 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     proPrefixId?: boolean
     fgItemId?: boolean
+    createdById?: boolean
+    updatedById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     proPrefix?: boolean | Pro$proPrefixArgs<ExtArgs>
     fgItem?: boolean | Pro$fgItemArgs<ExtArgs>
+    createdBy?: boolean | Pro$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Pro$updatedByArgs<ExtArgs>
   }, ExtArgs["result"]["pro"]>
 
   export type ProSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -9714,10 +9810,14 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     proPrefixId?: boolean
     fgItemId?: boolean
+    createdById?: boolean
+    updatedById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     proPrefix?: boolean | Pro$proPrefixArgs<ExtArgs>
     fgItem?: boolean | Pro$fgItemArgs<ExtArgs>
+    createdBy?: boolean | Pro$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Pro$updatedByArgs<ExtArgs>
   }, ExtArgs["result"]["pro"]>
 
   export type ProSelectScalar = {
@@ -9732,14 +9832,18 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     proPrefixId?: boolean
     fgItemId?: boolean
+    createdById?: boolean
+    updatedById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "partNumber" | "qtyPoPcs" | "startDate" | "status" | "type" | "autoShiftExpansion" | "proPrefixId" | "fgItemId" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
+  export type ProOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proNumber" | "productName" | "partNumber" | "qtyPoPcs" | "startDate" | "status" | "type" | "autoShiftExpansion" | "proPrefixId" | "fgItemId" | "createdById" | "updatedById" | "createdAt" | "updatedAt", ExtArgs["result"]["pro"]>
   export type ProInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     proPrefix?: boolean | Pro$proPrefixArgs<ExtArgs>
     fgItem?: boolean | Pro$fgItemArgs<ExtArgs>
+    createdBy?: boolean | Pro$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Pro$updatedByArgs<ExtArgs>
     proses?: boolean | Pro$prosesArgs<ExtArgs>
     inventoryTxns?: boolean | Pro$inventoryTxnsArgs<ExtArgs>
     _count?: boolean | ProCountOutputTypeDefaultArgs<ExtArgs>
@@ -9747,10 +9851,14 @@ export namespace Prisma {
   export type ProIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     proPrefix?: boolean | Pro$proPrefixArgs<ExtArgs>
     fgItem?: boolean | Pro$fgItemArgs<ExtArgs>
+    createdBy?: boolean | Pro$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Pro$updatedByArgs<ExtArgs>
   }
   export type ProIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     proPrefix?: boolean | Pro$proPrefixArgs<ExtArgs>
     fgItem?: boolean | Pro$fgItemArgs<ExtArgs>
+    createdBy?: boolean | Pro$createdByArgs<ExtArgs>
+    updatedBy?: boolean | Pro$updatedByArgs<ExtArgs>
   }
 
   export type $ProPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9758,6 +9866,8 @@ export namespace Prisma {
     objects: {
       proPrefix: Prisma.$ProPrefixPayload<ExtArgs> | null
       fgItem: Prisma.$ItemPayload<ExtArgs> | null
+      createdBy: Prisma.$UserPayload<ExtArgs> | null
+      updatedBy: Prisma.$UserPayload<ExtArgs> | null
       proses: Prisma.$ProsesPayload<ExtArgs>[]
       inventoryTxns: Prisma.$InventoryTxnPayload<ExtArgs>[]
     }
@@ -9773,6 +9883,8 @@ export namespace Prisma {
       autoShiftExpansion: boolean
       proPrefixId: number | null
       fgItemId: number | null
+      createdById: string | null
+      updatedById: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["pro"]>
@@ -10171,6 +10283,8 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     proPrefix<T extends Pro$proPrefixArgs<ExtArgs> = {}>(args?: Subset<T, Pro$proPrefixArgs<ExtArgs>>): Prisma__ProPrefixClient<$Result.GetResult<Prisma.$ProPrefixPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     fgItem<T extends Pro$fgItemArgs<ExtArgs> = {}>(args?: Subset<T, Pro$fgItemArgs<ExtArgs>>): Prisma__ItemClient<$Result.GetResult<Prisma.$ItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    createdBy<T extends Pro$createdByArgs<ExtArgs> = {}>(args?: Subset<T, Pro$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    updatedBy<T extends Pro$updatedByArgs<ExtArgs> = {}>(args?: Subset<T, Pro$updatedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     proses<T extends Pro$prosesArgs<ExtArgs> = {}>(args?: Subset<T, Pro$prosesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     inventoryTxns<T extends Pro$inventoryTxnsArgs<ExtArgs> = {}>(args?: Subset<T, Pro$inventoryTxnsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventoryTxnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -10213,6 +10327,8 @@ export namespace Prisma {
     readonly autoShiftExpansion: FieldRef<"Pro", 'Boolean'>
     readonly proPrefixId: FieldRef<"Pro", 'Int'>
     readonly fgItemId: FieldRef<"Pro", 'Int'>
+    readonly createdById: FieldRef<"Pro", 'String'>
+    readonly updatedById: FieldRef<"Pro", 'String'>
     readonly createdAt: FieldRef<"Pro", 'DateTime'>
     readonly updatedAt: FieldRef<"Pro", 'DateTime'>
   }
@@ -10646,6 +10762,44 @@ export namespace Prisma {
      */
     include?: ItemInclude<ExtArgs> | null
     where?: ItemWhereInput
+  }
+
+  /**
+   * Pro.createdBy
+   */
+  export type Pro$createdByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Pro.updatedBy
+   */
+  export type Pro$updatedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -17401,6 +17555,8 @@ export namespace Prisma {
     autoShiftExpansion: 'autoShiftExpansion',
     proPrefixId: 'proPrefixId',
     fgItemId: 'fgItemId',
+    createdById: 'createdById',
+    updatedById: 'updatedById',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -17819,6 +17975,8 @@ export namespace Prisma {
     productionReports?: ProductionReportListRelationFilter
     checkedProductionReports?: ProductionReportListRelationFilter
     createdItems?: ItemListRelationFilter
+    createdPros?: ProListRelationFilter
+    updatedPros?: ProListRelationFilter
     machineAccesses?: UserMachineAccessListRelationFilter
   }
 
@@ -17833,6 +17991,8 @@ export namespace Prisma {
     productionReports?: ProductionReportOrderByRelationAggregateInput
     checkedProductionReports?: ProductionReportOrderByRelationAggregateInput
     createdItems?: ItemOrderByRelationAggregateInput
+    createdPros?: ProOrderByRelationAggregateInput
+    updatedPros?: ProOrderByRelationAggregateInput
     machineAccesses?: UserMachineAccessOrderByRelationAggregateInput
   }
 
@@ -17850,6 +18010,8 @@ export namespace Prisma {
     productionReports?: ProductionReportListRelationFilter
     checkedProductionReports?: ProductionReportListRelationFilter
     createdItems?: ItemListRelationFilter
+    createdPros?: ProListRelationFilter
+    updatedPros?: ProListRelationFilter
     machineAccesses?: UserMachineAccessListRelationFilter
   }, "id" | "username">
 
@@ -18259,10 +18421,14 @@ export namespace Prisma {
     autoShiftExpansion?: BoolFilter<"Pro"> | boolean
     proPrefixId?: IntNullableFilter<"Pro"> | number | null
     fgItemId?: IntNullableFilter<"Pro"> | number | null
+    createdById?: StringNullableFilter<"Pro"> | string | null
+    updatedById?: StringNullableFilter<"Pro"> | string | null
     createdAt?: DateTimeFilter<"Pro"> | Date | string
     updatedAt?: DateTimeFilter<"Pro"> | Date | string
     proPrefix?: XOR<ProPrefixNullableScalarRelationFilter, ProPrefixWhereInput> | null
     fgItem?: XOR<ItemNullableScalarRelationFilter, ItemWhereInput> | null
+    createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     proses?: ProsesListRelationFilter
     inventoryTxns?: InventoryTxnListRelationFilter
   }
@@ -18279,10 +18445,14 @@ export namespace Prisma {
     autoShiftExpansion?: SortOrder
     proPrefixId?: SortOrderInput | SortOrder
     fgItemId?: SortOrderInput | SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     proPrefix?: ProPrefixOrderByWithRelationInput
     fgItem?: ItemOrderByWithRelationInput
+    createdBy?: UserOrderByWithRelationInput
+    updatedBy?: UserOrderByWithRelationInput
     proses?: ProsesOrderByRelationAggregateInput
     inventoryTxns?: InventoryTxnOrderByRelationAggregateInput
   }
@@ -18302,10 +18472,14 @@ export namespace Prisma {
     autoShiftExpansion?: BoolFilter<"Pro"> | boolean
     proPrefixId?: IntNullableFilter<"Pro"> | number | null
     fgItemId?: IntNullableFilter<"Pro"> | number | null
+    createdById?: StringNullableFilter<"Pro"> | string | null
+    updatedById?: StringNullableFilter<"Pro"> | string | null
     createdAt?: DateTimeFilter<"Pro"> | Date | string
     updatedAt?: DateTimeFilter<"Pro"> | Date | string
     proPrefix?: XOR<ProPrefixNullableScalarRelationFilter, ProPrefixWhereInput> | null
     fgItem?: XOR<ItemNullableScalarRelationFilter, ItemWhereInput> | null
+    createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    updatedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     proses?: ProsesListRelationFilter
     inventoryTxns?: InventoryTxnListRelationFilter
   }, "id" | "proNumber">
@@ -18322,6 +18496,8 @@ export namespace Prisma {
     autoShiftExpansion?: SortOrder
     proPrefixId?: SortOrderInput | SortOrder
     fgItemId?: SortOrderInput | SortOrder
+    createdById?: SortOrderInput | SortOrder
+    updatedById?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ProCountOrderByAggregateInput
@@ -18346,6 +18522,8 @@ export namespace Prisma {
     autoShiftExpansion?: BoolWithAggregatesFilter<"Pro"> | boolean
     proPrefixId?: IntNullableWithAggregatesFilter<"Pro"> | number | null
     fgItemId?: IntNullableWithAggregatesFilter<"Pro"> | number | null
+    createdById?: StringNullableWithAggregatesFilter<"Pro"> | string | null
+    updatedById?: StringNullableWithAggregatesFilter<"Pro"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Pro"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Pro"> | Date | string
   }
@@ -18931,6 +19109,8 @@ export namespace Prisma {
     productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
     checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
     createdItems?: ItemCreateNestedManyWithoutCreatedByInput
+    createdPros?: ProCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProCreateNestedManyWithoutUpdatedByInput
     machineAccesses?: UserMachineAccessCreateNestedManyWithoutUserInput
   }
 
@@ -18945,6 +19125,8 @@ export namespace Prisma {
     productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
     checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
     createdItems?: ItemUncheckedCreateNestedManyWithoutCreatedByInput
+    createdPros?: ProUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProUncheckedCreateNestedManyWithoutUpdatedByInput
     machineAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -18959,6 +19141,8 @@ export namespace Prisma {
     productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
     checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
     createdItems?: ItemUpdateManyWithoutCreatedByNestedInput
+    createdPros?: ProUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUpdateManyWithoutUpdatedByNestedInput
     machineAccesses?: UserMachineAccessUpdateManyWithoutUserNestedInput
   }
 
@@ -18973,6 +19157,8 @@ export namespace Prisma {
     productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
     checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
     createdItems?: ItemUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdPros?: ProUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUncheckedUpdateManyWithoutUpdatedByNestedInput
     machineAccesses?: UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19396,6 +19582,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     proPrefix?: ProPrefixCreateNestedOneWithoutProsInput
     fgItem?: ItemCreateNestedOneWithoutFgProsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedProsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedProsInput
     proses?: ProsesCreateNestedManyWithoutProInput
     inventoryTxns?: InventoryTxnCreateNestedManyWithoutProInput
   }
@@ -19412,6 +19600,8 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     proPrefixId?: number | null
     fgItemId?: number | null
+    createdById?: string | null
+    updatedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     proses?: ProsesUncheckedCreateNestedManyWithoutProInput
@@ -19431,6 +19621,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proPrefix?: ProPrefixUpdateOneWithoutProsNestedInput
     fgItem?: ItemUpdateOneWithoutFgProsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedProsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedProsNestedInput
     proses?: ProsesUpdateManyWithoutProNestedInput
     inventoryTxns?: InventoryTxnUpdateManyWithoutProNestedInput
   }
@@ -19447,6 +19639,8 @@ export namespace Prisma {
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
     fgItemId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proses?: ProsesUncheckedUpdateManyWithoutProNestedInput
@@ -19465,6 +19659,8 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     proPrefixId?: number | null
     fgItemId?: number | null
+    createdById?: string | null
+    updatedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -19494,6 +19690,8 @@ export namespace Prisma {
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
     fgItemId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -20171,6 +20369,12 @@ export namespace Prisma {
     none?: ItemWhereInput
   }
 
+  export type ProListRelationFilter = {
+    every?: ProWhereInput
+    some?: ProWhereInput
+    none?: ProWhereInput
+  }
+
   export type UserMachineAccessListRelationFilter = {
     every?: UserMachineAccessWhereInput
     some?: UserMachineAccessWhereInput
@@ -20187,6 +20391,10 @@ export namespace Prisma {
   }
 
   export type ItemOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ProOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -20571,12 +20779,6 @@ export namespace Prisma {
     none?: InventoryTxnWhereInput
   }
 
-  export type ProListRelationFilter = {
-    every?: ProWhereInput
-    some?: ProWhereInput
-    none?: ProWhereInput
-  }
-
   export type ProsesMaterialListRelationFilter = {
     every?: ProsesMaterialWhereInput
     some?: ProsesMaterialWhereInput
@@ -20584,10 +20786,6 @@ export namespace Prisma {
   }
 
   export type InventoryTxnOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type ProOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -20781,6 +20979,8 @@ export namespace Prisma {
     autoShiftExpansion?: SortOrder
     proPrefixId?: SortOrder
     fgItemId?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -20804,6 +21004,8 @@ export namespace Prisma {
     autoShiftExpansion?: SortOrder
     proPrefixId?: SortOrder
     fgItemId?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -20820,6 +21022,8 @@ export namespace Prisma {
     autoShiftExpansion?: SortOrder
     proPrefixId?: SortOrder
     fgItemId?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -21443,6 +21647,20 @@ export namespace Prisma {
     connect?: ItemWhereUniqueInput | ItemWhereUniqueInput[]
   }
 
+  export type ProCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<ProCreateWithoutCreatedByInput, ProUncheckedCreateWithoutCreatedByInput> | ProCreateWithoutCreatedByInput[] | ProUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutCreatedByInput | ProCreateOrConnectWithoutCreatedByInput[]
+    createMany?: ProCreateManyCreatedByInputEnvelope
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+  }
+
+  export type ProCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<ProCreateWithoutUpdatedByInput, ProUncheckedCreateWithoutUpdatedByInput> | ProCreateWithoutUpdatedByInput[] | ProUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutUpdatedByInput | ProCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: ProCreateManyUpdatedByInputEnvelope
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+  }
+
   export type UserMachineAccessCreateNestedManyWithoutUserInput = {
     create?: XOR<UserMachineAccessCreateWithoutUserInput, UserMachineAccessUncheckedCreateWithoutUserInput> | UserMachineAccessCreateWithoutUserInput[] | UserMachineAccessUncheckedCreateWithoutUserInput[]
     connectOrCreate?: UserMachineAccessCreateOrConnectWithoutUserInput | UserMachineAccessCreateOrConnectWithoutUserInput[]
@@ -21469,6 +21687,20 @@ export namespace Prisma {
     connectOrCreate?: ItemCreateOrConnectWithoutCreatedByInput | ItemCreateOrConnectWithoutCreatedByInput[]
     createMany?: ItemCreateManyCreatedByInputEnvelope
     connect?: ItemWhereUniqueInput | ItemWhereUniqueInput[]
+  }
+
+  export type ProUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<ProCreateWithoutCreatedByInput, ProUncheckedCreateWithoutCreatedByInput> | ProCreateWithoutCreatedByInput[] | ProUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutCreatedByInput | ProCreateOrConnectWithoutCreatedByInput[]
+    createMany?: ProCreateManyCreatedByInputEnvelope
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+  }
+
+  export type ProUncheckedCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<ProCreateWithoutUpdatedByInput, ProUncheckedCreateWithoutUpdatedByInput> | ProCreateWithoutUpdatedByInput[] | ProUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutUpdatedByInput | ProCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: ProCreateManyUpdatedByInputEnvelope
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
   }
 
   export type UserMachineAccessUncheckedCreateNestedManyWithoutUserInput = {
@@ -21536,6 +21768,34 @@ export namespace Prisma {
     deleteMany?: ItemScalarWhereInput | ItemScalarWhereInput[]
   }
 
+  export type ProUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<ProCreateWithoutCreatedByInput, ProUncheckedCreateWithoutCreatedByInput> | ProCreateWithoutCreatedByInput[] | ProUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutCreatedByInput | ProCreateOrConnectWithoutCreatedByInput[]
+    upsert?: ProUpsertWithWhereUniqueWithoutCreatedByInput | ProUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: ProCreateManyCreatedByInputEnvelope
+    set?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    disconnect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    delete?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    update?: ProUpdateWithWhereUniqueWithoutCreatedByInput | ProUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: ProUpdateManyWithWhereWithoutCreatedByInput | ProUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: ProScalarWhereInput | ProScalarWhereInput[]
+  }
+
+  export type ProUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<ProCreateWithoutUpdatedByInput, ProUncheckedCreateWithoutUpdatedByInput> | ProCreateWithoutUpdatedByInput[] | ProUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutUpdatedByInput | ProCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: ProUpsertWithWhereUniqueWithoutUpdatedByInput | ProUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: ProCreateManyUpdatedByInputEnvelope
+    set?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    disconnect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    delete?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    update?: ProUpdateWithWhereUniqueWithoutUpdatedByInput | ProUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: ProUpdateManyWithWhereWithoutUpdatedByInput | ProUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: ProScalarWhereInput | ProScalarWhereInput[]
+  }
+
   export type UserMachineAccessUpdateManyWithoutUserNestedInput = {
     create?: XOR<UserMachineAccessCreateWithoutUserInput, UserMachineAccessUncheckedCreateWithoutUserInput> | UserMachineAccessCreateWithoutUserInput[] | UserMachineAccessUncheckedCreateWithoutUserInput[]
     connectOrCreate?: UserMachineAccessCreateOrConnectWithoutUserInput | UserMachineAccessCreateOrConnectWithoutUserInput[]
@@ -21590,6 +21850,34 @@ export namespace Prisma {
     update?: ItemUpdateWithWhereUniqueWithoutCreatedByInput | ItemUpdateWithWhereUniqueWithoutCreatedByInput[]
     updateMany?: ItemUpdateManyWithWhereWithoutCreatedByInput | ItemUpdateManyWithWhereWithoutCreatedByInput[]
     deleteMany?: ItemScalarWhereInput | ItemScalarWhereInput[]
+  }
+
+  export type ProUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<ProCreateWithoutCreatedByInput, ProUncheckedCreateWithoutCreatedByInput> | ProCreateWithoutCreatedByInput[] | ProUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutCreatedByInput | ProCreateOrConnectWithoutCreatedByInput[]
+    upsert?: ProUpsertWithWhereUniqueWithoutCreatedByInput | ProUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: ProCreateManyCreatedByInputEnvelope
+    set?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    disconnect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    delete?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    update?: ProUpdateWithWhereUniqueWithoutCreatedByInput | ProUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: ProUpdateManyWithWhereWithoutCreatedByInput | ProUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: ProScalarWhereInput | ProScalarWhereInput[]
+  }
+
+  export type ProUncheckedUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<ProCreateWithoutUpdatedByInput, ProUncheckedCreateWithoutUpdatedByInput> | ProCreateWithoutUpdatedByInput[] | ProUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: ProCreateOrConnectWithoutUpdatedByInput | ProCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: ProUpsertWithWhereUniqueWithoutUpdatedByInput | ProUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: ProCreateManyUpdatedByInputEnvelope
+    set?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    disconnect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    delete?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    connect?: ProWhereUniqueInput | ProWhereUniqueInput[]
+    update?: ProUpdateWithWhereUniqueWithoutUpdatedByInput | ProUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: ProUpdateManyWithWhereWithoutUpdatedByInput | ProUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: ProScalarWhereInput | ProScalarWhereInput[]
   }
 
   export type UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput = {
@@ -22090,6 +22378,18 @@ export namespace Prisma {
     connect?: ItemWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutCreatedProsInput = {
+    create?: XOR<UserCreateWithoutCreatedProsInput, UserUncheckedCreateWithoutCreatedProsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedProsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutUpdatedProsInput = {
+    create?: XOR<UserCreateWithoutUpdatedProsInput, UserUncheckedCreateWithoutUpdatedProsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedProsInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type ProsesCreateNestedManyWithoutProInput = {
     create?: XOR<ProsesCreateWithoutProInput, ProsesUncheckedCreateWithoutProInput> | ProsesCreateWithoutProInput[] | ProsesUncheckedCreateWithoutProInput[]
     connectOrCreate?: ProsesCreateOrConnectWithoutProInput | ProsesCreateOrConnectWithoutProInput[]
@@ -22148,6 +22448,26 @@ export namespace Prisma {
     delete?: ItemWhereInput | boolean
     connect?: ItemWhereUniqueInput
     update?: XOR<XOR<ItemUpdateToOneWithWhereWithoutFgProsInput, ItemUpdateWithoutFgProsInput>, ItemUncheckedUpdateWithoutFgProsInput>
+  }
+
+  export type UserUpdateOneWithoutCreatedProsNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedProsInput, UserUncheckedCreateWithoutCreatedProsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedProsInput
+    upsert?: UserUpsertWithoutCreatedProsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedProsInput, UserUpdateWithoutCreatedProsInput>, UserUncheckedUpdateWithoutCreatedProsInput>
+  }
+
+  export type UserUpdateOneWithoutUpdatedProsNestedInput = {
+    create?: XOR<UserCreateWithoutUpdatedProsInput, UserUncheckedCreateWithoutUpdatedProsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedProsInput
+    upsert?: UserUpsertWithoutUpdatedProsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUpdatedProsInput, UserUpdateWithoutUpdatedProsInput>, UserUncheckedUpdateWithoutUpdatedProsInput>
   }
 
   export type ProsesUpdateManyWithoutProNestedInput = {
@@ -23356,6 +23676,100 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ProCreateWithoutCreatedByInput = {
+    proNumber: string
+    productName: string
+    partNumber?: string | null
+    qtyPoPcs: number
+    startDate?: Date | string | null
+    status?: $Enums.ProStatus
+    type?: $Enums.ProType
+    autoShiftExpansion?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    proPrefix?: ProPrefixCreateNestedOneWithoutProsInput
+    fgItem?: ItemCreateNestedOneWithoutFgProsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedProsInput
+    proses?: ProsesCreateNestedManyWithoutProInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProInput
+  }
+
+  export type ProUncheckedCreateWithoutCreatedByInput = {
+    id?: number
+    proNumber: string
+    productName: string
+    partNumber?: string | null
+    qtyPoPcs: number
+    startDate?: Date | string | null
+    status?: $Enums.ProStatus
+    type?: $Enums.ProType
+    autoShiftExpansion?: boolean
+    proPrefixId?: number | null
+    fgItemId?: number | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    proses?: ProsesUncheckedCreateNestedManyWithoutProInput
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProInput
+  }
+
+  export type ProCreateOrConnectWithoutCreatedByInput = {
+    where: ProWhereUniqueInput
+    create: XOR<ProCreateWithoutCreatedByInput, ProUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type ProCreateManyCreatedByInputEnvelope = {
+    data: ProCreateManyCreatedByInput | ProCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ProCreateWithoutUpdatedByInput = {
+    proNumber: string
+    productName: string
+    partNumber?: string | null
+    qtyPoPcs: number
+    startDate?: Date | string | null
+    status?: $Enums.ProStatus
+    type?: $Enums.ProType
+    autoShiftExpansion?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    proPrefix?: ProPrefixCreateNestedOneWithoutProsInput
+    fgItem?: ItemCreateNestedOneWithoutFgProsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedProsInput
+    proses?: ProsesCreateNestedManyWithoutProInput
+    inventoryTxns?: InventoryTxnCreateNestedManyWithoutProInput
+  }
+
+  export type ProUncheckedCreateWithoutUpdatedByInput = {
+    id?: number
+    proNumber: string
+    productName: string
+    partNumber?: string | null
+    qtyPoPcs: number
+    startDate?: Date | string | null
+    status?: $Enums.ProStatus
+    type?: $Enums.ProType
+    autoShiftExpansion?: boolean
+    proPrefixId?: number | null
+    fgItemId?: number | null
+    createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    proses?: ProsesUncheckedCreateNestedManyWithoutProInput
+    inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProInput
+  }
+
+  export type ProCreateOrConnectWithoutUpdatedByInput = {
+    where: ProWhereUniqueInput
+    create: XOR<ProCreateWithoutUpdatedByInput, ProUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type ProCreateManyUpdatedByInputEnvelope = {
+    data: ProCreateManyUpdatedByInput | ProCreateManyUpdatedByInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserMachineAccessCreateWithoutUserInput = {
     createdAt?: Date | string
     machine: MachineCreateNestedOneWithoutUserAccessesInput
@@ -23488,6 +23902,59 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Item"> | Date | string
   }
 
+  export type ProUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: ProWhereUniqueInput
+    update: XOR<ProUpdateWithoutCreatedByInput, ProUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<ProCreateWithoutCreatedByInput, ProUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type ProUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: ProWhereUniqueInput
+    data: XOR<ProUpdateWithoutCreatedByInput, ProUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type ProUpdateManyWithWhereWithoutCreatedByInput = {
+    where: ProScalarWhereInput
+    data: XOR<ProUpdateManyMutationInput, ProUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
+  export type ProScalarWhereInput = {
+    AND?: ProScalarWhereInput | ProScalarWhereInput[]
+    OR?: ProScalarWhereInput[]
+    NOT?: ProScalarWhereInput | ProScalarWhereInput[]
+    id?: IntFilter<"Pro"> | number
+    proNumber?: StringFilter<"Pro"> | string
+    productName?: StringFilter<"Pro"> | string
+    partNumber?: StringNullableFilter<"Pro"> | string | null
+    qtyPoPcs?: IntFilter<"Pro"> | number
+    startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
+    status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
+    type?: EnumProTypeFilter<"Pro"> | $Enums.ProType
+    autoShiftExpansion?: BoolFilter<"Pro"> | boolean
+    proPrefixId?: IntNullableFilter<"Pro"> | number | null
+    fgItemId?: IntNullableFilter<"Pro"> | number | null
+    createdById?: StringNullableFilter<"Pro"> | string | null
+    updatedById?: StringNullableFilter<"Pro"> | string | null
+    createdAt?: DateTimeFilter<"Pro"> | Date | string
+    updatedAt?: DateTimeFilter<"Pro"> | Date | string
+  }
+
+  export type ProUpsertWithWhereUniqueWithoutUpdatedByInput = {
+    where: ProWhereUniqueInput
+    update: XOR<ProUpdateWithoutUpdatedByInput, ProUncheckedUpdateWithoutUpdatedByInput>
+    create: XOR<ProCreateWithoutUpdatedByInput, ProUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type ProUpdateWithWhereUniqueWithoutUpdatedByInput = {
+    where: ProWhereUniqueInput
+    data: XOR<ProUpdateWithoutUpdatedByInput, ProUncheckedUpdateWithoutUpdatedByInput>
+  }
+
+  export type ProUpdateManyWithWhereWithoutUpdatedByInput = {
+    where: ProScalarWhereInput
+    data: XOR<ProUpdateManyMutationInput, ProUncheckedUpdateManyWithoutUpdatedByInput>
+  }
+
   export type UserMachineAccessUpsertWithWhereUniqueWithoutUserInput = {
     where: UserMachineAccessWhereUniqueInput
     update: XOR<UserMachineAccessUpdateWithoutUserInput, UserMachineAccessUncheckedUpdateWithoutUserInput>
@@ -23525,6 +23992,8 @@ export namespace Prisma {
     productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
     checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
     createdItems?: ItemCreateNestedManyWithoutCreatedByInput
+    createdPros?: ProCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProCreateNestedManyWithoutUpdatedByInput
   }
 
   export type UserUncheckedCreateWithoutMachineAccessesInput = {
@@ -23538,6 +24007,8 @@ export namespace Prisma {
     productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
     checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
     createdItems?: ItemUncheckedCreateNestedManyWithoutCreatedByInput
+    createdPros?: ProUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProUncheckedCreateNestedManyWithoutUpdatedByInput
   }
 
   export type UserCreateOrConnectWithoutMachineAccessesInput = {
@@ -23613,6 +24084,8 @@ export namespace Prisma {
     productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
     checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
     createdItems?: ItemUpdateManyWithoutCreatedByNestedInput
+    createdPros?: ProUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUpdateManyWithoutUpdatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMachineAccessesInput = {
@@ -23626,6 +24099,8 @@ export namespace Prisma {
     productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
     checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
     createdItems?: ItemUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdPros?: ProUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUncheckedUpdateManyWithoutUpdatedByNestedInput
   }
 
   export type MachineUpsertWithoutUserAccessesInput = {
@@ -23890,6 +24365,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
     checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
+    createdPros?: ProCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProCreateNestedManyWithoutUpdatedByInput
     machineAccesses?: UserMachineAccessCreateNestedManyWithoutUserInput
   }
 
@@ -23903,6 +24380,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
     checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
+    createdPros?: ProUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProUncheckedCreateNestedManyWithoutUpdatedByInput
     machineAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -23963,6 +24442,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     proPrefix?: ProPrefixCreateNestedOneWithoutProsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedProsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedProsInput
     proses?: ProsesCreateNestedManyWithoutProInput
     inventoryTxns?: InventoryTxnCreateNestedManyWithoutProInput
   }
@@ -23978,6 +24459,8 @@ export namespace Prisma {
     type?: $Enums.ProType
     autoShiftExpansion?: boolean
     proPrefixId?: number | null
+    createdById?: string | null
+    updatedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     proses?: ProsesUncheckedCreateNestedManyWithoutProInput
@@ -24075,6 +24558,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
     checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
+    createdPros?: ProUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUpdateManyWithoutUpdatedByNestedInput
     machineAccesses?: UserMachineAccessUpdateManyWithoutUserNestedInput
   }
 
@@ -24088,6 +24573,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
     checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
+    createdPros?: ProUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUncheckedUpdateManyWithoutUpdatedByNestedInput
     machineAccesses?: UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -24140,25 +24627,6 @@ export namespace Prisma {
   export type ProUpdateManyWithWhereWithoutFgItemInput = {
     where: ProScalarWhereInput
     data: XOR<ProUpdateManyMutationInput, ProUncheckedUpdateManyWithoutFgItemInput>
-  }
-
-  export type ProScalarWhereInput = {
-    AND?: ProScalarWhereInput | ProScalarWhereInput[]
-    OR?: ProScalarWhereInput[]
-    NOT?: ProScalarWhereInput | ProScalarWhereInput[]
-    id?: IntFilter<"Pro"> | number
-    proNumber?: StringFilter<"Pro"> | string
-    productName?: StringFilter<"Pro"> | string
-    partNumber?: StringNullableFilter<"Pro"> | string | null
-    qtyPoPcs?: IntFilter<"Pro"> | number
-    startDate?: DateTimeNullableFilter<"Pro"> | Date | string | null
-    status?: EnumProStatusFilter<"Pro"> | $Enums.ProStatus
-    type?: EnumProTypeFilter<"Pro"> | $Enums.ProType
-    autoShiftExpansion?: BoolFilter<"Pro"> | boolean
-    proPrefixId?: IntNullableFilter<"Pro"> | number | null
-    fgItemId?: IntNullableFilter<"Pro"> | number | null
-    createdAt?: DateTimeFilter<"Pro"> | Date | string
-    updatedAt?: DateTimeFilter<"Pro"> | Date | string
   }
 
   export type ProsesUpsertWithWhereUniqueWithoutOutputItemInput = {
@@ -24215,6 +24683,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     fgItem?: ItemCreateNestedOneWithoutFgProsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedProsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedProsInput
     proses?: ProsesCreateNestedManyWithoutProInput
     inventoryTxns?: InventoryTxnCreateNestedManyWithoutProInput
   }
@@ -24230,6 +24700,8 @@ export namespace Prisma {
     type?: $Enums.ProType
     autoShiftExpansion?: boolean
     fgItemId?: number | null
+    createdById?: string | null
+    updatedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     proses?: ProsesUncheckedCreateNestedManyWithoutProInput
@@ -24407,6 +24879,76 @@ export namespace Prisma {
     create: XOR<ItemCreateWithoutFgProsInput, ItemUncheckedCreateWithoutFgProsInput>
   }
 
+  export type UserCreateWithoutCreatedProsInput = {
+    id?: string
+    username: string
+    passwordHash: string
+    role?: $Enums.Role
+    department?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
+    checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
+    createdItems?: ItemCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProCreateNestedManyWithoutUpdatedByInput
+    machineAccesses?: UserMachineAccessCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedProsInput = {
+    id?: string
+    username: string
+    passwordHash: string
+    role?: $Enums.Role
+    department?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
+    checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
+    createdItems?: ItemUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProUncheckedCreateNestedManyWithoutUpdatedByInput
+    machineAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedProsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedProsInput, UserUncheckedCreateWithoutCreatedProsInput>
+  }
+
+  export type UserCreateWithoutUpdatedProsInput = {
+    id?: string
+    username: string
+    passwordHash: string
+    role?: $Enums.Role
+    department?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
+    checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
+    createdItems?: ItemCreateNestedManyWithoutCreatedByInput
+    createdPros?: ProCreateNestedManyWithoutCreatedByInput
+    machineAccesses?: UserMachineAccessCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutUpdatedProsInput = {
+    id?: string
+    username: string
+    passwordHash: string
+    role?: $Enums.Role
+    department?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
+    checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
+    createdItems?: ItemUncheckedCreateNestedManyWithoutCreatedByInput
+    createdPros?: ProUncheckedCreateNestedManyWithoutCreatedByInput
+    machineAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutUpdatedProsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutUpdatedProsInput, UserUncheckedCreateWithoutUpdatedProsInput>
+  }
+
   export type ProsesCreateWithoutProInput = {
     orderNo: number
     up?: number | null
@@ -24554,6 +25096,88 @@ export namespace Prisma {
     prosesMaterials?: ProsesMaterialUncheckedUpdateManyWithoutItemMasterNestedInput
   }
 
+  export type UserUpsertWithoutCreatedProsInput = {
+    update: XOR<UserUpdateWithoutCreatedProsInput, UserUncheckedUpdateWithoutCreatedProsInput>
+    create: XOR<UserCreateWithoutCreatedProsInput, UserUncheckedCreateWithoutCreatedProsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCreatedProsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCreatedProsInput, UserUncheckedUpdateWithoutCreatedProsInput>
+  }
+
+  export type UserUpdateWithoutCreatedProsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
+    checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
+    createdItems?: ItemUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUpdateManyWithoutUpdatedByNestedInput
+    machineAccesses?: UserMachineAccessUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCreatedProsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
+    createdItems?: ItemUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUncheckedUpdateManyWithoutUpdatedByNestedInput
+    machineAccesses?: UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUpsertWithoutUpdatedProsInput = {
+    update: XOR<UserUpdateWithoutUpdatedProsInput, UserUncheckedUpdateWithoutUpdatedProsInput>
+    create: XOR<UserCreateWithoutUpdatedProsInput, UserUncheckedCreateWithoutUpdatedProsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutUpdatedProsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutUpdatedProsInput, UserUncheckedUpdateWithoutUpdatedProsInput>
+  }
+
+  export type UserUpdateWithoutUpdatedProsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
+    checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
+    createdItems?: ItemUpdateManyWithoutCreatedByNestedInput
+    createdPros?: ProUpdateManyWithoutCreatedByNestedInput
+    machineAccesses?: UserMachineAccessUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutUpdatedProsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
+    createdItems?: ItemUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdPros?: ProUncheckedUpdateManyWithoutCreatedByNestedInput
+    machineAccesses?: UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput
+  }
+
   export type ProsesUpsertWithWhereUniqueWithoutProInput = {
     where: ProsesWhereUniqueInput
     update: XOR<ProsesUpdateWithoutProInput, ProsesUncheckedUpdateWithoutProInput>
@@ -24599,6 +25223,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     proPrefix?: ProPrefixCreateNestedOneWithoutProsInput
     fgItem?: ItemCreateNestedOneWithoutFgProsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedProsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedProsInput
     inventoryTxns?: InventoryTxnCreateNestedManyWithoutProInput
   }
 
@@ -24614,6 +25240,8 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     proPrefixId?: number | null
     fgItemId?: number | null
+    createdById?: string | null
+    updatedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     inventoryTxns?: InventoryTxnUncheckedCreateNestedManyWithoutProInput
@@ -24889,6 +25517,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proPrefix?: ProPrefixUpdateOneWithoutProsNestedInput
     fgItem?: ItemUpdateOneWithoutFgProsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedProsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedProsNestedInput
     inventoryTxns?: InventoryTxnUpdateManyWithoutProNestedInput
   }
 
@@ -24904,6 +25534,8 @@ export namespace Prisma {
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
     fgItemId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProNestedInput
@@ -25247,6 +25879,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     checkedProductionReports?: ProductionReportCreateNestedManyWithoutCheckedByInput
     createdItems?: ItemCreateNestedManyWithoutCreatedByInput
+    createdPros?: ProCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProCreateNestedManyWithoutUpdatedByInput
     machineAccesses?: UserMachineAccessCreateNestedManyWithoutUserInput
   }
 
@@ -25260,6 +25894,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     checkedProductionReports?: ProductionReportUncheckedCreateNestedManyWithoutCheckedByInput
     createdItems?: ItemUncheckedCreateNestedManyWithoutCreatedByInput
+    createdPros?: ProUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProUncheckedCreateNestedManyWithoutUpdatedByInput
     machineAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -25278,6 +25914,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     productionReports?: ProductionReportCreateNestedManyWithoutCreatedByInput
     createdItems?: ItemCreateNestedManyWithoutCreatedByInput
+    createdPros?: ProCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProCreateNestedManyWithoutUpdatedByInput
     machineAccesses?: UserMachineAccessCreateNestedManyWithoutUserInput
   }
 
@@ -25291,6 +25929,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     productionReports?: ProductionReportUncheckedCreateNestedManyWithoutCreatedByInput
     createdItems?: ItemUncheckedCreateNestedManyWithoutCreatedByInput
+    createdPros?: ProUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPros?: ProUncheckedCreateNestedManyWithoutUpdatedByInput
     machineAccesses?: UserMachineAccessUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -25400,6 +26040,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     checkedProductionReports?: ProductionReportUpdateManyWithoutCheckedByNestedInput
     createdItems?: ItemUpdateManyWithoutCreatedByNestedInput
+    createdPros?: ProUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUpdateManyWithoutUpdatedByNestedInput
     machineAccesses?: UserMachineAccessUpdateManyWithoutUserNestedInput
   }
 
@@ -25413,6 +26055,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     checkedProductionReports?: ProductionReportUncheckedUpdateManyWithoutCheckedByNestedInput
     createdItems?: ItemUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdPros?: ProUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUncheckedUpdateManyWithoutUpdatedByNestedInput
     machineAccesses?: UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -25437,6 +26081,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     productionReports?: ProductionReportUpdateManyWithoutCreatedByNestedInput
     createdItems?: ItemUpdateManyWithoutCreatedByNestedInput
+    createdPros?: ProUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUpdateManyWithoutUpdatedByNestedInput
     machineAccesses?: UserMachineAccessUpdateManyWithoutUserNestedInput
   }
 
@@ -25450,6 +26096,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     productionReports?: ProductionReportUncheckedUpdateManyWithoutCreatedByNestedInput
     createdItems?: ItemUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdPros?: ProUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPros?: ProUncheckedUpdateManyWithoutUpdatedByNestedInput
     machineAccesses?: UserMachineAccessUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -25692,6 +26340,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     proPrefix?: ProPrefixCreateNestedOneWithoutProsInput
     fgItem?: ItemCreateNestedOneWithoutFgProsInput
+    createdBy?: UserCreateNestedOneWithoutCreatedProsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedProsInput
     proses?: ProsesCreateNestedManyWithoutProInput
   }
 
@@ -25707,6 +26357,8 @@ export namespace Prisma {
     autoShiftExpansion?: boolean
     proPrefixId?: number | null
     fgItemId?: number | null
+    createdById?: string | null
+    updatedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     proses?: ProsesUncheckedCreateNestedManyWithoutProInput
@@ -25936,6 +26588,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proPrefix?: ProPrefixUpdateOneWithoutProsNestedInput
     fgItem?: ItemUpdateOneWithoutFgProsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedProsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedProsNestedInput
     proses?: ProsesUpdateManyWithoutProNestedInput
   }
 
@@ -25951,6 +26605,8 @@ export namespace Prisma {
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
     fgItemId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proses?: ProsesUncheckedUpdateManyWithoutProNestedInput
@@ -26189,6 +26845,40 @@ export namespace Prisma {
     status?: $Enums.ItemStatus
     baseUom?: string | null
     createdFrom?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProCreateManyCreatedByInput = {
+    id?: number
+    proNumber: string
+    productName: string
+    partNumber?: string | null
+    qtyPoPcs: number
+    startDate?: Date | string | null
+    status?: $Enums.ProStatus
+    type?: $Enums.ProType
+    autoShiftExpansion?: boolean
+    proPrefixId?: number | null
+    fgItemId?: number | null
+    updatedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProCreateManyUpdatedByInput = {
+    id?: number
+    proNumber: string
+    productName: string
+    partNumber?: string | null
+    qtyPoPcs: number
+    startDate?: Date | string | null
+    status?: $Enums.ProStatus
+    type?: $Enums.ProType
+    autoShiftExpansion?: boolean
+    proPrefixId?: number | null
+    fgItemId?: number | null
+    createdById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26504,6 +27194,114 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ProUpdateWithoutCreatedByInput = {
+    proNumber?: StringFieldUpdateOperationsInput | string
+    productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    qtyPoPcs?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    proPrefix?: ProPrefixUpdateOneWithoutProsNestedInput
+    fgItem?: ItemUpdateOneWithoutFgProsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedProsNestedInput
+    proses?: ProsesUpdateManyWithoutProNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProNestedInput
+  }
+
+  export type ProUncheckedUpdateWithoutCreatedByInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    proNumber?: StringFieldUpdateOperationsInput | string
+    productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    qtyPoPcs?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
+    proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
+    fgItemId?: NullableIntFieldUpdateOperationsInput | number | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    proses?: ProsesUncheckedUpdateManyWithoutProNestedInput
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProNestedInput
+  }
+
+  export type ProUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    proNumber?: StringFieldUpdateOperationsInput | string
+    productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    qtyPoPcs?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
+    proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
+    fgItemId?: NullableIntFieldUpdateOperationsInput | number | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProUpdateWithoutUpdatedByInput = {
+    proNumber?: StringFieldUpdateOperationsInput | string
+    productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    qtyPoPcs?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    proPrefix?: ProPrefixUpdateOneWithoutProsNestedInput
+    fgItem?: ItemUpdateOneWithoutFgProsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedProsNestedInput
+    proses?: ProsesUpdateManyWithoutProNestedInput
+    inventoryTxns?: InventoryTxnUpdateManyWithoutProNestedInput
+  }
+
+  export type ProUncheckedUpdateWithoutUpdatedByInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    proNumber?: StringFieldUpdateOperationsInput | string
+    productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    qtyPoPcs?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
+    proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
+    fgItemId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    proses?: ProsesUncheckedUpdateManyWithoutProNestedInput
+    inventoryTxns?: InventoryTxnUncheckedUpdateManyWithoutProNestedInput
+  }
+
+  export type ProUncheckedUpdateManyWithoutUpdatedByInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    proNumber?: StringFieldUpdateOperationsInput | string
+    productName?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    qtyPoPcs?: IntFieldUpdateOperationsInput | number
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumProStatusFieldUpdateOperationsInput | $Enums.ProStatus
+    type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
+    autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
+    proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
+    fgItemId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserMachineAccessUpdateWithoutUserInput = {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     machine?: MachineUpdateOneRequiredWithoutUserAccessesNestedInput
@@ -26623,6 +27421,8 @@ export namespace Prisma {
     type?: $Enums.ProType
     autoShiftExpansion?: boolean
     proPrefixId?: number | null
+    createdById?: string | null
+    updatedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26702,6 +27502,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proPrefix?: ProPrefixUpdateOneWithoutProsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedProsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedProsNestedInput
     proses?: ProsesUpdateManyWithoutProNestedInput
     inventoryTxns?: InventoryTxnUpdateManyWithoutProNestedInput
   }
@@ -26717,6 +27519,8 @@ export namespace Prisma {
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proses?: ProsesUncheckedUpdateManyWithoutProNestedInput
@@ -26734,6 +27538,8 @@ export namespace Prisma {
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     proPrefixId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26807,6 +27613,8 @@ export namespace Prisma {
     type?: $Enums.ProType
     autoShiftExpansion?: boolean
     fgItemId?: number | null
+    createdById?: string | null
+    updatedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26841,6 +27649,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     fgItem?: ItemUpdateOneWithoutFgProsNestedInput
+    createdBy?: UserUpdateOneWithoutCreatedProsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedProsNestedInput
     proses?: ProsesUpdateManyWithoutProNestedInput
     inventoryTxns?: InventoryTxnUpdateManyWithoutProNestedInput
   }
@@ -26856,6 +27666,8 @@ export namespace Prisma {
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     fgItemId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     proses?: ProsesUncheckedUpdateManyWithoutProNestedInput
@@ -26873,6 +27685,8 @@ export namespace Prisma {
     type?: EnumProTypeFieldUpdateOperationsInput | $Enums.ProType
     autoShiftExpansion?: BoolFieldUpdateOperationsInput | boolean
     fgItemId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
