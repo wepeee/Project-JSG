@@ -18,6 +18,7 @@ type ItemResult = {
 type Props = {
   value: string;
   onChange: (code: string) => void;
+  commitMode?: "blur" | "change";
   /** Auto-infer kind from context: "FG" for Pro.partNumber, "WIP" for Proses.partNumber */
   defaultKind?: "RAW" | "WIP" | "FG" | "CONSUMABLE";
   /** Auto-fill name saat buat item baru (misal: "NamaMesin + NamaPRO") */
@@ -30,6 +31,7 @@ type Props = {
 export default function ItemCodeInput({
   value,
   onChange,
+  commitMode = "blur",
   defaultKind = "FG",
   defaultName = "",
   placeholder = "Cari / ketik Part Number...",
@@ -37,6 +39,7 @@ export default function ItemCodeInput({
   className = "",
 }: Props) {
   const [query, setQuery] = React.useState(value);
+  const [debouncedQuery, setDebouncedQuery] = React.useState(value);
   const [open, setOpen] = React.useState(false);
   const [showCreate, setShowCreate] = React.useState(false);
   const [createName, setCreateName] = React.useState("");
@@ -47,26 +50,46 @@ export default function ItemCodeInput({
   // Sync external value
   React.useEffect(() => {
     setQuery(value);
+    setDebouncedQuery(value);
     queryRef.current = value;
   }, [value]);
 
+  React.useEffect(() => {
+    if (!open) {
+      setDebouncedQuery(query);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [open, query]);
+
   // Search query
-  const searchEnabled = query.length >= 1 && open;
+  const searchEnabled = debouncedQuery.length >= 1 && open;
   const { data: results } = api.items.search.useQuery(
-    { q: query, limit: 10 },
-    { enabled: searchEnabled },
+    { q: debouncedQuery, limit: 10 },
+    {
+      enabled: searchEnabled,
+      staleTime: 5_000,
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+    },
   );
 
   // Create mutation
   const utils = api.useUtils();
   const createItem = api.items.create.useMutation({
-    onSuccess: (item) => {
+    onSuccess: async (item) => {
       onChange(item.code);
       setQuery(item.code);
       setOpen(false);
       setShowCreate(false);
       setCreateName("");
-      void utils.items.search.invalidate();
+      await Promise.all([
+        utils.items.search.invalidate(),
+        utils.materials.list.invalidate(),
+      ]);
     },
   });
 
@@ -96,10 +119,22 @@ export default function ItemCodeInput({
     setQuery(val);
     queryRef.current = val; // Selalu update ref agar blur/save bisa baca nilai terbaru
     setOpen(true);
-    // Don't update parent until user selects or blurs
+
+    if (commitMode === "change") {
+      const normalized = val.trim().toUpperCase().replace(/\s+/g, "_");
+      onChange(normalized);
+    }
   };
 
   const handleBlur = () => {
+    if (commitMode === "change") {
+      setTimeout(() => {
+        setOpen(false);
+        setShowCreate(false);
+      }, 150);
+      return;
+    }
+
     // Flush commit segera (tanpa setTimeout) agar tidak race dengan klik tombol Save
     const current = queryRef.current;
     const normalized = current.trim().toUpperCase().replace(/\s+/g, "_");

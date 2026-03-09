@@ -49,29 +49,39 @@ export const itemsRouter = createTRPCRouter({
           kind: true,
           status: true,
           baseUom: true,
-          inventoryTxns: {
-            select: { qty: true, type: true },
-          },
         },
       });
 
-      return items.map((item) => {
-        let stock = 0;
-        for (const tx of item.inventoryTxns) {
-          const q = Number(tx.qty);
-          if (tx.type === "IN" || tx.type === "ADJUST") stock += q;
-          else if (tx.type === "OUT") stock -= q;
-        }
-        return {
-          id: item.id,
-          code: item.code,
-          name: item.name,
-          kind: item.kind,
-          status: item.status,
-          baseUom: item.baseUom,
-          stock,
-        };
+      if (items.length === 0) return [];
+
+      const ids = items.map((item) => item.id);
+      const stockGroups = await ctx.db.inventoryTxn.groupBy({
+        by: ["itemMasterId", "type"],
+        where: {
+          itemMasterId: { in: ids },
+        },
+        _sum: { qty: true },
       });
+
+      const stockByItemId = new Map<number, number>();
+      for (const g of stockGroups) {
+        if (!g.itemMasterId) continue;
+        const current = stockByItemId.get(g.itemMasterId) ?? 0;
+        const amount = Number(g._sum.qty ?? 0);
+        const next =
+          g.type === "OUT" ? current - amount : current + amount; // IN + ADJUST add
+        stockByItemId.set(g.itemMasterId, next);
+      }
+
+      return items.map((item) => ({
+        id: item.id,
+        code: item.code,
+        name: item.name,
+        kind: item.kind,
+        status: item.status,
+        baseUom: item.baseUom,
+        stock: stockByItemId.get(item.id) ?? 0,
+      }));
     }),
 
   /**

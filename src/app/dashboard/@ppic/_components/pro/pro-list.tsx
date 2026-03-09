@@ -100,6 +100,14 @@ function combineDateShift(dateStr: string | null | undefined, shift: number) {
   return d;
 }
 
+function normalizeItemCode(value: string) {
+  return value.trim().toUpperCase().replace(/\s+/g, "_");
+}
+
+function newMaterialDraftKey() {
+  return Math.random().toString(36).slice(2);
+}
+
 function fmtSchedule(
   d?: Date | string | null,
   durationShifts = 0,
@@ -250,9 +258,18 @@ export default function ProList({
   initialTypeFilter,
 }: Props) {
   const utils = api.useUtils();
-  const processes = api.processes.list.useQuery({});
-  const machines = api.machines.list.useQuery();
-  const materials = api.materials.list.useQuery();
+  const processes = api.processes.list.useQuery(
+    {},
+    { staleTime: 120_000, refetchOnWindowFocus: false },
+  );
+  const machines = api.machines.list.useQuery(undefined, {
+    staleTime: 120_000,
+    refetchOnWindowFocus: false,
+  });
+  const materials = api.materials.list.useQuery({ withStock: false }, {
+    staleTime: 120_000,
+    refetchOnWindowFocus: false,
+  });
 
   // ===== VIEW STATE =====
   const [selectedId, setSelectedId] = React.useState<number | null>(
@@ -281,12 +298,15 @@ export default function ProList({
     }
   }, [initialTypeFilter]);
 
-  const list = api.pros.list.useQuery({
-    q: q.trim() ? q.trim() : undefined,
-    status: status === "ALL" ? undefined : status,
-    type: typeFilter === "ALL" ? undefined : typeFilter, // Added
-    take: 50,
-  });
+  const list = api.pros.list.useQuery(
+    {
+      q: q.trim() ? q.trim() : undefined,
+      status: status === "ALL" ? undefined : status,
+      type: typeFilter === "ALL" ? undefined : typeFilter, // Added
+      take: 50,
+    },
+    { staleTime: 30_000, refetchOnWindowFocus: false },
+  );
 
   // ===== DETAIL QUERY =====
   const detail = api.pros.getById.useQuery(
@@ -326,6 +346,94 @@ export default function ProList({
     "PAPER" | "RIGID" | "OTHER"
   >("PAPER"); // Added
   const [partNumberDraft, setPartNumberDraft] = React.useState(""); // Added
+
+  const mapTemplateMaterials = React.useCallback(
+    (templateMaterials: Array<{ materialId: number; qtyReq: number }>) => {
+      const allowedIds = materials.data
+        ? new Set((materials.data ?? []).map((m) => m.id))
+        : null;
+      return templateMaterials
+        .filter((m) => !allowedIds || allowedIds.has(m.materialId))
+        .map((m) => ({
+          key: newMaterialDraftKey(),
+          materialId: m.materialId,
+          qtyReq: String(m.qtyReq),
+        }));
+    },
+    [materials.data],
+  );
+
+  const applyTemplateToInlineStep = React.useCallback(
+    async (stepKey: string, partNumber: string) => {
+      const normalized = normalizeItemCode(partNumber);
+      if (normalized.length < 2) return;
+
+      try {
+        const result = await utils.pros.getStepTemplateByPartNumber.fetch({
+          partNumber: normalized,
+          type: proTypeDraft,
+        });
+        if (!result?.template) return;
+
+        const autoMaterials = mapTemplateMaterials(result.template.materials);
+        setStepDrafts((prev) =>
+          prev.map((step) => {
+            if (step.key !== stepKey) return step;
+            if (normalizeItemCode(step.partNumber ?? "") !== normalized) {
+              return step;
+            }
+            return {
+              ...step,
+              up:
+                result.template?.up !== null &&
+                result.template?.up !== undefined
+                  ? String(result.template.up)
+                  : step.up,
+              machineId: result.template?.machineId ?? step.machineId,
+              materials: autoMaterials.length > 0 ? autoMaterials : step.materials,
+            };
+          }),
+        );
+      } catch {
+        // Ignore lookup errors, PPIC can still input manual values.
+      }
+    },
+    [mapTemplateMaterials, proTypeDraft, utils.pros.getStepTemplateByPartNumber],
+  );
+
+  const applyTemplateToDialogStep = React.useCallback(
+    async (partNumber: string) => {
+      const normalized = normalizeItemCode(partNumber);
+      if (normalized.length < 2) return;
+
+      try {
+        const result = await utils.pros.getStepTemplateByPartNumber.fetch({
+          partNumber: normalized,
+          type: proTypeDraft,
+        });
+        if (!result?.template) return;
+
+        const autoMaterials = mapTemplateMaterials(result.template.materials);
+        setStepDraft((prev) => {
+          if (normalizeItemCode(prev.partNumber ?? "") !== normalized) {
+            return prev;
+          }
+          return {
+            ...prev,
+            up:
+              result.template?.up !== null && result.template?.up !== undefined
+                ? String(result.template.up)
+                : prev.up,
+            machineId: result.template?.machineId ?? prev.machineId,
+            materials: autoMaterials.length > 0 ? autoMaterials : prev.materials,
+          };
+        });
+      } catch {
+        // Ignore lookup errors, PPIC can still input manual values.
+      }
+    },
+    [mapTemplateMaterials, proTypeDraft, utils.pros.getStepTemplateByPartNumber],
+  );
 
   const openAddStep = () => {
     setEditingStepKey(null);
@@ -626,9 +734,13 @@ export default function ProList({
       }
     },
     onSuccess: async () => {
-      if (selectedId) await utils.pros.getById.invalidate({ id: selectedId });
-      await utils.pros.list.invalidate();
-      await utils.pros.getSchedule.invalidate();
+      await Promise.all([
+        selectedId ? utils.pros.getById.invalidate({ id: selectedId }) : null,
+        utils.pros.list.invalidate(),
+        utils.pros.getSchedule.invalidate(),
+        utils.materials.list.invalidate(),
+        utils.items.search.invalidate(),
+      ]);
       setEditing(false);
     },
   });
@@ -1082,6 +1194,7 @@ export default function ProList({
                 <ItemCodeInput
                   value={partNumberDraft}
                   onChange={(code) => setPartNumberDraft(code)}
+                  commitMode="change"
                   defaultKind="FG"
                   placeholder="Part Number (FG)"
                   disabled={!editing}
@@ -1400,7 +1513,12 @@ export default function ProList({
                                               : x,
                                           ),
                                         );
+                                        void applyTemplateToInlineStep(
+                                          (item as StepDraft).key,
+                                          code,
+                                        );
                                       }}
+                                      commitMode="change"
                                       defaultKind="WIP"
                                       placeholder="Part No."
                                       className="min-w-[100px]"
@@ -1685,12 +1803,14 @@ export default function ProList({
                   <div className="text-sm font-medium">Part Number (Step)</div>
                   <ItemCodeInput
                     value={stepDraft.partNumber || ""}
-                    onChange={(code) =>
+                    onChange={(code) => {
                       setStepDraft((prev) => ({
                         ...prev,
                         partNumber: code,
-                      }))
-                    }
+                      }));
+                      void applyTemplateToDialogStep(code);
+                    }}
+                    commitMode="change"
                     defaultKind="WIP"
                     placeholder="Part Number"
                   />
@@ -1994,17 +2114,7 @@ export default function ProList({
                       </TableCell>
                       <TableCell className="text-muted-foreground px-4 py-3 text-right text-xs">
                         {(() => {
-                          const lastStep = p.proses?.[p.proses.length - 1];
-                          let currentOutput = 0;
-                          if (lastStep?.productionReports) {
-                            currentOutput = lastStep.productionReports
-                              .filter((r: any) => r.status === "APPROVED")
-                              .reduce(
-                                (acc: number, curr: any) =>
-                                  acc + (Number(curr.qtyPassOn) || 0),
-                                0,
-                              );
-                          }
+                          const currentOutput = Number((p as any).currentOutput ?? 0);
                           return (
                             <span>
                               <span className="font-bold text-emerald-600 dark:text-emerald-400">

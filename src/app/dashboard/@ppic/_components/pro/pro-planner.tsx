@@ -78,6 +78,10 @@ function newStep(): StepDraft {
   };
 }
 
+function normalizeItemCode(value: string) {
+  return value.trim().toUpperCase().replace(/\s+/g, "_");
+}
+
 // Simple CSV Parser
 function parseCSV(text: string) {
   const result: string[][] = [];
@@ -147,14 +151,27 @@ export default function ProPlanner({
   >([{ key: uid(), materialId: null, qtyReq: "" }]);
 
   const utils = api.useUtils();
-  const processes = api.processes.list.useQuery({ type: proType });
-  const machines = api.machines.list.useQuery({ type: proType });
-  const materials = api.materials.list.useQuery({ type: proType });
+  const processes = api.processes.list.useQuery(
+    { type: proType },
+    { staleTime: 120_000, refetchOnWindowFocus: false },
+  );
+  const machines = api.machines.list.useQuery(
+    { type: proType },
+    { staleTime: 120_000, refetchOnWindowFocus: false },
+  );
+  const materials = api.materials.list.useQuery(
+    { type: proType },
+    { staleTime: 120_000, refetchOnWindowFocus: false },
+  );
 
   const createPro = api.pros.create.useMutation({
     onSuccess: async (created) => {
-      await utils.pros.list.invalidate();
-      await utils.pros.getSchedule.invalidate();
+      await Promise.all([
+        utils.pros.list.invalidate(),
+        utils.pros.getSchedule.invalidate(),
+        utils.materials.list.invalidate(),
+        utils.items.search.invalidate(),
+      ]);
       setOk(`PRO dibuat: ${created.proNumber}`);
       setProductName("");
       setPartNumber(""); // Reset
@@ -213,6 +230,91 @@ export default function ProPlanner({
 
   const getMaterial = (id: number | null) =>
     id ? ((materials.data ?? []).find((m) => m.id === id) ?? null) : null;
+
+  const rigidPnRef = React.useRef(rigidPN);
+  React.useEffect(() => {
+    rigidPnRef.current = rigidPN;
+  }, [rigidPN]);
+
+  const mapTemplateMaterials = React.useCallback(
+    (templateMaterials: Array<{ materialId: number; qtyReq: number }>) => {
+      const allowedIds = materials.data
+        ? new Set((materials.data ?? []).map((m) => m.id))
+        : null;
+      return templateMaterials
+        .filter((m) => !allowedIds || allowedIds.has(m.materialId))
+        .map((m) => ({
+          key: uid(),
+          materialId: m.materialId,
+          qtyReq: String(m.qtyReq),
+        }));
+    },
+    [materials.data],
+  );
+
+  const applyTemplateToDraftByPartNumber = React.useCallback(
+    async (partNumber: string) => {
+      const normalized = normalizeItemCode(partNumber);
+      if (normalized.length < 2) return;
+
+      try {
+        const result = await utils.pros.getStepTemplateByPartNumber.fetch({
+          partNumber: normalized,
+          type: proType,
+        });
+        if (!result?.template) return;
+
+        const autoMaterials = mapTemplateMaterials(result.template.materials);
+        setDraft((prev) => {
+          if (normalizeItemCode(prev.partNumber ?? "") !== normalized) {
+            return prev;
+          }
+          return {
+            ...prev,
+            up:
+              result.template?.up !== null && result.template?.up !== undefined
+                ? String(result.template.up)
+                : prev.up,
+            machineId: result.template?.machineId ?? prev.machineId,
+            materials: autoMaterials.length > 0 ? autoMaterials : prev.materials,
+          };
+        });
+      } catch {
+        // Ignore lookup errors, PPIC can still input manually.
+      }
+    },
+    [mapTemplateMaterials, proType, utils.pros.getStepTemplateByPartNumber],
+  );
+
+  const applyTemplateToRigidByPartNumber = React.useCallback(
+    async (partNumber: string) => {
+      const normalized = normalizeItemCode(partNumber);
+      if (normalized.length < 2) return;
+
+      try {
+        const result = await utils.pros.getStepTemplateByPartNumber.fetch({
+          partNumber: normalized,
+          type: proType,
+        });
+        if (!result?.template) return;
+        if (normalizeItemCode(rigidPnRef.current) !== normalized) return;
+
+        const autoMaterials = mapTemplateMaterials(result.template.materials);
+        if (result.template.up !== null && result.template.up !== undefined) {
+          setRigidUp(String(result.template.up));
+        }
+        if (result.template.machineId) {
+          setRigidMachineId(result.template.machineId);
+        }
+        if (autoMaterials.length > 0) {
+          setRigidMaterials(autoMaterials);
+        }
+      } catch {
+        // Ignore lookup errors, PPIC can still input manually.
+      }
+    },
+    [mapTemplateMaterials, proType, utils.pros.getStepTemplateByPartNumber],
+  );
 
   // CSV Import Logic
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -760,6 +862,7 @@ export default function ProPlanner({
                 <ItemCodeInput
                   value={partNumber}
                   onChange={setPartNumber}
+                  commitMode="change"
                   defaultKind="FG"
                   defaultName={productName}
                   placeholder="Part No. FG"
@@ -903,7 +1006,11 @@ export default function ProPlanner({
                   </div>
                   <ItemCodeInput
                     value={rigidPN}
-                    onChange={setRigidPN}
+                    onChange={(code) => {
+                      setRigidPN(code);
+                      void applyTemplateToRigidByPartNumber(code);
+                    }}
+                    commitMode="change"
                     defaultKind="WIP"
                     defaultName={`${getMachine(rigidMachineId)?.name ?? ""} ${productName}`.trim()}
                     placeholder="PN untuk proses ini"
@@ -1229,12 +1336,14 @@ export default function ProPlanner({
                 </div>
                 <ItemCodeInput
                   value={draft.partNumber || ""}
-                  onChange={(code) =>
+                  onChange={(code) => {
                     setDraft((d: StepDraft) => ({
                       ...d,
                       partNumber: code,
-                    }))
-                  }
+                    }));
+                    void applyTemplateToDraftByPartNumber(code);
+                  }}
+                  commitMode="change"
                   defaultKind="WIP"
                   defaultName={`${getMachine(draft.machineId)?.name ?? ""} ${productName}`.trim()}
                   placeholder="Part Number untuk proses ini"

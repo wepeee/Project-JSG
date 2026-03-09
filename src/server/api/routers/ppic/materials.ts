@@ -6,13 +6,15 @@ import { createTRPCRouter, ppicProcedure } from "../../trpc";
  * Materials Router — NOW backed by unified Item table.
  *
  * The frontend still calls api.materials.* but under the hood
- * we query/mutate the Item table (kind=RAW/WIP/CONSUMABLE).
+ * we query/mutate the Item table (kind=RAW/WIP/FG/CONSUMABLE).
  */
 
 // Map ProType → array of ItemKind to show
-function kindsForProType(proType?: string): string[] {
+function kindsForProType(proType?: string, includeFg = false): string[] {
   // Always show RAW + CONSUMABLE. Add WIP too for all.
-  return ["RAW", "WIP", "CONSUMABLE"];
+  const base = ["RAW", "WIP", "CONSUMABLE"];
+  if (includeFg) base.push("FG");
+  return base;
 }
 
 export const materialsRouter = createTRPCRouter({
@@ -25,52 +27,72 @@ export const materialsRouter = createTRPCRouter({
       z
         .object({
           type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(),
+          includeFg: z.boolean().optional().default(false),
+          withStock: z.boolean().optional().default(true),
         })
         .optional(),
     )
     .query(async ({ ctx, input }) => {
-      const kinds = kindsForProType(input?.type);
+      const kinds = kindsForProType(input?.type, input?.includeFg ?? false);
+      const withStock = input?.withStock ?? true;
 
-      // Fetch all Items that are RAW/WIP/CONSUMABLE and not ARCHIVED
+      // Fetch selected Item kinds and exclude ARCHIVED
       const items = await ctx.db.item.findMany({
         where: {
           kind: { in: kinds as any[] },
           status: { not: "ARCHIVED" as any },
         },
-        include: {
-          inventoryTxns: {
-            select: { qty: true, type: true },
-          },
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          kind: true,
+          status: true,
+          baseUom: true,
+          createdFrom: true,
+          createdAt: true,
+          updatedAt: true,
         },
         orderBy: { name: "asc" },
         take: 2000,
       });
 
-      // Calculate stock per item
-      return items.map((item) => {
-        let wipStock = 0;
-        for (const tx of item.inventoryTxns) {
-          const q = Number(tx.qty);
-          if (tx.type === "IN" || tx.type === "ADJUST") wipStock += q;
-          else if (tx.type === "OUT") wipStock -= q;
-        }
+      const stockByItemId = new Map<number, number>();
+      if (withStock && items.length > 0) {
+        const itemIds = items.map((item) => item.id);
+        const stockGroups = await ctx.db.inventoryTxn.groupBy({
+          by: ["itemMasterId", "type"],
+          where: {
+            itemMasterId: { in: itemIds },
+          },
+          _sum: { qty: true },
+        });
 
-        return {
-          id: item.id,
-          name: item.name,
-          uom: item.baseUom || "pcs",
-          type: item.kind, // RAW/WIP/CONSUMABLE → maps to old MaterialType
-          kind: item.kind,
-          status: item.status,
-          code: item.code,
-          wipStock,
-          // Legacy compat: relatedPro is removed for now (perf)
-          relatedPro: null,
-          createdFrom: item.createdFrom,
-          createdAt: item.createdAt,
-          updatedAt: item.updatedAt,
-        };
-      });
+        for (const g of stockGroups) {
+          if (!g.itemMasterId) continue;
+          const current = stockByItemId.get(g.itemMasterId) ?? 0;
+          const amount = Number(g._sum.qty ?? 0);
+          const next =
+            g.type === "OUT" ? current - amount : current + amount; // IN + ADJUST add
+          stockByItemId.set(g.itemMasterId, next);
+        }
+      }
+
+      return items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        uom: item.baseUom || "pcs",
+        type: item.kind, // RAW/WIP/FG/CONSUMABLE → maps to old MaterialType
+        kind: item.kind,
+        status: item.status,
+        code: item.code,
+        wipStock: withStock ? (stockByItemId.get(item.id) ?? 0) : 0,
+        // Legacy compat: relatedPro is removed for now (perf)
+        relatedPro: null,
+        createdFrom: item.createdFrom,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      }));
     }),
 
   /**
@@ -81,7 +103,7 @@ export const materialsRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1),
         uom: z.string(),
-        type: z.enum(["RAW", "WIP", "CONSUMABLE"]).default("RAW"),
+        type: z.enum(["RAW", "WIP", "FG", "CONSUMABLE"]).default("RAW"),
         code: z.string().optional(),
       }),
     )
@@ -131,7 +153,7 @@ export const materialsRouter = createTRPCRouter({
         id: z.number().int().positive(),
         name: z.string().min(1),
         uom: z.string(),
-        type: z.enum(["RAW", "WIP", "CONSUMABLE"]).optional(),
+        type: z.enum(["RAW", "WIP", "FG", "CONSUMABLE"]).optional(),
         code: z.string().optional(),
       }),
     )

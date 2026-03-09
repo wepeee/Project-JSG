@@ -10,33 +10,52 @@ import {
 const pad3 = (n: number) => String(n).padStart(3, "0"); // 001..999
 const mm = (d: Date) => String(d.getMonth() + 1).padStart(2, "0");
 const yy = (d: Date) => String(d.getFullYear()).slice(-2);
+const normalizeItemCode = (value: string) =>
+  value.trim().toUpperCase().replace(/\s+/g, "_");
+const PRO_TX_TIMEOUT_MS = 30000;
+const PRO_TX_MAX_WAIT_MS = 10000;
+
+type ItemLookupTx = Pick<Prisma.TransactionClient, "item">;
 
 /** Resolve partNumber string to Item.id (auto-registers missing items as DRAFT) */
-const lookupItemId = async (
-  tx: any,
-  partNumber?: string | null,
-  defaultKind: "FG" | "WIP" = "FG",
-  userId?: string,
-  fallbackName?: string,
-) => {
-  if (!partNumber?.trim()) return null;
-  const raw = partNumber.trim();
-  const code = raw.replace(/\s+/g, "_").toUpperCase();
-  const item = await tx.item.findUnique({ where: { code } });
-  if (item) return item.id;
+const createItemIdResolver = (tx: ItemLookupTx, userId?: string) => {
+  const cache = new Map<string, number>();
 
-  // Auto-register unregistered Part Numbers
-  const newItem = await tx.item.create({
-    data: {
-      code,
-      name: fallbackName?.trim() || raw,
-      kind: defaultKind,
-      status: "DRAFT",
-      createdFrom: "PRO_AUTO",
-      ...(userId ? { createdById: userId } : {}),
-    },
-  });
-  return newItem.id;
+  return async (
+    partNumber?: string | null,
+    defaultKind: "FG" | "WIP" = "FG",
+    fallbackName?: string,
+  ) => {
+    if (!partNumber?.trim()) return null;
+    const raw = partNumber.trim();
+    const code = normalizeItemCode(raw);
+    const cached = cache.get(code);
+    if (cached) return cached;
+
+    const item = await tx.item.findUnique({
+      where: { code },
+      select: { id: true },
+    });
+    if (item) {
+      cache.set(code, item.id);
+      return item.id;
+    }
+
+    // Auto-register unregistered Part Numbers
+    const newItem = await tx.item.create({
+      data: {
+        code,
+        name: fallbackName?.trim() || raw,
+        kind: defaultKind,
+        status: "DRAFT",
+        createdFrom: "PRO_AUTO",
+        ...(userId ? { createdById: userId } : {}),
+      },
+      select: { id: true },
+    });
+    cache.set(code, newItem.id);
+    return newItem.id;
+  };
 };
 
 const startOfDay = (d: Date) => {
@@ -111,33 +130,7 @@ export const prosRouter = createTRPCRouter({
             select: {
               id: true,
               orderNo: true,
-              up: true,
-              machine: {
-                select: {
-                  name: true,
-                  stdOutputPerHour: true,
-                  stdOutputPerShift: true,
-                  uom: true,
-                },
-              },
               startDate: true,
-              partNumber: true, // Step Output Part Number
-              estimatedShifts: true,
-              materials: {
-                select: {
-                  qtyReq: true,
-                  itemMasterId: true,
-                  itemMaster: {
-                    select: { id: true, name: true, baseUom: true },
-                  },
-                },
-              },
-              productionReports: {
-                select: {
-                  status: true,
-                  qtyPassOn: true,
-                },
-              },
             },
           },
         },
@@ -149,7 +142,119 @@ export const prosRouter = createTRPCRouter({
         nextCursor = next.id;
       }
 
-      return { items, nextCursor };
+      const lastStepIds = items
+        .map((pro) => pro.proses[pro.proses.length - 1]?.id)
+        .filter((id): id is number => !!id);
+
+      const reportGroups =
+        lastStepIds.length > 0
+          ? await ctx.db.productionReport.groupBy({
+              by: ["prosesId"],
+              where: {
+                prosesId: { in: lastStepIds },
+                status: "APPROVED",
+              },
+              _sum: { qtyPassOn: true },
+            })
+          : [];
+
+      const outputByProsesId = new Map<number, number>();
+      for (const g of reportGroups) {
+        outputByProsesId.set(g.prosesId, Number(g._sum.qtyPassOn ?? 0));
+      }
+
+      const enrichedItems = items.map((pro) => {
+        const lastStepId = pro.proses[pro.proses.length - 1]?.id;
+        return {
+          ...pro,
+          currentOutput: lastStepId ? (outputByProsesId.get(lastStepId) ?? 0) : 0,
+        };
+      });
+
+      return { items: enrichedItems, nextCursor };
+    }),
+
+  getStepTemplateByPartNumber: ppicProcedure
+    .input(
+      z.object({
+        partNumber: z.string().min(1),
+        type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const normalizedCode = normalizeItemCode(input.partNumber);
+      if (!normalizedCode) {
+        return {
+          normalizedCode: "",
+          itemFound: false,
+          template: null,
+        };
+      }
+
+      const item = await ctx.db.item.findUnique({
+        where: { code: normalizedCode },
+        select: { id: true, code: true },
+      });
+
+      if (!item) {
+        return {
+          normalizedCode,
+          itemFound: false,
+          template: null,
+        };
+      }
+
+      const where: Prisma.ProsesWhereInput = {
+        OR: [
+          { outputItemId: item.id },
+          {
+            partNumber: {
+              equals: normalizedCode,
+              mode: "insensitive",
+            },
+          },
+        ],
+        ...(input.type ? { pro: { type: input.type } } : {}),
+      };
+
+      const latestStep = await ctx.db.proses.findFirst({
+        where,
+        orderBy: { id: "desc" },
+        select: {
+          id: true,
+          up: true,
+          machineId: true,
+          materials: {
+            orderBy: { id: "asc" },
+            select: {
+              itemMasterId: true,
+              qtyReq: true,
+            },
+          },
+        },
+      });
+
+      if (!latestStep) {
+        return {
+          normalizedCode: item.code,
+          itemFound: true,
+          template: null,
+        };
+      }
+
+      return {
+        normalizedCode: item.code,
+        itemFound: true,
+        template: {
+          stepId: latestStep.id,
+          up: latestStep.up,
+          machineId: latestStep.machineId,
+          materials: latestStep.materials.map((m) => ({
+            materialId: m.itemMasterId,
+            qtyReq: Number(m.qtyReq),
+          })),
+        },
+      };
     }),
 
   create: ppicProcedure
@@ -221,6 +326,7 @@ export const prosRouter = createTRPCRouter({
       const prefix = `${prefixData.code}${mm(baseDate)}${yy(baseDate)}`; // 6 digit
 
       return ctx.db.$transaction(async (tx) => {
+        const resolveItemId = createItemIdResolver(tx, ctx.session?.user?.id);
         let proNumber = input.proNumber?.trim();
 
         if (!proNumber) {
@@ -245,13 +351,32 @@ export const prosRouter = createTRPCRouter({
         // AUTO-SET PRO.startDate from first step's startDate
         const firstStepDate = input.proses[0]?.startDate ?? undefined;
 
-        const fgItemId = await lookupItemId(
-          tx,
+        const fgItemId = await resolveItemId(
           input.partNumber,
           "FG",
-          ctx.session?.user?.id,
           input.productName,
         );
+
+        const machineIds = Array.from(
+          new Set(
+            input.proses
+              .map((s) => s.machineId)
+              .filter((id): id is number => !!id),
+          ),
+        );
+        const machineRows =
+          machineIds.length > 0
+            ? await tx.machine.findMany({
+                where: { id: { in: machineIds } },
+                select: {
+                  id: true,
+                  name: true,
+                  stdOutputPerShift: true,
+                  uom: true,
+                },
+              })
+            : [];
+        const machineById = new Map(machineRows.map((m) => [m.id, m]));
 
         const created = await tx.pro.create({
           data: {
@@ -290,10 +415,7 @@ export const prosRouter = createTRPCRouter({
           let isSheet = false;
           let machineName = "";
           if (inputStep.machineId) {
-            const m = await tx.machine.findUnique({
-              where: { id: inputStep.machineId },
-              select: { stdOutputPerShift: true, uom: true, name: true },
-            });
+            const m = machineById.get(inputStep.machineId);
             if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
             if (m?.uom === "sheet") isSheet = true;
             if (m?.name) machineName = m.name;
@@ -325,6 +447,7 @@ export const prosRouter = createTRPCRouter({
                 inputStep.machineId,
                 getShiftDate(currentDay, currentShift),
                 sheetsInThisShift,
+                machineById,
               );
             }
 
@@ -337,11 +460,9 @@ export const prosRouter = createTRPCRouter({
                 startDate: getShiftDate(currentDay, currentShift),
                 partNumber: inputStep.partNumber,
                 batchNo: inputStep.batchNo,
-                outputItemId: await lookupItemId(
-                  tx,
+                outputItemId: await resolveItemId(
                   inputStep.partNumber,
                   "WIP",
-                  ctx.session?.user?.id,
                   `${machineName} ${input.productName}`.trim(),
                 ),
                 materials: {
@@ -364,7 +485,7 @@ export const prosRouter = createTRPCRouter({
           }
         }
         return created;
-      });
+      }, { timeout: PRO_TX_TIMEOUT_MS, maxWait: PRO_TX_MAX_WAIT_MS });
     }),
 
   getById: ppicProcedure
@@ -473,6 +594,7 @@ export const prosRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
       return db.$transaction(async (tx) => {
+        const resolveItemId = createItemIdResolver(tx, ctx.session.user.id);
         // 1. Fetch old PRO
         const oldPro = await tx.pro.findUnique({
           where: { id: input.id },
@@ -517,7 +639,7 @@ export const prosRouter = createTRPCRouter({
 
         const nextFgItemId =
           input.partNumber !== undefined
-            ? await lookupItemId(tx, input.partNumber, "FG", ctx.session.user.id)
+            ? await resolveItemId(input.partNumber, "FG")
             : undefined;
 
         // 2. Update header
@@ -549,25 +671,64 @@ export const prosRouter = createTRPCRouter({
           select: { id: true },
         });
 
+        const existingStepIds = input.proses
+          .map((s) => s.id)
+          .filter((id): id is number => !!id);
+        const lockedRows =
+          existingStepIds.length > 0
+            ? await tx.inventoryTxn.findMany({
+                where: { prosesId: { in: existingStepIds } },
+                select: { prosesId: true },
+                distinct: ["prosesId"],
+              })
+            : [];
+        const lockedProsesIds = new Set(
+          lockedRows
+            .map((row) => row.prosesId)
+            .filter((id): id is number => id !== null),
+        );
+
+        const machineIds = Array.from(
+          new Set(
+            input.proses
+              .map((s) => s.machineId)
+              .filter((id): id is number => !!id),
+          ),
+        );
+        const machineRows =
+          machineIds.length > 0
+            ? await tx.machine.findMany({
+                where: { id: { in: machineIds } },
+                select: { id: true, name: true },
+              })
+            : [];
+        const machineNameById = new Map(machineRows.map((m) => [m.id, m.name]));
+
         const inputIds = new Set(
           input.proses.map((s) => s.id).filter((id): id is number => !!id),
         );
         const existingIds = new Set(existingProses.map((s) => s.id));
 
         const toDelete = existingProses.filter((s) => !inputIds.has(s.id));
-        for (const step of toDelete) {
-          // Check for approved reports
+        const toDeleteIds = toDelete.map((s) => s.id);
+        if (toDeleteIds.length > 0) {
           const hasApprovedReports = await tx.productionReport.findFirst({
-            where: { prosesId: step.id, status: "APPROVED" },
+            where: {
+              prosesId: { in: toDeleteIds },
+              status: "APPROVED",
+            },
+            select: { prosesId: true },
           });
 
-          if (hasApprovedReports) {
+          if (hasApprovedReports?.prosesId) {
             throw new TRPCError({
               code: "PRECONDITION_FAILED",
-              message: `Step ID ${step.id} memiliki laporan APPROVED. Tidak bisa dihapus.`,
+              message: `Step ID ${hasApprovedReports.prosesId} memiliki laporan APPROVED. Tidak bisa dihapus.`,
             });
           }
+        }
 
+        for (const step of toDelete) {
           try {
             await tx.proses.delete({ where: { id: step.id } });
           } catch (e: any) {
@@ -601,11 +762,7 @@ export const prosRouter = createTRPCRouter({
 
           const recreateMaterials = async (prosesId: number) => {
             // MATERIAL LOCK GUARD: reject material changes if inventory txns exist
-            const hasTxns = await tx.inventoryTxn.findFirst({
-              where: { prosesId },
-              select: { id: true },
-            });
-            if (hasTxns) {
+            if (lockedProsesIds.has(prosesId)) {
               throw new TRPCError({
                 code: "PRECONDITION_FAILED",
                 message: `Tidak bisa mengubah material proses (ID: ${prosesId}) karena sudah ada transaksi inventory.`,
@@ -625,14 +782,9 @@ export const prosRouter = createTRPCRouter({
           };
 
           // Resolve machine name for item fallback
-          let stepMachineName = "";
-          if (s.machineId) {
-            const mach = await tx.machine.findUnique({
-              where: { id: s.machineId },
-              select: { name: true },
-            });
-            if (mach?.name) stepMachineName = mach.name;
-          }
+          const stepMachineName = s.machineId
+            ? (machineNameById.get(s.machineId) ?? "")
+            : "";
 
           if (s.id && existingIds.has(s.id)) {
             await tx.proses.update({
@@ -643,11 +795,9 @@ export const prosRouter = createTRPCRouter({
                 machineId: s.machineId ?? null,
                 partNumber: s.partNumber,
                 batchNo: s.batchNo,
-                outputItemId: await lookupItemId(
-                  tx,
+                outputItemId: await resolveItemId(
                   s.partNumber,
                   "WIP",
-                  ctx.session?.user?.id,
                   `${stepMachineName} ${input.productName}`.trim(),
                 ),
                 startDate: stepDate,
@@ -665,11 +815,9 @@ export const prosRouter = createTRPCRouter({
                 startDate: stepDate,
                 partNumber: s.partNumber,
                 batchNo: s.batchNo,
-                outputItemId: await lookupItemId(
-                  tx,
+                outputItemId: await resolveItemId(
                   s.partNumber,
                   "WIP",
-                  ctx.session?.user?.id,
                   `${stepMachineName} ${input.productName}`.trim(),
                 ),
                 estimatedShifts: needs,
@@ -695,7 +843,7 @@ export const prosRouter = createTRPCRouter({
           where: { id: input.id },
           select: { id: true, proNumber: true },
         });
-      });
+      }, { timeout: PRO_TX_TIMEOUT_MS, maxWait: PRO_TX_MAX_WAIT_MS });
     }),
 
   delete: ppicProcedure
@@ -878,33 +1026,70 @@ async function checkCapacity(
   machineId: number | null,
   slotDate: Date,
   newLoadSheets: number,
+  machineMetaCache?: Map<
+    number,
+    {
+      id: number;
+      name: string;
+      uom: string;
+      stdOutputPerShift: number;
+    }
+  >,
 ) {
   if (!machineId) return;
 
-  const machine = await tx.machine.findUnique({ where: { id: machineId } });
+  let machine = machineMetaCache?.get(machineId);
+  if (!machine) {
+    const dbMachine = await tx.machine.findUnique({
+      where: { id: machineId },
+      select: { id: true, name: true, uom: true, stdOutputPerShift: true },
+    });
+    if (!dbMachine) return;
+    machine = {
+      id: dbMachine.id,
+      name: dbMachine.name,
+      uom: dbMachine.uom,
+      stdOutputPerShift: dbMachine.stdOutputPerShift ?? 0,
+    };
+    machineMetaCache?.set(machineId, machine);
+  }
   if (!machine || machine.uom !== "sheet" || !machine.stdOutputPerShift) return;
+
+  const shiftIndex = getShiftFromTime(slotDate);
+  const shiftStart = startOfDay(slotDate);
+  const shiftEnd = startOfDay(slotDate);
+  if (shiftIndex === 0) {
+    shiftStart.setHours(0, 0, 0, 0);
+    shiftEnd.setHours(11, 0, 0, 0);
+  } else if (shiftIndex === 1) {
+    shiftStart.setHours(11, 0, 0, 0);
+    shiftEnd.setHours(16, 0, 0, 0);
+  } else {
+    shiftStart.setHours(16, 0, 0, 0);
+    shiftEnd.setDate(shiftEnd.getDate() + 1);
+    shiftEnd.setHours(0, 0, 0, 0);
+  }
 
   const max = machine.stdOutputPerShift;
 
-  const existingSteps = await tx.proses.findMany({
+  const currentLoadAgg = await tx.prosesMaterial.aggregate({
     where: {
-      machineId,
-      pro: { status: { notIn: [ProStatus.CLOSED, ProStatus.CANCELLED] } },
+      proses: {
+        machineId,
+        startDate: { gte: shiftStart, lt: shiftEnd },
+        pro: { status: { notIn: [ProStatus.CLOSED, ProStatus.CANCELLED] } },
+      },
+      itemMaster: {
+        baseUom: {
+          equals: "sheet",
+          mode: "insensitive",
+        },
+      },
     },
-    include: {
-      materials: { include: { itemMaster: true } },
-    },
+    _sum: { qtyReq: true },
   });
 
-  let currentLoad = 0;
-  for (const s of existingSteps) {
-    const sheetMat = s.materials.find(
-      (m) => m.itemMaster?.baseUom?.toLowerCase() === "sheet",
-    );
-    if (sheetMat) {
-      currentLoad += Number(sheetMat.qtyReq);
-    }
-  }
+  const currentLoad = Number(currentLoadAgg._sum.qtyReq ?? 0);
 
   if (currentLoad + newLoadSheets > max) {
     const shiftName =

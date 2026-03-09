@@ -1,20 +1,79 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "../../../../../generated/prisma";
-import { createTRPCRouter, protectedProcedure } from "../../trpc";
+import { createTRPCRouter, ppicProcedure } from "../../trpc";
 
-// kalau kamu punya ppicProcedure, pakai itu. Ini versi aman minimal.
-const ppicProcedure = protectedProcedure;
+const SAFE_TYPES = new Set(["PAPER", "RIGID", "OTHER"]);
+type PrefixRow = { id: number; code: string; name: string; type?: string | null };
+
+function normalizePrefixType(typeValue: string | null | undefined) {
+  return SAFE_TYPES.has(typeValue ?? "") ? typeValue! : "PAPER";
+}
 
 export const processesRouter = createTRPCRouter({
   list: ppicProcedure
     .input(z.object({ type: z.enum(["PAPER", "RIGID", "OTHER"]).optional() }))
-    .query(({ ctx, input }) => {
-      // Logic adjusted to use ProPrefix (formerly Kode_Proses)
-      return ctx.db.proPrefix.findMany({
-        where: input.type ? { type: input.type } : undefined,
-        orderBy: { code: "asc" },
-      });
+    .query(async ({ ctx, input }) => {
+      // Primary path: typed Prisma query
+      try {
+        return await ctx.db.proPrefix.findMany({
+          where: input.type ? { type: input.type } : undefined,
+          orderBy: { code: "asc" },
+        });
+      } catch (e: any) {
+        // Fallback path: tolerate legacy data/schema drift (e.g., old nullable/missing type column)
+        try {
+          const rows = await ctx.db.$queryRaw<PrefixRow[]>`
+            SELECT "id", "code", "name", "type"::text AS "type"
+            FROM "ProPrefix"
+            ORDER BY "code" ASC
+          `;
+
+          const normalized = rows
+            .map((r) => ({
+              id: r.id,
+              code: r.code,
+              name: r.name,
+              type: normalizePrefixType(r.type),
+            }))
+            .filter((r) => (input.type ? r.type === input.type : true));
+
+          return normalized;
+        } catch {
+          try {
+            const rowsNoType = await ctx.db.$queryRaw<
+              Array<{ id: number; code: string; name: string }>
+            >`
+              SELECT "id", "code", "name"
+              FROM "ProPrefix"
+              ORDER BY "code" ASC
+            `;
+
+            const normalized = rowsNoType.map((r) => ({
+              id: r.id,
+              code: r.code,
+              name: r.name,
+              type: "PAPER" as const,
+            }));
+
+            return input.type
+              ? normalized.filter((r) => r.type === input.type)
+              : normalized;
+          } catch {
+            if (
+              e instanceof Prisma.PrismaClientKnownRequestError ||
+              e instanceof Prisma.PrismaClientUnknownRequestError
+            ) {
+              throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message:
+                  "Master proses gagal dibaca. Kemungkinan schema DB belum sinkron. Jalankan migrasi/db push terbaru.",
+              });
+            }
+            throw e;
+          }
+        }
+      }
     }),
 
   create: ppicProcedure
