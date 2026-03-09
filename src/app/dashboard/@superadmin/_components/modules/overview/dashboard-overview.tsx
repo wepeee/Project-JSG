@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 import { api } from "../../../../../../trpc/react";
 import {
@@ -37,10 +38,29 @@ type Props = {
   department?: string;
 };
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
+const COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+];
+const COLOR_GOOD = "var(--chart-1)";
+const COLOR_REJECT = "var(--destructive)";
+const COLOR_DOWNTIME = "var(--chart-3)";
+const DAY_MOOD: Record<number, { emoji: string; note: string }> = {
+  0: { emoji: "🌤️", note: "Awal minggu baru, tetap santai tapi fokus." }, // Minggu
+  1: { emoji: "💪", note: "Senin produktif, gas pelan tapi konsisten." },
+  2: { emoji: "🚀", note: "Selasa ngebut, ritme kerja dijaga." },
+  3: { emoji: "🔥", note: "Rabu on fire, jaga momentum." },
+  4: { emoji: "⚡", note: "Kamis solid, tinggal push sedikit lagi." },
+  5: { emoji: "🎯", note: "Jumat tuntas, bereskan target utama." },
+  6: { emoji: "😎", note: "Sabtu santuy, tetap cek performa penting." },
+};
 
 export default function DashboardOverview({ department }: Props) {
   const [viewMode, setViewMode] = useState<"daily" | "weekly">("daily");
+  const { data: session } = useSession();
   const safeDepartment =
     typeof department === "string" ? department : undefined;
 
@@ -58,7 +78,7 @@ export default function DashboardOverview({ department }: Props) {
 
   if (error) {
     return (
-      <div className="flex h-64 w-full items-center justify-center text-red-500">
+      <div className="text-destructive flex h-64 w-full items-center justify-center">
         Error loading dashboard data: {error.message}
       </div>
     );
@@ -76,40 +96,65 @@ export default function DashboardOverview({ department }: Props) {
       ? ((summary.totalGood / summary.totalOutput) * 100).toFixed(1)
       : "0.0";
 
+  const hour = new Date().getHours();
+  const dayIndex = new Date().getDay();
+  const dayMood = DAY_MOOD[dayIndex] ?? DAY_MOOD[1]!;
+  const greeting =
+    hour < 11
+      ? "Selamat pagi"
+      : hour < 15
+        ? "Selamat siang"
+        : hour < 19
+          ? "Selamat sore"
+          : "Selamat malam";
+  const displayName =
+    session?.user?.name ?? session?.user?.email ?? "User";
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            {greeting}, {displayName} {dayMood.emoji}
+          </CardTitle>
+          <CardDescription>
+            {dayMood.note}
+          </CardDescription>
+        </CardHeader>
+      </Card>
+
       {/* 1. Metric Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total Output"
           value={summary.totalOutput.toLocaleString()}
           description="PCS (30 Hari Terakhir)"
-          icon={<TrendingUp className="h-4 w-4 text-blue-500" />}
+          icon={<TrendingUp className="h-4 w-4" style={{ color: COLOR_GOOD }} />}
           trend="Total Produksi"
         />
         <StatsCard
           title="Produk Baik"
           value={summary.totalGood.toLocaleString()}
           description="PCS (30 Hari Terakhir)"
-          icon={<CheckCircle className="h-4 w-4 text-green-500" />}
+          icon={<CheckCircle className="h-4 w-4" style={{ color: COLOR_GOOD }} />}
           trend={`${efficiency}% Efisiensi`}
-          trendColor="text-green-500"
+          trendColor={COLOR_GOOD}
         />
         <StatsCard
           title="Total Reject"
           value={summary.totalReject.toLocaleString()}
           description="PCS (30 Hari Terakhir)"
-          icon={<AlertCircle className="h-4 w-4 text-red-500" />}
+          icon={<AlertCircle className="h-4 w-4" style={{ color: COLOR_REJECT }} />}
           trend={`${((summary.totalReject / (summary.totalOutput || 1)) * 100).toFixed(1)}% Rate Reject`}
-          trendColor="text-red-500"
+          trendColor={COLOR_REJECT}
         />
         <StatsCard
           title="Downtime"
           value={`${Math.round(summary.totalDowntime / 60)} Jam`}
           description="Total Waktu Hilang"
-          icon={<Clock className="h-4 w-4 text-orange-500" />}
+          icon={<Clock className="h-4 w-4" style={{ color: COLOR_DOWNTIME }} />}
           trend={`${summary.totalDowntime.toLocaleString()} Menit`}
-          trendColor="text-orange-500"
+          trendColor={COLOR_DOWNTIME}
           breakdown={[
               { label: "Planned", value: `${Math.round(summary.totalPlannedDowntime / 60)}h` },
               { label: "Unplanned", value: `${Math.round(summary.totalUnplannedDowntime / 60)}h` }
@@ -156,7 +201,7 @@ export default function DashboardOverview({ department }: Props) {
               />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip 
-                contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                contentStyle={{ borderRadius: "8px", border: "1px solid var(--border)", background: "var(--popover)" }}
                 labelFormatter={(label) => 
                     viewMode === "daily"
                         ? new Date(label).toLocaleDateString("id-ID", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
@@ -167,7 +212,7 @@ export default function DashboardOverview({ department }: Props) {
               <Line
                 type="monotone"
                 dataKey="good"
-                stroke="#10b981" // green-500
+                stroke={COLOR_GOOD}
                 strokeWidth={2}
                 name="Jml Baik"
                 dot={false}
@@ -176,7 +221,7 @@ export default function DashboardOverview({ department }: Props) {
               <Line
                 type="monotone"
                 dataKey="reject"
-                stroke="#ef4444" // red-500
+                stroke={COLOR_REJECT}
                 strokeWidth={2}
                 name="Jml Reject"
                 dot={false}
@@ -232,7 +277,7 @@ export default function DashboardOverview({ department }: Props) {
                             cx="50%"
                             cy="50%"
                             outerRadius={80}
-                            fill="#8884d8"
+                            fill="var(--chart-4)"
                             label
                         >
                              {rejectTypes.slice(0, 5).map((entry: any, index: number) => (
@@ -267,8 +312,8 @@ export default function DashboardOverview({ department }: Props) {
                           outerRadius={100}
                           label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? "Unknown"} ${((percent || 0) * 100).toFixed(0)}%`}
                       >
-                          <Cell fill="#ef4444" /> {/* Unplanned - Red */}
-                          <Cell fill="#3b82f6" /> {/* Planned - Blue */}
+                          <Cell fill={COLOR_REJECT} />
+                          <Cell fill={COLOR_GOOD} />
                       </Pie>
                       <Tooltip formatter={(value: any) => [`${Math.round((value || 0) / 60)} Jam (${value || 0} m)`, "Durasi"] as [string, string]} />
                       <Legend verticalAlign="bottom" height={36}/>
@@ -287,7 +332,7 @@ function StatsCard({
   description,
   icon,
   trend,
-  trendColor = "text-muted-foreground",
+  trendColor = "var(--muted-foreground)",
   breakdown,
 }: {
   title: string;
@@ -308,7 +353,7 @@ function StatsCard({
         <div className="text-2xl font-bold">{value}</div>
         <p className="text-xs text-muted-foreground">{description}</p>
         {trend && (
-            <p className={`mt-2 text-xs font-medium ${trendColor}`}>
+            <p className="mt-2 text-xs font-medium" style={{ color: trendColor }}>
                 {trend}
             </p>
         )}

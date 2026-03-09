@@ -3,6 +3,13 @@ import { createTRPCRouter, protectedProcedure } from "../../trpc";
 
 // Durasi 1 shift = 7 jam produksi (420 menit), asumsi umum
 const SHIFT_MINUTES = 420;
+type OeeProType = "PAPER" | "RIGID" | "ALL";
+
+function buildProTypeWhere(proType: OeeProType | undefined) {
+  if (proType === "RIGID") return { type: "RIGID" as const };
+  if (proType === "ALL") return {};
+  return { type: "PAPER" as const };
+}
 
 export const oeeRouter = createTRPCRouter({
   getMachineOee: protectedProcedure
@@ -12,6 +19,7 @@ export const oeeRouter = createTRPCRouter({
         endDate: z.date().optional(),
         machineId: z.number().optional(),
         groupBy: z.enum(["day", "week", "month"]).default("week"),
+        proType: z.enum(["PAPER", "RIGID", "ALL"]).default("PAPER"),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -19,13 +27,14 @@ export const oeeRouter = createTRPCRouter({
       const startDate =
         input.startDate ??
         new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const proWhere = buildProTypeWhere(input.proType);
 
       const reports = await ctx.db.productionReport.findMany({
         where: {
           status: "APPROVED",
           reportDate: { gte: startDate, lte: endDate },
           proses: {
-            pro: { type: "PAPER" },
+            pro: proWhere,
             ...(input.machineId ? { machineId: input.machineId } : {}),
           },
         },
@@ -237,17 +246,19 @@ export const oeeRouter = createTRPCRouter({
       startDate: z.date().optional(),
       endDate: z.date().optional(),
       machineId: z.number().optional(),
+      proType: z.enum(["PAPER", "RIGID", "ALL"]).default("PAPER"),
     }))
     .query(async ({ ctx, input }) => {
       const endDate = input.endDate ?? new Date();
       const startDate = input.startDate ?? new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const proWhere = buildProTypeWhere(input.proType);
 
       const reports = await ctx.db.productionReport.findMany({
         where: {
           status: "APPROVED",
           reportDate: { gte: startDate, lte: endDate },
           proses: {
-            pro: { type: "PAPER" },
+            pro: proWhere,
             ...(input.machineId ? { machineId: input.machineId } : {}),
           },
         },
@@ -279,17 +290,19 @@ export const oeeRouter = createTRPCRouter({
       startDate: z.date().optional(),
       endDate: z.date().optional(),
       machineId: z.number().optional(),
+      proType: z.enum(["PAPER", "RIGID", "ALL"]).default("PAPER"),
     }))
     .query(async ({ ctx, input }) => {
       const endDate = input.endDate ?? new Date();
       const startDate = input.startDate ?? new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const proWhere = buildProTypeWhere(input.proType);
 
       const reports = await ctx.db.productionReport.findMany({
         where: {
           status: "APPROVED",
           reportDate: { gte: startDate, lte: endDate },
           proses: {
-            pro: { type: "PAPER" },
+            pro: proWhere,
             ...(input.machineId ? { machineId: input.machineId } : {}),
           },
         },

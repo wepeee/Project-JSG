@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { api } from "~/trpc/react";
@@ -33,6 +33,26 @@ const OEE_WORLD_CLASS = 85;
 const AVAIL_TARGET = 90;
 const PERF_TARGET = 95;
 const QUAL_TARGET = 99;
+const COLOR_AVAIL = "var(--chart-1)";
+const COLOR_PERF = "var(--chart-2)";
+const COLOR_QUAL = "var(--chart-3)";
+const COLOR_WARN = "var(--chart-3)";
+const COLOR_GOOD = "var(--primary)";
+const COLOR_BAD = "var(--destructive)";
+const COLOR_TARGET_LINE = "var(--ring)";
+const CHART_COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+];
+type OeeProType = "PAPER" | "RIGID" | "ALL";
+
+type OeeDashboardProps = {
+  defaultProType?: OeeProType;
+  showProTypeFilter?: boolean;
+};
 
 function getDateRange(preset: string): { start: Date; end: Date } {
   const end = new Date();
@@ -47,9 +67,9 @@ function getDateRange(preset: string): { start: Date; end: Date } {
 }
 
 function oeeColor(val: number) {
-  if (val >= OEE_WORLD_CLASS) return "#22c55e";
-  if (val >= 65) return "#f59e0b";
-  return "#ef4444";
+  if (val >= OEE_WORLD_CLASS) return COLOR_GOOD;
+  if (val >= 65) return COLOR_WARN;
+  return COLOR_BAD;
 }
 
 function GaugeMeter({ value, label, color, size = 120 }: { value: number; label: string; color: string; size?: number }) {
@@ -88,7 +108,7 @@ function StatCard({ label, value, icon, color, sub }: { label: string; value: st
     <div className="bg-card border-border rounded-xl border p-4">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">{label}</span>
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${color}20` }}>
+        <div className="bg-muted flex h-8 w-8 items-center justify-center rounded-lg">
           <div style={{ color }}>{icon}</div>
         </div>
       </div>
@@ -114,22 +134,26 @@ function OeeTooltip({ active, payload, label }: any) {
   );
 }
 
-export default function OeeDashboard() {
+export default function OeeDashboard({
+  defaultProType = "PAPER",
+  showProTypeFilter = false,
+}: OeeDashboardProps) {
   const [datePreset, setDatePreset] = React.useState("30d");
   const [groupBy, setGroupBy] = React.useState<"day" | "week" | "month">("week");
+  const [proType, setProType] = React.useState<OeeProType>(defaultProType);
 
   const { start, end } = React.useMemo(() => getDateRange(datePreset), [datePreset]);
 
-  const { data, isLoading, refetch, isRefetching } = api.oee.getMachineOee.useQuery({ startDate: start, endDate: end, groupBy });
-  const { data: rejectData } = api.oee.getRejectBreakdown.useQuery({ startDate: start, endDate: end });
-  const { data: downtimeData } = api.oee.getDowntimeBreakdown.useQuery({ startDate: start, endDate: end });
+  const { data, isLoading, refetch, isRefetching } = api.oee.getMachineOee.useQuery({ startDate: start, endDate: end, groupBy, proType });
+  const { data: rejectData } = api.oee.getRejectBreakdown.useQuery({ startDate: start, endDate: end, proType });
+  const { data: downtimeData } = api.oee.getDowntimeBreakdown.useQuery({ startDate: start, endDate: end, proType });
 
   const summary = data?.summary;
   const oeeVal = summary?.oee ?? 0;
   const oeeGauge = oeeColor(oeeVal);
 
   const radarData = data?.machineOee.map((m) => ({
-    machine: m.machineName.length > 12 ? m.machineName.slice(0, 12) + "…" : m.machineName,
+    machine: m.machineName.length > 12 ? m.machineName.slice(0, 12) + "â€¦" : m.machineName,
     OEE: m.oee, Availability: m.availability, Performance: m.performance, Quality: m.quality,
   })) ?? [];
 
@@ -138,10 +162,27 @@ export default function OeeDashboard() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-foreground text-xl font-bold">OEE Analytics — Paper</h2>
-          <p className="text-muted-foreground text-sm">Overall Equipment Effectiveness · Availability × Performance × Quality</p>
+          <h2 className="text-foreground text-xl font-bold">
+            OEE Analytics -{" "}
+            {proType === "PAPER"
+              ? "Paper"
+              : proType === "RIGID"
+                ? "Rigid"
+                : "Semua Departemen"}
+          </h2>
+          <p className="text-muted-foreground text-sm">Overall Equipment Effectiveness - Availability x Performance x Quality</p>
         </div>
         <div className="flex items-center gap-2">
+          {showProTypeFilter ? (
+            <Select value={proType} onValueChange={(v) => setProType(v as OeeProType)}>
+              <SelectTrigger className="h-8 w-[145px] text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Semua</SelectItem>
+                <SelectItem value="PAPER">Paper</SelectItem>
+                <SelectItem value="RIGID">Rigid</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : null}
           <Select value={datePreset} onValueChange={setDatePreset}>
             <SelectTrigger className="h-8 w-[110px] text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -178,26 +219,26 @@ export default function OeeDashboard() {
             <div className="mb-4 flex items-center gap-2">
               <Target className="text-primary h-5 w-5" />
               <h3 className="font-bold">OEE Keseluruhan</h3>
-              <span className="text-muted-foreground ml-auto text-xs">{summary!.totalReports} laporan · Target world-class: {OEE_WORLD_CLASS}%</span>
+              <span className="text-muted-foreground ml-auto text-xs">{summary!.totalReports} laporan Â· Target world-class: {OEE_WORLD_CLASS}%</span>
             </div>
             <div className="flex flex-wrap items-center justify-around gap-6">
               <div className="flex flex-col items-center gap-2">
                 <GaugeMeter value={oeeVal} label="OEE" color={oeeGauge} size={160} />
-                <div className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: `${oeeGauge}20`, color: oeeGauge }}>
-                  {oeeVal >= OEE_WORLD_CLASS ? "✓ World Class" : oeeVal >= 65 ? "⚠ Perlu Perbaikan" : "✕ Di bawah Standar"}
+                <div className="bg-muted rounded-full border px-3 py-1 text-xs font-bold" style={{ color: oeeGauge, borderColor: oeeGauge }}>
+                  {oeeVal >= OEE_WORLD_CLASS ? "âœ“ World Class" : oeeVal >= 65 ? "âš  Perlu Perbaikan" : "âœ• Di bawah Standar"}
                 </div>
               </div>
               <div className="flex flex-wrap justify-center gap-6">
                 <div className="flex flex-col items-center gap-1">
-                  <GaugeMeter value={summary!.availability} label="Availability" color="#3b82f6" size={110} />
+                  <GaugeMeter value={summary!.availability} label="Availability" color={COLOR_AVAIL} size={110} />
                   <span className="text-muted-foreground text-[10px]">Target: {AVAIL_TARGET}%</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                  <GaugeMeter value={summary!.performance} label="Performance" color="#a855f7" size={110} />
+                  <GaugeMeter value={summary!.performance} label="Performance" color={COLOR_PERF} size={110} />
                   <span className="text-muted-foreground text-[10px]">Target: {PERF_TARGET}%</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                  <GaugeMeter value={summary!.quality} label="Quality" color="#22c55e" size={110} />
+                  <GaugeMeter value={summary!.quality} label="Quality" color={COLOR_QUAL} size={110} />
                   <span className="text-muted-foreground text-[10px]">Target: {QUAL_TARGET}%</span>
                 </div>
               </div>
@@ -209,7 +250,7 @@ export default function OeeDashboard() {
                 </div>
                 <div className="bg-muted/40 rounded-lg p-3 text-center">
                   <div className="text-muted-foreground text-xs">Downtime</div>
-                  <div className="text-lg font-bold text-amber-500">{Math.round(summary!.totalDowntimeMinutes / 60)}j</div>
+                  <div className="text-lg font-bold" style={{ color: COLOR_WARN }}>{Math.round(summary!.totalDowntimeMinutes / 60)}j</div>
                   <div className="text-muted-foreground text-[10px]">{summary!.totalDowntimeMinutes} menit</div>
                 </div>
               </div>
@@ -219,9 +260,9 @@ export default function OeeDashboard() {
           {/* Stat Cards */}
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <StatCard label="OEE" value={`${oeeVal.toFixed(1)}%`} icon={<Target className="h-4 w-4" />} color={oeeGauge} sub={`World class: ${OEE_WORLD_CLASS}%`} />
-            <StatCard label="Availability" value={`${summary!.availability.toFixed(1)}%`} icon={<Zap className="h-4 w-4" />} color="#3b82f6" sub={`Downtime: ${summary!.totalDowntimeMinutes} mnt`} />
-            <StatCard label="Performance" value={`${summary!.performance.toFixed(1)}%`} icon={<TrendingUp className="h-4 w-4" />} color="#a855f7" sub="Output vs Std Kapasitas" />
-            <StatCard label="Quality" value={`${summary!.quality.toFixed(1)}%`} icon={<Activity className="h-4 w-4" />} color="#22c55e" sub={`Total good: ${summary!.totalGoodOutput.toLocaleString("id-ID")} pcs`} />
+            <StatCard label="Availability" value={`${summary!.availability.toFixed(1)}%`} icon={<Zap className="h-4 w-4" />} color={COLOR_AVAIL} sub={`Downtime: ${summary!.totalDowntimeMinutes} mnt`} />
+            <StatCard label="Performance" value={`${summary!.performance.toFixed(1)}%`} icon={<TrendingUp className="h-4 w-4" />} color={COLOR_PERF} sub="Output vs Std Kapasitas" />
+            <StatCard label="Quality" value={`${summary!.quality.toFixed(1)}%`} icon={<Activity className="h-4 w-4" />} color={COLOR_QUAL} sub={`Total good: ${summary!.totalGoodOutput.toLocaleString("id-ID")} pcs`} />
           </div>
 
           {/* Trend Chart */}
@@ -230,21 +271,21 @@ export default function OeeDashboard() {
             <ResponsiveContainer width="100%" height={250}>
               <AreaChart data={data.trend} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="gOee" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} /><stop offset="95%" stopColor="#f59e0b" stopOpacity={0} /></linearGradient>
-                  <linearGradient id="gAvail" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} /><stop offset="95%" stopColor="#3b82f6" stopOpacity={0} /></linearGradient>
-                  <linearGradient id="gPerf" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#a855f7" stopOpacity={0.15} /><stop offset="95%" stopColor="#a855f7" stopOpacity={0} /></linearGradient>
-                  <linearGradient id="gQual" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#22c55e" stopOpacity={0.15} /><stop offset="95%" stopColor="#22c55e" stopOpacity={0} /></linearGradient>
+                  <linearGradient id="gOee" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={COLOR_WARN} stopOpacity={0.3} /><stop offset="95%" stopColor={COLOR_WARN} stopOpacity={0} /></linearGradient>
+                  <linearGradient id="gAvail" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={COLOR_AVAIL} stopOpacity={0.15} /><stop offset="95%" stopColor={COLOR_AVAIL} stopOpacity={0} /></linearGradient>
+                  <linearGradient id="gPerf" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={COLOR_PERF} stopOpacity={0.15} /><stop offset="95%" stopColor={COLOR_PERF} stopOpacity={0} /></linearGradient>
+                  <linearGradient id="gQual" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={COLOR_QUAL} stopOpacity={0.15} /><stop offset="95%" stopColor={COLOR_QUAL} stopOpacity={0} /></linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" opacity={0.4} />
                 <XAxis dataKey="label" className="text-muted-foreground" tick={{ fontSize: 11 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} className="text-muted-foreground" unit="%" />
                 <Tooltip content={<OeeTooltip />} />
                 <Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                <ReferenceLine y={OEE_WORLD_CLASS} stroke="#22c55e" strokeDasharray="4 4" label={{ value: `WC ${OEE_WORLD_CLASS}%`, fill: "#22c55e", fontSize: 10 }} />
-                <Area type="monotone" dataKey="oee" name="OEE" stroke="#f59e0b" fill="url(#gOee)" strokeWidth={2.5} dot={{ r: 3, fill: "#f59e0b" }} />
-                <Area type="monotone" dataKey="availability" name="Availability" stroke="#3b82f6" fill="url(#gAvail)" strokeWidth={1.5} strokeDasharray="4 2" />
-                <Area type="monotone" dataKey="performance" name="Performance" stroke="#a855f7" fill="url(#gPerf)" strokeWidth={1.5} strokeDasharray="4 2" />
-                <Area type="monotone" dataKey="quality" name="Quality" stroke="#22c55e" fill="url(#gQual)" strokeWidth={1.5} strokeDasharray="4 2" />
+                <ReferenceLine y={OEE_WORLD_CLASS} stroke={COLOR_TARGET_LINE} strokeDasharray="4 4" label={{ value: `WC ${OEE_WORLD_CLASS}%`, fill: COLOR_TARGET_LINE, fontSize: 10 }} />
+                <Area type="monotone" dataKey="oee" name="OEE" stroke={COLOR_WARN} fill="url(#gOee)" strokeWidth={2.5} dot={{ r: 3, fill: COLOR_WARN }} />
+                <Area type="monotone" dataKey="availability" name="Availability" stroke={COLOR_AVAIL} fill="url(#gAvail)" strokeWidth={1.5} strokeDasharray="4 2" />
+                <Area type="monotone" dataKey="performance" name="Performance" stroke={COLOR_PERF} fill="url(#gPerf)" strokeWidth={1.5} strokeDasharray="4 2" />
+                <Area type="monotone" dataKey="quality" name="Quality" stroke={COLOR_QUAL} fill="url(#gQual)" strokeWidth={1.5} strokeDasharray="4 2" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -289,12 +330,12 @@ export default function OeeDashboard() {
                     <YAxis type="category" dataKey="reason" width={80} tick={{ fontSize: 10 }} className="text-muted-foreground" />
                     <Tooltip formatter={(v: any) => [`${v} pcs`, "Qty"]} contentStyle={{ fontSize: 11 }} />
                     <Bar dataKey="qty" radius={[0, 4, 4, 0]}>
-                      {rejectData.breakdown.map((_, i) => <Cell key={i} fill={`hsl(${i * 15}, 75%, 55%)`} />)}
+                      {rejectData.breakdown.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               )}
-              {rejectData && <p className="text-muted-foreground mt-2 text-center text-xs">Total reject: <b className="text-red-400">{rejectData.totalReject.toLocaleString("id-ID")} pcs</b></p>}
+              {rejectData && <p className="text-muted-foreground mt-2 text-center text-xs">Total reject: <b className="text-destructive">{rejectData.totalReject.toLocaleString("id-ID")} pcs</b></p>}
             </div>
 
             {/* Top Downtime */}
@@ -310,36 +351,36 @@ export default function OeeDashboard() {
                     <YAxis type="category" dataKey="reason" width={80} tick={{ fontSize: 10 }} className="text-muted-foreground" />
                     <Tooltip formatter={(v: any) => [`${v} menit`, "Durasi"]} contentStyle={{ fontSize: 11 }} />
                     <Bar dataKey="minutes" radius={[0, 4, 4, 0]}>
-                      {downtimeData.breakdown.map((_, i) => <Cell key={i} fill={`hsl(${30 + i * 18}, 80%, 55%)`} />)}
+                      {downtimeData.breakdown.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               )}
-              {downtimeData && <p className="text-muted-foreground mt-2 text-center text-xs">Total downtime: <b className="text-amber-400">{downtimeData.totalDowntime} menit</b></p>}
+              {downtimeData && <p className="text-muted-foreground mt-2 text-center text-xs">Total downtime: <b style={{ color: COLOR_WARN }}>{downtimeData.totalDowntime} menit</b></p>}
             </div>
           </div>
 
-          {/* Radar Chart — Per Mesin Individual */}
+          {/* Radar Chart â€” Per Mesin Individual */}
           {data.machineOee.length > 0 && (
             <div className="bg-card border-border rounded-xl border p-5">
               <div className="mb-5 flex items-center justify-between">
                 <div>
                   <h3 className="font-bold">Profil OEE per Mesin</h3>
-                  <p className="text-muted-foreground mt-0.5 text-xs">Radar komponen A × P × Q tiap mesin · Ring target {OEE_WORLD_CLASS}%</p>
+                  <p className="text-muted-foreground mt-0.5 text-xs">Radar komponen A Ã— P Ã— Q tiap mesin Â· Ring target {OEE_WORLD_CLASS}%</p>
                 </div>
                 <div className="flex gap-3 text-[10px]">
-                  <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-[#3b82f6]" /> Availability</span>
-                  <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-[#a855f7]" /> Performance</span>
-                  <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-[#22c55e]" /> Quality</span>
+                  <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full" style={{ background: COLOR_AVAIL }} /> Availability</span>
+                  <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full" style={{ background: COLOR_PERF }} /> Performance</span>
+                  <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full" style={{ background: COLOR_QUAL }} /> Quality</span>
                 </div>
               </div>
               <div className={`grid gap-4 ${data.machineOee.length === 1 ? "grid-cols-1" : data.machineOee.length === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"}`}>
                 {data.machineOee.sort((a, b) => b.oee - a.oee).map((m) => {
                   const mColor = oeeColor(m.oee);
                   const radarItems = [
-                    { metric: "Availability", value: m.availability, target: AVAIL_TARGET, color: "#3b82f6" },
-                    { metric: "Performance", value: m.performance, target: PERF_TARGET, color: "#a855f7" },
-                    { metric: "Quality", value: m.quality, target: QUAL_TARGET, color: "#22c55e" },
+                    { metric: "Availability", value: m.availability, target: AVAIL_TARGET, color: COLOR_AVAIL },
+                    { metric: "Performance", value: m.performance, target: PERF_TARGET, color: COLOR_PERF },
+                    { metric: "Quality", value: m.quality, target: QUAL_TARGET, color: COLOR_QUAL },
                   ];
                   return (
                     <div
@@ -350,8 +391,8 @@ export default function OeeDashboard() {
                       <div className="mb-2 flex items-center justify-between">
                         <h4 className="text-foreground truncate text-sm font-bold">{m.machineName}</h4>
                         <div
-                          className="rounded-full px-2.5 py-0.5 text-[11px] font-bold"
-                          style={{ background: `${mColor}18`, color: mColor, border: `1px solid ${mColor}40` }}
+                          className="bg-muted rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                          style={{ color: mColor, borderColor: mColor }}
                         >
                           OEE {m.oee.toFixed(1)}%
                         </div>
@@ -376,7 +417,7 @@ export default function OeeDashboard() {
                                 dominantBaseline="central"
                                 fontSize={10}
                                 fontWeight={600}
-                                fill={radarItems.find((r) => r.metric === payload.value)?.color ?? "#888"}
+                                fill={radarItems.find((r) => r.metric === payload.value)?.color ?? "var(--muted-foreground)"}
                               >
                                 {payload.value}
                               </text>
@@ -386,7 +427,7 @@ export default function OeeDashboard() {
                           <Radar
                             name="Target"
                             dataKey="target"
-                            stroke="#64748b"
+                            stroke="var(--muted-foreground)"
                             fill="none"
                             strokeWidth={1}
                             strokeDasharray="3 3"
@@ -400,7 +441,7 @@ export default function OeeDashboard() {
                             fill={mColor}
                             fillOpacity={0.25}
                             strokeWidth={2.5}
-                            dot={{ r: 4, fill: mColor, stroke: "#fff", strokeWidth: 1.5 }}
+                            dot={{ r: 4, fill: mColor, stroke: "var(--background)", strokeWidth: 1.5 }}
                           />
                           <Tooltip
                             content={({ active, payload }: any) => {
@@ -422,7 +463,10 @@ export default function OeeDashboard() {
                                     </div>
                                     <div className="flex justify-between gap-4">
                                       <span className="text-muted-foreground">Gap:</span>
-                                      <span className={diff >= 0 ? "text-green-400 font-semibold" : "text-red-400 font-semibold"}>
+                                      <span
+                                        className="font-semibold"
+                                        style={{ color: diff >= 0 ? COLOR_GOOD : COLOR_BAD }}
+                                      >
                                         {diff >= 0 ? "+" : ""}{diff.toFixed(1)}%
                                       </span>
                                     </div>
@@ -452,11 +496,14 @@ export default function OeeDashboard() {
                                 {/* Target marker */}
                                 <div
                                   className="absolute top-0 h-full w-px"
-                                  style={{ left: `${r.target}%`, background: "#94a3b8" }}
+                                  style={{ left: `${r.target}%`, background: "var(--border)" }}
                                 />
                               </div>
                               <span className="text-foreground w-[40px] text-right font-bold">{r.value.toFixed(1)}%</span>
-                              <span className={`w-[38px] text-right font-semibold ${gap >= 0 ? "text-green-400" : "text-red-400"}`}>
+                              <span
+                                className="w-[38px] text-right font-semibold"
+                                style={{ color: gap >= 0 ? COLOR_GOOD : COLOR_BAD }}
+                              >
                                 {gap >= 0 ? "+" : ""}{gap.toFixed(0)}%
                               </span>
                             </div>
@@ -466,10 +513,10 @@ export default function OeeDashboard() {
 
                       {/* Footer */}
                       <div className="text-muted-foreground mt-2 flex items-center justify-between border-t border-dashed pt-2 text-[10px]">
-                        <span>{m.totalReports} LPH · {m.totalOutput.toLocaleString("id-ID")} pcs</span>
+                        <span>{m.totalReports} LPH Â· {m.totalOutput.toLocaleString("id-ID")} pcs</span>
                         <span
-                          className="rounded px-1.5 py-0.5 text-[9px] font-bold"
-                          style={{ background: `${mColor}15`, color: mColor }}
+                          className="bg-muted rounded border px-1.5 py-0.5 text-[9px] font-bold"
+                          style={{ color: mColor, borderColor: mColor }}
                         >
                           {m.oee >= OEE_WORLD_CLASS ? "WORLD CLASS" : m.oee >= 65 ? "ACCEPTABLE" : "NEEDS IMPROVEMENT"}
                         </span>

@@ -2,21 +2,35 @@ import { PrismaClient } from "../generated/prisma"; // penting: sesuai schema ou
 import { hash } from "bcryptjs";
 import { seedRigid } from "./seed_rigid";
 
-const seedDbUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+const seedDbConfig = (() => {
+  const dbConfig = process.env.SEED_DATABASE_URL
+    ? { source: "SEED_DATABASE_URL", url: process.env.SEED_DATABASE_URL }
+    : process.env.DIRECT_URL
+      ? { source: "DIRECT_URL", url: process.env.DIRECT_URL }
+      : process.env.DATABASE_URL
+        ? { source: "DATABASE_URL", url: process.env.DATABASE_URL }
+        : null;
 
-const db = new PrismaClient(
-  seedDbUrl
-    ? {
-        datasources: {
-          db: {
-            url: seedDbUrl,
-          },
-        },
-      }
-    : undefined,
-);
+  if (!dbConfig) {
+    throw new Error(
+      "Missing DB URL for seeding. Set SEED_DATABASE_URL, DIRECT_URL, or DATABASE_URL.",
+    );
+  }
+
+  return dbConfig;
+})();
+
+const db = new PrismaClient({
+  datasources: {
+    db: {
+      url: seedDbConfig.url,
+    },
+  },
+});
 
 async function main() {
+  console.log(`[seed] Using DB from ${seedDbConfig.source}`);
+
   const username = "superadmin";
   const plainPassword = "superadmin";
   const passwordHash = await hash(plainPassword, 12);
@@ -141,6 +155,24 @@ async function main() {
       passwordHash: adminRigidHash,
       role: "ADMIN",
       department: "RIGID",
+    },
+  });
+
+  // Create Master User (read-only analytics role)
+  const masterUser = "master";
+  const masterPass = "master";
+  const masterHash = await hash(masterPass, 12);
+
+  await db.user.upsert({
+    where: { username: masterUser },
+    update: {
+      passwordHash: masterHash,
+      role: "MASTER",
+    },
+    create: {
+      username: masterUser,
+      passwordHash: masterHash,
+      role: "MASTER",
     },
   });
 

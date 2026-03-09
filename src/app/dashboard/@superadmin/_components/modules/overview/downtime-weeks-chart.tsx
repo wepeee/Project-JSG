@@ -30,7 +30,13 @@ type Props = {
   maxCategories?: number;
 };
 
-const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+const COLORS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+];
 
 export default function DowntimeWeeksChart({ 
     title = "PLAN DOWNTIME", 
@@ -86,7 +92,7 @@ export default function DowntimeWeeksChart({
   const renderCustomAxisTick = ({ x, y, payload }: any) => {
       return (
           <g transform={`translate(${x},${y})`}>
-              <text x={0} y={0} dy={16} textAnchor="middle" fill="#666" fontSize={11}>
+              <text x={0} y={0} dy={16} textAnchor="middle" fill="var(--muted-foreground)" fontSize={11}>
                   {payload.value && payload.value.length > 10 ? `${payload.value.substring(0, 10)}...` : payload.value}
               </text>
           </g>
@@ -95,7 +101,7 @@ export default function DowntimeWeeksChart({
 
   return (
     <Card className="col-span-2">
-      <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4 dark:border-slate-800 dark:bg-slate-900/50">
+      <CardHeader className="border-border bg-muted/30 border-b pb-4">
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
@@ -117,7 +123,7 @@ export default function DowntimeWeeksChart({
               <YAxis tickLine={false} axisLine={false} fontSize={12} tickFormatter={(val) => `${val}m`} />
               <Tooltip 
                 formatter={(value) => [`${value} min`, "Durasi"]} 
-                contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                contentStyle={{ borderRadius: "8px", border: "1px solid var(--border)", background: "var(--popover)" }}
                 cursor={{ fill: 'transparent' }}
               />
               <Legend />
@@ -135,13 +141,13 @@ export default function DowntimeWeeksChart({
         </div>
 
         {/* Data Table */}
-        <div className="overflow-x-auto rounded-md border border-slate-200 dark:border-slate-800">
+        <div className="border-border overflow-x-auto rounded-md border">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="bg-slate-100 dark:bg-slate-800/80 p-3 text-left text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400 min-w-[100px]">Week</th>
+              <tr className="border-border border-b">
+                <th className="bg-muted p-3 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground min-w-[100px]">Week</th>
                 {categories.map((cat) => (
-                  <th key={cat} className="bg-slate-100 dark:bg-slate-800/80 p-3 text-center text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-400">
+                  <th key={cat} className="bg-muted p-3 text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     {cat.replace(/_/g, " ")}
                   </th>
                 ))}
@@ -149,17 +155,17 @@ export default function DowntimeWeeksChart({
             </thead>
             <tbody>
               {processedWeekly.map((weekItem, index) => (
-                <tr key={index} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50 dark:border-slate-800 dark:hover:bg-slate-800/50">
-                  <td className="p-3 font-medium flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <tr key={index} className="border-border hover:bg-muted/40 border-b last:border-0">
+                  <td className="text-foreground p-3 flex items-center gap-2 font-medium">
                     <span 
                         className="w-2.5 h-2.5 inline-block rounded-full" 
                         style={{ backgroundColor: COLORS[index % COLORS.length] }}
                     ></span>
                     {weekItem.week}
                   </td>
-                  {categories.map((cat) => (
-                    <td key={cat} className="p-3 text-center text-slate-600 dark:text-slate-400 font-mono text-xs">
-                      {Number(weekItem[cat] || 0).toLocaleString()} <span className="text-[10px] text-slate-400 ml-0.5">m</span>
+                {categories.map((cat) => (
+                    <td key={cat} className="text-muted-foreground p-3 text-center font-mono text-xs">
+                      {Number(weekItem[cat] || 0).toLocaleString()} <span className="text-[10px] text-muted-foreground/70 ml-0.5">m</span>
                     </td>
                   ))}
                 </tr>
