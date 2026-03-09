@@ -262,8 +262,10 @@ const EditableStandardInput = ({
 
 export default function ProductionArchive({
   userDepartment,
+  readOnly = false,
 }: {
   userDepartment?: string;
+  readOnly?: boolean;
 }) {
   const [activeCategory, setActiveCategory] = React.useState<
     "PAPER" | "INJECTION" | "BLOW_MOULDING" | "PRINTING" | "PACKING_ASSEMBLY"
@@ -1300,8 +1302,9 @@ export default function ProductionArchive({
                           }
                           step="1"
                           min="1"
+                          disabled={readOnly}
                           onSave={(val) => {
-                            if (val !== null) {
+                            if (!readOnly && val !== null) {
                               updateStandards.mutate({
                                 id: rpt.id,
                                 stdSpeed: val,
@@ -1339,15 +1342,18 @@ export default function ProductionArchive({
                             }
                             step="1"
                             min="1"
+                            disabled={readOnly}
                             onSave={(val) => {
-                              updateStandards.mutate({
-                                id: rpt.id,
-                                mpStd: val ?? undefined,
-                                cavityStd: rpt.cavityStd ?? undefined,
-                                cycleTimeStd: rpt.cycleTimeStd
-                                  ? Number(rpt.cycleTimeStd)
-                                  : undefined,
-                              });
+                              if (!readOnly) {
+                                updateStandards.mutate({
+                                  id: rpt.id,
+                                  mpStd: val ?? undefined,
+                                  cavityStd: rpt.cavityStd ?? undefined,
+                                  cycleTimeStd: rpt.cycleTimeStd
+                                    ? Number(rpt.cycleTimeStd)
+                                    : undefined,
+                                });
+                              }
                             }}
                           />
                         </TableCell>
@@ -1401,13 +1407,16 @@ export default function ProductionArchive({
                             }
                             step="0.01"
                             min="0"
+                            disabled={readOnly}
                             onSave={(val) => {
-                              updateStandards.mutate({
-                                id: rpt.id,
-                                mpStd: (rpt as any).manPowerStd ?? undefined,
-                                cavityStd: rpt.cavityStd ?? undefined,
-                                cycleTimeStd: val ?? undefined,
-                              });
+                              if (!readOnly) {
+                                updateStandards.mutate({
+                                  id: rpt.id,
+                                  mpStd: (rpt as any).manPowerStd ?? undefined,
+                                  cavityStd: rpt.cavityStd ?? undefined,
+                                  cycleTimeStd: val ?? undefined,
+                                });
+                              }
                             }}
                           />
                         </TableCell>
@@ -1436,14 +1445,17 @@ export default function ProductionArchive({
                             value={rpt.cavityStd} // cavityStd is number | null
                             step="1"
                             min="1"
+                            disabled={readOnly}
                             onSave={(val) => {
-                              updateStandards.mutate({
-                                id: rpt.id,
-                                cavityStd: val ?? undefined,
-                                cycleTimeStd: rpt.cycleTimeStd
-                                  ? Number(rpt.cycleTimeStd)
-                                  : undefined,
-                              });
+                              if (!readOnly) {
+                                updateStandards.mutate({
+                                  id: rpt.id,
+                                  cavityStd: val ?? undefined,
+                                  cycleTimeStd: rpt.cycleTimeStd
+                                    ? Number(rpt.cycleTimeStd)
+                                    : undefined,
+                                });
+                              }
                             }}
                           />
                         </TableCell>
@@ -1454,12 +1466,15 @@ export default function ProductionArchive({
                             }
                             step="0.01"
                             min="0"
+                            disabled={readOnly}
                             onSave={(val) => {
-                              updateStandards.mutate({
-                                id: rpt.id,
-                                cavityStd: rpt.cavityStd ?? undefined,
-                                cycleTimeStd: val ?? undefined,
-                              });
+                              if (!readOnly) {
+                                updateStandards.mutate({
+                                  id: rpt.id,
+                                  cavityStd: rpt.cavityStd ?? undefined,
+                                  cycleTimeStd: val ?? undefined,
+                                });
+                              }
                             }}
                           />
                         </TableCell>
@@ -2686,19 +2701,23 @@ export default function ProductionArchive({
                       )}
                     </TableCell>
                     <TableCell className="p-2 align-top">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 gap-1 text-xs text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
-                        onClick={() => {
-                          setVoidId(rpt.id);
-                          setVoidReason("");
-                        }}
-                        disabled={voidMutation.isPending}
-                      >
-                        <Ban className="h-3 w-3" />
-                        Void
-                      </Button>
+                      {readOnly ? (
+                        <span className="text-xs text-slate-400">-</span>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 gap-1 text-xs text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+                          onClick={() => {
+                            setVoidId(rpt.id);
+                            setVoidReason("");
+                          }}
+                          disabled={voidMutation.isPending}
+                        >
+                          <Ban className="h-3 w-3" />
+                          Void
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -2709,47 +2728,49 @@ export default function ProductionArchive({
       </div>
 
       {/* Void Report Dialog */}
-      <Dialog open={!!voidId} onOpenChange={(o) => !o && setVoidId(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Void Laporan</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="bg-destructive/10 text-destructive flex items-start gap-3 rounded-lg p-3 text-sm">
-              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-              <p>
-                Laporan yang di-void akan{" "}
-                <strong>membatalkan posting inventory</strong> (stok
-                dikembalikan). Status laporan berubah menjadi{" "}
-                <strong>VOID</strong> dan tidak bisa dikembalikan.
-              </p>
+      {!readOnly && (
+        <Dialog open={!!voidId} onOpenChange={(o) => !o && setVoidId(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Void Laporan</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="bg-destructive/10 text-destructive flex items-start gap-3 rounded-lg p-3 text-sm">
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                <p>
+                  Laporan yang di-void akan{" "}
+                  <strong>membatalkan posting inventory</strong> (stok
+                  dikembalikan). Status laporan berubah menjadi{" "}
+                  <strong>VOID</strong> dan tidak bisa dikembalikan.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="void-reason" className="text-sm font-medium">
+                  Alasan Void (Wajib)
+                </label>
+                <Textarea
+                  id="void-reason"
+                  placeholder="Contoh: Data salah input, duplikat laporan, koreksi shift..."
+                  value={voidReason}
+                  onChange={(e) => setVoidReason(e.target.value)}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <label htmlFor="void-reason" className="text-sm font-medium">
-                Alasan Void (Wajib)
-              </label>
-              <Textarea
-                id="void-reason"
-                placeholder="Contoh: Data salah input, duplikat laporan, koreksi shift..."
-                value={voidReason}
-                onChange={(e) => setVoidReason(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setVoidId(null)}>
-              Batal
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={!voidReason.trim() || voidMutation.isPending}
-              onClick={handleVoidSubmit}
-            >
-              {voidMutation.isPending ? "Memproses..." : "Void Laporan"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setVoidId(null)}>
+                Batal
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={!voidReason.trim() || voidMutation.isPending}
+                onClick={handleVoidSubmit}
+              >
+                {voidMutation.isPending ? "Memproses..." : "Void Laporan"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <ReportDetailDialog
         isOpen={!!selectedReport}

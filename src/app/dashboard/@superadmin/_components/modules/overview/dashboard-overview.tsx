@@ -41,10 +41,12 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"
 
 export default function DashboardOverview({ department }: Props) {
   const [viewMode, setViewMode] = useState<"daily" | "weekly">("daily");
+  const safeDepartment =
+    typeof department === "string" ? department : undefined;
 
-  const { data, isLoading, error } = api.dashboard.getStats.useQuery({
-    department,
-  });
+  const { data, isLoading, error } = api.dashboard.getStats.useQuery(
+    safeDepartment ? { department: safeDepartment } : {},
+  );
 
   if (isLoading) {
     return (

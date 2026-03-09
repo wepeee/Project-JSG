@@ -28,9 +28,10 @@ import {
 
 interface Props {
   userDepartment: "PAPER" | "RIGID";
+  readOnly?: boolean;
 }
 
-export default function StdOutput({ userDepartment }: Props) {
+export default function StdOutput({ userDepartment, readOnly = false }: Props) {
   const [search, setSearch] = useState("");
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(
     new Set(),
@@ -284,102 +285,105 @@ export default function StdOutput({ userDepartment }: Props) {
                     </div>
 
                     {/* Action Buttons */}
-                    {isEditing ? (
-                      <div className="flex items-center gap-1.5">
-                        <Input
-                          type="number"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          placeholder="Speed /hr"
-                          className="h-8 w-24 text-sm"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter")
-                              handleSaveManualSpeed(product.productName);
-                            if (e.key === "Escape") {
+                    {!readOnly &&
+                      (isEditing ? (
+                        <div className="flex items-center gap-1.5">
+                          <Input
+                            type="number"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            placeholder="Speed /hr"
+                            className="h-8 w-24 text-sm"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter")
+                                handleSaveManualSpeed(product.productName);
+                              if (e.key === "Escape") {
+                                setEditingProduct(null);
+                                setEditValue("");
+                              }
+                            }}
+                          />
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-900/30"
+                            onClick={() =>
+                              handleSaveManualSpeed(product.productName)
+                            }
+                            disabled={setManualSpeed.isPending}
+                          >
+                            <Check className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30"
+                            onClick={() => {
                               setEditingProduct(null);
                               setEditValue("");
-                            }
-                          }}
-                        />
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-900/30"
-                          onClick={() =>
-                            handleSaveManualSpeed(product.productName)
-                          }
-                          disabled={setManualSpeed.isPending}
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30"
-                          onClick={() => {
-                            setEditingProduct(null);
-                            setEditValue("");
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1">
-                        {product.manualSpeed !== null && (
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          {product.manualSpeed !== null && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 gap-1.5 text-xs text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleResetManualSpeed(product.productName);
+                              }}
+                              disabled={setManualSpeed.isPending}
+                              title="Reset ke hitung otomatis"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                              <span className="hidden sm:inline">Auto</span>
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 gap-1.5 text-xs text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                            className="h-8 gap-1.5 text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleResetManualSpeed(product.productName);
+                              computeStdSpeed.mutate({
+                                productName: product.productName,
+                                month: selMonth,
+                                year: selYear,
+                              });
                             }}
-                            disabled={setManualSpeed.isPending}
-                            title="Reset ke hitung otomatis"
+                            disabled={computeStdSpeed.isPending}
+                            title="Hitung otomatis std speed dan simpan ke semua laporan"
                           >
-                            <RotateCcw className="h-3 w-3" />
-                            <span className="hidden sm:inline">Auto</span>
+                            <Calculator className="h-3 w-3" />
+                            <span className="hidden sm:inline">
+                              Hitung Otomatis
+                            </span>
                           </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 gap-1.5 text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            computeStdSpeed.mutate({
-                              productName: product.productName,
-                              month: selMonth,
-                              year: selYear,
-                            });
-                          }}
-                          disabled={computeStdSpeed.isPending}
-                          title="Hitung otomatis std speed dan simpan ke semua laporan"
-                        >
-                          <Calculator className="h-3 w-3" />
-                          <span className="hidden sm:inline">Hitung Otomatis</span>
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 gap-1.5 text-xs text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/30"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingProduct(product.productName);
-                            setEditValue(
-                              product.manualSpeed?.toString() ??
-                                product.avgSpeed.toFixed(1),
-                            );
-                          }}
-                          title="Edit manual speed"
-                        >
-                          <Pencil className="h-3 w-3" />
-                          <span className="hidden sm:inline">Edit</span>
-                        </Button>
-                      </div>
-                    )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 gap-1.5 text-xs text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingProduct(product.productName);
+                              setEditValue(
+                                product.manualSpeed?.toString() ??
+                                  product.avgSpeed.toFixed(1),
+                              );
+                            }}
+                            title="Edit manual speed"
+                          >
+                            <Pencil className="h-3 w-3" />
+                            <span className="hidden sm:inline">Edit</span>
+                          </Button>
+                        </div>
+                      ))}
                   </div>
                 </div>
 

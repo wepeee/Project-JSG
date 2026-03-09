@@ -9,7 +9,7 @@ export const dashboardRouter = createTRPCRouter({
       z.object({
         startDate: z.date().optional(),
         endDate: z.date().optional(),
-        department: z.string().optional(),
+        department: z.string().nullish(),
       })
     )
     .query(async ({ ctx, input }) => {

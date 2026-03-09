@@ -86,6 +86,64 @@ async function main() {
     },
   });
 
+  // Create Admin User
+  const adminUser = "admin";
+  const adminPass = "admin";
+  const adminHash = await hash(adminPass, 12);
+
+  await db.user.upsert({
+    where: { username: adminUser },
+    update: {
+      passwordHash: adminHash,
+      role: "ADMIN",
+    },
+    create: {
+      username: adminUser,
+      passwordHash: adminHash,
+      role: "ADMIN",
+    },
+  });
+
+  // Create Admin Paper
+  const adminPaperUser = "admin_paper";
+  const adminPaperPass = "admin_paper";
+  const adminPaperHash = await hash(adminPaperPass, 12);
+
+  await db.user.upsert({
+    where: { username: adminPaperUser },
+    update: {
+      passwordHash: adminPaperHash,
+      role: "ADMIN",
+      department: "PAPER",
+    },
+    create: {
+      username: adminPaperUser,
+      passwordHash: adminPaperHash,
+      role: "ADMIN",
+      department: "PAPER",
+    },
+  });
+
+  // Create Admin Rigid
+  const adminRigidUser = "admin_rigid";
+  const adminRigidPass = "admin_rigid";
+  const adminRigidHash = await hash(adminRigidPass, 12);
+
+  await db.user.upsert({
+    where: { username: adminRigidUser },
+    update: {
+      passwordHash: adminRigidHash,
+      role: "ADMIN",
+      department: "RIGID",
+    },
+    create: {
+      username: adminRigidUser,
+      passwordHash: adminRigidHash,
+      role: "ADMIN",
+      department: "RIGID",
+    },
+  });
+
   // Create Operator User
   const opUser = "operator";
   const opPass = "operator";

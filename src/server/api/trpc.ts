@@ -141,6 +141,16 @@ export const superAdminProcedure = protectedProcedure.use(({ ctx, next }) => {
   return next();
 });
 
+export const adminOrSuperAdminProcedure = protectedProcedure.use(
+  ({ ctx, next }) => {
+    const role = (ctx.session!.user as any).role as string;
+    if (role !== "SUPERADMIN" && role !== "ADMIN") {
+      throw new TRPCError({ code: "FORBIDDEN" });
+    }
+    return next();
+  },
+);
+
 export const ppicProcedure = protectedProcedure.use(({ ctx, next }) => {
   const role = ctx.session.user.role;
 

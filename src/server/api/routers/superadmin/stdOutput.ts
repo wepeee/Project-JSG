@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, superAdminProcedure } from "../../trpc";
+import {
+  adminOrSuperAdminProcedure,
+  createTRPCRouter,
+  superAdminProcedure,
+} from "../../trpc";
 
 export const stdOutputRouter = createTRPCRouter({
   /**
@@ -8,7 +12,7 @@ export const stdOutputRouter = createTRPCRouter({
    * Speed = Total Output / Leadtime (hours)
    * Leadtime = endTime - startTime
    */
-  getStdOutput: superAdminProcedure
+  getStdOutput: adminOrSuperAdminProcedure
     .input(
       z
         .object({

@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, superAdminProcedure } from "../../trpc";
+import {
+  adminOrSuperAdminProcedure,
+  createTRPCRouter,
+  superAdminProcedure,
+} from "../../trpc";
 import { TRPCError } from "@trpc/server";
 import { randomUUID } from "crypto";
 
@@ -11,7 +15,7 @@ import {
 } from "../../../../../generated/prisma";
 
 export const verificationRouter = createTRPCRouter({
-  getReports: superAdminProcedure
+  getReports: adminOrSuperAdminProcedure
     .input(
       z
         .object({
@@ -204,7 +208,7 @@ export const verificationRouter = createTRPCRouter({
       });
     }),
 
-  approveReport: superAdminProcedure
+  approveReport: adminOrSuperAdminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // 1. Fetch Report with full context
@@ -859,7 +863,7 @@ export const verificationRouter = createTRPCRouter({
       });
     }),
 
-  rejectReport: superAdminProcedure
+  rejectReport: adminOrSuperAdminProcedure
     .input(z.object({ id: z.string(), note: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       // 1. Check current status
@@ -975,7 +979,7 @@ export const verificationRouter = createTRPCRouter({
       return report;
     }),
 
-  updateAdminNote: superAdminProcedure
+  updateAdminNote: adminOrSuperAdminProcedure
     .input(z.object({ id: z.string(), note: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.productionReport.update({
