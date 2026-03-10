@@ -42,7 +42,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Upload, Plus } from "lucide-react";
+import { GripVertical, Upload, Plus, Download } from "lucide-react";
 
 type StepDraftMaterial = {
   key: string;
@@ -221,6 +221,40 @@ export default function ProPlanner({
   const [ok, setOk] = React.useState<string | null>(null);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleDownloadTemplate = () => {
+    let csvContent: string;
+    let filename: string;
+
+    if (proType === "RIGID") {
+      // RIGID columns:
+      // 0:BATCH, 1:PART NUMBER, 2:MACHINE, 3:Production Order, 4:Nama Produk,
+      // 5:Total Lpr (UP), 6:Qty Order, 7:Start Date, 8:End Date, 9:Material, 10:Qty Material
+      csvContent = [
+        "BATCH,PART NUMBER,MACHINE,Production Order,Nama Produk,Total Lpr (UP),Qty Order,Start Date,End Date,Material,Qty Material",
+        "B001,PN-001,Mesin A,17031246,Nama Produk Contoh,4,1000,10/03/2026,20/03/2026,Material ABC,250",
+      ].join("\r\n");
+      filename = "template_pro_rigid.csv";
+    } else {
+      // PAPER columns:
+      // 0:Part Number (Step), 1:Machine, 2:Production Order, 3:Nama Produk,
+      // 4:Total UP, 5:Qty Order, 6:Start Date, 7:End Date, 8:Material, 9:Qty Material
+      csvContent = [
+        "Part Number (Step),Machine,Production Order,Nama Produk,Total UP,Qty Order,Start Date,End Date,Material,Qty Material",
+        "WIP-001,Mesin A,17031246,Nama Produk Contoh,4,1000,10/03/2026,,Material ABC,250",
+        ",Mesin B,,,2,,,, Material DEF,125",
+      ].join("\r\n");
+      filename = "template_pro_paper.csv";
+    }
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const getProcess = (id: number | null) =>
     id ? ((processes.data ?? []).find((p) => p.id === id) ?? null) : null;
@@ -950,17 +984,29 @@ export default function ProPlanner({
                 <div className="bg-primary h-8 w-1 rounded-full" />
                 Proses Produksi (Rigid)
               </CardTitle>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={loadingMaster}
-                className="h-9 gap-2 border-dashed"
-              >
-                <Upload className="text-muted-foreground h-4 w-4" />
-                Import CSV
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDownloadTemplate}
+                  className="h-9 gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <Download className="h-4 w-4" />
+                  Template CSV
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={loadingMaster}
+                  className="h-9 gap-2 border-dashed"
+                >
+                  <Upload className="text-muted-foreground h-4 w-4" />
+                  Import CSV
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
               {err && (
@@ -1143,6 +1189,16 @@ export default function ProPlanner({
                 Daftar Proses Produksi
               </CardTitle>
               <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDownloadTemplate}
+                  className="h-9 gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <Download className="h-4 w-4" />
+                  Template CSV
+                </Button>
                 <Button
                   type="button"
                   variant="outline"

@@ -267,8 +267,8 @@ export default function VerificationList({
                   onClick={() => togglePro(proId)}
                   className="border-border bg-muted/20 hover:bg-muted/50 cursor-pointer border-b px-4 py-3 transition-colors select-none"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-2 overflow-hidden">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -280,14 +280,14 @@ export default function VerificationList({
                           <ChevronUp className="h-4 w-4" />
                         )}
                       </Button>
-                      <span className="bg-primary/10 text-primary rounded px-2.5 py-1 text-xs font-bold tracking-wider uppercase">
+                      <span className="bg-primary/10 text-primary shrink-0 rounded px-2.5 py-1 text-xs font-bold tracking-wider uppercase">
                         {group.pro.proNumber}
                       </span>
-                      <span className="text-foreground text-sm font-bold">
+                      <span className="text-foreground truncate text-sm font-bold">
                         {group.pro.productName}
                       </span>
                     </div>
-                    <div className="text-muted-foreground flex items-center gap-4 text-xs">
+                    <div className="text-muted-foreground flex items-center gap-3 pl-8 text-xs sm:pl-0">
                       <div>Qty PO: {group.pro.qtyPoPcs}</div>
                       <div className="font-semibold">
                         {totalReports} Laporan
@@ -351,11 +351,11 @@ export default function VerificationList({
 
                                     {/* Action Buttons */}
                                     {activeTab === "PENDING" && (
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex flex-wrap items-center justify-end gap-2">
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="h-8 gap-1 text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
+                                          className="h-8 flex-1 gap-1 text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/20 sm:flex-none"
                                           onClick={() => handleApprove(rpt.id)}
                                           disabled={approveMutation.isPending}
                                         >
@@ -365,7 +365,7 @@ export default function VerificationList({
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="text-destructive hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive h-8 gap-1"
+                                          className="text-destructive hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive h-8 flex-1 gap-1 sm:flex-none"
                                           onClick={() => {
                                             setRejectId(rpt.id);
                                             setRejectNote("");
@@ -402,7 +402,7 @@ export default function VerificationList({
                                   </div>
 
                                   {/* Stats Grid */}
-                                  <div className="bg-muted/30 grid grid-cols-4 gap-2 rounded-lg p-3 text-xs">
+                                  <div className="bg-muted/30 grid grid-cols-2 gap-2 rounded-lg p-3 text-xs sm:grid-cols-4">
                                     <div
                                       className={
                                         rpt.reportType === "PAPER" ||
@@ -543,7 +543,7 @@ export default function VerificationList({
 
                                   {/* Expanded Details */}
                                   {expandedId === rpt.id && (
-                                    <div className="bg-muted/30 grid grid-cols-2 gap-4 rounded-lg p-4 text-xs">
+                                    <div className="bg-muted/30 grid grid-cols-1 gap-4 rounded-lg p-4 text-xs sm:grid-cols-2">
                                       <div className="space-y-1">
                                         <div className="text-foreground font-bold">
                                           Waktu

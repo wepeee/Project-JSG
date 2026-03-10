@@ -135,34 +135,50 @@ export default function WipMatrix({
   return (
     <Card className="flex h-full min-w-0 flex-col border-none shadow-none">
       {/* Filters Toolbar */}
-      <div className="border-border bg-card mb-4 flex flex-col gap-3 rounded-lg border p-3 shadow-sm sm:flex-row sm:items-center">
-        {/* View Mode Toggle - Modern Segmented Control */}
-        <div className="border-border bg-muted/50 flex items-center rounded-lg border p-1">
-          <button
-            onClick={() => setViewMode("PROGRESS")}
-            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
-              viewMode === "PROGRESS"
-                ? "bg-background ring-border text-emerald-600 shadow-sm ring-1 dark:text-emerald-400"
-                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-            }`}
+      <div className="border-border bg-card mb-4 flex flex-col gap-3 rounded-lg border p-3 shadow-sm">
+        {/* Row 1: View Mode + Export */}
+        <div className="flex items-center justify-between gap-2">
+          {/* View Mode Toggle */}
+          <div className="no-scrollbar border-border bg-muted/50 flex items-center overflow-x-auto rounded-lg border p-1">
+            <button
+              onClick={() => setViewMode("PROGRESS")}
+              className={`flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
+                viewMode === "PROGRESS"
+                  ? "bg-background ring-border text-emerald-600 shadow-sm ring-1 dark:text-emerald-400"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
+              Progress (Flow)
+            </button>
+            <button
+              onClick={() => setViewMode("INVENTORY")}
+              className={`flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
+                viewMode === "INVENTORY"
+                  ? "bg-background text-primary ring-border shadow-sm ring-1"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
+              Inventory (Stock)
+            </button>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 shrink-0 gap-2 border-dashed"
+            onClick={handleExport}
+            disabled={!data}
           >
-            Progress (Flow)
-          </button>
-          <button
-            onClick={() => setViewMode("INVENTORY")}
-            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
-              viewMode === "INVENTORY"
-                ? "bg-background text-primary ring-border shadow-sm ring-1"
-                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-            }`}
-          >
-            Inventory (Stock)
-          </button>
+            <Download className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">CSV</span>
+          </Button>
         </div>
 
-        <div className="flex flex-1 flex-wrap items-center gap-2">
+        {/* Row 2: Filters */}
+        <div className="flex flex-wrap items-center gap-2">
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="h-9 w-[180px] text-xs">
+            <SelectTrigger className="h-9 w-full text-xs sm:w-[180px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -176,7 +192,7 @@ export default function WipMatrix({
 
           {!userDepartment && (
             <Select value={type} onValueChange={setType}>
-              <SelectTrigger className="h-9 w-[120px] text-xs">
+              <SelectTrigger className="h-9 w-full text-xs sm:w-[120px]">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -187,36 +203,25 @@ export default function WipMatrix({
             </Select>
           )}
 
-          <div className="border-input bg-background flex items-center gap-1 rounded-md border px-2 py-1">
-            <span className="text-muted-foreground mr-1 text-[10px] font-bold uppercase">
+          <div className="border-input bg-background flex w-full flex-wrap items-center gap-1 rounded-md border px-2 py-1 sm:w-auto">
+            <span className="text-muted-foreground text-[10px] font-bold uppercase">
               Range
             </span>
             <Input
               type="date"
-              className="h-6 w-auto border-none p-0 text-xs shadow-none focus-visible:ring-0"
+              className="h-7 min-w-0 flex-1 border-none p-0 text-xs shadow-none focus-visible:ring-0"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
             />
-            <span className="text-muted-foreground">-</span>
+            <span className="text-muted-foreground">–</span>
             <Input
               type="date"
-              className="h-6 w-auto border-none p-0 text-xs shadow-none focus-visible:ring-0"
+              className="h-7 min-w-0 flex-1 border-none p-0 text-xs shadow-none focus-visible:ring-0"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
             />
           </div>
         </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-9 gap-2 border-dashed"
-          onClick={handleExport}
-          disabled={!data}
-        >
-          <Download className="h-3.5 w-3.5" />
-          Export CSV
-        </Button>
       </div>
 
       {/* Matrix Table */}
