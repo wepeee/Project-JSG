@@ -116,43 +116,19 @@ export const verificationRouter = createTRPCRouter({
         },
       });
 
-      // Calculate Std Speed for PAPER reports (based on Product Name)
-      const reportsWithSpeed = await Promise.all(
-        reports.map(async (rpt) => {
-          // Only calculate for PAPER or if needed. For now, doing it generally or check type.
-          // User asked for PAPER context specifically, but logic is general.
-          const productName = rpt.proses.pro.productName;
+      // Calculate fallback Std Speed per PRO (minute-based), aligned with Std Output concept.
+      const uniqueProIds = [...new Set(reports.map((r) => r.proses.pro.id))];
+      const proSpeedMap = new Map<number, number>();
 
-          // Optimization: This performs N queries. Ideally we cache or group,
-          // but for <50 items it's acceptable for now.
-          // Better: Calculate unique products first.
-
-          return {
-            ...rpt,
-            stdSpeed: 0, // Placeholder, will fill below to avoid async map issues if we refactor
-          };
-        }),
-      );
-
-      // Unique products to fetch stats for
-      const uniqueProducts = [
-        ...new Set(reports.map((r) => r.proses.pro.productName)),
-      ];
-      const speedMap = new Map<string, number>();
-
-      for (const product of uniqueProducts) {
-        // Fetch all approved reports for this product to calculate averages
+      if (uniqueProIds.length > 0) {
         const history = await ctx.db.productionReport.findMany({
           where: {
             status: ReportStatus.APPROVED,
-            proses: {
-              pro: {
-                productName: product,
-              },
-            },
-            // Ensuring valid times
             startTime: { not: null },
             endTime: { not: null },
+            proses: {
+              proId: { in: uniqueProIds },
+            },
           },
           select: {
             qtyPassOn: true,
@@ -160,50 +136,56 @@ export const verificationRouter = createTRPCRouter({
             qtyHold: true,
             startTime: true,
             endTime: true,
+            proses: {
+              select: {
+                proId: true,
+              },
+            },
           },
         });
 
-        if (history.length > 0) {
-          let totalOutputSum = 0;
-          let totalDurationMinutesSum = 0;
+        const acc = new Map<number, { out: number; mins: number }>();
+        for (const h of history) {
+          if (!h.startTime || !h.endTime) continue;
+          const mins = (h.endTime.getTime() - h.startTime.getTime()) / (1000 * 60);
+          if (mins <= 0) continue;
+          const output =
+            Number(h.qtyPassOn || 0) +
+            Number(h.qtyWip || 0) +
+            Number(h.qtyHold || 0);
+          const key = h.proses.proId;
+          const cur = acc.get(key) ?? { out: 0, mins: 0 };
+          cur.out += output;
+          cur.mins += mins;
+          acc.set(key, cur);
+        }
 
-          history.forEach((h) => {
-            const output =
-              Number(h.qtyPassOn || 0) +
-              Number(h.qtyWip || 0) +
-              Number(h.qtyHold || 0);
-
-            if (h.startTime && h.endTime) {
-              const start = h.startTime.getTime();
-              const end = h.endTime.getTime();
-              const mins = (end - start) / (1000 * 60);
-              if (mins > 0) {
-                totalOutputSum += output;
-                totalDurationMinutesSum += mins;
-              }
-            }
-          });
-
-          // Avg Output = SumOutput / Count
-          // Avg Duration = SumDuration / Count
-          // Std Speed = Avg Output / Avg Duration = SumOutput / SumDuration
-
-          if (totalDurationMinutesSum > 0) {
-            const stdSpeed = totalOutputSum / totalDurationMinutesSum;
-            speedMap.set(product, stdSpeed);
+        for (const [proId, v] of acc) {
+          if (v.mins > 0) {
+            proSpeedMap.set(proId, v.out / v.mins);
           }
         }
       }
 
       return reports.map((r) => {
         const meta = (r.metaData as any) ?? {};
-        const savedStdSpeed = meta.stdSpeed ? Number(meta.stdSpeed) : null;
+        const savedStdSpeed = meta.stdSpeed ? Number(meta.stdSpeed) : null; // per minute
+        const manualSpeedPerHour = meta.productManualStdSpeed
+          ? Number(meta.productManualStdSpeed)
+          : null; // per hour from Std Output page
+        const computedStdSpeed = proSpeedMap.get(r.proses.pro.id) ?? null; // per minute
+        const finalStdSpeed =
+          savedStdSpeed ??
+          (manualSpeedPerHour !== null ? manualSpeedPerHour / 60 : null) ??
+          computedStdSpeed;
+
         return {
           ...r,
-          stdSpeed:
-            savedStdSpeed ?? speedMap.get(r.proses.pro.productName) ?? null,
+          stdSpeed: finalStdSpeed,
+          stdSpeedPerHour: finalStdSpeed !== null ? finalStdSpeed * 60 : null,
+          manualStdSpeedPerHour: manualSpeedPerHour,
           savedStdSpeed,
-          computedStdSpeed: speedMap.get(r.proses.pro.productName) ?? null,
+          computedStdSpeed,
         };
       });
     }),

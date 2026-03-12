@@ -163,6 +163,8 @@ interface Report {
   metaData?: any;
   totalDowntime: number;
   stdSpeed?: number | null;
+  stdSpeedPerHour?: number | null;
+  manualStdSpeedPerHour?: number | null;
   manPowerStd?: number | null;
   manPowerAct?: number | null;
   cavityStd?: number | null;
@@ -308,7 +310,19 @@ export function ReportDetailDialog({
                     })()}
                     <span className="text-muted-foreground mx-1">|</span>
                     Std:{" "}
-                    {report.stdSpeed ? `${Number(report.stdSpeed)}/m` : "-"}
+                    {(() => {
+                      const stdPerHour =
+                        report.stdSpeedPerHour !== undefined &&
+                        report.stdSpeedPerHour !== null
+                          ? Number(report.stdSpeedPerHour)
+                          : report.stdSpeed !== undefined &&
+                              report.stdSpeed !== null
+                            ? Number(report.stdSpeed) * 60
+                            : null;
+                      if (!stdPerHour || !isFinite(stdPerHour) || stdPerHour <= 0)
+                        return "-";
+                      return `${stdPerHour.toFixed(1)}/hour`;
+                    })()}
                   </span>
                 )}
                 {isMoulding && (

@@ -1284,34 +1284,12 @@ export default function ProductionArchive({
                       </TableCell>
                     )}
                     {activeCategory === "PAPER" && (
-                      <TableCell className="text-right text-xs">
-                        <EditableStandardInput
-                          value={
-                            (rpt as any).savedStdSpeed
-                              ? Number((rpt as any).savedStdSpeed)
-                              : (rpt as any).computedStdSpeed
-                                ? Math.round(
-                                    Number((rpt as any).computedStdSpeed),
-                                  )
-                                : null
-                          }
-                          placeholder={
-                            (rpt as any).computedStdSpeed
-                              ? `${Math.round(Number((rpt as any).computedStdSpeed))}`
-                              : "-"
-                          }
-                          step="1"
-                          min="1"
-                          disabled={readOnly}
-                          onSave={(val) => {
-                            if (!readOnly && val !== null) {
-                              updateStandards.mutate({
-                                id: rpt.id,
-                                stdSpeed: val,
-                              });
-                            }
-                          }}
-                        />
+                      <TableCell className="text-right text-xs font-semibold">
+                        {(() => {
+                          const val = Number((rpt as any).stdSpeedPerHour ?? 0);
+                          if (!isFinite(val) || val <= 0) return "-";
+                          return `${val.toFixed(1)}/hour`;
+                        })()}
                       </TableCell>
                     )}
                     <TableCell className="text-center text-xs font-bold">

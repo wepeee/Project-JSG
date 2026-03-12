@@ -63,7 +63,7 @@ export default function SuperadminShell({ user }: Props) {
       case "inventory_paper":
         return "WIP Monitor Paper";
       case "oee_paper":
-        return "OEE Analytics — Paper";
+        return "OEE Analytics - Paper";
       case "verification_paper":
         return "Verifikasi Laporan Paper";
       case "report_archive_paper":
@@ -95,19 +95,14 @@ export default function SuperadminShell({ user }: Props) {
 
   const SidebarContent = () => (
     <nav className="flex flex-1 flex-col gap-1 px-2">
+      <div className="mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
+        OVERVIEW
+      </div>
       <SidebarItem
         label="Dashboard"
         active={active === "dashboard"}
         onClick={() => {
           setActive("dashboard");
-          setOpen(false);
-        }}
-      />
-      <SidebarItem
-        label="Kelola Akun"
-        active={active === "users"}
-        onClick={() => {
-          setActive("users");
           setOpen(false);
         }}
       />
@@ -123,7 +118,7 @@ export default function SuperadminShell({ user }: Props) {
       {showPaper && (
         <>
           <div className="mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
-            PAPER
+            OPERASIONAL PAPER
           </div>
           <SidebarItem
             label="WIP Monitor"
@@ -150,18 +145,18 @@ export default function SuperadminShell({ user }: Props) {
             }}
           />
           <SidebarItem
-            label="Kelola Mesin"
-            active={active === "machines_paper"}
-            onClick={() => {
-              setActive("machines_paper");
-              setOpen(false);
-            }}
-          />
-          <SidebarItem
             label="Std Output"
             active={active === "std_output_paper"}
             onClick={() => {
               setActive("std_output_paper");
+              setOpen(false);
+            }}
+          />
+          <SidebarItem
+            label="Kelola Mesin"
+            active={active === "machines_paper"}
+            onClick={() => {
+              setActive("machines_paper");
               setOpen(false);
             }}
           />
@@ -171,7 +166,7 @@ export default function SuperadminShell({ user }: Props) {
       {showRigid && (
         <>
           <div className="mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
-            RIGID
+            OPERASIONAL RIGID
           </div>
           <SidebarItem
             label="WIP Monitor"
@@ -198,14 +193,6 @@ export default function SuperadminShell({ user }: Props) {
             }}
           />
           <SidebarItem
-            label="Kelola Mesin"
-            active={active === "machines_rigid"}
-            onClick={() => {
-              setActive("machines_rigid");
-              setOpen(false);
-            }}
-          />
-          <SidebarItem
             label="Std Output"
             active={active === "std_output_rigid"}
             onClick={() => {
@@ -213,10 +200,29 @@ export default function SuperadminShell({ user }: Props) {
               setOpen(false);
             }}
           />
+          <SidebarItem
+            label="Kelola Mesin"
+            active={active === "machines_rigid"}
+            onClick={() => {
+              setActive("machines_rigid");
+              setOpen(false);
+            }}
+          />
         </>
       )}
 
       <div className="mt-4 mb-2 border-t border-dashed" />
+      <div className="mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
+        ADMINISTRASI SISTEM
+      </div>
+      <SidebarItem
+        label="Kelola Akun"
+        active={active === "users"}
+        onClick={() => {
+          setActive("users");
+          setOpen(false);
+        }}
+      />
       <SidebarItem
         label="Akses Mesin Operator"
         active={active === "machine_access"}
