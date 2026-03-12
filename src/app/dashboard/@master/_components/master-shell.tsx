@@ -7,6 +7,7 @@ import { Button } from "~/components/ui/button";
 import { ThemeToggle } from "~/components/theme-toggle";
 import DashboardOverview from "~/app/dashboard/@superadmin/_components/modules/overview/dashboard-overview";
 import OeeDashboard from "~/app/dashboard/@superadmin/_components/modules/oee/oee-dashboard";
+import ProTargetGap from "./pro-target-gap";
 
 type Props = {
   user: {
@@ -16,7 +17,7 @@ type Props = {
   };
 };
 
-type NavKey = "dashboard" | "oee_paper" | "oee_rigid";
+type NavKey = "dashboard" | "oee_paper" | "oee_rigid" | "pro_target_gap";
 
 export default function MasterShell({ user }: Props) {
   const [active, setActive] = React.useState<NavKey>("dashboard");
@@ -30,6 +31,8 @@ export default function MasterShell({ user }: Props) {
         return "OEE Analytics - Paper";
       case "oee_rigid":
         return "OEE Analytics - Rigid";
+      case "pro_target_gap":
+        return "Monitor Gap Target PRO";
       default:
         return "Dashboard";
     }
@@ -58,6 +61,14 @@ export default function MasterShell({ user }: Props) {
         active={active === "oee_rigid"}
         onClick={() => {
           setActive("oee_rigid");
+          setOpen(false);
+        }}
+      />
+      <SidebarItem
+        label="Gap Target PRO"
+        active={active === "pro_target_gap"}
+        onClick={() => {
+          setActive("pro_target_gap");
           setOpen(false);
         }}
       />
@@ -173,6 +184,7 @@ export default function MasterShell({ user }: Props) {
           )}
           {active === "oee_paper" && <OeeDashboard defaultProType="PAPER" />}
           {active === "oee_rigid" && <OeeDashboard defaultProType="RIGID" />}
+          {active === "pro_target_gap" && <ProTargetGap />}
         </main>
       </div>
     </div>

@@ -174,6 +174,118 @@ export const prosRouter = createTRPCRouter({
       return { items: enrichedItems, nextCursor };
     }),
 
+  targetGapList: protectedProcedure
+    .input(
+      z
+        .object({
+          q: z.string().optional(),
+          status: z
+            .enum(["OPEN", "IN_PROGRESS", "COMPLETE", "CLOSED", "CANCELLED"])
+            .optional(),
+          type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(),
+          onlyOpen: z.boolean().optional().default(true),
+          take: z.number().min(10).max(500).default(200),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const role = ctx.session.user.role;
+      if (
+        role !== Role.MASTER &&
+        role !== Role.PPIC &&
+        role !== Role.SUPERADMIN
+      ) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "MASTER only" });
+      }
+
+      const q = input?.q?.trim();
+      const where: Prisma.ProWhereInput = {};
+
+      if (input?.status) {
+        where.status = input.status;
+      } else if (input?.onlyOpen ?? true) {
+        where.status = {
+          notIn: [ProStatus.CLOSED, ProStatus.CANCELLED],
+        };
+      }
+      if (input?.type) where.type = input.type;
+      if (q) {
+        where.OR = [
+          { proNumber: { contains: q } },
+          { productName: { contains: q } },
+          { partNumber: { contains: q } },
+        ];
+      }
+
+      const pros = await ctx.db.pro.findMany({
+        where,
+        take: input?.take ?? 200,
+        orderBy: [{ startDate: "asc" }, { id: "desc" }],
+        select: {
+          id: true,
+          proNumber: true,
+          productName: true,
+          partNumber: true,
+          qtyPoPcs: true,
+          startDate: true,
+          status: true,
+          type: true,
+          createdAt: true,
+          proPrefix: { select: { code: true, name: true } },
+          proses: {
+            orderBy: { orderNo: "asc" },
+            select: { id: true, orderNo: true, startDate: true },
+          },
+        },
+      });
+
+      const lastStepIds = pros
+        .map((pro) => pro.proses[pro.proses.length - 1]?.id)
+        .filter((id): id is number => !!id);
+
+      const reportGroups =
+        lastStepIds.length > 0
+          ? await ctx.db.productionReport.groupBy({
+              by: ["prosesId"],
+              where: {
+                prosesId: { in: lastStepIds },
+                status: "APPROVED",
+              },
+              _sum: { qtyPassOn: true },
+            })
+          : [];
+
+      const outputByProsesId = new Map<number, number>();
+      for (const g of reportGroups) {
+        outputByProsesId.set(g.prosesId, Number(g._sum.qtyPassOn ?? 0));
+      }
+
+      const rows = pros.map((pro) => {
+        const lastStep = pro.proses[pro.proses.length - 1];
+        const output = lastStep?.id ? (outputByProsesId.get(lastStep.id) ?? 0) : 0;
+        const target = Number(pro.qtyPoPcs ?? 0);
+        const gap = Math.max(target - output, 0);
+        const progressPct = target > 0 ? Math.min((output / target) * 100, 100) : 0;
+        return {
+          ...pro,
+          currentOutput: output,
+          qtyGap: gap,
+          progressPct,
+          stepCount: pro.proses.length,
+          lastStepStartDate: lastStep?.startDate ?? null,
+        };
+      });
+
+      rows.sort((a, b) => {
+        if (b.qtyGap !== a.qtyGap) return b.qtyGap - a.qtyGap;
+        const tA = new Date(a.startDate ?? a.createdAt).getTime();
+        const tB = new Date(b.startDate ?? b.createdAt).getTime();
+        return tA - tB;
+      });
+
+      return rows;
+    }),
+
   getStepTemplateByPartNumber: ppicProcedure
     .input(
       z.object({

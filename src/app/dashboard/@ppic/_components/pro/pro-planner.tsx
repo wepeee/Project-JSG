@@ -1124,22 +1124,62 @@ export default function ProPlanner({
                           ? Number(e.target.value)
                           : null;
                         setRigidMaterials((prev) => {
+                          const selectedMaterial = materials.data?.find(
+                            (m: any) => m.id === val,
+                          );
+                          const isSheet =
+                            selectedMaterial?.uom?.toLowerCase() === "sheet";
+
+                          const poNum = Number(qtyPoPcs);
+                          const upNum = Number(rigidUp);
+                          let autoQty = mat.qtyReq;
+
+                          if (val && isSheet && upNum > 0 && poNum > 0) {
+                            autoQty = String(Math.ceil(poNum / upNum));
+                          }
+
                           const next = [...prev];
-                          next[mIdx] = { ...mat, materialId: val };
+                          next[mIdx] = {
+                            ...mat,
+                            materialId: val,
+                            qtyReq: val ? autoQty : "",
+                          };
                           return next;
                         });
                       }}
                       className="border-input bg-background h-9 w-full rounded-md border px-2 text-xs"
                     >
                       <option value="">(pilih)</option>
-                      {(materials.data ?? []).map((item: any) => (
-                        <option key={item.id} value={item.id}>
-                          {item.name}
-                          {item.kind === "WIP"
-                            ? ` (Stok: ${item.wipStock ?? 0})`
-                            : ""}
-                        </option>
-                      ))}
+
+                      <optgroup label="Bahan Baku & Consumable">
+                        {(materials.data ?? [])
+                          .filter((item: any) => {
+                            const t = item.type ?? item.kind;
+                            return t !== "WIP";
+                          })
+                          .map((item: any) => (
+                            <option key={item.id} value={item.id}>
+                              {item.name}
+                            </option>
+                          ))}
+                      </optgroup>
+
+                      <optgroup label="Barang Setengah Jadi (WIP)">
+                        {(materials.data ?? [])
+                          .filter((item: any) => {
+                            const t = item.type ?? item.kind;
+                            return t === "WIP";
+                          })
+                          .map((item: any) => {
+                            const stock = item.wipStock || 0;
+                            return (
+                              <option key={item.id} value={item.id}>
+                                {item.name}{" "}
+                                - Stock: {stock.toLocaleString("id-ID")}
+                              </option>
+                            );
+                          })}
+                      </optgroup>
                     </select>
                     <Input
                       type="number"

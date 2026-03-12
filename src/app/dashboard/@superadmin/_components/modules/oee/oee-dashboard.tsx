@@ -219,13 +219,13 @@ export default function OeeDashboard({
             <div className="mb-4 flex items-center gap-2">
               <Target className="text-primary h-5 w-5" />
               <h3 className="font-bold">OEE Keseluruhan</h3>
-              <span className="text-muted-foreground ml-auto text-xs">{summary!.totalReports} laporan Â· Target world-class: {OEE_WORLD_CLASS}%</span>
+              <span className="text-muted-foreground ml-auto text-xs">{summary!.totalReports} laporan | Target world-class: {OEE_WORLD_CLASS}%</span>
             </div>
             <div className="flex flex-wrap items-center justify-around gap-6">
               <div className="flex flex-col items-center gap-2">
                 <GaugeMeter value={oeeVal} label="OEE" color={oeeGauge} size={160} />
                 <div className="bg-muted rounded-full border px-3 py-1 text-xs font-bold" style={{ color: oeeGauge, borderColor: oeeGauge }}>
-                  {oeeVal >= OEE_WORLD_CLASS ? "âœ“ World Class" : oeeVal >= 65 ? "âš  Perlu Perbaikan" : "âœ• Di bawah Standar"}
+                  {oeeVal >= OEE_WORLD_CLASS ? "OK World Class" : oeeVal >= 65 ? "Warning Perlu Perbaikan" : "X Di bawah Standar"}
                 </div>
               </div>
               <div className="flex flex-wrap justify-center gap-6">
@@ -366,7 +366,7 @@ export default function OeeDashboard({
               <div className="mb-5 flex items-center justify-between">
                 <div>
                   <h3 className="font-bold">Profil OEE per Mesin</h3>
-                  <p className="text-muted-foreground mt-0.5 text-xs">Radar komponen A Ã— P Ã— Q tiap mesin Â· Ring target {OEE_WORLD_CLASS}%</p>
+                  <p className="text-muted-foreground mt-0.5 text-xs">Radar komponen A x P x Q tiap mesin | Ring target {OEE_WORLD_CLASS}%</p>
                 </div>
                 <div className="flex gap-3 text-[10px]">
                   <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full" style={{ background: COLOR_AVAIL }} /> Availability</span>
@@ -513,7 +513,7 @@ export default function OeeDashboard({
 
                       {/* Footer */}
                       <div className="text-muted-foreground mt-2 flex items-center justify-between border-t border-dashed pt-2 text-[10px]">
-                        <span>{m.totalReports} LPH Â· {m.totalOutput.toLocaleString("id-ID")} pcs</span>
+                        <span>{m.totalReports} LPH | {m.totalOutput.toLocaleString("id-ID")} pcs</span>
                         <span
                           className="bg-muted rounded border px-1.5 py-0.5 text-[9px] font-bold"
                           style={{ color: mColor, borderColor: mColor }}

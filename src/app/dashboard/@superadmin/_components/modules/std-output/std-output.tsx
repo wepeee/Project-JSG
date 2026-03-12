@@ -104,11 +104,23 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
   const handleSaveManualSpeed = (productName: string) => {
     const speed = parseFloat(editValue);
     if (isNaN(speed) || speed <= 0) return;
-    setManualSpeed.mutate({ productName, manualSpeed: speed });
+    setManualSpeed.mutate({
+      productName,
+      manualSpeed: speed,
+      department: userDepartment,
+      month: selMonth,
+      year: selYear,
+    });
   };
 
   const handleResetManualSpeed = (productName: string) => {
-    setManualSpeed.mutate({ productName, manualSpeed: null });
+    setManualSpeed.mutate({
+      productName,
+      manualSpeed: null,
+      department: userDepartment,
+      month: selMonth,
+      year: selYear,
+    });
   };
 
   const formatSpeed = (speed: number) => {

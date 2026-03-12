@@ -265,25 +265,42 @@ export const stdOutputRouter = createTRPCRouter({
 
   /**
    * Update manual speed for a PRODUCT (by product name)
-   * Saves to metaData.productManualStdSpeed on all reports with matching product name
+   * Saves to metaData.productManualStdSpeed scoped by filters (department/month/year when provided)
    */
   setManualSpeed: superAdminProcedure
     .input(
       z.object({
         productName: z.string(),
         manualSpeed: z.number().nullable(),
+        department: z.enum(["PAPER", "RIGID"]).optional(),
+        month: z.number().int().min(1).max(12).optional(),
+        year: z.number().int().min(2020).max(2100).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Find all reports for this product name
-      const reports = await ctx.db.productionReport.findMany({
-        where: {
-          proses: {
-            pro: {
-              productName: input.productName,
-            },
+      const where: any = {
+        proses: {
+          pro: {
+            productName: input.productName,
           },
         },
+      };
+
+      if (input.department === "PAPER") {
+        where.reportType = "PAPER";
+      } else if (input.department === "RIGID") {
+        where.reportType = { not: "PAPER" };
+      }
+
+      if (input.month && input.year) {
+        const start = new Date(input.year, input.month - 1, 1);
+        const end = new Date(input.year, input.month, 0, 23, 59, 59, 999);
+        where.reportDate = { gte: start, lte: end };
+      }
+
+      // Find all reports for this product name
+      const reports = await ctx.db.productionReport.findMany({
+        where,
         select: { id: true, metaData: true },
       });
 
