@@ -13,6 +13,7 @@ import MaterialManager from "./material/material-manager";
 import ProcessManager from "./process/process-manager";
 import ProPlanner from "./pro/pro-planner";
 import ProList from "./pro/pro-list";
+import PPICOverview from "./overview/ppic-overview";
 
 type Props = {
   user: {
@@ -22,6 +23,7 @@ type Props = {
 };
 
 type NavKey =
+  | "dashboard"
   | "schedule"
   | "prolist"
   | "materials"
@@ -36,7 +38,7 @@ function resolvePpicRoute(pathname: string): {
   proType: ProListType;
 } {
   if (pathname === "/dashboard") {
-    return { active: "prolist", proType: "PAPER" };
+    return { active: "dashboard", proType: "PAPER" };
   }
   if (pathname.startsWith("/dashboard/pro-list/rigid")) {
     return { active: "prolist", proType: "RIGID" };
@@ -62,10 +64,11 @@ function resolvePpicRoute(pathname: string): {
   if (pathname.startsWith("/dashboard/materials")) {
     return { active: "materials", proType: "PAPER" };
   }
-  return { active: "prolist", proType: "PAPER" };
+  return { active: "dashboard", proType: "PAPER" };
 }
 
 function buildPpicPath(active: NavKey, proType: ProListType): string {
+  if (active === "dashboard") return "/dashboard";
   if (active === "prolist") {
     if (proType === "RIGID") return "/dashboard/pro-list/rigid";
     if (proType === "ALL") return "/dashboard/pro-list/all";
@@ -120,7 +123,9 @@ export default function PPICShell({ user }: Props) {
   }, [proTypeFilter, router, searchParams]);
 
   const title =
-    active === "prolist"
+    active === "dashboard"
+      ? "Dashboard PPIC"
+      : active === "prolist"
       ? "Daftar PRO"
       : active === "planning-paper"
         ? "Perencanaan PRO - Paper Box"
@@ -166,6 +171,12 @@ export default function PPICShell({ user }: Props) {
           </div>
 
           <nav className="flex flex-1 flex-col gap-1 px-2">
+            <SidebarItem
+              label="Dashboard"
+              active={active === "dashboard"}
+              onClick={() => navigate("dashboard")}
+            />
+
             <SidebarItemWithSubmenu
               label="Daftar PRO"
               active={active === "prolist"}
@@ -271,6 +282,12 @@ export default function PPICShell({ user }: Props) {
               </div>
 
               <nav className="flex flex-col gap-1 px-2 py-3">
+                <SidebarItem
+                  label="Dashboard"
+                  active={active === "dashboard"}
+                  onClick={() => navigate("dashboard", "PAPER", true)}
+                />
+
                 <SidebarItemWithSubmenu
                   label="Daftar PRO"
                   active={active === "prolist"}
@@ -364,7 +381,9 @@ export default function PPICShell({ user }: Props) {
 
           <Separator className="mb-6 hidden lg:block" />
 
-          {active === "prolist" ? (
+          {active === "dashboard" ? (
+            <PPICOverview userName={user.name} />
+          ) : active === "prolist" ? (
             <ProList
               initialSelectedId={jumpToProId}
               onClearJump={clearJumpProId}
