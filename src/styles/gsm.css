@@ -1,0 +1,76 @@
+/* Global Style Management (GSM)
+ * Single source of truth untuk semantic color tokens.
+ * Pakai token ini di seluruh app (custom page + komponen UI).
+ */
+
+@theme inline {
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
+
+  --color-nav-section: var(--nav-section);
+  --color-role-highlight: var(--role-highlight);
+  --color-overlay: var(--overlay);
+}
+
+:root {
+  --success: hsl(142 72% 35%);
+  --success-foreground: hsl(0 0% 100%);
+  --success-soft: hsl(142 52% 92%);
+
+  --warning: hsl(38 92% 50%);
+  --warning-foreground: hsl(24 30% 12%);
+  --warning-soft: hsl(45 100% 92%);
+
+  --info: hsl(190 64% 46%);
+  --info-foreground: hsl(0 0% 100%);
+  --info-soft: hsl(190 62% 92%);
+
+  --nav-section: hsl(7 5% 40%);
+  --role-highlight: var(--primary);
+  --overlay: hsl(14 21% 12% / 0.55);
+}
+
+.dark {
+  --success: hsl(142 70% 52%);
+  --success-foreground: hsl(210 18% 5%);
+  --success-soft: hsl(142 34% 18%);
+
+  --warning: hsl(40 95% 60%);
+  --warning-foreground: hsl(210 18% 5%);
+  --warning-soft: hsl(40 35% 20%);
+
+  --info: hsl(190 65% 65%);
+  --info-foreground: hsl(210 18% 5%);
+  --info-soft: hsl(190 28% 18%);
+
+  --nav-section: hsl(210 12% 68%);
+  --role-highlight: hsl(190 65% 65%);
+  --overlay: hsl(210 20% 2% / 0.72);
+}
+
+@layer utilities {
+  .gsm-status-success {
+    @apply border-success/30 bg-success-soft text-success;
+  }
+
+  .gsm-status-warning {
+    @apply border-warning/30 bg-warning-soft text-warning;
+  }
+
+  .gsm-status-info {
+    @apply border-info/30 bg-info-soft text-info;
+  }
+
+  .gsm-status-danger {
+    @apply border-destructive/30 bg-destructive/10 text-destructive;
+  }
+}

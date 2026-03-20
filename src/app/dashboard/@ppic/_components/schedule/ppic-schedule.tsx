@@ -348,7 +348,6 @@ export default function PPICSchedule({ onSelectPro }: Props) {
       // Snapshot previous values
       const previousSchedule = utils.pros.getSchedule.getData();
       const previousDetail = utils.pros.getById.getData({ id: variables.id });
-      const previousList = utils.pros.list.getData({});
 
       // Optimistically update schedule cache
       utils.pros.getSchedule.setData(
@@ -374,22 +373,7 @@ export default function PPICSchedule({ onSelectPro }: Props) {
         );
       }
 
-      // Optimistically update list cache
-      if (previousList) {
-        utils.pros.list.setData(
-          {},
-          {
-            ...previousList,
-            items: previousList.items.map((pro) =>
-              pro.id === variables.id
-                ? { ...pro, startDate: variables.startDate }
-                : pro,
-            ),
-          },
-        );
-      }
-
-      return { previousSchedule, previousDetail, previousList };
+      return { previousSchedule, previousDetail };
     },
     onError: (_err, variables, context) => {
       // Rollback on error
@@ -408,9 +392,6 @@ export default function PPICSchedule({ onSelectPro }: Props) {
           context.previousDetail,
         );
       }
-      if (context?.previousList) {
-        utils.pros.list.setData({}, context.previousList);
-      }
     },
     onSettled: () => {
       // Refetch to ensure sync with server
@@ -427,7 +408,6 @@ export default function PPICSchedule({ onSelectPro }: Props) {
       await utils.pros.list.cancel();
 
       const previousSchedule = utils.pros.getSchedule.getData();
-      const previousList = utils.pros.list.getData({});
 
       // Find which PRO this process belongs to
       let affectedProId: number | undefined;
@@ -478,25 +458,7 @@ export default function PPICSchedule({ onSelectPro }: Props) {
         );
       }
 
-      // Update list cache (processes are included in list response)
-      if (previousList) {
-        utils.pros.list.setData(
-          {},
-          {
-            ...previousList,
-            items: previousList.items.map((pro) => ({
-              ...pro,
-              proses: pro.proses.map((process) =>
-                process.id === variables.prosesId
-                  ? { ...process, startDate: variables.startDate }
-                  : process,
-              ),
-            })),
-          },
-        );
-      }
-
-      return { previousSchedule, previousDetail, previousList, affectedProId };
+      return { previousSchedule, previousDetail, affectedProId };
     },
     onError: (_err, _variables, context) => {
       if (context?.previousSchedule) {
@@ -513,9 +475,6 @@ export default function PPICSchedule({ onSelectPro }: Props) {
           { id: context.affectedProId },
           context.previousDetail,
         );
-      }
-      if (context?.previousList) {
-        utils.pros.list.setData({}, context.previousList);
       }
     },
     onSettled: () => {

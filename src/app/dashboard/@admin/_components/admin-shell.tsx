@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { signOut } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
 import { ThemeToggle } from "~/components/theme-toggle";
@@ -32,9 +33,49 @@ type NavKey =
   | "std_output_paper"
   | "std_output_rigid";
 
+const ADMIN_PATH_BY_KEY: Record<NavKey, string> = {
+  dashboard: "/dashboard",
+  oee_paper: "/dashboard/oee",
+  monitor_paper: "/dashboard/paper/wip-monitor",
+  monitor_rigid: "/dashboard/rigid/wip-monitor",
+  verification_paper: "/dashboard/paper/verification",
+  verification_rigid: "/dashboard/rigid/verification",
+  report_archive_paper: "/dashboard/paper/reports",
+  report_archive_rigid: "/dashboard/rigid/reports",
+  std_output_paper: "/dashboard/paper/std-output",
+  std_output_rigid: "/dashboard/rigid/std-output",
+};
+
+function resolveAdminNav(pathname: string): NavKey {
+  if (pathname === "/dashboard") return "dashboard";
+  if (pathname.startsWith("/dashboard/oee")) return "oee_paper";
+  if (pathname.startsWith("/dashboard/paper/wip-monitor")) return "monitor_paper";
+  if (pathname.startsWith("/dashboard/paper/verification")) return "verification_paper";
+  if (pathname.startsWith("/dashboard/paper/reports")) return "report_archive_paper";
+  if (pathname.startsWith("/dashboard/paper/std-output")) return "std_output_paper";
+  if (pathname.startsWith("/dashboard/rigid/wip-monitor")) return "monitor_rigid";
+  if (pathname.startsWith("/dashboard/rigid/verification")) return "verification_rigid";
+  if (pathname.startsWith("/dashboard/rigid/reports")) return "report_archive_rigid";
+  if (pathname.startsWith("/dashboard/rigid/std-output")) return "std_output_rigid";
+  return "dashboard";
+}
+
 export default function AdminShell({ user }: Props) {
-  const [active, setActive] = React.useState<NavKey>("dashboard");
+  const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
+  const active = React.useMemo(
+    () => resolveAdminNav(pathname || "/dashboard"),
+    [pathname],
+  );
+
+  const navigate = React.useCallback(
+    (key: NavKey) => {
+      router.push(ADMIN_PATH_BY_KEY[key]);
+      setOpen(false);
+    },
+    [router],
+  );
 
   const title = React.useMemo(() => {
     switch (active) {
@@ -71,96 +112,66 @@ export default function AdminShell({ user }: Props) {
       <SidebarItem
         label="Dashboard"
         active={active === "dashboard"}
-        onClick={() => {
-          setActive("dashboard");
-          setOpen(false);
-        }}
+        onClick={() => navigate("dashboard")}
       />
       <SidebarItem
         label="OEE Analytics"
         active={active === "oee_paper"}
-        onClick={() => {
-          setActive("oee_paper");
-          setOpen(false);
-        }}
+        onClick={() => navigate("oee_paper")}
       />
 
       {showPaper && (
         <>
-          <div className="mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
+          <div className="text-nav-section mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider">
             PAPER
           </div>
           <SidebarItem
             label="Monitor"
             active={active === "monitor_paper"}
-            onClick={() => {
-              setActive("monitor_paper");
-              setOpen(false);
-            }}
+            onClick={() => navigate("monitor_paper")}
           />
           <SidebarItem
             label="Verifikasi Laporan"
             active={active === "verification_paper"}
-            onClick={() => {
-              setActive("verification_paper");
-              setOpen(false);
-            }}
+            onClick={() => navigate("verification_paper")}
           />
           <SidebarItem
             label="Daftar Laporan"
             active={active === "report_archive_paper"}
-            onClick={() => {
-              setActive("report_archive_paper");
-              setOpen(false);
-            }}
+            onClick={() => navigate("report_archive_paper")}
           />
           <SidebarItem
             label="Std Output"
             active={active === "std_output_paper"}
-            onClick={() => {
-              setActive("std_output_paper");
-              setOpen(false);
-            }}
+            onClick={() => navigate("std_output_paper")}
           />
         </>
       )}
 
       {showRigid && (
         <>
-          <div className="mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
+          <div className="text-nav-section mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider">
             RIGID
           </div>
           <SidebarItem
             label="Monitor"
             active={active === "monitor_rigid"}
-            onClick={() => {
-              setActive("monitor_rigid");
-              setOpen(false);
-            }}
+            onClick={() => navigate("monitor_rigid")}
           />
           <SidebarItem
             label="Verifikasi Laporan"
             active={active === "verification_rigid"}
-            onClick={() => {
-              setActive("verification_rigid");
-              setOpen(false);
-            }}
+            onClick={() => navigate("verification_rigid")}
           />
           <SidebarItem
             label="Daftar Laporan"
             active={active === "report_archive_rigid"}
-            onClick={() => {
-              setActive("report_archive_rigid");
-              setOpen(false);
-            }}
+            onClick={() => navigate("report_archive_rigid")}
           />
           <SidebarItem
             label="Std Output"
             active={active === "std_output_rigid"}
-            onClick={() => {
-              setActive("std_output_rigid");
-              setOpen(false);
-            }}
+            onClick={() => navigate("std_output_rigid")}
           />
         </>
       )}
@@ -196,7 +207,7 @@ export default function AdminShell({ user }: Props) {
             <div className="text-lg font-semibold">Dashboard</div>
             <div className="text-xs opacity-70">ADMIN</div>
             {user.department && (
-              <div className="text-[10px] font-bold text-blue-500">
+              <div className="text-role-highlight text-[10px] font-bold">
                 {user.department}
               </div>
             )}

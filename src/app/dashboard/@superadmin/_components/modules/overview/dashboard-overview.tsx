@@ -31,7 +31,14 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Loader2, TrendingUp, AlertCircle, Clock, CheckCircle } from "lucide-react";
+import {
+  Loader2,
+  TrendingUp,
+  AlertCircle,
+  Clock,
+  CheckCircle,
+  Activity,
+} from "lucide-react";
 import DowntimeWeeksChart from "./downtime-weeks-chart";
 
 type Props = {
@@ -87,6 +94,15 @@ export default function DashboardOverview({ department }: Props) {
   if (!data) return null;
 
   const { summary, dailyProduction, weeklyProduction, downtimeTypes, rejectTypes } = data;
+  const hasData =
+    summary.totalOutput > 0 ||
+    summary.totalGood > 0 ||
+    summary.totalReject > 0 ||
+    summary.totalDowntime > 0 ||
+    dailyProduction.length > 0 ||
+    weeklyProduction.length > 0 ||
+    downtimeTypes.length > 0 ||
+    rejectTypes.length > 0;
 
   const chartData = viewMode === "daily" ? dailyProduction : weeklyProduction;
 
@@ -123,6 +139,21 @@ export default function DashboardOverview({ department }: Props) {
         </CardHeader>
       </Card>
 
+      {!hasData ? (
+        <Card>
+          <CardContent className="flex min-h-64 flex-col items-center justify-center gap-3 text-center">
+            <div className="bg-muted rounded-full p-3">
+              <Activity className="text-muted-foreground h-6 w-6" />
+            </div>
+            <h3 className="text-base font-semibold">Belum Ada Data Produksi</h3>
+            <p className="text-muted-foreground max-w-md text-sm">
+              Dashboard akan otomatis terisi setelah laporan produksi mulai masuk
+              dan diproses pada periode berjalan.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
       {/* 1. Metric Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
@@ -322,6 +353,8 @@ export default function DashboardOverview({ department }: Props) {
           </CardContent>
       </Card>
       </div>
+        </>
+      )}
     </div>
   );
 }

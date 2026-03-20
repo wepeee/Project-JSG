@@ -54,39 +54,39 @@ function variantIcon(v: Variant) {
   const cls = "h-6 w-6";
   switch (v) {
     case "success":
-      return <CheckCircle2 className={`${cls} text-emerald-500`} />;
+      return <CheckCircle2 className={`${cls} text-success`} />;
     case "error":
-      return <XCircle className={`${cls} text-red-500`} />;
+      return <XCircle className={`${cls} text-destructive`} />;
     case "warning":
-      return <AlertTriangle className={`${cls} text-amber-500`} />;
+      return <AlertTriangle className={`${cls} text-warning`} />;
     default:
-      return <Info className={`${cls} text-blue-500`} />;
+      return <Info className={`${cls} text-info`} />;
   }
 }
 
 function variantBg(v: Variant) {
   switch (v) {
     case "success":
-      return "bg-emerald-500/10 border-emerald-500/20";
+      return "bg-success-soft border-success/30";
     case "error":
-      return "bg-red-500/10 border-red-500/20";
+      return "bg-destructive/10 border-destructive/30";
     case "warning":
-      return "bg-amber-500/10 border-amber-500/20";
+      return "bg-warning-soft border-warning/30";
     default:
-      return "bg-blue-500/10 border-blue-500/20";
+      return "bg-info-soft border-info/30";
   }
 }
 
 function confirmBtnClass(v: Variant) {
   switch (v) {
     case "success":
-      return "bg-emerald-600 hover:bg-emerald-700 text-white";
+      return "bg-success text-success-foreground hover:bg-success/90";
     case "error":
-      return "bg-red-600 hover:bg-red-700 text-white";
+      return "bg-destructive text-destructive-foreground hover:bg-destructive/90";
     case "warning":
-      return "bg-amber-500 hover:bg-amber-600 text-white";
+      return "bg-warning text-warning-foreground hover:bg-warning/90";
     default:
-      return "bg-blue-600 hover:bg-blue-700 text-white";
+      return "bg-info text-info-foreground hover:bg-info/90";
   }
 }
 
@@ -165,29 +165,24 @@ export function AppAlertProvider({ children }: { children: React.ReactNode }) {
         createPortal(
           <div className="pointer-events-none fixed inset-0 z-[2147483000] flex items-center justify-center p-4">
             <div
-              className="pointer-events-auto absolute inset-0"
-              style={{
-                backgroundColor: "rgba(0,0,0,0.55)",
-                backdropFilter: "blur(4px)",
-              }}
+              className="bg-overlay pointer-events-auto absolute inset-0 backdrop-blur-sm"
               onClick={
                 state.kind === "alert" ? () => handleClose(false) : undefined
               }
             />
 
             <div
-              className="pointer-events-auto relative w-full max-w-sm overflow-hidden rounded-2xl border shadow-2xl"
-              style={{ background: "var(--background, #1a1a2e)" }}
+              className="bg-background pointer-events-auto relative w-full max-w-sm overflow-hidden rounded-2xl border shadow-2xl"
             >
               <div
                 className={`h-1.5 w-full ${
                   state.variant === "success"
-                    ? "bg-emerald-500"
+                    ? "bg-success"
                     : state.variant === "error"
-                      ? "bg-red-500"
+                      ? "bg-destructive"
                       : state.variant === "warning"
-                        ? "bg-amber-500"
-                        : "bg-blue-500"
+                        ? "bg-warning"
+                        : "bg-info"
                 }`}
               />
 

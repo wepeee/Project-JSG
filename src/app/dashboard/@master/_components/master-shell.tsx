@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { signOut } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
 import { ThemeToggle } from "~/components/theme-toggle";
@@ -19,9 +20,37 @@ type Props = {
 
 type NavKey = "dashboard" | "oee_paper" | "oee_rigid" | "pro_target_gap";
 
+const MASTER_PATH_BY_KEY: Record<NavKey, string> = {
+  dashboard: "/dashboard",
+  oee_paper: "/dashboard/oee/paper",
+  oee_rigid: "/dashboard/oee/rigid",
+  pro_target_gap: "/dashboard/pro-target-gap",
+};
+
+function resolveMasterNav(pathname: string): NavKey {
+  if (pathname === "/dashboard") return "dashboard";
+  if (pathname.startsWith("/dashboard/oee/rigid")) return "oee_rigid";
+  if (pathname.startsWith("/dashboard/oee/paper")) return "oee_paper";
+  if (pathname.startsWith("/dashboard/pro-target-gap")) return "pro_target_gap";
+  return "dashboard";
+}
+
 export default function MasterShell({ user }: Props) {
-  const [active, setActive] = React.useState<NavKey>("dashboard");
+  const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
+  const active = React.useMemo(
+    () => resolveMasterNav(pathname || "/dashboard"),
+    [pathname],
+  );
+
+  const navigate = React.useCallback(
+    (key: NavKey) => {
+      router.push(MASTER_PATH_BY_KEY[key]);
+      setOpen(false);
+    },
+    [router],
+  );
 
   const title = React.useMemo(() => {
     switch (active) {
@@ -43,34 +72,22 @@ export default function MasterShell({ user }: Props) {
       <SidebarItem
         label="Dashboard"
         active={active === "dashboard"}
-        onClick={() => {
-          setActive("dashboard");
-          setOpen(false);
-        }}
+        onClick={() => navigate("dashboard")}
       />
       <SidebarItem
         label="OEE Analytics - Paper"
         active={active === "oee_paper"}
-        onClick={() => {
-          setActive("oee_paper");
-          setOpen(false);
-        }}
+        onClick={() => navigate("oee_paper")}
       />
       <SidebarItem
         label="OEE Analytics - Rigid"
         active={active === "oee_rigid"}
-        onClick={() => {
-          setActive("oee_rigid");
-          setOpen(false);
-        }}
+        onClick={() => navigate("oee_rigid")}
       />
       <SidebarItem
         label="Gap Target PRO"
         active={active === "pro_target_gap"}
-        onClick={() => {
-          setActive("pro_target_gap");
-          setOpen(false);
-        }}
+        onClick={() => navigate("pro_target_gap")}
       />
     </nav>
   );
@@ -104,7 +121,7 @@ export default function MasterShell({ user }: Props) {
             <div className="text-lg font-semibold">Dashboard</div>
             <div className="text-xs opacity-70">MASTER</div>
             {user.department && (
-              <div className="text-[10px] font-bold text-blue-500">
+              <div className="text-role-highlight text-[10px] font-bold">
                 {user.department}
               </div>
             )}

@@ -298,15 +298,20 @@ export default function ProList({
     }
   }, [initialTypeFilter]);
 
-  const list = api.pros.list.useQuery(
-    {
+  const listQueryInput = React.useMemo(
+    () => ({
       q: q.trim() ? q.trim() : undefined,
       status: status === "ALL" ? undefined : status,
-      type: typeFilter === "ALL" ? undefined : typeFilter, // Added
+      type: typeFilter === "ALL" ? undefined : typeFilter,
       take: 50,
-    },
-    { staleTime: 30_000, refetchOnWindowFocus: false },
+    }),
+    [q, status, typeFilter],
   );
+
+  const list = api.pros.list.useQuery(listQueryInput, {
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
 
   // ===== DETAIL QUERY =====
   const detail = api.pros.getById.useQuery(
@@ -668,7 +673,7 @@ export default function ProList({
       await utils.pros.getSchedule.cancel();
 
       const previousDetail = utils.pros.getById.getData({ id: variables.id });
-      const previousList = utils.pros.list.getData({});
+      const previousList = utils.pros.list.getData(listQueryInput);
 
       if (previousDetail) {
         utils.pros.getById.setData(
@@ -700,7 +705,7 @@ export default function ProList({
 
       if (previousList) {
         utils.pros.list.setData(
-          {},
+          listQueryInput,
           {
             ...previousList,
             items: previousList.items.map((pro: any) =>
@@ -730,7 +735,7 @@ export default function ProList({
         );
       }
       if (context?.previousList) {
-        utils.pros.list.setData({}, context.previousList);
+        utils.pros.list.setData(listQueryInput, context.previousList);
       }
     },
     onSuccess: async () => {
@@ -751,12 +756,12 @@ export default function ProList({
       await utils.pros.getById.cancel();
       await utils.pros.getSchedule.cancel();
 
-      const previousList = utils.pros.list.getData({});
+      const previousList = utils.pros.list.getData(listQueryInput);
       const previousDetail = utils.pros.getById.getData({ id: variables.id });
 
       if (previousList) {
         utils.pros.list.setData(
-          {},
+          listQueryInput,
           {
             ...previousList,
             items: previousList.items.filter(
@@ -770,7 +775,7 @@ export default function ProList({
     },
     onError: (_err: any, variables: any, context: any) => {
       if (context?.previousList) {
-        utils.pros.list.setData({}, context.previousList);
+        utils.pros.list.setData(listQueryInput, context.previousList);
       }
       if (context?.previousDetail) {
         utils.pros.getById.setData(

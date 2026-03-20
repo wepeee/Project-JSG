@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { signOut } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
 import { ThemeToggle } from "~/components/theme-toggle";
@@ -43,9 +44,64 @@ type NavKey =
   | "machine_access"
   | "oee_paper";
 
+const SUPERADMIN_PATH_BY_KEY: Record<NavKey, string> = {
+  dashboard: "/dashboard",
+  users: "/dashboard/users",
+  settings: "/dashboard/settings",
+  audit: "/dashboard/audit",
+  machines_paper: "/dashboard/paper/machines",
+  machines_rigid: "/dashboard/rigid/machines",
+  inventory_paper: "/dashboard/paper/wip-monitor",
+  inventory_rigid: "/dashboard/rigid/wip-monitor",
+  verification_paper: "/dashboard/paper/verification",
+  verification_rigid: "/dashboard/rigid/verification",
+  report_archive_paper: "/dashboard/paper/reports",
+  report_archive_rigid: "/dashboard/rigid/reports",
+  std_output_paper: "/dashboard/paper/std-output",
+  std_output_rigid: "/dashboard/rigid/std-output",
+  machine_access: "/dashboard/machine-access",
+  oee_paper: "/dashboard/oee",
+};
+
+function resolveSuperadminNav(pathname: string): NavKey {
+  if (pathname === "/dashboard") return "dashboard";
+  if (pathname.startsWith("/dashboard/users")) return "users";
+  if (pathname.startsWith("/dashboard/settings")) return "settings";
+  if (pathname.startsWith("/dashboard/audit")) return "audit";
+  if (pathname.startsWith("/dashboard/machine-access")) return "machine_access";
+  if (pathname.startsWith("/dashboard/oee")) return "oee_paper";
+
+  if (pathname.startsWith("/dashboard/paper/machines")) return "machines_paper";
+  if (pathname.startsWith("/dashboard/paper/wip-monitor")) return "inventory_paper";
+  if (pathname.startsWith("/dashboard/paper/verification")) return "verification_paper";
+  if (pathname.startsWith("/dashboard/paper/reports")) return "report_archive_paper";
+  if (pathname.startsWith("/dashboard/paper/std-output")) return "std_output_paper";
+
+  if (pathname.startsWith("/dashboard/rigid/machines")) return "machines_rigid";
+  if (pathname.startsWith("/dashboard/rigid/wip-monitor")) return "inventory_rigid";
+  if (pathname.startsWith("/dashboard/rigid/verification")) return "verification_rigid";
+  if (pathname.startsWith("/dashboard/rigid/reports")) return "report_archive_rigid";
+  if (pathname.startsWith("/dashboard/rigid/std-output")) return "std_output_rigid";
+
+  return "dashboard";
+}
+
 export default function SuperadminShell({ user }: Props) {
-  const [active, setActive] = React.useState<NavKey>("dashboard");
+  const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
+  const active = React.useMemo(
+    () => resolveSuperadminNav(pathname || "/dashboard"),
+    [pathname],
+  );
+
+  const navigate = React.useCallback(
+    (key: NavKey) => {
+      router.push(SUPERADMIN_PATH_BY_KEY[key]);
+      setOpen(false);
+    },
+    [router],
+  );
 
   const title = React.useMemo(() => {
     switch (active) {
@@ -95,157 +151,109 @@ export default function SuperadminShell({ user }: Props) {
 
   const SidebarContent = () => (
     <nav className="flex flex-1 flex-col gap-1 px-2">
-      <div className="mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
+      <div className="text-nav-section mb-1 px-3 text-[10px] font-bold tracking-wider">
         OVERVIEW
       </div>
       <SidebarItem
         label="Dashboard"
         active={active === "dashboard"}
-        onClick={() => {
-          setActive("dashboard");
-          setOpen(false);
-        }}
+        onClick={() => navigate("dashboard")}
       />
       <SidebarItem
         label="OEE Analytics"
         active={active === "oee_paper"}
-        onClick={() => {
-          setActive("oee_paper");
-          setOpen(false);
-        }}
+        onClick={() => navigate("oee_paper")}
       />
 
       {showPaper && (
         <>
-          <div className="mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
+          <div className="text-nav-section mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider">
             OPERASIONAL PAPER
           </div>
           <SidebarItem
             label="WIP Monitor"
             active={active === "inventory_paper"}
-            onClick={() => {
-              setActive("inventory_paper");
-              setOpen(false);
-            }}
+            onClick={() => navigate("inventory_paper")}
           />
           <SidebarItem
             label="Verifikasi Laporan"
             active={active === "verification_paper"}
-            onClick={() => {
-              setActive("verification_paper");
-              setOpen(false);
-            }}
+            onClick={() => navigate("verification_paper")}
           />
           <SidebarItem
             label="Daftar Laporan"
             active={active === "report_archive_paper"}
-            onClick={() => {
-              setActive("report_archive_paper");
-              setOpen(false);
-            }}
+            onClick={() => navigate("report_archive_paper")}
           />
           <SidebarItem
             label="Std Output"
             active={active === "std_output_paper"}
-            onClick={() => {
-              setActive("std_output_paper");
-              setOpen(false);
-            }}
+            onClick={() => navigate("std_output_paper")}
           />
           <SidebarItem
             label="Kelola Mesin"
             active={active === "machines_paper"}
-            onClick={() => {
-              setActive("machines_paper");
-              setOpen(false);
-            }}
+            onClick={() => navigate("machines_paper")}
           />
         </>
       )}
 
       {showRigid && (
         <>
-          <div className="mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
+          <div className="text-nav-section mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider">
             OPERASIONAL RIGID
           </div>
           <SidebarItem
             label="WIP Monitor"
             active={active === "inventory_rigid"}
-            onClick={() => {
-              setActive("inventory_rigid");
-              setOpen(false);
-            }}
+            onClick={() => navigate("inventory_rigid")}
           />
           <SidebarItem
             label="Verifikasi Laporan"
             active={active === "verification_rigid"}
-            onClick={() => {
-              setActive("verification_rigid");
-              setOpen(false);
-            }}
+            onClick={() => navigate("verification_rigid")}
           />
           <SidebarItem
             label="Daftar Laporan"
             active={active === "report_archive_rigid"}
-            onClick={() => {
-              setActive("report_archive_rigid");
-              setOpen(false);
-            }}
+            onClick={() => navigate("report_archive_rigid")}
           />
           <SidebarItem
             label="Std Output"
             active={active === "std_output_rigid"}
-            onClick={() => {
-              setActive("std_output_rigid");
-              setOpen(false);
-            }}
+            onClick={() => navigate("std_output_rigid")}
           />
           <SidebarItem
             label="Kelola Mesin"
             active={active === "machines_rigid"}
-            onClick={() => {
-              setActive("machines_rigid");
-              setOpen(false);
-            }}
+            onClick={() => navigate("machines_rigid")}
           />
         </>
       )}
 
       <div className="mt-4 mb-2 border-t border-dashed" />
-      <div className="mb-1 px-3 text-[10px] font-bold tracking-wider text-slate-400">
+      <div className="text-nav-section mb-1 px-3 text-[10px] font-bold tracking-wider">
         ADMINISTRASI SISTEM
       </div>
       <SidebarItem
         label="Kelola Akun"
         active={active === "users"}
-        onClick={() => {
-          setActive("users");
-          setOpen(false);
-        }}
+        onClick={() => navigate("users")}
       />
       <SidebarItem
         label="Akses Mesin Operator"
         active={active === "machine_access"}
-        onClick={() => {
-          setActive("machine_access");
-          setOpen(false);
-        }}
+        onClick={() => navigate("machine_access")}
       />
       <SidebarItem
         label="Audit Log"
         active={active === "audit"}
-        onClick={() => {
-          setActive("audit");
-          setOpen(false);
-        }}
+        onClick={() => navigate("audit")}
       />
       <SidebarItem
         label="Pengaturan"
         active={active === "settings"}
-        onClick={() => {
-          setActive("settings");
-          setOpen(false);
-        }}
+        onClick={() => navigate("settings")}
       />
     </nav>
   );
@@ -282,7 +290,7 @@ export default function SuperadminShell({ user }: Props) {
             <div className="text-lg font-semibold">Dashboard</div>
             <div className="text-xs opacity-70">SUPERADMIN</div>
             {user.department && (
-              <div className="text-[10px] font-bold text-blue-500">
+              <div className="text-role-highlight text-[10px] font-bold">
                 {user.department}
               </div>
             )}

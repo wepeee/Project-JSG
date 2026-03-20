@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
 import { type Session } from "next-auth";
 import { AppAlertProvider } from "~/components/ui/app-alert";
+import { NavigationProgressBar } from "~/components/navigation-progress-bar";
 
 export function Providers({
   children,
@@ -22,6 +23,7 @@ export function Providers({
         disableTransitionOnChange
       >
         <AppAlertProvider>
+          <NavigationProgressBar />
           {children}
         </AppAlertProvider>
       </ThemeProvider>
