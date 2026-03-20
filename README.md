@@ -117,14 +117,61 @@ Contoh ada di:
 Workflow GitHub Actions untuk alur aman DB ada di:
 - `.github/workflows/deploy-trial.yml`
 
-Ringkasnya:
-- `push` ke `main` -> jalankan `pnpm db:migrate` ke DB trial.
-- opsional trigger Vercel Deploy Hook jika `VERCEL_DEPLOY_HOOK_URL` diisi.
+Workflow ini melakukan:
+1. Quality gate (`lint` + `typecheck`)
+2. Migration ke DB trial (`pnpm db:migrate` = `prisma migrate deploy`)
+3. Opsional trigger Vercel Deploy Hook
 
-Secrets yang perlu disiapkan di GitHub repository:
+### Setup Sekali (One-time)
+
+Siapkan GitHub Secrets di repository:
 - `TRIAL_DATABASE_URL`
 - `TRIAL_DIRECT_URL`
 - `VERCEL_DEPLOY_HOOK_URL` (opsional)
+
+### Tutorial Harian Dev (Perubahan Schema)
+
+1. Kerja di branch `develop`/feature.
+2. Ubah `prisma/schema.prisma`.
+3. Generate migration di lokal:
+
+```bash
+pnpm db:migrate:dev --name <nama_migrasi>
+```
+
+4. Commit `schema.prisma` + `prisma/migrations/...`.
+5. Buat PR dan merge ke `main`.
+6. Setelah merge, workflow `Deploy Trial` otomatis jalan.
+7. Cek hasil di tab `Actions` GitHub.
+
+### Kalau Mau Deploy App Setelah Migration
+
+- Jika pakai Vercel Git Integration: deploy otomatis setelah push/merge ke `main`.
+- Jika pakai deploy hook: isi `VERCEL_DEPLOY_HOOK_URL`, workflow akan trigger deploy setelah migration sukses.
+
+### Kalau Workflow Gagal
+
+1. Cek step yang gagal di GitHub Actions.
+2. Perbaiki di branch baru.
+3. Merge ulang ke `main` (workflow rerun otomatis), atau jalankan manual via `workflow_dispatch`.
+
+### Kapan Perlu Manual Migration?
+
+Manual disarankan jika:
+- migration besar/destruktif,
+- perlu maintenance window,
+- perlu backup + verifikasi operator terlebih dulu.
+
+Perintah manual (ke DB trial/prod-like):
+
+```bash
+pnpm db:migrate
+```
+
+### Larangan Penting
+
+- Jangan pakai `pnpm db:push` (`prisma db push`) ke trial/prod-like.
+- Jangan pakai `pnpm db:reset` di trial/prod-like.
 
 Runbook detail:
 - [Dev -> Trial -> Vercel CI/CD](docs/dev-trial-vercel-cicd.md)
