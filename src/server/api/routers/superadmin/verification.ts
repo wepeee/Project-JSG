@@ -325,7 +325,7 @@ export const verificationRouter = createTRPCRouter({
 
         const currentItem = proses.partNumber ?? "UNKNOWN_ITEM";
 
-        // === BUG FIX: AMBIGUOUS WIP GUARD ===
+        // Material requirements configured by PPIC on this step
         const materials = await tx.prosesMaterial.findMany({
           where: { prosesId: proses.id },
           include: { itemMaster: true },
@@ -334,13 +334,6 @@ export const verificationRouter = createTRPCRouter({
         const wipMaterials = materials.filter(
           (m) => m.itemMaster.kind === "WIP",
         );
-
-        if (wipMaterials.length > 1) {
-          throw new TRPCError({
-            code: "PRECONDITION_FAILED",
-            message: `Ambiguous WIP input: Proses ini memiliki ${wipMaterials.length} material WIP. Sistem hanya mendukung 1 WIP input per step untuk auto-routing.`,
-          });
-        }
 
         // Correction: For consumption (OUT), we use the INPUT item (Previous Step's Output).
         // For Step 1, Input = Output (Auto-Refill context).
@@ -351,7 +344,14 @@ export const verificationRouter = createTRPCRouter({
         const fgItem = pro.partNumber ?? currentItem;
 
         // === DRAFT FLAG DETECTION ===
-        const involvedItemCodes = [consumptionItem, currentItem, fgItem];
+        const involvedItemCodes = Array.from(
+          new Set([
+            consumptionItem,
+            currentItem,
+            fgItem,
+            ...wipMaterials.map((m) => m.itemMaster.code),
+          ]),
+        ).filter(Boolean);
         const draftItems = await tx.item.findMany({
           where: {
             code: { in: involvedItemCodes },
@@ -377,10 +377,10 @@ export const verificationRouter = createTRPCRouter({
           machineId || null,
         );
 
-        // 1. Step 1 Special Handling: Auto-Produce Input Stock
+        // 1. Step 1 Special Handling: Auto-Produce Input Stock (legacy fallback path only)
         // Logic: For the first process, we assume input material is "Produced" into WIP first.
         // Qty Created = Ending WIP + Total Output (PassOn + Hold + Reject)
-        if (isFirstStep) {
+        if (isFirstStep && wipMaterials.length === 0) {
           const totalProduced = qtyWip + totalOut;
           if (totalProduced > 0) {
             const refillMasterId = await resolveItemMasterId(consumptionItem);
@@ -402,57 +402,232 @@ export const verificationRouter = createTRPCRouter({
           }
         }
 
-        // 2. GUARD: Check Balance & Post OUT (Transfer Source)
-        // Ensure we have enough stock to OUT the totalOut amount
+        // 2. MATERIAL CONSUMPTION (OUT)
+        // If PPIC configured WIP materials on this step, consume those materials with FIFO.
+        // Otherwise fallback to legacy single-input consumption logic.
         if (totalOut > 0) {
-          // Calculate current stock for this Item in this Location for this PRO
-          // SKIPPED for Step 1: We just auto-refilled the exact needed amount (totalProduced).
-          // Checking DB via groupBy might fail due to transaction isolation (read-your-writes) not seeing the just-inserted IN txn.
-          if (!isFirstStep) {
-            const balanceAgg = await tx.inventoryTxn.groupBy({
-              by: ["type"],
-              where: {
-                locationId: currentLoc.id,
-                itemId: consumptionItem, // Check stock of the INPUT item
-                proId: pro.id,
-              },
-              _sum: { qty: true },
-            });
+          const consumeByFifo = async (params: {
+            itemMasterId: number;
+            itemCode: string;
+            requiredQty: number;
+            note: string;
+          }) => {
+            const requiredQty = Number(params.requiredQty);
+            if (!Number.isFinite(requiredQty) || requiredQty <= 0) return;
 
-            let currentStock = 0;
-            for (const g of balanceAgg) {
-              const qty = Number(g._sum.qty?.toString() ?? "0");
-              if (g.type === TxnType.IN) currentStock += qty;
-              else if (g.type === TxnType.OUT) currentStock -= qty;
+            const [inTxns, outTxns] = await Promise.all([
+              tx.inventoryTxn.findMany({
+                where: {
+                  proId: pro.id,
+                  type: TxnType.IN,
+                  location: { type: LocationType.WIP },
+                  OR: [
+                    { itemMasterId: params.itemMasterId },
+                    { itemMasterId: null, itemId: params.itemCode },
+                  ],
+                },
+                select: {
+                  id: true,
+                  locationId: true,
+                  qty: true,
+                  date: true,
+                  createdAt: true,
+                },
+                orderBy: [{ date: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+              }),
+              tx.inventoryTxn.findMany({
+                where: {
+                  proId: pro.id,
+                  type: TxnType.OUT,
+                  location: { type: LocationType.WIP },
+                  OR: [
+                    { itemMasterId: params.itemMasterId },
+                    { itemMasterId: null, itemId: params.itemCode },
+                  ],
+                },
+                select: {
+                  locationId: true,
+                  qty: true,
+                },
+                orderBy: [{ date: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+              }),
+            ]);
+
+            const inLayersByLoc = new Map<
+              number,
+              Array<{
+                locationId: number;
+                remaining: number;
+                dateMs: number;
+                createdAtMs: number;
+                seq: string;
+              }>
+            >();
+
+            for (const txn of inTxns) {
+              const locLayers = inLayersByLoc.get(txn.locationId) ?? [];
+              locLayers.push({
+                locationId: txn.locationId,
+                remaining: Number(txn.qty?.toString() ?? "0"),
+                dateMs: txn.date.getTime(),
+                createdAtMs: txn.createdAt.getTime(),
+                seq: txn.id,
+              });
+              inLayersByLoc.set(txn.locationId, locLayers);
             }
 
-            if (currentStock < totalOut) {
+            for (const outTxn of outTxns) {
+              let remainingOut = Number(outTxn.qty?.toString() ?? "0");
+              const locLayers = inLayersByLoc.get(outTxn.locationId) ?? [];
+              for (const layer of locLayers) {
+                if (remainingOut <= 0) break;
+                const taken = Math.min(layer.remaining, remainingOut);
+                layer.remaining -= taken;
+                remainingOut -= taken;
+              }
+            }
+
+            const fifoLayers = Array.from(inLayersByLoc.values())
+              .flat()
+              .filter((l) => l.remaining > 0)
+              .sort((a, b) => {
+                if (a.dateMs !== b.dateMs) return a.dateMs - b.dateMs;
+                if (a.createdAtMs !== b.createdAtMs) return a.createdAtMs - b.createdAtMs;
+                return a.seq.localeCompare(b.seq);
+              });
+
+            const availableQty = fifoLayers.reduce((acc, l) => acc + l.remaining, 0);
+            if (availableQty + 1e-9 < requiredQty) {
               throw new TRPCError({
                 code: "PRECONDITION_FAILED",
-                message: `Stock tidak cukup di ${
-                  proses.machine?.name ?? "Mesin"
-                }. Tersedia: ${currentStock} (${consumptionItem}), Butuh OUT: ${totalOut}. (Harap cek inputan step sebelumnya)`,
+                message: `Stock ${params.itemCode} tidak cukup untuk FIFO. Tersedia: ${availableQty.toFixed(
+                  3,
+                )}, Butuh: ${requiredQty.toFixed(3)}.`,
               });
             }
-          }
 
-          // Execute OUT
-          const outMasterId = await resolveItemMasterId(consumptionItem);
-          await tx.inventoryTxn.create({
-            data: {
-              groupId,
-              date: now,
-              type: TxnType.OUT,
-              itemId: consumptionItem, // Consume INPUT item
-              itemMasterId: outMasterId,
-              qty: totalOut,
-              locationId: currentLoc.id,
-              proId: pro.id,
-              prosesId: proses.id,
-              productionReportId: report.id,
-              notes: "Production Output (Transfer OUT)",
-            },
-          });
+            const outPerLocation = new Map<number, number>();
+            let remainingNeed = requiredQty;
+            for (const layer of fifoLayers) {
+              if (remainingNeed <= 0) break;
+              const taken = Math.min(layer.remaining, remainingNeed);
+              outPerLocation.set(
+                layer.locationId,
+                (outPerLocation.get(layer.locationId) ?? 0) + taken,
+              );
+              remainingNeed -= taken;
+            }
+
+            for (const [locationId, qty] of outPerLocation) {
+              if (qty <= 0) continue;
+              await tx.inventoryTxn.create({
+                data: {
+                  groupId,
+                  date: now,
+                  type: TxnType.OUT,
+                  itemId: params.itemCode,
+                  itemMasterId: params.itemMasterId,
+                  qty,
+                  locationId,
+                  proId: pro.id,
+                  prosesId: proses.id,
+                  productionReportId: report.id,
+                  notes: `${params.note} (FIFO)`,
+                },
+              });
+            }
+          };
+
+          if (wipMaterials.length > 0) {
+            // Base consumption:
+            // - Prefer operator's actual input material if filled
+            // - fallback to report output amount
+            const inputMaterialQty = Number(report.inputMaterialQty?.toString() ?? "0");
+            const baseQty = inputMaterialQty > 0 ? inputMaterialQty : totalOut;
+
+            const activeWipMaterials = wipMaterials.filter(
+              (m) => Number(m.qtyReq?.toString() ?? "0") > 0,
+            );
+            const totalReq = activeWipMaterials.reduce(
+              (acc, m) => acc + Number(m.qtyReq?.toString() ?? "0"),
+              0,
+            );
+
+            if (baseQty > 0 && totalReq > 0) {
+              let allocated = 0;
+              for (let i = 0; i < activeWipMaterials.length; i++) {
+                const mat = activeWipMaterials[i]!;
+                const req = Number(mat.qtyReq?.toString() ?? "0");
+
+                const rawQty =
+                  i === activeWipMaterials.length - 1
+                    ? Math.max(baseQty - allocated, 0)
+                    : (baseQty * req) / totalReq;
+
+                const consumeQty = Number(rawQty.toFixed(3));
+                allocated += consumeQty;
+
+                await consumeByFifo({
+                  itemMasterId: mat.itemMasterId,
+                  itemCode: mat.itemMaster.code,
+                  requiredQty: consumeQty,
+                  note: "Material Consumption",
+                });
+              }
+            } else if (baseQty > 0) {
+              throw new TRPCError({
+                code: "PRECONDITION_FAILED",
+                message:
+                  "Material WIP pada step ini belum punya qtyReq yang valid untuk perhitungan konsumsi FIFO.",
+              });
+            }
+          } else {
+            // Legacy fallback: consume previous-step output from current machine bin
+            if (!isFirstStep) {
+              const balanceAgg = await tx.inventoryTxn.groupBy({
+                by: ["type"],
+                where: {
+                  locationId: currentLoc.id,
+                  itemId: consumptionItem,
+                  proId: pro.id,
+                },
+                _sum: { qty: true },
+              });
+
+              let currentStock = 0;
+              for (const g of balanceAgg) {
+                const qty = Number(g._sum.qty?.toString() ?? "0");
+                if (g.type === TxnType.IN) currentStock += qty;
+                else if (g.type === TxnType.OUT) currentStock -= qty;
+              }
+
+              if (currentStock < totalOut) {
+                throw new TRPCError({
+                  code: "PRECONDITION_FAILED",
+                  message: `Stock tidak cukup di ${
+                    proses.machine?.name ?? "Mesin"
+                  }. Tersedia: ${currentStock} (${consumptionItem}), Butuh OUT: ${totalOut}. (Harap cek inputan step sebelumnya)`,
+                });
+              }
+            }
+
+            const outMasterId = await resolveItemMasterId(consumptionItem);
+            await tx.inventoryTxn.create({
+              data: {
+                groupId,
+                date: now,
+                type: TxnType.OUT,
+                itemId: consumptionItem,
+                itemMasterId: outMasterId,
+                qty: totalOut,
+                locationId: currentLoc.id,
+                proId: pro.id,
+                prosesId: proses.id,
+                productionReportId: report.id,
+                notes: "Production Output (Transfer OUT)",
+              },
+            });
+          }
         }
 
         // 3. POST IN (Destinations)
@@ -577,8 +752,7 @@ export const verificationRouter = createTRPCRouter({
           });
         }
 
-        // 4. CONSUMPTION (OUT) - SKIPPED FOR NOW
-        // As per instruction: "start with IN-only posting from approveReport" to avoid blocking production report approval due to missing initial stock data.
+        // 4. Consumption is posted above (FIFO for PPIC WIP materials, with legacy fallback).
 
         // D. Update Report Status & PRO Status with ATOMIC CHECK
         // This will throw if record does not exist or stockPostedAt is not null

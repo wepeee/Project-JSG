@@ -535,14 +535,14 @@ export function ProductionReportModal({
     othersNote: "",
   });
 
-  // Checklist material penyebab reject FG (untuk PAPER)
+  // Checklist material penyebab reject (khusus Rigid Packing/Assembly)
   const [rejectMaterials, setRejectMaterials] = React.useState<string[]>([]);
 
   // Fetch materials per proses dari PPIC
   const prosesId = task?.step?.id as number | undefined;
   const { data: prosesMaterials } = api.production.getProsesMaterials.useQuery(
     { prosesId: prosesId! },
-    { enabled: !!prosesId && lphType === "PAPER" },
+    { enabled: !!prosesId && lphType === "PACKING_ASSEMBLY" },
   );
 
   // Calculate Totals
@@ -1151,8 +1151,8 @@ export function ProductionReportModal({
         materialPassOn: parseNumber(formData.materialPassOn) || undefined,
         materialHold: parseNumber(formData.materialHold) || undefined,
         materialWip: parseNumber(formData.materialWip) || undefined,
-        // Checklist material penyebab reject FG (PAPER only)
-        ...(lphType === "PAPER" && rejectMaterials.length > 0
+        // Checklist material penyebab reject (Rigid Packing/Assembly only)
+        ...(lphType === "PACKING_ASSEMBLY" && rejectMaterials.length > 0
           ? { rejectMaterials }
           : {}),
       },
@@ -1876,12 +1876,12 @@ export function ProductionReportModal({
                     )}
                   </div>
 
-                  {/* ── Checklist Material Penyebab Reject FG (PAPER only) ── */}
-                  {lphType === "PAPER" && prosesMaterials && prosesMaterials.length > 0 && (
+                  {/* ── Checklist Material Penyebab Reject (Rigid Packing/Assembly only) ── */}
+                  {lphType === "PACKING_ASSEMBLY" && prosesMaterials && prosesMaterials.length > 0 && (
                     <div className="mt-4 rounded-xl border border-red-900/40 bg-red-950/20 p-4">
                       <div className="mb-3 flex items-center gap-2">
                         <span className="text-[10px] font-bold tracking-widest text-red-400 uppercase">
-                          Penyebab Reject FG — Material
+                          Penyebab Reject FG / Assembly - Material
                         </span>
                         <span className="text-[9px] text-slate-500">(centang material yang bermasalah)</span>
                         {rejectMaterials.length > 0 && (

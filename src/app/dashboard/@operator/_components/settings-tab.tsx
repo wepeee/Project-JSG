@@ -19,7 +19,7 @@ export function SettingsTab() {
   const { data: session } = useSession();
 
   return (
-    <div className="bg-background min-h-screen pb-24">
+    <div className="bg-background min-h-screen pb-24 lg:pb-8">
       {/* Header */}
       <div className="bg-background/80 sticky top-0 z-30 border-b pt-5 shadow-sm backdrop-blur-xl">
         <div className="px-5 pb-4">
@@ -29,7 +29,7 @@ export function SettingsTab() {
         </div>
       </div>
 
-      <div className="space-y-6 p-4">
+      <div className="mx-auto max-w-3xl space-y-6 p-4 lg:p-6">
         {/* Profile Card */}
         <Card className="bg-card ring-border border-none shadow-lg ring-1 shadow-black/5">
           <CardHeader className="flex flex-row items-center gap-4 pb-2">

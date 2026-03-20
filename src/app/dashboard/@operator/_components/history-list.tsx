@@ -56,7 +56,7 @@ export function HistoryList() {
   };
 
   return (
-    <div className="bg-background min-h-screen pb-24">
+    <div className="bg-background min-h-screen pb-24 lg:pb-8">
       {/* Header */}
       <div className="bg-background/80 sticky top-0 z-30 border-b p-5 shadow-sm backdrop-blur-xl">
         <h1 className="from-brand-teal to-brand-pink mb-4 bg-gradient-to-r bg-clip-text text-2xl font-black tracking-tight text-transparent">
@@ -90,7 +90,7 @@ export function HistoryList() {
       )}
 
       {/* Real Data Cards - Styled like TaskDetailView */}
-      <div className="space-y-4 px-4 py-4">
+      <div className="grid gap-4 px-4 py-4 lg:grid-cols-2 lg:px-6 lg:py-6">
         {history?.map((rpt) => (
           <div
             key={rpt.id}

@@ -71,7 +71,7 @@ export function ScheduleList() {
   if (!mounted) return null;
 
   return (
-    <div className="bg-background min-h-screen pb-24">
+    <div className="bg-background min-h-screen pb-24 lg:pb-8">
       {/* Header with Glassmorphism */}
       <div className="bg-background/80 sticky top-0 z-30 border-b pt-5 shadow-sm backdrop-blur-xl">
         <div className="px-5 pb-4">
@@ -162,9 +162,9 @@ export function ScheduleList() {
         </div>
       </div>
 
-      <div className="space-y-6 p-4">
+      <div className="space-y-6 p-4 lg:p-6">
         {schedule.isLoading && (
-          <div className="flex flex-col gap-4">
+          <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
@@ -183,7 +183,7 @@ export function ScheduleList() {
           </div>
         )}
 
-        <div className="space-y-4">
+        <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
           {schedule.data
             ?.flatMap((pro) =>
               pro.proses.map((step) => {
