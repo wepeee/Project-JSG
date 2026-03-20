@@ -75,12 +75,24 @@ jobs:
     name: Trigger Vercel Deploy Hook (Optional)
     needs: migrate-trial
     runs-on: ubuntu-latest
-    if: >
-      secrets.VERCEL_DEPLOY_HOOK_URL != '' &&
-      (
-        github.event_name == 'push' ||
-        (github.event_name == 'workflow_dispatch' && inputs.trigger_vercel)
-      )
+    if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.trigger_vercel) }}
     steps:
+      - name: Skip when deploy hook secret is missing
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK_URL" ]; then
+            echo "VERCEL_DEPLOY_HOOK_URL is empty. Skipping trigger."
+            exit 0
+          fi
+          echo "Deploy hook is configured."
+
       - name: Call Vercel deploy hook
-        run: curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK_URL" ]; then
+            echo "Skipping deploy hook call."
+            exit 0
+          fi
+          curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"
