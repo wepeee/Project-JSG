@@ -112,12 +112,30 @@ Contoh ada di:
 - `.env.example`
 - [Supabase + Vercel Trial Runbook](docs/supabase-vercel-trial.md)
 
+## CI/CD Dev -> Trial
+
+Workflow GitHub Actions untuk alur aman DB ada di:
+- `.github/workflows/deploy-trial.yml`
+
+Ringkasnya:
+- `push` ke `main` -> jalankan `pnpm db:migrate` ke DB trial.
+- opsional trigger Vercel Deploy Hook jika `VERCEL_DEPLOY_HOOK_URL` diisi.
+
+Secrets yang perlu disiapkan di GitHub repository:
+- `TRIAL_DATABASE_URL`
+- `TRIAL_DIRECT_URL`
+- `VERCEL_DEPLOY_HOOK_URL` (opsional)
+
+Runbook detail:
+- [Dev -> Trial -> Vercel CI/CD](docs/dev-trial-vercel-cicd.md)
+
 ## Dokumentasi Internal
 
 - [Global Style Management](docs/global-style-management.md)
 - [User Stories by Role](docs/user-stories-by-role.md)
 - [Database Persistence & Safe Migration](docs/database-persistence-safe-migration.md)
 - [Supabase + Vercel Trial](docs/supabase-vercel-trial.md)
+- [Dev -> Trial -> Vercel CI/CD](docs/dev-trial-vercel-cicd.md)
 
 ## Catatan Keamanan
 

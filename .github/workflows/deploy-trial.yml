@@ -1,0 +1,86 @@
+name: Deploy Trial
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      trigger_vercel:
+        description: "Trigger Vercel Deploy Hook after successful migration"
+        required: false
+        default: true
+        type: boolean
+
+concurrency:
+  group: deploy-trial-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+  migrate-trial:
+    name: Migrate Trial Database
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.TRIAL_DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.TRIAL_DIRECT_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma migrate deploy
+        run: pnpm db:migrate
+
+      - name: Prisma migration status
+        run: pnpm prisma migrate status
+
+  trigger-vercel:
+    name: Trigger Vercel Deploy Hook (Optional)
+    needs: migrate-trial
+    runs-on: ubuntu-latest
+    if: >
+      secrets.VERCEL_DEPLOY_HOOK_URL != '' &&
+      (
+        github.event_name == 'push' ||
+        (github.event_name == 'workflow_dispatch' && inputs.trigger_vercel)
+      )
+    steps:
+      - name: Call Vercel deploy hook
+        run: curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
