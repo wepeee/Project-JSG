@@ -1,33 +1,126 @@
-# Create T3 App
+# Production Monitoring App (T3 + Prisma)
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Web app monitoring produksi dengan multi-role dashboard:
+- `SUPERADMIN`
+- `ADMIN`
+- `PPIC`
+- `OPERATOR`
+- `MASTER`
 
-## What's next? How do I make an app with this?
+Fokus utama:
+- manajemen PRO dan proses produksi (paper + rigid),
+- laporan harian operator,
+- inventory flow (RAW/WIP/FG),
+- dashboard analitik per role.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Tech Stack
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- Next.js 15 (App Router)
+- TypeScript
+- tRPC + React Query
+- NextAuth
+- Prisma + PostgreSQL
+- Tailwind CSS + shadcn/ui
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Struktur Dashboard
 
-## Learn More
+Routing dashboard memakai role slot pada `src/app/dashboard`:
+- `@superadmin`
+- `@admin`
+- `@ppic`
+- `@operator`
+- `@master`
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+Entry utama tetap di `/dashboard`, lalu konten ditentukan dari role user login.
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+## Prasyarat
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+- Node.js 20+
+- `pnpm` (project memakai `pnpm@10`)
+- PostgreSQL (lokal, Docker, Supabase, atau managed service lain)
 
-## How do I deploy this?
+## Setup Lokal
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+1. Install dependency:
 
-## Supabase + Vercel Trial
+```bash
+pnpm install
+```
 
-Use the project runbook: `docs/supabase-vercel-trial.md`.
+2. Buat env:
+
+```bash
+cp .env.example .env
+```
+
+3. Isi minimal variabel berikut di `.env`:
+- `AUTH_SECRET`
+- `DATABASE_URL`
+- `DIRECT_URL`
+
+4. Jalankan migrasi dev:
+
+```bash
+pnpm db:migrate:dev --name init
+```
+
+5. (Opsional) seed data:
+
+```bash
+pnpm db:seed
+```
+
+6. Jalankan app:
+
+```bash
+pnpm dev
+```
+
+## Script Penting
+
+- `pnpm dev` - jalankan dev server
+- `pnpm build` - build production
+- `pnpm start` - start app production
+- `pnpm typecheck` - cek TypeScript
+- `pnpm lint` - lint project
+- `pnpm db:migrate:dev` - buat + apply migration di dev
+- `pnpm db:migrate` - apply migration di staging/prod (`prisma migrate deploy`)
+- `pnpm db:seed` - seed data
+- `pnpm db:studio` - buka Prisma Studio
+- `pnpm db:inject:dummy-pro` - inject data PRO dummy end-to-end
+
+## Database & Migration Policy
+
+Jangan langsung pakai workflow destruktif di production.
+
+Praktik aman:
+- dev: `pnpm db:migrate:dev`
+- staging/prod: `pnpm db:migrate`
+- selalu backup sebelum migrate production
+- gunakan strategi expand/backfill/contract untuk perubahan schema besar
+
+Panduan detail ada di:
+- [Database Persistence & Safe Migration](docs/database-persistence-safe-migration.md)
+
+## Catatan Supabase
+
+Jika memakai Supabase pooler:
+- `DATABASE_URL` gunakan koneksi runtime pooler (`pgbouncer=true&connection_limit=1`)
+- `DIRECT_URL` gunakan koneksi direct untuk migrasi/DDL (`sslmode=require`)
+
+Contoh ada di:
+- `.env.example`
+- [Supabase + Vercel Trial Runbook](docs/supabase-vercel-trial.md)
+
+## Dokumentasi Internal
+
+- [Global Style Management](docs/global-style-management.md)
+- [User Stories by Role](docs/user-stories-by-role.md)
+- [Database Persistence & Safe Migration](docs/database-persistence-safe-migration.md)
+- [Supabase + Vercel Trial](docs/supabase-vercel-trial.md)
+
+## Catatan Keamanan
+
+- Jangan commit `.env` atau secret apa pun.
+- Jika credential pernah ter-expose, segera rotate password/token.
+- Untuk production, batasi privilege DB user dan aktifkan backup berkala.
