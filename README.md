@@ -118,7 +118,7 @@ Workflow GitHub Actions untuk alur aman DB ada di:
 - `.github/workflows/deploy-trial.yml`
 
 Workflow ini melakukan:
-1. Quality gate (`lint` + `typecheck`)
+1. Quality gate (`typecheck`)
 2. Migration ke DB trial (`pnpm db:migrate` = `prisma migrate deploy`)
 3. Opsional trigger Vercel Deploy Hook
 

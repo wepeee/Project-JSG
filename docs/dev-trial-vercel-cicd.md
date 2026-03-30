@@ -32,7 +32,7 @@ pnpm db:migrate:dev --name <nama_migrasi>
 
 ## Alur Saat Merge ke `main`
 
-1. CI jalan (lint/type/test sesuai workflow).
+1. CI jalan (minimal typecheck sesuai workflow deploy-trial).
 2. Workflow deploy akan jalankan:
 
 ```bash
