@@ -252,6 +252,7 @@ export const verificationRouter = createTRPCRouter({
       // Fix Decimal conversion: force toString() before Number()
       const qtyPassOn = Number(report.qtyPassOn?.toString() ?? "0");
       const qtyHold = Number(report.qtyHold?.toString() ?? "0");
+      const qtyWip = Number(report.qtyWip?.toString() ?? "0");
       const qtyReject = Number(report.qtyReject?.toString() ?? "0");
       const inputWipQty = Number(report.inputWipQty?.toString() ?? "0");
 
@@ -418,7 +419,9 @@ export const verificationRouter = createTRPCRouter({
             const [inTxns, outTxns] = await Promise.all([
               tx.inventoryTxn.findMany({
                 where: {
-                  proId: pro.id,
+                  // No proId filter: FIFO must search across ALL PROs because
+                  // the WIP stock of this item may have been produced by different PROs
+                  // (e.g. PRO 991 & PRO 992 both produced PN 111, consumed by PRO 222)
                   type: TxnType.IN,
                   location: { type: LocationType.WIP },
                   OR: [
@@ -437,7 +440,8 @@ export const verificationRouter = createTRPCRouter({
               }),
               tx.inventoryTxn.findMany({
                 where: {
-                  proId: pro.id,
+                  // No proId filter: must account for all past consumptions of this item
+                  // across all PROs to correctly compute remaining stock
                   type: TxnType.OUT,
                   location: { type: LocationType.WIP },
                   OR: [
@@ -670,28 +674,66 @@ export const verificationRouter = createTRPCRouter({
               },
             });
           } else {
-            // Last Step -> FG
-            const fgLoc = await ensureLocation(
-              "FG_WH",
-              "FG",
-              "Finish Good Warehouse",
-            );
-            const fgMasterId = await resolveItemMasterId(fgItem);
-            await tx.inventoryTxn.create({
-              data: {
-                groupId,
-                date: now,
-                type: TxnType.IN,
-                itemId: fgItem, // Main PRO Part Number (FG)
-                itemMasterId: fgMasterId,
-                qty: qtyPassOn,
-                locationId: fgLoc.id,
-                proId: pro.id,
-                prosesId: proses.id,
-                productionReportId: report.id,
-                notes: "Finished Goods Received",
+            // Last Step → check item kind:
+            // - WIP item → WIP_STAGING (stays in WIP for cross-PRO FIFO consumption)
+            // - FG item  → FG_WH (finished good, normal flow)
+            const fgItemMaster = await tx.item.findFirst({
+              where: {
+                OR: [{ code: fgItem }, { code: currentItem }],
               },
+              select: { kind: true },
+              orderBy: { id: "asc" },
             });
+
+            const outputIsWip = fgItemMaster?.kind === "WIP";
+
+            if (outputIsWip) {
+              // WIP output → WIP Staging so cross-PRO FIFO can consume it
+              const wipStagingLoc = await ensureLocation(
+                "WIP_STAGING",
+                "WIP",
+                "WIP Staging Area",
+              );
+              const wipMasterId = await resolveItemMasterId(fgItem);
+              await tx.inventoryTxn.create({
+                data: {
+                  groupId,
+                  date: now,
+                  type: TxnType.IN,
+                  itemId: fgItem,
+                  itemMasterId: wipMasterId,
+                  qty: qtyPassOn,
+                  locationId: wipStagingLoc.id,
+                  proId: pro.id,
+                  prosesId: proses.id,
+                  productionReportId: report.id,
+                  notes: "WIP Produced (Staging for cross-PRO FIFO)",
+                },
+              });
+            } else {
+              // FG output → Finish Good Warehouse (normal flow)
+              const fgLoc = await ensureLocation(
+                "FG_WH",
+                "FG",
+                "Finish Good Warehouse",
+              );
+              const fgMasterId = await resolveItemMasterId(fgItem);
+              await tx.inventoryTxn.create({
+                data: {
+                  groupId,
+                  date: now,
+                  type: TxnType.IN,
+                  itemId: fgItem,
+                  itemMasterId: fgMasterId,
+                  qty: qtyPassOn,
+                  locationId: fgLoc.id,
+                  proId: pro.id,
+                  prosesId: proses.id,
+                  productionReportId: report.id,
+                  notes: "Finished Goods Received",
+                },
+              });
+            }
           }
         }
 
@@ -752,9 +794,39 @@ export const verificationRouter = createTRPCRouter({
           });
         }
 
+        // D. WIP Output (kept at current machine WIP or staging)
+        if (qtyWip > 0) {
+          const wipLocCode = "WIP_STAGING";
+          const wipLocName = "WIP Staging Area";
+
+          const wipLoc = await ensureLocation(
+            wipLocCode,
+            "WIP",
+            wipLocName,
+            null
+          );
+          
+          const wipMasterId = await resolveItemMasterId(currentItem);
+          await tx.inventoryTxn.create({
+            data: {
+              groupId,
+              date: now,
+              type: TxnType.IN,
+              itemId: currentItem,
+              itemMasterId: wipMasterId,
+              qty: qtyWip,
+              locationId: wipLoc.id,
+              proId: pro.id,
+              prosesId: proses.id,
+              productionReportId: report.id,
+              notes: "Production Output (WIP Kept)",
+            },
+          });
+        }
+
         // 4. Consumption is posted above (FIFO for PPIC WIP materials, with legacy fallback).
 
-        // D. Update Report Status & PRO Status with ATOMIC CHECK
+        // E. Update Report Status & PRO Status with ATOMIC CHECK
         // This will throw if record does not exist or stockPostedAt is not null
         // causing the whole transaction (including created InventoryTxns) to rollback.
         await tx.productionReport.update({
