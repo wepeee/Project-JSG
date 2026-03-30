@@ -44,10 +44,18 @@ Command di atas = `prisma migrate deploy` ke DB trial.
 3. Jika migration sukses:
 - Vercel Git Integration bisa auto deploy seperti biasa, atau
 - GitHub Action trigger Vercel Deploy Hook (opsional).
+4. Workflow otomatis cek schema `DEV` vs `TRIAL`:
+
+```bash
+pnpm prisma migrate diff --from-url "$DEV_DIRECT_URL" --to-url "$TRIAL_DIRECT_URL" --exit-code
+```
+
+Jika exit code `2`, berarti ada drift schema dan workflow akan gagal.
 
 ## GitHub Secrets yang Dibutuhkan
 
 Wajib:
+- `DEV_DIRECT_URL`
 - `TRIAL_DATABASE_URL`
 - `TRIAL_DIRECT_URL`
 
@@ -91,6 +99,7 @@ Sebelum apply ke trial:
 Sesudah deploy:
 - cek halaman login + query utama.
 - cek log error Prisma/tRPC.
+- cek step `Verify DEV vs TRIAL Schema Sync` hijau.
 
 ## Recovery Singkat
 
