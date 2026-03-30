@@ -579,6 +579,7 @@ export const verificationRouter = createTRPCRouter({
             // - fallback to report output amount
             const inputMaterialQty = Number(report.inputMaterialQty?.toString() ?? "0");
             const baseQty = inputMaterialQty > 0 ? inputMaterialQty : totalOut;
+            const isPrintingReport = report.reportType === "PRINTING";
 
             const activeWipMaterials = wipMaterials.filter(
               (m) => Number(m.qtyReq?.toString() ?? "0") > 0,
@@ -588,7 +589,35 @@ export const verificationRouter = createTRPCRouter({
               0,
             );
 
-            if (baseQty > 0 && totalReq > 0) {
+            if (
+              isPrintingReport &&
+              inputMaterialQty <= 0 &&
+              activeWipMaterials.length !== 1
+            ) {
+              throw new TRPCError({
+                code: "PRECONDITION_FAILED",
+                message: "Ambiguous WIP input for printing step.",
+              });
+            }
+
+            const usePrevOutputForPrinting =
+              isPrintingReport && !isFirstStep && inputMaterialQty <= 0;
+
+            if (baseQty > 0 && usePrevOutputForPrinting) {
+              const prevOutputMasterId = await resolveItemMasterId(consumptionItem);
+              const useReadyOnly =
+                consumeFromPassOnReadyPool &&
+                passOnReadyItemMasterId !== null &&
+                prevOutputMasterId === passOnReadyItemMasterId;
+
+              await consumeByFifo({
+                itemMasterId: prevOutputMasterId,
+                itemCode: consumptionItem,
+                requiredQty: Number(baseQty.toFixed(3)),
+                note: "Material Consumption",
+                locationCodes: useReadyOnly ? [passOnReadyLocCode] : undefined,
+              });
+            } else if (baseQty > 0 && totalReq > 0) {
               let allocated = 0;
               for (let i = 0; i < activeWipMaterials.length; i++) {
                 const mat = activeWipMaterials[i]!;
