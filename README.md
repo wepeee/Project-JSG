@@ -155,6 +155,11 @@ pnpm db:migrate:dev --name <nama_migrasi>
 2. Perbaiki di branch baru.
 3. Merge ulang ke `main` (workflow rerun otomatis), atau jalankan manual via `workflow_dispatch`.
 
+Jika gagal dengan `P3005` (database trial sudah berisi schema lama):
+1. Jalankan workflow `Deploy Trial` via `workflow_dispatch`.
+2. Set `baseline_existing_db=true` (sekali saja).
+3. Setelah baseline berhasil, push berikutnya cukup normal (tanpa baseline).
+
 ### Kapan Perlu Manual Migration?
 
 Manual disarankan jika:

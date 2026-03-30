@@ -58,6 +58,16 @@ Catatan:
 - Untuk Supabase, `TRIAL_DIRECT_URL` sebaiknya direct connection (port 5432, `sslmode=require`) untuk migrasi.
 - `TRIAL_DATABASE_URL` bisa runtime URL (pooler).
 
+## One-time Baseline Untuk DB Trial Lama (Error P3005)
+
+Jika trial DB sudah berisi schema lama dan belum punya histori Prisma migration:
+1. Buka GitHub Actions -> `Deploy Trial`.
+2. Klik `Run workflow`.
+3. Set `baseline_existing_db=true`.
+4. Jalankan sekali.
+
+Sesudah itu, run normal (`push main`) akan lanjut pakai `prisma migrate deploy` seperti biasa.
+
 ## Kapan Manual, Kapan Otomatis
 
 Manual masih disarankan jika:

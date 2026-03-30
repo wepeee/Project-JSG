@@ -11,6 +11,11 @@ on:
         required: false
         default: true
         type: boolean
+      baseline_existing_db:
+        description: "One-time baseline for existing non-empty DB (P3005)"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: deploy-trial-${{ github.ref }}
@@ -64,6 +69,17 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Optional baseline existing DB (one-time)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.baseline_existing_db }}
+        run: |
+          set -e
+          for dir in prisma/migrations/*; do
+            [ -d "$dir" ] || continue
+            name="$(basename "$dir")"
+            echo "Marking migration as applied: $name"
+            pnpm prisma migrate resolve --applied "$name" || true
+          done
 
       - name: Prisma migrate deploy
         run: pnpm db:migrate

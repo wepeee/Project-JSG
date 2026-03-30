@@ -623,18 +623,43 @@ export const verificationRouter = createTRPCRouter({
             }
           } else {
             // Legacy fallback: consume previous-step output from current machine bin
-            if (!isFirstStep) {
-              const fallbackSourceLocId =
-                consumeFromPassOnReadyPool && passOnReadyLoc
-                  ? passOnReadyLoc.id
-                  : currentLoc.id;
+            let fallbackSourceLocId = currentLoc.id;
+            let fallbackSourceName = proses.machine?.name ?? "Mesin";
+            let useProScope = true;
 
+            if (consumeFromPassOnReadyPool && passOnReadyLoc) {
+              const readyBalanceAgg = await tx.inventoryTxn.groupBy({
+                by: ["type"],
+                where: {
+                  locationId: passOnReadyLoc.id,
+                  itemId: consumptionItem,
+                },
+                _sum: { qty: true },
+              });
+
+              let readyStock = 0;
+              for (const g of readyBalanceAgg) {
+                const qty = Number(g._sum.qty?.toString() ?? "0");
+                if (g.type === TxnType.IN) readyStock += qty;
+                else if (g.type === TxnType.OUT) readyStock -= qty;
+              }
+
+              // Backward compatibility:
+              // If READY pool is empty/insufficient (old data flow), use legacy source.
+              if (readyStock >= totalOut) {
+                fallbackSourceLocId = passOnReadyLoc.id;
+                fallbackSourceName = "WIP Pass On Ready";
+                useProScope = false;
+              }
+            }
+
+            if (!isFirstStep) {
               const balanceAgg = await tx.inventoryTxn.groupBy({
                 by: ["type"],
                 where: {
                   locationId: fallbackSourceLocId,
                   itemId: consumptionItem,
-                  ...(consumeFromPassOnReadyPool ? {} : { proId: pro.id }),
+                  ...(useProScope ? { proId: pro.id } : {}),
                 },
                 _sum: { qty: true },
               });
@@ -650,18 +675,12 @@ export const verificationRouter = createTRPCRouter({
                 throw new TRPCError({
                   code: "PRECONDITION_FAILED",
                   message: `Stock tidak cukup di ${
-                    consumeFromPassOnReadyPool
-                      ? "WIP Pass On Ready"
-                      : (proses.machine?.name ?? "Mesin")
+                    fallbackSourceName
                   }. Tersedia: ${currentStock} (${consumptionItem}), Butuh OUT: ${totalOut}. (Harap cek inputan step sebelumnya)`,
                 });
               }
             }
 
-            const fallbackSourceLocId =
-              consumeFromPassOnReadyPool && passOnReadyLoc
-                ? passOnReadyLoc.id
-                : currentLoc.id;
             const outMasterId = await resolveItemMasterId(consumptionItem);
             await tx.inventoryTxn.create({
               data: {
@@ -675,7 +694,10 @@ export const verificationRouter = createTRPCRouter({
                 proId: pro.id,
                 prosesId: proses.id,
                 productionReportId: report.id,
-                notes: "Production Output (Transfer OUT)",
+                notes:
+                  fallbackSourceName === "WIP Pass On Ready"
+                    ? "Production Output (Transfer OUT - PASS ON READY)"
+                    : "Production Output (Transfer OUT)",
               },
             });
           }
