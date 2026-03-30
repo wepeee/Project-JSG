@@ -312,6 +312,11 @@ export const verificationRouter = createTRPCRouter({
         const currentStepIdx = sortedSteps.findIndex((s) => s.id === proses.id);
         const isLastStep = currentStepIdx === sortedSteps.length - 1;
         const isFirstStep = currentStepIdx === 0;
+        const isPaperFlow = pro.type === "PAPER";
+        const hasMultipleSteps = sortedSteps.length > 1;
+        const isPenultimateStep =
+          hasMultipleSteps && currentStepIdx === sortedSteps.length - 2;
+        const applyPaperLastTwoFlow = isPaperFlow && hasMultipleSteps;
 
         // C. Generate Transactions (IN ONLY for now)
 
@@ -343,6 +348,27 @@ export const verificationRouter = createTRPCRouter({
           : (prevStep?.partNumber ?? "UNKNOWN_ITEM");
 
         const fgItem = pro.partNumber ?? currentItem;
+
+        // Paper-only staging for last-two-process flow:
+        // - Penultimate step pass-on goes here (ready for final process)
+        // - Final step consumes previous-step item from this pool only
+        const usePassOnReadyPoolForOutput =
+          applyPaperLastTwoFlow && isPenultimateStep;
+        const consumeFromPassOnReadyPool =
+          applyPaperLastTwoFlow && isLastStep && !isFirstStep;
+
+        const passOnReadyLocCode = "WIP_PASSON_READY";
+        const passOnReadyLoc = usePassOnReadyPoolForOutput || consumeFromPassOnReadyPool
+          ? await ensureLocation(
+              passOnReadyLocCode,
+              "WIP",
+              "WIP Pass On Ready (Paper Last-2 Process)",
+            )
+          : null;
+
+        const passOnReadyItemMasterId = consumeFromPassOnReadyPool
+          ? await resolveItemMasterId(consumptionItem)
+          : null;
 
         // === DRAFT FLAG DETECTION ===
         const involvedItemCodes = Array.from(
@@ -412,6 +438,7 @@ export const verificationRouter = createTRPCRouter({
             itemCode: string;
             requiredQty: number;
             note: string;
+            locationCodes?: string[];
           }) => {
             const requiredQty = Number(params.requiredQty);
             if (!Number.isFinite(requiredQty) || requiredQty <= 0) return;
@@ -423,7 +450,9 @@ export const verificationRouter = createTRPCRouter({
                   // the WIP stock of this item may have been produced by different PROs
                   // (e.g. PRO 991 & PRO 992 both produced PN 111, consumed by PRO 222)
                   type: TxnType.IN,
-                  location: { type: LocationType.WIP },
+                  location: params.locationCodes?.length
+                    ? { type: LocationType.WIP, code: { in: params.locationCodes } }
+                    : { type: LocationType.WIP },
                   OR: [
                     { itemMasterId: params.itemMasterId },
                     { itemMasterId: null, itemId: params.itemCode },
@@ -443,7 +472,9 @@ export const verificationRouter = createTRPCRouter({
                   // No proId filter: must account for all past consumptions of this item
                   // across all PROs to correctly compute remaining stock
                   type: TxnType.OUT,
-                  location: { type: LocationType.WIP },
+                  location: params.locationCodes?.length
+                    ? { type: LocationType.WIP, code: { in: params.locationCodes } }
+                    : { type: LocationType.WIP },
                   OR: [
                     { itemMasterId: params.itemMasterId },
                     { itemMasterId: null, itemId: params.itemCode },
@@ -570,12 +601,17 @@ export const verificationRouter = createTRPCRouter({
 
                 const consumeQty = Number(rawQty.toFixed(3));
                 allocated += consumeQty;
+                const useReadyOnly =
+                  consumeFromPassOnReadyPool &&
+                  passOnReadyItemMasterId !== null &&
+                  mat.itemMasterId === passOnReadyItemMasterId;
 
                 await consumeByFifo({
                   itemMasterId: mat.itemMasterId,
                   itemCode: mat.itemMaster.code,
                   requiredQty: consumeQty,
                   note: "Material Consumption",
+                  locationCodes: useReadyOnly ? [passOnReadyLocCode] : undefined,
                 });
               }
             } else if (baseQty > 0) {
@@ -588,12 +624,17 @@ export const verificationRouter = createTRPCRouter({
           } else {
             // Legacy fallback: consume previous-step output from current machine bin
             if (!isFirstStep) {
+              const fallbackSourceLocId =
+                consumeFromPassOnReadyPool && passOnReadyLoc
+                  ? passOnReadyLoc.id
+                  : currentLoc.id;
+
               const balanceAgg = await tx.inventoryTxn.groupBy({
                 by: ["type"],
                 where: {
-                  locationId: currentLoc.id,
+                  locationId: fallbackSourceLocId,
                   itemId: consumptionItem,
-                  proId: pro.id,
+                  ...(consumeFromPassOnReadyPool ? {} : { proId: pro.id }),
                 },
                 _sum: { qty: true },
               });
@@ -609,12 +650,18 @@ export const verificationRouter = createTRPCRouter({
                 throw new TRPCError({
                   code: "PRECONDITION_FAILED",
                   message: `Stock tidak cukup di ${
-                    proses.machine?.name ?? "Mesin"
+                    consumeFromPassOnReadyPool
+                      ? "WIP Pass On Ready"
+                      : (proses.machine?.name ?? "Mesin")
                   }. Tersedia: ${currentStock} (${consumptionItem}), Butuh OUT: ${totalOut}. (Harap cek inputan step sebelumnya)`,
                 });
               }
             }
 
+            const fallbackSourceLocId =
+              consumeFromPassOnReadyPool && passOnReadyLoc
+                ? passOnReadyLoc.id
+                : currentLoc.id;
             const outMasterId = await resolveItemMasterId(consumptionItem);
             await tx.inventoryTxn.create({
               data: {
@@ -624,7 +671,7 @@ export const verificationRouter = createTRPCRouter({
                 itemId: consumptionItem,
                 itemMasterId: outMasterId,
                 qty: totalOut,
-                locationId: currentLoc.id,
+                locationId: fallbackSourceLocId,
                 proId: pro.id,
                 prosesId: proses.id,
                 productionReportId: report.id,
@@ -640,22 +687,27 @@ export const verificationRouter = createTRPCRouter({
           if (nextStep) {
             // IN to Next Machine
             // ItemId remains currentItem (as per instruction "itemId tetap proses.partNumber")
-            const nextMachineId = nextStep.machineId;
-            const nextLocCode = nextMachineId
-              ? `WIP_M_${nextMachineId}`
-              : `WIP_UNASSIGNED`;
-            const nextLocName = nextMachineId
-              ? `WIP Bin - ${
-                  nextStep.machine?.name ?? "Machine " + nextMachineId
-                }`
-              : `WIP Unassigned (Next Step)`;
+            let nextLoc: { id: number };
+            if (usePassOnReadyPoolForOutput && passOnReadyLoc) {
+              nextLoc = passOnReadyLoc;
+            } else {
+              const nextMachineId = nextStep.machineId;
+              const nextLocCode = nextMachineId
+                ? `WIP_M_${nextMachineId}`
+                : `WIP_UNASSIGNED`;
+              const nextLocName = nextMachineId
+                ? `WIP Bin - ${
+                    nextStep.machine?.name ?? "Machine " + nextMachineId
+                  }`
+                : `WIP Unassigned (Next Step)`;
 
-            const nextLoc = await ensureLocation(
-              nextLocCode,
-              "WIP",
-              nextLocName,
-              nextMachineId || null,
-            );
+              nextLoc = await ensureLocation(
+                nextLocCode,
+                "WIP",
+                nextLocName,
+                nextMachineId || null,
+              );
+            }
 
             const passOnMasterId = await resolveItemMasterId(currentItem);
             await tx.inventoryTxn.create({
@@ -670,7 +722,9 @@ export const verificationRouter = createTRPCRouter({
                 proId: pro.id,
                 prosesId: proses.id,
                 productionReportId: report.id,
-                notes: `Transfer to Step ${nextStep.orderNo}`,
+                notes: usePassOnReadyPoolForOutput
+                  ? `Transfer to PASS ON READY for Step ${nextStep.orderNo}`
+                  : `Transfer to Step ${nextStep.orderNo}`,
               },
             });
           } else {

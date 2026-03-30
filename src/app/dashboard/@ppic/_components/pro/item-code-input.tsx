@@ -4,6 +4,7 @@ import * as React from "react";
 import { api } from "~/trpc/react";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
+import { inferItemKindFromPnCode } from "~/utils/normalize";
 
 type ItemResult = {
   id: number;
@@ -158,13 +159,17 @@ export default function ItemCodeInput({
   const exactMatch = results?.find(
     (r) => r.code === query.trim().toUpperCase().replace(/\s+/g, "_"),
   );
+  const normalizedQuery = query.trim().toUpperCase().replace(/\s+/g, "_");
+  const inferredKind = inferItemKindFromPnCode(normalizedQuery);
+  const effectiveKind = inferredKind ?? defaultKind;
 
   const handleCreateSubmit = () => {
-    const normalizedCode = query.trim().toUpperCase().replace(/\s+/g, "_");
+    const normalizedCode = normalizedQuery;
+    const trimmedName = createName.trim();
     createItem.mutate({
       code: normalizedCode,
-      name: createName.trim() || normalizedCode,
-      kind: defaultKind,
+      name: trimmedName.length > 0 ? trimmedName : normalizedCode,
+      kind: effectiveKind,
     });
   };
 
@@ -187,7 +192,7 @@ export default function ItemCodeInput({
           {exactMatch ? (
             <span className="text-green-500">
               ✓ Item ditemukan — Stok: {exactMatch.stock ?? 0}{" "}
-              {exactMatch.baseUom || "Pcs"}
+              {exactMatch.baseUom ?? "Pcs"}
             </span>
           ) : (
             <span className="text-amber-500">
@@ -241,7 +246,7 @@ export default function ItemCodeInput({
           )}
 
           {/* No results */}
-          {results && results.length === 0 && (
+          {results?.length === 0 && (
             <div className="text-muted-foreground p-2 text-center text-xs">
               Tidak ditemukan
             </div>
@@ -263,14 +268,14 @@ export default function ItemCodeInput({
                 <span>
                   Buat Item baru:{" "}
                   <span className="font-mono font-semibold">
-                    {query.trim().toUpperCase().replace(/\s+/g, "_")}
+                    {normalizedQuery}
                   </span>
                 </span>
                 <Badge
                   variant="outline"
                   className="ml-auto px-1 py-0 text-[10px]"
                 >
-                  {defaultKind}
+                  {effectiveKind}
                 </Badge>
               </button>
             </div>
@@ -282,9 +287,9 @@ export default function ItemCodeInput({
               <div className="text-muted-foreground text-xs">
                 Kode:{" "}
                 <span className="text-foreground font-mono font-semibold">
-                  {query.trim().toUpperCase().replace(/\s+/g, "_")}
-                </span>{" "}
-                ({defaultKind})
+                  {normalizedQuery}
+                </span>
+                {" "}({effectiveKind})
               </div>
               <Input
                 value={createName}

@@ -11,7 +11,7 @@ import {
 const ITEM_CODE_REGEX = /^[A-Z0-9_\-\.]{2,50}$/;
 const VALID_WIP_PREFIXES = ["WIP_INJ_", "WIP_BLOW_", "WIP_PRINT_"];
 
-import { normalizeCode } from "~/utils/normalize";
+import { inferItemKindFromPnCode, normalizeCode } from "~/utils/normalize";
 
 export const itemsRouter = createTRPCRouter({
   /**
@@ -92,13 +92,23 @@ export const itemsRouter = createTRPCRouter({
       z.object({
         code: z.string().min(2).max(50),
         name: z.string().min(1).max(200),
-        kind: z.enum(["RAW", "WIP", "FG", "CONSUMABLE"]),
+        kind: z.enum(["RAW", "WIP", "FG", "CONSUMABLE"]).optional(),
         baseUom: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       // Normalize code
       const code = normalizeCode(input.code);
+      const inferredKind = inferItemKindFromPnCode(code);
+      const finalKind = inferredKind ?? input.kind;
+
+      if (!finalKind) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            'Kind wajib diisi jika kode PN tidak mengikuti rumus digit awal (7=WIP, 8=FG, 9=JASA).',
+        });
+      }
 
       // Validate code format
       if (!ITEM_CODE_REGEX.test(code)) {
@@ -109,7 +119,7 @@ export const itemsRouter = createTRPCRouter({
       }
 
       // Validate WIP prefix for rigid items
-      if (input.kind === "WIP" && code.startsWith("WIP_")) {
+      if (finalKind === "WIP" && code.startsWith("WIP_")) {
         const hasValidPrefix = VALID_WIP_PREFIXES.some((p) =>
           code.startsWith(p),
         );
@@ -136,7 +146,7 @@ export const itemsRouter = createTRPCRouter({
         data: {
           code,
           name: input.name.trim(),
-          kind: input.kind as any,
+          kind: finalKind as any,
           status: "DRAFT",
           baseUom: input.baseUom?.trim() || null,
           ...(userId ? { createdById: userId } : {}),

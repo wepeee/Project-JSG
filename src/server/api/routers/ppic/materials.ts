@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, ppicProcedure } from "../../trpc";
+import { inferItemKindFromPnCode } from "~/utils/normalize";
 
 /**
  * Materials Router — NOW backed by unified Item table.
@@ -111,6 +112,8 @@ export const materialsRouter = createTRPCRouter({
       const code =
         input.code?.trim() ||
         input.name.trim().replace(/\s+/g, "_").toUpperCase();
+      const inferredKind = inferItemKindFromPnCode(code);
+      const finalType = inferredKind ?? input.type;
 
       // Check for duplicate
       const existing = await ctx.db.item.findUnique({ where: { code } });
@@ -125,7 +128,7 @@ export const materialsRouter = createTRPCRouter({
         data: {
           code,
           name: input.name.trim(),
-          kind: input.type as any,
+          kind: finalType as any,
           status: "ACTIVE",
           baseUom: input.uom,
           createdFrom: "PPIC",
@@ -161,6 +164,8 @@ export const materialsRouter = createTRPCRouter({
       const code =
         input.code?.trim() ||
         input.name.trim().replace(/\s+/g, "_").toUpperCase();
+      const inferredKind = inferItemKindFromPnCode(code);
+      const nextKind = input.type ?? inferredKind ?? undefined;
 
       // Check for duplicate code (if name changed)
       const existing = await ctx.db.item.findUnique({ where: { code } });
@@ -177,7 +182,7 @@ export const materialsRouter = createTRPCRouter({
           code,
           name: input.name.trim(),
           baseUom: input.uom,
-          ...(input.type ? { kind: input.type as any } : {}),
+          ...(nextKind ? { kind: nextKind as any } : {}),
         },
       });
 

@@ -6,6 +6,7 @@ import {
   ppicProcedure,
   protectedProcedure,
 } from "../../trpc";
+import { inferItemKindFromPnCode } from "~/utils/normalize";
 
 const pad3 = (n: number) => String(n).padStart(3, "0"); // 001..999
 const mm = (d: Date) => String(d.getMonth() + 1).padStart(2, "0");
@@ -42,11 +43,13 @@ const createItemIdResolver = (tx: ItemLookupTx, userId?: string) => {
     }
 
     // Auto-register unregistered Part Numbers
+    const inferredKind = inferItemKindFromPnCode(code);
+    const finalKind = inferredKind ?? defaultKind;
     const newItem = await tx.item.create({
       data: {
         code,
         name: fallbackName?.trim() || raw,
-        kind: defaultKind,
+        kind: finalKind,
         status: "DRAFT",
         createdFrom: "PRO_AUTO",
         ...(userId ? { createdById: userId } : {}),
