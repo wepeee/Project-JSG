@@ -216,50 +216,6 @@ const PACKING_UNPLANNED_DT = [
   "Other",
 ];
 
-const EditableStandardInput = ({
-  value,
-  onSave,
-  ...props
-}: Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onSave"> & {
-  value: number | null | undefined;
-  onSave: (val: number | null) => void;
-}) => {
-  const [localValue, setLocalValue] = React.useState<string>(
-    value?.toString() ?? "",
-  );
-
-  React.useEffect(() => {
-    setLocalValue(value?.toString() ?? "");
-  }, [value]);
-
-  const handleBlur = () => {
-    const numericVal = localValue === "" ? null : Number(localValue);
-    // Simple check: if different from prop value, save.
-    // Use loosely equal to allow string/number comparison if needed, but Number() handles it.
-    if (numericVal !== (value ?? null)) {
-      onSave(numericVal);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.currentTarget.blur();
-    }
-  };
-
-  return (
-    <input
-      type="number"
-      value={localValue}
-      onChange={(e) => setLocalValue(e.target.value)}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
-      className="border-input bg-background focus:border-primary w-full rounded border px-1 py-0.5 text-right text-xs focus:outline-none"
-      {...props}
-    />
-  );
-};
-
 export default function ProductionArchive({
   userDepartment,
   readOnly = false,
@@ -300,14 +256,6 @@ export default function ProductionArchive({
   });
 
   const utils = api.useUtils();
-  const updateStandards = api.verification.updateReportStandards.useMutation({
-    onSuccess: () => {
-      void utils.verification.getReports.invalidate();
-    },
-    onError: (err) => {
-      console.error(`Failed to update: ${err.message}`);
-    },
-  });
 
   // --- Void Report ---
   const [voidId, setVoidId] = React.useState<string | null>(null);
@@ -1312,28 +1260,9 @@ export default function ProductionArchive({
                       activeCategory === "PACKING_ASSEMBLY") && (
                       <>
                         <TableCell className="text-right text-xs">
-                          <EditableStandardInput
-                            value={
-                              (rpt as any).manPowerStd
-                                ? Number((rpt as any).manPowerStd)
-                                : null
-                            }
-                            step="1"
-                            min="1"
-                            disabled={readOnly}
-                            onSave={(val) => {
-                              if (!readOnly) {
-                                updateStandards.mutate({
-                                  id: rpt.id,
-                                  mpStd: val ?? undefined,
-                                  cavityStd: rpt.cavityStd ?? undefined,
-                                  cycleTimeStd: rpt.cycleTimeStd
-                                    ? Number(rpt.cycleTimeStd)
-                                    : undefined,
-                                });
-                              }
-                            }}
-                          />
+                          {(rpt as any).manPowerStd
+                            ? Number((rpt as any).manPowerStd)
+                            : "-"}
                         </TableCell>
                         <TableCell className="text-right text-xs text-slate-600 dark:text-slate-400">
                           {(rpt as any).manPowerAct
@@ -1379,24 +1308,9 @@ export default function ProductionArchive({
                           </TableCell>
                         )}
                         <TableCell className="text-right text-xs">
-                          <EditableStandardInput
-                            value={
-                              rpt.cycleTimeStd ? Number(rpt.cycleTimeStd) : null
-                            }
-                            step="0.01"
-                            min="0"
-                            disabled={readOnly}
-                            onSave={(val) => {
-                              if (!readOnly) {
-                                updateStandards.mutate({
-                                  id: rpt.id,
-                                  mpStd: (rpt as any).manPowerStd ?? undefined,
-                                  cavityStd: rpt.cavityStd ?? undefined,
-                                  cycleTimeStd: val ?? undefined,
-                                });
-                              }
-                            }}
-                          />
+                          {rpt.cycleTimeStd
+                            ? Number(rpt.cycleTimeStd).toFixed(2)
+                            : "-"}
                         </TableCell>
                         <TableCell className="text-right text-xs font-semibold text-blue-600 dark:text-blue-400">
                           {(() => {
@@ -1419,42 +1333,12 @@ export default function ProductionArchive({
                     {isMoulding && (
                       <>
                         <TableCell className="text-right text-xs">
-                          <EditableStandardInput
-                            value={rpt.cavityStd} // cavityStd is number | null
-                            step="1"
-                            min="1"
-                            disabled={readOnly}
-                            onSave={(val) => {
-                              if (!readOnly) {
-                                updateStandards.mutate({
-                                  id: rpt.id,
-                                  cavityStd: val ?? undefined,
-                                  cycleTimeStd: rpt.cycleTimeStd
-                                    ? Number(rpt.cycleTimeStd)
-                                    : undefined,
-                                });
-                              }
-                            }}
-                          />
+                          {rpt.cavityStd ?? "-"}
                         </TableCell>
                         <TableCell className="text-right text-xs">
-                          <EditableStandardInput
-                            value={
-                              rpt.cycleTimeStd ? Number(rpt.cycleTimeStd) : null
-                            }
-                            step="0.01"
-                            min="0"
-                            disabled={readOnly}
-                            onSave={(val) => {
-                              if (!readOnly) {
-                                updateStandards.mutate({
-                                  id: rpt.id,
-                                  cavityStd: rpt.cavityStd ?? undefined,
-                                  cycleTimeStd: val ?? undefined,
-                                });
-                              }
-                            }}
-                          />
+                          {rpt.cycleTimeStd
+                            ? Number(rpt.cycleTimeStd).toFixed(2)
+                            : "-"}
                         </TableCell>
                         <TableCell className="text-right text-xs font-semibold text-blue-600 dark:text-blue-400">
                           {(() => {

@@ -15,6 +15,8 @@
     "db:studio": "prisma studio",
     "db:seed": "prisma db seed",
     "db:inject:dummy-pro": "tsx scripts/inject-dummy-pro.ts",
+    "db:inject:paper-approved": "tsx scripts/inject-paper-approved-reports.ts",
+    "db:inject:rigid-4pro-1step": "tsx scripts/inject-rigid-4pro-single-step.ts",
     "dev": "next dev --turbo",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",

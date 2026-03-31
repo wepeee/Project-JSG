@@ -14,6 +14,9 @@ import {
   TxnType,
 } from "../../../../../generated/prisma";
 
+const VERIFY_TX_TIMEOUT_MS = 30000;
+const VERIFY_TX_MAX_WAIT_MS = 10000;
+
 export const verificationRouter = createTRPCRouter({
   getReports: adminOrSuperAdminProcedure
     .input(
@@ -278,11 +281,14 @@ export const verificationRouter = createTRPCRouter({
         };
 
         // B2. Helper: resolve Item master ID (strict lookup, no auto-create)
+        const itemMasterIdCache = new Map<string, number>();
         const resolveItemMasterId = async (
           itemCode: string,
         ): Promise<number> => {
           // Normalize: trim, uppercase, collapse whitespace
           const normalized = itemCode.trim().replace(/\s+/g, "_").toUpperCase();
+          const cached = itemMasterIdCache.get(normalized);
+          if (cached !== undefined) return cached;
 
           const item = await tx.item.findFirst({
             where: {
@@ -301,6 +307,7 @@ export const verificationRouter = createTRPCRouter({
             });
           }
 
+          itemMasterIdCache.set(normalized, item.id);
           return item.id;
         };
 
@@ -975,7 +982,7 @@ export const verificationRouter = createTRPCRouter({
           ...report,
           isDraft,
         };
-      });
+      }, { timeout: VERIFY_TX_TIMEOUT_MS, maxWait: VERIFY_TX_MAX_WAIT_MS });
     }),
 
   voidReport: superAdminProcedure
@@ -1142,7 +1149,7 @@ export const verificationRouter = createTRPCRouter({
         }
 
         return updatedReport;
-      });
+      }, { timeout: VERIFY_TX_TIMEOUT_MS, maxWait: VERIFY_TX_MAX_WAIT_MS });
     }),
 
   rejectReport: adminOrSuperAdminProcedure

@@ -5,6 +5,56 @@ import {
   superAdminProcedure,
 } from "../../trpc";
 
+const stdOutputReportTypeEnum = z.enum([
+  "PAPER",
+  "INJECTION",
+  "BLOW_MOULDING",
+  "PRINTING",
+  "PACKING_ASSEMBLY",
+]);
+
+const HOURS_PER_DAY = 24;
+const DAYS_PER_WEEK = 7;
+
+type StdOutputReportType =
+  | "PAPER"
+  | "INJECTION"
+  | "BLOW_MOULDING"
+  | "PRINTING"
+  | "PACKING_ASSEMBLY";
+
+function calcStdOutputPerHourFromReport(input: {
+  reportType: StdOutputReportType;
+  cycleTimeStd: number | null;
+  cavityStd: number | null;
+  metaData: unknown;
+}): number | null {
+  const meta = (input.metaData as Record<string, unknown> | null) ?? {};
+  const manualPerHour = Number(meta.productManualStdSpeed ?? 0);
+  const legacyPerMinute = Number(meta.stdSpeed ?? 0);
+
+  if (input.reportType === "PAPER") {
+    if (manualPerHour > 0) return manualPerHour;
+    if (legacyPerMinute > 0) return legacyPerMinute * 60;
+    return null;
+  }
+
+  const ct = input.cycleTimeStd ?? 0;
+  if (ct <= 0) return null;
+
+  if (
+    input.reportType === "INJECTION" ||
+    input.reportType === "BLOW_MOULDING"
+  ) {
+    const cav = input.cavityStd ?? 0;
+    if (cav <= 0) return null;
+    return (3600 / ct) * cav;
+  }
+
+  // PRINTING / PACKING_ASSEMBLY use efficiency factor 0.8 (same as archive page)
+  return (3600 / ct) * 0.8;
+}
+
 export const stdOutputRouter = createTRPCRouter({
   /**
    * Get all production reports grouped by product name.
@@ -17,6 +67,7 @@ export const stdOutputRouter = createTRPCRouter({
       z
         .object({
           department: z.enum(["PAPER", "RIGID"]).optional(),
+          reportType: stdOutputReportTypeEnum.optional(),
           search: z.string().optional(),
           month: z.number().int().min(1).max(12).optional(), // 1-12
           year: z.number().int().min(2020).max(2100).optional(),
@@ -28,10 +79,13 @@ export const stdOutputRouter = createTRPCRouter({
       const where: any = {
         startTime: { not: null },
         endTime: { not: null },
+        status: "APPROVED",
       };
 
-      // Department filter
-      if (input?.department === "PAPER") {
+      // Report type / Department filter
+      if (input?.reportType) {
+        where.reportType = input.reportType;
+      } else if (input?.department === "PAPER") {
         where.reportType = "PAPER";
       } else if (input?.department === "RIGID") {
         where.reportType = { not: "PAPER" };
@@ -68,7 +122,12 @@ export const stdOutputRouter = createTRPCRouter({
           qtyWip: true,
           qtyHold: true,
           qtyReject: true,
+          reportType: true,
           shift: true,
+          manPowerStd: true,
+          manPowerAct: true,
+          cavityStd: true,
+          cycleTimeStd: true,
           metaData: true,
           proses: {
             select: {
@@ -102,6 +161,7 @@ export const stdOutputRouter = createTRPCRouter({
             {
               proNumber: string;
               proId: number;
+              reportType: StdOutputReportType;
               machineName: string | null;
               reports: {
                 id: string;
@@ -109,9 +169,15 @@ export const stdOutputRouter = createTRPCRouter({
                 shift: number;
                 startTime: Date;
                 endTime: Date;
+                reportType: StdOutputReportType;
                 totalOutput: number;
                 leadtimeHours: number;
                 speed: number; // output/hour
+                cycleTimeStd: number | null;
+                cavityStd: number | null;
+                manPowerStd: number | null;
+                manPowerAct: number | null;
+                stdOutputPerHourCalc: number | null;
               }[];
               avgSpeed: number;
             }
@@ -169,6 +235,7 @@ export const stdOutputRouter = createTRPCRouter({
           productGroup.proEntries.set(proNumber, {
             proNumber,
             proId,
+            reportType: r.reportType,
             machineName: r.proses.machine?.name ?? null,
             reports: [],
             avgSpeed: 0,
@@ -176,15 +243,32 @@ export const stdOutputRouter = createTRPCRouter({
         }
 
         const proEntry = productGroup.proEntries.get(proNumber)!;
+        const cycleTimeStd = r.cycleTimeStd ? Number(r.cycleTimeStd) : null;
+        const cavityStd = r.cavityStd ? Number(r.cavityStd) : null;
+        const manPowerStd = r.manPowerStd ? Number(r.manPowerStd) : null;
+        const manPowerAct = r.manPowerAct ? Number(r.manPowerAct) : null;
+        const stdOutputPerHourCalc = calcStdOutputPerHourFromReport({
+          reportType: r.reportType,
+          cycleTimeStd,
+          cavityStd,
+          metaData: r.metaData,
+        });
+
         proEntry.reports.push({
           id: r.id,
           reportDate: r.reportDate,
           shift: r.shift,
           startTime: r.startTime,
           endTime: r.endTime,
+          reportType: r.reportType,
           totalOutput,
           leadtimeHours,
           speed,
+          cycleTimeStd,
+          cavityStd,
+          manPowerStd,
+          manPowerAct,
+          stdOutputPerHourCalc,
         });
 
         // Update machine name if not set
@@ -196,49 +280,137 @@ export const stdOutputRouter = createTRPCRouter({
       // Calculate averages
       const result: {
         productName: string;
+        reportType: StdOutputReportType | null;
         avgSpeed: number;
         manualSpeed: number | null;
+        avgCycleTimeStd: number | null;
+        avgCavityStd: number | null;
+        avgManPowerStd: number | null;
+        avgManPowerAct: number | null;
+        calculatedStdPerHour: number | null;
+        calculatedStdPerDay: number | null;
+        calculatedStdPerWeek: number | null;
         proEntries: {
           proNumber: string;
           proId: number;
+          reportType: StdOutputReportType;
           machineName: string | null;
           avgSpeed: number;
           totalOutput: number;
           totalLeadtimeHours: number;
           reportCount: number;
+          avgCycleTimeStd: number | null;
+          avgCavityStd: number | null;
+          avgManPowerStd: number | null;
+          avgManPowerAct: number | null;
+          calculatedStdPerHour: number | null;
+          calculatedStdPerDay: number | null;
+          calculatedStdPerWeek: number | null;
         }[];
       }[] = [];
 
       for (const [, product] of productMap) {
         let productTotalOutput = 0;
         let productTotalLeadtime = 0;
+        let productCtSum = 0;
+        let productCtCount = 0;
+        let productCavitySum = 0;
+        let productCavityCount = 0;
+        let productMpStdSum = 0;
+        let productMpStdCount = 0;
+        let productMpActSum = 0;
+        let productMpActCount = 0;
+        let productCalcStdSum = 0;
+        let productCalcStdCount = 0;
+        let productReportType: StdOutputReportType | null = null;
 
         const proEntries: typeof result[number]["proEntries"] = [];
 
         for (const [, pro] of product.proEntries) {
           let proTotalOutput = 0;
           let proTotalLeadtime = 0;
+          let proCtSum = 0;
+          let proCtCount = 0;
+          let proCavitySum = 0;
+          let proCavityCount = 0;
+          let proMpStdSum = 0;
+          let proMpStdCount = 0;
+          let proMpActSum = 0;
+          let proMpActCount = 0;
+          let proCalcStdSum = 0;
+          let proCalcStdCount = 0;
 
           for (const report of pro.reports) {
             proTotalOutput += report.totalOutput;
             proTotalLeadtime += report.leadtimeHours;
+
+            if (report.cycleTimeStd && report.cycleTimeStd > 0) {
+              proCtSum += report.cycleTimeStd;
+              proCtCount += 1;
+            }
+            if (report.cavityStd && report.cavityStd > 0) {
+              proCavitySum += report.cavityStd;
+              proCavityCount += 1;
+            }
+            if (report.manPowerStd && report.manPowerStd > 0) {
+              proMpStdSum += report.manPowerStd;
+              proMpStdCount += 1;
+            }
+            if (report.manPowerAct && report.manPowerAct > 0) {
+              proMpActSum += report.manPowerAct;
+              proMpActCount += 1;
+            }
+            if (report.stdOutputPerHourCalc && report.stdOutputPerHourCalc > 0) {
+              proCalcStdSum += report.stdOutputPerHourCalc;
+              proCalcStdCount += 1;
+            }
           }
 
           const proAvgSpeed =
             proTotalLeadtime > 0 ? proTotalOutput / proTotalLeadtime : 0;
+          const proAvgCtStd = proCtCount > 0 ? proCtSum / proCtCount : null;
+          const proAvgCavityStd =
+            proCavityCount > 0 ? proCavitySum / proCavityCount : null;
+          const proAvgMpStd = proMpStdCount > 0 ? proMpStdSum / proMpStdCount : null;
+          const proAvgMpAct = proMpActCount > 0 ? proMpActSum / proMpActCount : null;
+          const proCalcStdPerHour =
+            proCalcStdCount > 0 ? proCalcStdSum / proCalcStdCount : null;
 
           proEntries.push({
             proNumber: pro.proNumber,
             proId: pro.proId,
+            reportType: pro.reportType,
             machineName: pro.machineName,
             avgSpeed: proAvgSpeed,
             totalOutput: proTotalOutput,
             totalLeadtimeHours: proTotalLeadtime,
             reportCount: pro.reports.length,
+            avgCycleTimeStd: proAvgCtStd,
+            avgCavityStd: proAvgCavityStd,
+            avgManPowerStd: proAvgMpStd,
+            avgManPowerAct: proAvgMpAct,
+            calculatedStdPerHour: proCalcStdPerHour,
+            calculatedStdPerDay:
+              proCalcStdPerHour !== null ? proCalcStdPerHour * HOURS_PER_DAY : null,
+            calculatedStdPerWeek:
+              proCalcStdPerHour !== null
+                ? proCalcStdPerHour * HOURS_PER_DAY * DAYS_PER_WEEK
+                : null,
           });
 
           productTotalOutput += proTotalOutput;
           productTotalLeadtime += proTotalLeadtime;
+          productCtSum += proCtSum;
+          productCtCount += proCtCount;
+          productCavitySum += proCavitySum;
+          productCavityCount += proCavityCount;
+          productMpStdSum += proMpStdSum;
+          productMpStdCount += proMpStdCount;
+          productMpActSum += proMpActSum;
+          productMpActCount += proMpActCount;
+          productCalcStdSum += proCalcStdSum;
+          productCalcStdCount += proCalcStdCount;
+          if (!productReportType) productReportType = pro.reportType;
         }
 
         // Sort PRO entries by proNumber
@@ -248,11 +420,35 @@ export const stdOutputRouter = createTRPCRouter({
           productTotalLeadtime > 0
             ? productTotalOutput / productTotalLeadtime
             : 0;
+        const productAvgCtStd =
+          productCtCount > 0 ? productCtSum / productCtCount : null;
+        const productAvgCavityStd =
+          productCavityCount > 0 ? productCavitySum / productCavityCount : null;
+        const productAvgMpStd =
+          productMpStdCount > 0 ? productMpStdSum / productMpStdCount : null;
+        const productAvgMpAct =
+          productMpActCount > 0 ? productMpActSum / productMpActCount : null;
+        const productCalcStdPerHour =
+          productCalcStdCount > 0 ? productCalcStdSum / productCalcStdCount : null;
 
         result.push({
           productName: product.productName,
+          reportType: productReportType,
           avgSpeed: productAvgSpeed,
           manualSpeed: product.manualSpeed,
+          avgCycleTimeStd: productAvgCtStd,
+          avgCavityStd: productAvgCavityStd,
+          avgManPowerStd: productAvgMpStd,
+          avgManPowerAct: productAvgMpAct,
+          calculatedStdPerHour: productCalcStdPerHour,
+          calculatedStdPerDay:
+            productCalcStdPerHour !== null
+              ? productCalcStdPerHour * HOURS_PER_DAY
+              : null,
+          calculatedStdPerWeek:
+            productCalcStdPerHour !== null
+              ? productCalcStdPerHour * HOURS_PER_DAY * DAYS_PER_WEEK
+              : null,
           proEntries,
         });
       }
@@ -273,12 +469,14 @@ export const stdOutputRouter = createTRPCRouter({
         productName: z.string(),
         manualSpeed: z.number().nullable(),
         department: z.enum(["PAPER", "RIGID"]).optional(),
+        reportType: stdOutputReportTypeEnum.optional(),
         month: z.number().int().min(1).max(12).optional(),
         year: z.number().int().min(2020).max(2100).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const where: any = {
+        status: "APPROVED",
         proses: {
           pro: {
             productName: input.productName,
@@ -286,7 +484,9 @@ export const stdOutputRouter = createTRPCRouter({
         },
       };
 
-      if (input.department === "PAPER") {
+      if (input.reportType) {
+        where.reportType = input.reportType;
+      } else if (input.department === "PAPER") {
         where.reportType = "PAPER";
       } else if (input.department === "RIGID") {
         where.reportType = { not: "PAPER" };
@@ -323,6 +523,104 @@ export const stdOutputRouter = createTRPCRouter({
       return { success: true, updatedCount: reports.length };
     }),
 
+  setProductStandards: superAdminProcedure
+    .input(
+      z.object({
+        productName: z.string(),
+        reportType: stdOutputReportTypeEnum,
+        month: z.number().int().min(1).max(12).optional(),
+        year: z.number().int().min(2020).max(2100).optional(),
+        manPowerStd: z.number().positive().nullable().optional(),
+        cavityStd: z.number().int().positive().nullable().optional(),
+        cycleTimeStd: z.number().positive().nullable().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const where: any = {
+        status: "APPROVED",
+        reportType: input.reportType,
+        proses: {
+          pro: {
+            productName: input.productName,
+          },
+        },
+      };
+
+      if (input.month && input.year) {
+        const start = new Date(input.year, input.month - 1, 1);
+        const end = new Date(input.year, input.month, 0, 23, 59, 59, 999);
+        where.reportDate = { gte: start, lte: end };
+      }
+
+      const data: Record<string, unknown> = {};
+      if (input.manPowerStd !== undefined) data.manPowerStd = input.manPowerStd;
+      if (input.cavityStd !== undefined) data.cavityStd = input.cavityStd;
+      if (input.cycleTimeStd !== undefined) data.cycleTimeStd = input.cycleTimeStd;
+
+      if (Object.keys(data).length === 0) {
+        return { success: false, updatedCount: 0 };
+      }
+
+      const result = await ctx.db.productionReport.updateMany({
+        where,
+        data,
+      });
+
+      return { success: true, updatedCount: result.count };
+    }),
+
+  setProStandards: superAdminProcedure
+    .input(
+      z.object({
+        proId: z.number().int().positive(),
+        reportType: stdOutputReportTypeEnum,
+        month: z.number().int().min(1).max(12).optional(),
+        year: z.number().int().min(2020).max(2100).optional(),
+        manPowerStd: z.number().positive().nullable().optional(),
+        cavityStd: z.number().int().positive().nullable().optional(),
+        cycleTimeStd: z.number().positive().nullable().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const where: any = {
+        status: "APPROVED",
+        reportType: input.reportType,
+        proses: {
+          proId: input.proId,
+        },
+      };
+
+      if (input.month && input.year) {
+        const start = new Date(input.year, input.month - 1, 1);
+        const end = new Date(input.year, input.month, 0, 23, 59, 59, 999);
+        where.reportDate = { gte: start, lte: end };
+      }
+
+      const data: Record<string, unknown> = {};
+      if (input.manPowerStd !== undefined) data.manPowerStd = input.manPowerStd;
+      if (input.cavityStd !== undefined) data.cavityStd = input.cavityStd;
+      if (input.cycleTimeStd !== undefined) data.cycleTimeStd = input.cycleTimeStd;
+
+      if (Object.keys(data).length === 0) {
+        return { success: false, updatedCount: 0 };
+      }
+
+      const targetReports = await ctx.db.productionReport.findMany({
+        where,
+        select: { id: true },
+      });
+      if (targetReports.length === 0) {
+        return { success: false, updatedCount: 0 };
+      }
+
+      const result = await ctx.db.productionReport.updateMany({
+        where: { id: { in: targetReports.map((r) => r.id) } },
+        data,
+      });
+
+      return { success: true, updatedCount: result.count };
+    }),
+
   /**
    * Auto-compute Std Speed for a product and save to each report's metaData.stdSpeed.
    * This is the value used in the verification/reports list columns.
@@ -332,6 +630,7 @@ export const stdOutputRouter = createTRPCRouter({
     .input(
       z.object({
         productName: z.string(),
+        reportType: stdOutputReportTypeEnum.optional(),
         month: z.number().int().min(1).max(12).optional(),
         year: z.number().int().min(2020).max(2100).optional(),
       }),
@@ -341,8 +640,12 @@ export const stdOutputRouter = createTRPCRouter({
       const monthWhere: any = {
         startTime: { not: null },
         endTime: { not: null },
+        status: "APPROVED",
         proses: { pro: { productName: input.productName } },
       };
+      if (input.reportType) {
+        monthWhere.reportType = input.reportType;
+      }
       if (input.month && input.year) {
         const start = new Date(input.year, input.month - 1, 1);
         const end = new Date(input.year, input.month, 0, 23, 59, 59, 999);
@@ -393,8 +696,12 @@ export const stdOutputRouter = createTRPCRouter({
 
       // 3. Save stdSpeed and productManualStdSpeed to reports for this product (same month scope)
       const saveWhere: any = {
+        status: "APPROVED",
         proses: { pro: { productName: input.productName } },
       };
+      if (input.reportType) {
+        saveWhere.reportType = input.reportType;
+      }
       if (input.month && input.year) {
         const start = new Date(input.year, input.month - 1, 1);
         const end = new Date(input.year, input.month, 0, 23, 59, 59, 999);

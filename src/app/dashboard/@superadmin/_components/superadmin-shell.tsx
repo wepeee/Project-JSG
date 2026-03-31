@@ -119,7 +119,9 @@ export default function SuperadminShell({ user }: Props) {
       case "inventory_paper":
         return "WIP Monitor Paper";
       case "oee_paper":
-        return "OEE Analytics - Paper";
+        return user.department === "RIGID"
+          ? "OEE Analytics - Rigid"
+          : "OEE Analytics - Paper";
       case "verification_paper":
         return "Verifikasi Laporan Paper";
       case "report_archive_paper":
@@ -143,7 +145,7 @@ export default function SuperadminShell({ user }: Props) {
       default:
         return "Dashboard";
     }
-  }, [active]);
+  }, [active, user.department]);
 
   // Filter Logic
   const showPaper = !user.department || user.department === "PAPER";
@@ -416,7 +418,12 @@ export default function SuperadminShell({ user }: Props) {
           )}
 
           {/* OEE Analytics */}
-          {active === "oee_paper" && <OeeDashboard />}
+          {active === "oee_paper" && (
+            <OeeDashboard
+              defaultProType={user.department === "RIGID" ? "RIGID" : "PAPER"}
+              showProTypeFilter={!user.department}
+            />
+          )}
 
           {/* Machine Access */}
           {active === "machine_access" && <MachineAccessManager />}

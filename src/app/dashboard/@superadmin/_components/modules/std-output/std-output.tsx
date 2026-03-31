@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { api } from "~/trpc/react";
-import {
-  Card,
-  CardContent,
-} from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
@@ -26,6 +23,18 @@ import {
   CalendarDays,
 } from "lucide-react";
 
+const HOURS_PER_DAY = 24;
+const DAYS_PER_WEEK = 7;
+const RIGID_PROCESS_TABS = [
+  { value: "INJECTION", label: "Injection" },
+  { value: "BLOW_MOULDING", label: "Blow Moulding" },
+  { value: "PRINTING", label: "Printing" },
+  { value: "PACKING_ASSEMBLY", label: "Packing" },
+] as const;
+
+type RigidProcessType = (typeof RIGID_PROCESS_TABS)[number]["value"];
+type ProStdField = "manPowerStd" | "cycleTimeStd" | "cavityStd";
+
 interface Props {
   userDepartment: "PAPER" | "RIGID";
   readOnly?: boolean;
@@ -38,17 +47,31 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
   );
   const [editingProduct, setEditingProduct] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [editingGroupStdKey, setEditingGroupStdKey] = useState<string | null>(
+    null,
+  );
+  const [editingGroupStdValue, setEditingGroupStdValue] = useState("");
+  const [selectedRigidProcess, setSelectedRigidProcess] =
+    useState<RigidProcessType>("INJECTION");
 
-  // Month filter — default to current month (YYYY-MM)
   const now = new Date();
   const defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
 
-  const [selYear, selMonth] = selectedMonth.split("-").map(Number) as [number, number];
+  const [selYear, selMonth] = selectedMonth.split("-").map(Number) as [
+    number,
+    number,
+  ];
+  const reportTypeFilter =
+    userDepartment === "RIGID" ? selectedRigidProcess : undefined;
+  const isMouldingProcess =
+    selectedRigidProcess === "INJECTION" ||
+    selectedRigidProcess === "BLOW_MOULDING";
 
   const { data, isLoading, refetch } = api.stdOutput.getStdOutput.useQuery(
     {
       department: userDepartment,
+      reportType: reportTypeFilter,
       search: search || undefined,
       month: selMonth,
       year: selYear,
@@ -67,15 +90,23 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
   });
 
   const computeStdSpeed = api.stdOutput.computeAndSaveStdSpeed.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (result) => {
       void refetch();
-      if (data.success) {
+      if (result.success) {
         alert(
-          `Std Speed berhasil dihitung & disimpan ke ${data.updatedCount} laporan.\nNilai: ${data.stdSpeed?.toFixed(1)} /jam`,
+          `Std Speed berhasil dihitung dan disimpan ke ${result.updatedCount} laporan.\nNilai: ${result.stdSpeed?.toFixed(1)} /jam`,
         );
       } else {
-        alert("Tidak ada data laporan dengan jam mulai & selesai yang valid.");
+        alert("Tidak ada data laporan dengan jam mulai dan selesai yang valid.");
       }
+    },
+  });
+
+  const setProductStandards = api.stdOutput.setProductStandards.useMutation({
+    onSuccess: () => {
+      void refetch();
+      setEditingGroupStdKey(null);
+      setEditingGroupStdValue("");
     },
   });
 
@@ -102,12 +133,14 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
   };
 
   const handleSaveManualSpeed = (productName: string) => {
-    const speed = parseFloat(editValue);
-    if (isNaN(speed) || speed <= 0) return;
+    const speed = Number.parseFloat(editValue);
+    if (!isFinite(speed) || speed <= 0) return;
+
     setManualSpeed.mutate({
       productName,
       manualSpeed: speed,
       department: userDepartment,
+      reportType: reportTypeFilter,
       month: selMonth,
       year: selYear,
     });
@@ -118,14 +151,29 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
       productName,
       manualSpeed: null,
       department: userDepartment,
+      reportType: reportTypeFilter,
       month: selMonth,
       year: selYear,
     });
   };
 
   const formatSpeed = (speed: number) => {
-    if (speed === 0) return "-";
+    if (speed <= 0) return "-";
     return speed.toFixed(1);
+  };
+
+  const formatNullableNumber = (value: number | null | undefined, digits = 2) => {
+    if (value === null || value === undefined || !isFinite(value) || value <= 0)
+      return "-";
+    return value.toFixed(digits);
+  };
+
+  const formatStdOutput = (value: number) => {
+    if (value <= 0 || !isFinite(value)) return "-";
+    return value.toLocaleString("id-ID", {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    });
   };
 
   const formatHours = (hours: number) => {
@@ -135,13 +183,93 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
     return `${h}h ${m}m`;
   };
 
-  // Summary stats
+  const toPerDay = (speedPerHour: number) => speedPerHour * HOURS_PER_DAY;
+  const toPerWeek = (speedPerHour: number) =>
+    speedPerHour * HOURS_PER_DAY * DAYS_PER_WEEK;
+
+  const getProStdLabel = (field: ProStdField) => {
+    if (field === "manPowerStd") return "MP";
+    if (field === "cycleTimeStd") return "CT";
+    return "CAV";
+  };
+
+  const getProStdUnit = (field: ProStdField) => {
+    if (field === "cycleTimeStd") return "s";
+    return "";
+  };
+
+  const getProStdDigits = (field: ProStdField) => {
+    if (field === "cavityStd") return 0;
+    if (field === "cycleTimeStd") return 2;
+    return 1;
+  };
+
+  const getGroupStdValue = (
+    product: {
+      avgManPowerStd: number | null;
+      avgCycleTimeStd: number | null;
+      avgCavityStd: number | null;
+    },
+    field: ProStdField,
+  ) => {
+    if (field === "manPowerStd") return product.avgManPowerStd;
+    if (field === "cycleTimeStd") return product.avgCycleTimeStd;
+    return product.avgCavityStd;
+  };
+
+  const beginEditGroupStd = (
+    product: {
+      productName: string;
+      avgManPowerStd: number | null;
+      avgCycleTimeStd: number | null;
+      avgCavityStd: number | null;
+    },
+    field: ProStdField,
+  ) => {
+    const current = getGroupStdValue(product, field);
+    setEditingGroupStdKey(`${product.productName}:${field}`);
+    setEditingGroupStdValue(
+      current && current > 0 ? current.toFixed(getProStdDigits(field)) : "",
+    );
+  };
+
+  const saveGroupStd = (productName: string, field: ProStdField) => {
+    if (!reportTypeFilter) return;
+    const parsed = Number(editingGroupStdValue);
+    if (!isFinite(parsed) || parsed <= 0) return;
+
+    const dataForUpdate: {
+      productName: string;
+      reportType:
+        | "PAPER"
+        | "INJECTION"
+        | "BLOW_MOULDING"
+        | "PRINTING"
+        | "PACKING_ASSEMBLY";
+      month: number;
+      year: number;
+      manPowerStd?: number;
+      cycleTimeStd?: number;
+      cavityStd?: number;
+    } = {
+      productName,
+      reportType: reportTypeFilter,
+      month: selMonth,
+      year: selYear,
+    };
+
+    if (field === "manPowerStd") dataForUpdate.manPowerStd = parsed;
+    if (field === "cycleTimeStd") dataForUpdate.cycleTimeStd = parsed;
+    if (field === "cavityStd") dataForUpdate.cavityStd = Math.round(parsed);
+
+    setProductStandards.mutate(dataForUpdate);
+  };
+
   const totalProducts = data?.length ?? 0;
   const totalPros = data?.reduce((acc, p) => acc + p.proEntries.length, 0) ?? 0;
 
   return (
     <div className="space-y-6">
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-blue-600/10">
           <CardContent className="flex items-center gap-4 p-4">
@@ -172,9 +300,7 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
         </Card>
       </div>
 
-      {/* Search & Actions */}
       <div className="flex flex-wrap items-center gap-3">
-        {/* Month Picker */}
         <div className="flex items-center gap-2 rounded-lg border bg-background px-3 py-1.5">
           <CalendarDays className="h-4 w-4 text-muted-foreground" />
           <input
@@ -185,7 +311,6 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
           />
         </div>
 
-        {/* Search */}
         <div className="relative min-w-[240px] flex-1">
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
@@ -195,6 +320,7 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
             className="pl-10"
           />
         </div>
+
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={expandAll}>
             Expand All
@@ -205,7 +331,36 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
         </div>
       </div>
 
-      {/* Loading State */}
+      {userDepartment === "RIGID" && (
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
+            {RIGID_PROCESS_TABS.map((tab) => {
+              const active = selectedRigidProcess === tab.value;
+              return (
+                <Button
+                  key={tab.value}
+                  type="button"
+                  size="sm"
+                  variant={active ? "default" : "outline"}
+                  onClick={() => setSelectedRigidProcess(tab.value)}
+                  className={!active ? "text-muted-foreground" : ""}
+                >
+                  {tab.label}
+                </Button>
+              );
+            })}
+          </div>
+          <p className="text-muted-foreground text-xs">
+            Kalkulasi rigid:
+            {" "}
+            {isMouldingProcess
+              ? "Std per hour = (3600 / CT Std) x Cavity Std"
+              : "Std per hour = (3600 / CT Std) x 0.8"}
+            {" | Std per day = Std per hour x 24 | Std per week = Std per day x 7"}
+          </p>
+        </div>
+      )}
+
       {isLoading && (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
@@ -213,7 +368,6 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
         </div>
       )}
 
-      {/* Empty State */}
       {!isLoading && data && data.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20">
           <Gauge className="text-muted-foreground/30 mb-4 h-16 w-16" />
@@ -221,31 +375,32 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
             Tidak ada data
           </p>
           <p className="text-muted-foreground/60 text-sm">
-            Belum ada laporan produksi dengan jam mulai & selesai
+            Belum ada laporan produksi dengan jam mulai dan selesai
           </p>
         </div>
       )}
 
-      {/* Product Groups */}
       {data && data.length > 0 && (
         <div className="space-y-3">
           {data.map((product) => {
             const isExpanded = expandedProducts.has(product.productName);
             const isEditing = editingProduct === product.productName;
             const activeSpeed = product.manualSpeed ?? product.avgSpeed;
+            const primaryStdPerHour =
+              userDepartment === "RIGID"
+                ? Number(product.calculatedStdPerHour ?? 0)
+                : activeSpeed;
 
             return (
               <Card
                 key={product.productName}
                 className="overflow-hidden transition-all duration-200"
               >
-                {/* Product Header */}
                 <div className="flex w-full items-center gap-4 px-5 py-4">
-                  {/* Toggle expand */}
                   <button
                     type="button"
                     onClick={() => toggleExpand(product.productName)}
-                    className="text-muted-foreground shrink-0 hover:text-foreground transition-colors"
+                    className="text-muted-foreground shrink-0 transition-colors hover:text-foreground"
                   >
                     {isExpanded ? (
                       <ChevronDown className="h-5 w-5" />
@@ -254,7 +409,6 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
                     )}
                   </button>
 
-                  {/* Product Name (clickable to expand) */}
                   <button
                     type="button"
                     onClick={() => toggleExpand(product.productName)}
@@ -264,40 +418,139 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
                       <h3 className="truncate text-sm font-semibold">
                         {product.productName}
                       </h3>
-                      <Badge
-                        variant="secondary"
-                        className="shrink-0 text-[10px]"
-                      >
+                      <Badge variant="secondary" className="shrink-0 text-[10px]">
                         {product.proEntries.length} PRO
                       </Badge>
                     </div>
                   </button>
 
-                  {/* Speed Display + Actions */}
                   <div className="flex shrink-0 items-center gap-3">
-                    {/* Speed Value */}
                     <div className="text-right">
                       <div className="text-muted-foreground text-[10px] font-medium uppercase tracking-wider">
-                        {product.manualSpeed !== null
-                          ? "Manual Speed"
-                          : "Avg Std Speed"}
+                        {userDepartment === "RIGID"
+                          ? "Calculated Std Output"
+                          : product.manualSpeed !== null
+                            ? "Manual Speed"
+                            : "Avg Std Speed"}
                       </div>
                       <div
                         className={`text-lg font-bold tabular-nums ${
-                          product.manualSpeed !== null
-                            ? "text-amber-600 dark:text-amber-400"
-                            : "text-blue-600 dark:text-blue-400"
+                          userDepartment === "RIGID"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : product.manualSpeed !== null
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-blue-600 dark:text-blue-400"
                         }`}
                       >
-                        {formatSpeed(activeSpeed)}
+                        {formatSpeed(primaryStdPerHour)}
                         <span className="text-muted-foreground ml-0.5 text-xs font-normal">
                           /hour
                         </span>
                       </div>
+                      {userDepartment === "RIGID" && (
+                        <div className="text-muted-foreground mt-0.5 text-[10px]">
+                          Avg aktual: {formatSpeed(product.avgSpeed)}/hour
+                        </div>
+                      )}
+                      <div className="text-muted-foreground mt-0.5 space-y-0.5 text-[10px]">
+                        <div>{formatStdOutput(toPerDay(primaryStdPerHour))} /day</div>
+                        <div>{formatStdOutput(toPerWeek(primaryStdPerHour))} /week</div>
+                      </div>
                     </div>
 
-                    {/* Action Buttons */}
+                    {userDepartment === "RIGID" && (
+                      <div className="grid min-w-[300px] grid-cols-3 gap-2">
+                        {(
+                          ["manPowerStd", "cycleTimeStd", "cavityStd"] as ProStdField[]
+                        ).map((field) => {
+                          const key = `${product.productName}:${field}`;
+                          const isEditingField = editingGroupStdKey === key;
+                          const value = getGroupStdValue(product, field);
+                          const digits = getProStdDigits(field);
+                          const unit = getProStdUnit(field);
+
+                          return (
+                            <div
+                              key={field}
+                              className="bg-muted/40 rounded-md border px-2 py-1.5"
+                            >
+                              <div className="text-muted-foreground text-[10px] font-medium uppercase tracking-wider">
+                                {getProStdLabel(field)}
+                              </div>
+                              {isEditingField ? (
+                                <div className="mt-1 flex items-center gap-1">
+                                  <Input
+                                    type="number"
+                                    step={field === "cavityStd" ? 1 : 0.1}
+                                    min={1}
+                                    value={editingGroupStdValue}
+                                    onChange={(e) =>
+                                      setEditingGroupStdValue(e.target.value)
+                                    }
+                                    className="h-7 text-xs"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        saveGroupStd(product.productName, field);
+                                      }
+                                      if (e.key === "Escape") {
+                                        setEditingGroupStdKey(null);
+                                        setEditingGroupStdValue("");
+                                      }
+                                    }}
+                                  />
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-900/30"
+                                    onClick={() =>
+                                      saveGroupStd(product.productName, field)
+                                    }
+                                    disabled={setProductStandards.isPending}
+                                  >
+                                    <Check className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30"
+                                    onClick={() => {
+                                      setEditingGroupStdKey(null);
+                                      setEditingGroupStdValue("");
+                                    }}
+                                  >
+                                    <X className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="mt-1 flex items-center justify-between gap-1">
+                                  <div className="font-mono text-xs font-semibold tabular-nums">
+                                    {formatNullableNumber(value, digits)}
+                                    {value && value > 0 ? unit : ""}
+                                  </div>
+                                  {!readOnly && (
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-6 w-6 text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                                      onClick={() =>
+                                        beginEditGroupStd(product, field)
+                                      }
+                                      disabled={setProductStandards.isPending}
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
                     {!readOnly &&
+                      userDepartment === "PAPER" &&
                       (isEditing ? (
                         <div className="flex items-center gap-1.5">
                           <Input
@@ -365,6 +618,7 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
                               e.stopPropagation();
                               computeStdSpeed.mutate({
                                 productName: product.productName,
+                                reportType: reportTypeFilter,
                                 month: selMonth,
                                 year: selYear,
                               });
@@ -399,7 +653,6 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
                   </div>
                 </div>
 
-                {/* PRO Entries (expanded) */}
                 {isExpanded && (
                   <div className="border-t">
                     <div className="bg-muted/20 divide-y">
@@ -408,7 +661,6 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
                           key={pro.proNumber}
                           className="flex flex-wrap items-center gap-3 px-5 py-3 pl-14 md:flex-nowrap"
                         >
-                          {/* PRO Number & Machine */}
                           <div className="flex min-w-[180px] items-center gap-3">
                             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800">
                               <span className="text-[10px] font-bold text-slate-500">
@@ -427,32 +679,30 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
                             </div>
                           </div>
 
-                          {/* Stats */}
                           <div className="flex items-center gap-4 text-xs">
                             <div className="text-muted-foreground flex items-center gap-1">
                               <Package className="h-3 w-3" />
-                              <span>
-                                {pro.totalOutput.toLocaleString()} out
-                              </span>
+                              <span>{pro.totalOutput.toLocaleString()} out</span>
                             </div>
                             <div className="text-muted-foreground flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              <span>
-                                {formatHours(pro.totalLeadtimeHours)}
-                              </span>
+                              <span>{formatHours(pro.totalLeadtimeHours)}</span>
                             </div>
                             <div className="text-muted-foreground flex items-center gap-1">
                               <span>{pro.reportCount} laporan</span>
                             </div>
                           </div>
 
-                          {/* PRO Speed (read-only) */}
                           <div className="ml-auto text-right">
                             <div className="text-muted-foreground text-[10px] uppercase">
                               Speed
                             </div>
                             <div className="font-mono text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                              {formatSpeed(pro.avgSpeed)}
+                              {formatSpeed(
+                                userDepartment === "RIGID"
+                                  ? Number(pro.calculatedStdPerHour ?? 0)
+                                  : pro.avgSpeed,
+                              )}
                               <span className="text-muted-foreground ml-0.5 text-[10px] font-normal">
                                 /hour
                               </span>
@@ -462,12 +712,10 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
                       ))}
                     </div>
 
-                    {/* Product Footer Summary */}
                     <div className="bg-muted/40 flex items-center justify-between border-t px-5 py-2.5">
                       <div className="text-muted-foreground text-xs">
-                        Total {product.proEntries.length} PRO ·{" "}
-                        {product.proEntries
-                          .reduce((a, p) => a + p.reportCount, 0)}{" "}
+                        Total {product.proEntries.length} PRO |{" "}
+                        {product.proEntries.reduce((a, p) => a + p.reportCount, 0)}{" "}
                         laporan
                       </div>
                       <div className="flex items-center gap-1.5 text-xs">
