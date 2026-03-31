@@ -11,6 +11,11 @@ on:
         required: false
         default: true
         type: boolean
+      baseline_existing_db:
+        description: "One-time baseline for existing non-empty DB (P3005)"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: deploy-trial-${{ github.ref }}
@@ -65,15 +70,88 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Optional baseline existing DB (one-time)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.baseline_existing_db }}
+        run: |
+          set -e
+          for dir in prisma/migrations/*; do
+            [ -d "$dir" ] || continue
+            name="$(basename "$dir")"
+            echo "Marking migration as applied: $name"
+            pnpm prisma migrate resolve --applied "$name" || true
+          done
+
       - name: Prisma migrate deploy
         run: pnpm db:migrate
 
       - name: Prisma migration status
         run: pnpm prisma migrate status
 
+  verify-dev-trial-schema-sync:
+    name: Verify DEV vs TRIAL Schema Sync
+    needs: migrate-trial
+    runs-on: ubuntu-latest
+    env:
+      DEV_DIRECT_URL: ${{ secrets.DEV_DIRECT_URL }}
+      TRIAL_DIRECT_URL: ${{ secrets.TRIAL_DIRECT_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate required DB URLs
+        run: |
+          if [ -z "$DEV_DIRECT_URL" ]; then
+            echo "::error::Missing DEV_DIRECT_URL secret."
+            exit 1
+          fi
+          if [ -z "$TRIAL_DIRECT_URL" ]; then
+            echo "::error::Missing TRIAL_DIRECT_URL secret."
+            exit 1
+          fi
+
+      - name: Check schema drift (DEV -> TRIAL)
+        run: |
+          set +e
+          pnpm prisma migrate diff \
+            --from-url "$DEV_DIRECT_URL" \
+            --to-url "$TRIAL_DIRECT_URL" \
+            --exit-code
+          exit_code=$?
+          set -e
+
+          if [ "$exit_code" -eq 0 ]; then
+            echo "Schema DEV dan TRIAL sinkron."
+            exit 0
+          fi
+
+          if [ "$exit_code" -eq 2 ]; then
+            echo "::error::Schema drift terdeteksi antara DEV dan TRIAL."
+            echo "Detail diff:"
+            pnpm prisma migrate diff \
+              --from-url "$DEV_DIRECT_URL" \
+              --to-url "$TRIAL_DIRECT_URL" \
+              --script
+            exit 1
+          fi
+
+          echo "::error::prisma migrate diff gagal dijalankan (exit $exit_code)."
+          exit "$exit_code"
+
   trigger-vercel:
     name: Trigger Vercel Deploy Hook (Optional)
-    needs: migrate-trial
+    needs: verify-dev-trial-schema-sync
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.trigger_vercel) }}
     steps:

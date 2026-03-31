@@ -120,11 +120,13 @@ Workflow GitHub Actions untuk alur aman DB ada di:
 Workflow ini melakukan:
 1. Quality gate (`typecheck`)
 2. Migration ke DB trial (`pnpm db:migrate` = `prisma migrate deploy`)
-3. Opsional trigger Vercel Deploy Hook
+3. Verifikasi schema `DEV` vs `TRIAL` otomatis (`prisma migrate diff --exit-code`)
+4. Opsional trigger Vercel Deploy Hook
 
 ### Setup Sekali (One-time)
 
 Siapkan GitHub Secrets di repository:
+- `DEV_DIRECT_URL`
 - `TRIAL_DATABASE_URL`
 - `TRIAL_DIRECT_URL`
 - `VERCEL_DEPLOY_HOOK_URL` (opsional)
@@ -143,6 +145,7 @@ pnpm db:migrate:dev --name <nama_migrasi>
 5. Buat PR dan merge ke `main`.
 6. Setelah merge, workflow `Deploy Trial` otomatis jalan.
 7. Cek hasil di tab `Actions` GitHub.
+8. Pastikan step `Verify DEV vs TRIAL Schema Sync` hijau (schema sinkron).
 
 ### Kalau Mau Deploy App Setelah Migration
 
@@ -154,6 +157,16 @@ pnpm db:migrate:dev --name <nama_migrasi>
 1. Cek step yang gagal di GitHub Actions.
 2. Perbaiki di branch baru.
 3. Merge ulang ke `main` (workflow rerun otomatis), atau jalankan manual via `workflow_dispatch`.
+
+Jika gagal dengan `P3005` (database trial sudah berisi schema lama):
+1. Jalankan workflow `Deploy Trial` via `workflow_dispatch`.
+2. Set `baseline_existing_db=true` (sekali saja).
+3. Setelah baseline berhasil, push berikutnya cukup normal (tanpa baseline).
+
+Jika gagal di step `Verify DEV vs TRIAL Schema Sync`:
+1. Artinya schema di `DEV` dan `TRIAL` beda.
+2. Cek detail SQL diff di log action.
+3. Samakan alur migration (umumnya merge migration yang belum masuk `main` atau perbaiki perubahan manual di salah satu DB).
 
 ### Kapan Perlu Manual Migration?
 
