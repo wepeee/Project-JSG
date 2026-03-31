@@ -332,7 +332,7 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
       </div>
 
       {userDepartment === "RIGID" && (
-        <div className="space-y-2">
+        <div className="space-y-4 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
           <div className="flex flex-wrap gap-2">
             {RIGID_PROCESS_TABS.map((tab) => {
               const active = selectedRigidProcess === tab.value;
@@ -343,21 +343,33 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
                   size="sm"
                   variant={active ? "default" : "outline"}
                   onClick={() => setSelectedRigidProcess(tab.value)}
-                  className={!active ? "text-muted-foreground" : ""}
+                  className={!active ? "border-slate-300 text-slate-600 dark:border-slate-700 dark:text-slate-400" : ""}
                 >
                   {tab.label}
                 </Button>
               );
             })}
           </div>
-          <p className="text-muted-foreground text-xs">
-            Kalkulasi rigid:
-            {" "}
-            {isMouldingProcess
-              ? "Std per hour = (3600 / CT Std) x Cavity Std"
-              : "Std per hour = (3600 / CT Std) x 0.8"}
-            {" | Std per day = Std per hour x 24 | Std per week = Std per day x 7"}
-          </p>
+          <div className="text-muted-foreground space-y-1.5 text-xs">
+            <p className="font-semibold text-foreground">Rumus Kalkulasi Standar (Sesuai Daftar Laporan):</p>
+            <ul className="list-inside list-disc space-y-1">
+              {isMouldingProcess ? (
+                <>
+                  <li><strong>Standard:</strong> Menggunakan <strong>Cycle Time (CT)</strong> dan <strong>Cavity (CAV)</strong>.</li>
+                  <li><strong>Std Output / Jam:</strong> <code className="bg-muted text-blue-500 rounded px-1.5 py-0.5">(3600 / CT Std) × Cavity Std</code></li>
+                  {selectedRigidProcess === "BLOW_MOULDING" && (
+                    <li><strong className="text-amber-600">Note Blow Moulding:</strong> Perhitungan Running Hour dalam OEE menggunakan fixed 7 Jam.</li>
+                  )}
+                </>
+              ) : (
+                <>
+                  <li><strong>Standard:</strong> Menggunakan <strong>Cycle Time (CT)</strong> dan <strong>Man Power (MP)</strong>.</li>
+                  <li><strong>Std Output / Jam:</strong> <code className="bg-muted text-blue-500 rounded px-1.5 py-0.5">(3600 / CT Std) × 0.8</code> <span className="text-[10px] opacity-70">(0.8 = Faktor Efisiensi 80%)</span></li>
+                </>
+              )}
+              <li><strong>Output / Hari:</strong> Std per Jam × <span className="text-amber-500 font-bold">7</span> <span className="text-[10px] opacity-70">(Asumsi 1 Shift Efektif)</span> | <strong>Output / Minggu:</strong> Std per Hari × <span className="text-amber-500 font-bold">6</span></li>
+            </ul>
+          </div>
         </div>
       )}
 
@@ -460,9 +472,15 @@ export default function StdOutput({ userDepartment, readOnly = false }: Props) {
 
                     {userDepartment === "RIGID" && (
                       <div className="grid min-w-[300px] grid-cols-3 gap-2">
-                        {(
-                          ["manPowerStd", "cycleTimeStd", "cavityStd"] as ProStdField[]
-                        ).map((field) => {
+                        {(() => {
+                          let activeFields: ProStdField[] = [];
+                          if (selectedRigidProcess === "INJECTION" || selectedRigidProcess === "BLOW_MOULDING") {
+                            activeFields = ["cycleTimeStd", "cavityStd"];
+                          } else {
+                            activeFields = ["manPowerStd", "cycleTimeStd"];
+                          }
+                          return activeFields;
+                        })().map((field) => {
                           const key = `${product.productName}:${field}`;
                           const isEditingField = editingGroupStdKey === key;
                           const value = getGroupStdValue(product, field);

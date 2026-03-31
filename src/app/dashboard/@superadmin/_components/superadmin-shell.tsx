@@ -17,6 +17,7 @@ import StdOutput from "./modules/std-output/std-output";
 import MachineAccessManager from "./modules/machines/machine-access-manager";
 import OeeDashboard from "./modules/oee/oee-dashboard";
 import AuditLog from "./modules/audit/audit-log";
+import RigidOverview from "./modules/overview/rigid-overview";
 
 type Props = {
   user: {
@@ -28,6 +29,7 @@ type Props = {
 
 type NavKey =
   | "dashboard"
+  | "dashboard_rigid"
   | "users"
   | "settings"
   | "audit"
@@ -46,6 +48,7 @@ type NavKey =
 
 const SUPERADMIN_PATH_BY_KEY: Record<NavKey, string> = {
   dashboard: "/dashboard",
+  dashboard_rigid: "/dashboard/rigid/overview",
   users: "/dashboard/users",
   settings: "/dashboard/settings",
   audit: "/dashboard/audit",
@@ -72,16 +75,26 @@ function resolveSuperadminNav(pathname: string): NavKey {
   if (pathname.startsWith("/dashboard/oee")) return "oee_paper";
 
   if (pathname.startsWith("/dashboard/paper/machines")) return "machines_paper";
-  if (pathname.startsWith("/dashboard/paper/wip-monitor")) return "inventory_paper";
-  if (pathname.startsWith("/dashboard/paper/verification")) return "verification_paper";
-  if (pathname.startsWith("/dashboard/paper/reports")) return "report_archive_paper";
-  if (pathname.startsWith("/dashboard/paper/std-output")) return "std_output_paper";
+  if (pathname.startsWith("/dashboard/paper/wip-monitor"))
+    return "inventory_paper";
+  if (pathname.startsWith("/dashboard/paper/verification"))
+    return "verification_paper";
+  if (pathname.startsWith("/dashboard/paper/reports"))
+    return "report_archive_paper";
+  if (pathname.startsWith("/dashboard/paper/std-output"))
+    return "std_output_paper";
 
+  if (pathname.startsWith("/dashboard/rigid/overview"))
+    return "dashboard_rigid";
   if (pathname.startsWith("/dashboard/rigid/machines")) return "machines_rigid";
-  if (pathname.startsWith("/dashboard/rigid/wip-monitor")) return "inventory_rigid";
-  if (pathname.startsWith("/dashboard/rigid/verification")) return "verification_rigid";
-  if (pathname.startsWith("/dashboard/rigid/reports")) return "report_archive_rigid";
-  if (pathname.startsWith("/dashboard/rigid/std-output")) return "std_output_rigid";
+  if (pathname.startsWith("/dashboard/rigid/wip-monitor"))
+    return "inventory_rigid";
+  if (pathname.startsWith("/dashboard/rigid/verification"))
+    return "verification_rigid";
+  if (pathname.startsWith("/dashboard/rigid/reports"))
+    return "report_archive_rigid";
+  if (pathname.startsWith("/dashboard/rigid/std-output"))
+    return "std_output_rigid";
 
   return "dashboard";
 }
@@ -107,6 +120,8 @@ export default function SuperadminShell({ user }: Props) {
     switch (active) {
       case "dashboard":
         return "Dashboard Overview";
+      case "dashboard_rigid":
+        return "Dashboard Rigid - Metrics";
       case "users":
         return "Kelola Akun";
       case "settings":
@@ -205,6 +220,11 @@ export default function SuperadminShell({ user }: Props) {
           <div className="text-nav-section mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider">
             OPERASIONAL RIGID
           </div>
+          <SidebarItem
+            label="Dashboard"
+            active={active === "dashboard_rigid"}
+            onClick={() => navigate("dashboard_rigid")}
+          />
           <SidebarItem
             label="WIP Monitor"
             active={active === "inventory_rigid"}
@@ -396,6 +416,8 @@ export default function SuperadminShell({ user }: Props) {
           )}
 
           {/* Rigid Components */}
+          {active === "dashboard_rigid" && <RigidOverview />}
+
           {active === "machines_rigid" && (
             <MachineManager machineType="RIGID" />
           )}

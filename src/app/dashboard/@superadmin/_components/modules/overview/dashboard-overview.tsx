@@ -104,7 +104,7 @@ export default function DashboardOverview({ department }: Props) {
     downtimeTypes.length > 0 ||
     rejectTypes.length > 0;
 
-  const chartData = viewMode === "daily" ? dailyProduction : weeklyProduction;
+  const chartData = (viewMode === "daily" ? dailyProduction : weeklyProduction) as any[];
 
   // Calculate Efficiency (Simple: Good / Total * 100) or similar
   const efficiency =

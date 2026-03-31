@@ -13,8 +13,9 @@ const stdOutputReportTypeEnum = z.enum([
   "PACKING_ASSEMBLY",
 ]);
 
-const HOURS_PER_DAY = 24;
-const DAYS_PER_WEEK = 7;
+const HOURS_PER_DAY_PAPER = 24;
+const HOURS_PER_DAY_RIGID = 7;
+const DAYS_PER_WEEK = 6;
 
 type StdOutputReportType =
   | "PAPER"
@@ -376,6 +377,8 @@ export const stdOutputRouter = createTRPCRouter({
           const proCalcStdPerHour =
             proCalcStdCount > 0 ? proCalcStdSum / proCalcStdCount : null;
 
+          const hoursPerDayPro = pro.reportType === "PAPER" ? HOURS_PER_DAY_PAPER : HOURS_PER_DAY_RIGID;
+
           proEntries.push({
             proNumber: pro.proNumber,
             proId: pro.proId,
@@ -391,10 +394,10 @@ export const stdOutputRouter = createTRPCRouter({
             avgManPowerAct: proAvgMpAct,
             calculatedStdPerHour: proCalcStdPerHour,
             calculatedStdPerDay:
-              proCalcStdPerHour !== null ? proCalcStdPerHour * HOURS_PER_DAY : null,
+              proCalcStdPerHour !== null ? proCalcStdPerHour * hoursPerDayPro : null,
             calculatedStdPerWeek:
               proCalcStdPerHour !== null
-                ? proCalcStdPerHour * HOURS_PER_DAY * DAYS_PER_WEEK
+                ? proCalcStdPerHour * hoursPerDayPro * DAYS_PER_WEEK
                 : null,
           });
 
@@ -431,6 +434,8 @@ export const stdOutputRouter = createTRPCRouter({
         const productCalcStdPerHour =
           productCalcStdCount > 0 ? productCalcStdSum / productCalcStdCount : null;
 
+        const hoursPerDay = productReportType === "PAPER" ? HOURS_PER_DAY_PAPER : HOURS_PER_DAY_RIGID;
+
         result.push({
           productName: product.productName,
           reportType: productReportType,
@@ -443,11 +448,11 @@ export const stdOutputRouter = createTRPCRouter({
           calculatedStdPerHour: productCalcStdPerHour,
           calculatedStdPerDay:
             productCalcStdPerHour !== null
-              ? productCalcStdPerHour * HOURS_PER_DAY
+              ? productCalcStdPerHour * hoursPerDay
               : null,
           calculatedStdPerWeek:
             productCalcStdPerHour !== null
-              ? productCalcStdPerHour * HOURS_PER_DAY * DAYS_PER_WEEK
+              ? productCalcStdPerHour * hoursPerDay * DAYS_PER_WEEK
               : null,
           proEntries,
         });
