@@ -28,6 +28,67 @@ type DailySampleRow = {
   downtimeBreakdown: Record<string, number>;
 };
 
+const PAPER_DOWNTIME_KEY_MAP: Record<string, string> = {
+  "PLANNED:TROUBLE_PLN": "Trouble PLN",
+  "PLANNED:TRIAL": "Trial",
+  "PLANNED:PREVENTIVE_MAINTENANCE": "Preventive Maintenance",
+  "PLANNED:PREVENTIVE MAINTENANCE": "Preventive Maintenance",
+  "PLANNED:ISTIRAHAT": "Istirahat",
+  "PLANNED:LAIN_LAIN": "Lain-lain",
+  "PLANNED:OTHERS": "Lain-lain",
+  "UNPLANNED:TUNGGU_APPROVAL": "Tunggu Approval",
+  "UNPLANNED:TUNGGU_MATERIAL": "Tunggu Material",
+  "UNPLANNED:SETUP_CHANGE_OVER": "Set Up & Change Over",
+  "UNPLANNED:SET UP & CHANGE OVER": "Set Up & Change Over",
+  "UNPLANNED:MACHINE_PROBLEM": "Machine Problem",
+  "UNPLANNED:MENCARI_TOOLS": "Mencari Tools",
+  "UNPLANNED:RUNNING_IN": "Running In",
+  "UNPLANNED:OPERATOR_ISSUE": "Operator Issue",
+  "UNPLANNED:ADJUSTMENT_PROCESS": "Adjustment Process",
+  "UNPLANNED:LAIN_LAIN": "Lain-lain",
+};
+
+const PAPER_REJECT_KEY_MAP: Record<string, string> = {
+  BINTIK: "Bintik",
+  WARNA: "Warna",
+  BARET: "Baret",
+  BERCAK: "Bercak",
+  BOLD: "Bold",
+  PETAL: "Petal",
+  LAMINASI: "Laminasi",
+  UV_SPOT: "UV Spot",
+  HOT_PRINT: "Hot Print",
+  EMBOSS: "Emboss",
+  CREASING: "Creasing",
+  SOBEK: "Sobek",
+  LEM: "Lem",
+  KOTOR: "Kotor",
+  LAIN_LAIN: "Lain-lain",
+  REJECT_SET_UP: "Reject Setup",
+  "REJECT SET UP": "Reject Setup",
+  REJECT_PROCESS: "Reject Process",
+  "REJECT PROCESS": "Reject Process",
+};
+
+function canonicalBreakdownKey(rawKey: string) {
+  const key = String(rawKey ?? "").trim();
+  if (!key) return "";
+
+  const [prefixRaw, restRaw] = key.includes(":") ? key.split(":", 2) : ["", key];
+  const normalizePart = (input: string) =>
+    input
+      .trim()
+      .replace(/[&/]/g, " ")
+      .replace(/[-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .toUpperCase()
+      .replace(/\s/g, "_");
+
+  const prefix = normalizePart(prefixRaw ?? "");
+  const rest = normalizePart(restRaw ?? "");
+  return prefix ? `${prefix}:${rest}` : rest;
+}
+
 const dbConfig = (() => {
   if (process.env.SEED_DATABASE_URL) {
     return { source: "SEED_DATABASE_URL", url: process.env.SEED_DATABASE_URL };
@@ -62,6 +123,42 @@ function combineDateTime(dateStr: string, hhmm: string) {
   const mm = Number(mmRaw ?? 0);
   base.setHours(Number.isFinite(hh) ? hh : 0, Number.isFinite(mm) ? mm : 0, 0, 0);
   return base;
+}
+
+function normalizePaperDowntimeBreakdown(
+  raw: Record<string, number> | null | undefined,
+) {
+  const out: Record<string, number> = {};
+  for (const [key, value] of Object.entries(raw ?? {})) {
+    const canonical = canonicalBreakdownKey(key);
+    const target =
+      PAPER_DOWNTIME_KEY_MAP[canonical] ??
+      PAPER_DOWNTIME_KEY_MAP[key] ??
+      canonical ??
+      key;
+    const qty = Number(value ?? 0);
+    if (!Number.isFinite(qty) || qty <= 0) continue;
+    out[target] = Number(((out[target] ?? 0) + qty).toFixed(3));
+  }
+  return out;
+}
+
+function normalizePaperRejectBreakdown(
+  raw: Record<string, number> | null | undefined,
+) {
+  const out: Record<string, number> = {};
+  for (const [key, value] of Object.entries(raw ?? {})) {
+    const canonical = canonicalBreakdownKey(key);
+    const target =
+      PAPER_REJECT_KEY_MAP[canonical] ??
+      PAPER_REJECT_KEY_MAP[key] ??
+      canonical ??
+      key;
+    const qty = Number(value ?? 0);
+    if (!Number.isFinite(qty) || qty <= 0) continue;
+    out[target] = Number(((out[target] ?? 0) + qty).toFixed(3));
+  }
+  return out;
 }
 
 async function ensureUser(role: Role, username: string) {
@@ -206,8 +303,8 @@ async function main() {
         qtyWip: row.qtyWip,
         qtyReject: row.qtyReject,
         inputMaterialQty: row.inputMaterialQty,
-        rejectBreakdown: row.rejectBreakdown,
-        downtimeBreakdown: row.downtimeBreakdown,
+        rejectBreakdown: normalizePaperRejectBreakdown(row.rejectBreakdown),
+        downtimeBreakdown: normalizePaperDowntimeBreakdown(row.downtimeBreakdown),
         totalDowntime: row.totalDowntime,
         notes: `${IMPORT_TAG} row:${row.sourceRow} ${row.notes ?? ""}`.trim(),
         status: ReportStatus.APPROVED,

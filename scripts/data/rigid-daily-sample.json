@@ -30,7 +30,8 @@
     },
     "downtimeBreakdown": {
       "PLANNED:PREVENTIVE": 0.3
-    }
+    },
+    "productWeight": 1.5
   },
   {
     "sourceSheet": "INJECTION",
@@ -61,7 +62,8 @@
     "rejectBreakdown": {
       "APPEARANCE_STD": 0.3
     },
-    "downtimeBreakdown": {}
+    "downtimeBreakdown": {},
+    "productWeight": 46.0
   },
   {
     "sourceSheet": "INJECTION",
@@ -94,7 +96,8 @@
     },
     "downtimeBreakdown": {
       "PLANNED:PREVENTIVE": 0.3
-    }
+    },
+    "productWeight": 1.5
   },
   {
     "sourceSheet": "INJECTION",
@@ -127,7 +130,8 @@
     },
     "downtimeBreakdown": {
       "PLANNED:PREVENTIVE": 0.1
-    }
+    },
+    "productWeight": 46.0
   },
   {
     "sourceSheet": "INJECTION",
@@ -161,7 +165,8 @@
     "downtimeBreakdown": {
       "PLANNED:PREVENTIVE": 0.3,
       "UNPLANNED:PROSES": 0.4
-    }
+    },
+    "productWeight": 1.5
   },
   {
     "sourceSheet": "INJECTION",
@@ -194,7 +199,8 @@
     },
     "downtimeBreakdown": {
       "PLANNED:PREVENTIVE": 0.1
-    }
+    },
+    "productWeight": 46.0
   },
   {
     "sourceSheet": "INJECTION",
@@ -228,7 +234,8 @@
     "downtimeBreakdown": {
       "PLANNED:PREVENTIVE": 0.5,
       "UNPLANNED:START_MESIN": 1.0
-    }
+    },
+    "productWeight": 2.279
   },
   {
     "sourceSheet": "INJECTION",
@@ -264,7 +271,8 @@
       "UNPLANNED:ELECTRIC": 1.0,
       "UNPLANNED:START_MESIN": 1.0,
       "UNPLANNED:PROSES": 0.5
-    }
+    },
+    "productWeight": 4.8
   },
   {
     "sourceSheet": "PRINTING",
@@ -918,7 +926,8 @@
       "BINTIK_HITAM": 6.4,
       "DEFORMASI": 3.2
     },
-    "downtimeBreakdown": {}
+    "downtimeBreakdown": {},
+    "productWeight": 27.0
   },
   {
     "sourceSheet": "BLOW MOULDING",
@@ -950,7 +959,8 @@
       "BINTIK_HITAM": 3.1,
       "DEFORMASI": 2.1
     },
-    "downtimeBreakdown": {}
+    "downtimeBreakdown": {},
+    "productWeight": 27.0
   },
   {
     "sourceSheet": "BLOW MOULDING",
@@ -982,7 +992,8 @@
       "BINTIK_HITAM": 5.1,
       "DEFORMASI": 4.1
     },
-    "downtimeBreakdown": {}
+    "downtimeBreakdown": {},
+    "productWeight": 27.0
   },
   {
     "sourceSheet": "BLOW MOULDING",
@@ -1016,7 +1027,8 @@
     },
     "downtimeBreakdown": {
       "UNPLANNED:START_MESIN": 1.0
-    }
+    },
+    "productWeight": 27.0
   },
   {
     "sourceSheet": "BLOW MOULDING",
@@ -1048,7 +1060,8 @@
       "BINTIK_HITAM": 2.75,
       "DEFORMASI": 4.25
     },
-    "downtimeBreakdown": {}
+    "downtimeBreakdown": {},
+    "productWeight": 27.0
   },
   {
     "sourceSheet": "BLOW MOULDING",
@@ -1082,7 +1095,8 @@
     "downtimeBreakdown": {
       "UNPLANNED:MESIN": 0.2,
       "UNPLANNED:PROSES": 1.0
-    }
+    },
+    "productWeight": 27.0
   },
   {
     "sourceSheet": "BLOW MOULDING",
@@ -1116,7 +1130,8 @@
     "downtimeBreakdown": {
       "UNPLANNED:MESIN": 0.2,
       "UNPLANNED:PROSES": 1.0
-    }
+    },
+    "productWeight": 27.0
   },
   {
     "sourceSheet": "BLOW MOULDING",
@@ -1150,6 +1165,7 @@
     },
     "downtimeBreakdown": {
       "UNPLANNED:PROSES": 1.0
-    }
+    },
+    "productWeight": 27.0
   }
 ]

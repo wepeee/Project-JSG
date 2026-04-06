@@ -38,9 +38,161 @@ type RigidSampleRow = {
   cycleTimeAct: number;
   cavityStd: number | null;
   cavityAct: number | null;
+  productWeight?: number | null;
   notes: string | null;
   rejectBreakdown: Record<string, number>;
   downtimeBreakdown: Record<string, number>;
+};
+
+type RigidReportType = RigidSampleRow["reportType"];
+
+const RIGID_DOWNTIME_KEY_MAP: Record<RigidReportType, Record<string, string>> = {
+  INJECTION: {
+    "PLANNED:NO_ORDER": "No Order",
+    "PLANNED:ISTIRAHAT": "Istirahat",
+    "PLANNED:CIL_CLEAN": "Cil / Clean",
+    "PLANNED:TRIAL": "Trial",
+    "PLANNED:PREVENTIVE": "Preventive",
+    "UNPLANNED:MATERIAL": "Material",
+    "UNPLANNED:ELECTRIC": "Electrik",
+    "UNPLANNED:ELEKTRIK": "Electrik",
+    "UNPLANNED:MESIN": "Mesin",
+    "UNPLANNED:START_MESIN": "Start Mesin",
+    "UNPLANNED:SETUP": "Set Up",
+    "UNPLANNED:SET_UP": "Set Up",
+    "UNPLANNED:APPROVE": "Approve",
+    "UNPLANNED:MOLD_TOOLS": "Mold/Tools",
+    "UNPLANNED:PROSES": "Proses",
+    "UNPLANNED:MATERIAL_HABIS": "Material Habis",
+    "UNPLANNED:MATERIAL_TELAT": "Material Telat",
+    "UNPLANNED:MAN_POWER": "Man Power",
+    "UNPLANNED:OTHERS": "Others",
+    "UNPLANNED:OTHER": "Others",
+  },
+  BLOW_MOULDING: {
+    "PLANNED:NO_ORDER": "No Order",
+    "PLANNED:ISTIRAHAT": "Istirahat",
+    "PLANNED:CIL_CLEAN": "Cil / Clean",
+    "PLANNED:TRIAL": "Trial",
+    "PLANNED:PREVENTIVE": "Preventive",
+    "UNPLANNED:MATERIAL": "Material",
+    "UNPLANNED:ELECTRIC": "Electrik",
+    "UNPLANNED:ELEKTRIK": "Electrik",
+    "UNPLANNED:MESIN": "Mesin",
+    "UNPLANNED:START_MESIN": "Start Mesin",
+    "UNPLANNED:SETUP": "Set Up",
+    "UNPLANNED:SET_UP": "Set Up",
+    "UNPLANNED:APPROVE": "Approve",
+    "UNPLANNED:MOLD_TOOLS": "Mold/Tools",
+    "UNPLANNED:PROSES": "Proses",
+    "UNPLANNED:MATERIAL_HABIS": "Material Habis",
+    "UNPLANNED:MATERIAL_TELAT": "Material Telat",
+    "UNPLANNED:MAN_POWER": "Man Power",
+    "UNPLANNED:OTHERS": "Others",
+    "UNPLANNED:OTHER": "Others",
+  },
+  PRINTING: {
+    "PLANNED:CLEAN": "CLEAN",
+    "PLANNED:NO_ORDER": "NO ORDER",
+    "PLANNED:ISTIRAHAT": "ISTIRAHAT",
+    "PLANNED:TRIAL": "TRIAL",
+    "PLANNED:PREVEN_MESIN": "PREVEN MESIN",
+    "UNPLANNED:ELECTRIC": "ELECTRIC",
+    "UNPLANNED:MACHINE": "MACHINE",
+    "UNPLANNED:PNUMATIC": "PNUMATIC",
+    "UNPLANNED:UTILITY": "UTILITY",
+    "UNPLANNED:START_MESIN": "START MESIN",
+    "UNPLANNED:SETUP": "SET UP",
+    "UNPLANNED:SET_UP": "SET UP",
+    "UNPLANNED:APPROVAL": "APPROVAL",
+    "UNPLANNED:SCREEN": "SCREEN",
+    "UNPLANNED:PROSES": "PROSES",
+    "UNPLANNED:MATERIAL": "MATERIAL",
+    "UNPLANNED:WARNA_TIDAK_STANDART": "WARNA TIDAK STANDART",
+    "UNPLANNED:TOOLS": "TOOLS",
+    "UNPLANNED:MAN": "MAN",
+    "UNPLANNED:OTHER": "OTHER",
+    "UNPLANNED:OTHERS": "OTHER",
+  },
+  PACKING_ASSEMBLY: {
+    "PLANNED:CLEAN": "CLEAN",
+    "PLANNED:NO_ORDER": "NO ORDER",
+    "PLANNED:ISTIRAHAT": "ISTIRAHAT",
+    "PLANNED:TRIAL": "TRIAL",
+    "UNPLANNED:MATERIAL": "Material",
+    "UNPLANNED:WARNA_TIDAK_STD": "WARNA TIDAK STD",
+    "UNPLANNED:APPROVE": "Approve",
+    "UNPLANNED:SETUP": "Set Up",
+    "UNPLANNED:SET_UP": "Set Up",
+    "UNPLANNED:AIRBLOW": "Airblow",
+    "UNPLANNED:PROSES": "Proses",
+    "UNPLANNED:MAN": "Man",
+    "UNPLANNED:OTHER": "Other",
+    "UNPLANNED:OTHERS": "Other",
+  },
+};
+
+const RIGID_REJECT_KEY_MAP: Record<RigidReportType, Record<string, string>> = {
+  INJECTION: {
+    BINTIK_HITAM: "Bintik Hitam",
+    PS_DEFORMASI: "P/S Deformasi",
+    DEFORMASI: "P/S Deformasi",
+    WARNA_STD: "Warna # Std",
+    APPEARANCE_STD: "Appearance # Std",
+    DIMENSI_STD: "Dimensi # Std",
+    KOTOR_FET: "Kotor Fet",
+    PROSES: "Proses",
+    BARET: "Baret",
+  },
+  BLOW_MOULDING: {
+    BINTIK_HITAM: "Bintik Hitam",
+    PS_DEFORMASI: "P/S Deformasi",
+    DEFORMASI: "P/S Deformasi",
+    WARNA_STD: "Warna # Std",
+    APPEARANCE_STD: "Appearance # Std",
+    DIMENSI_STD: "Dimensi # Std",
+    KOTOR_FET: "Kotor Fet",
+    PROSES: "Proses",
+    BARET: "Baret",
+  },
+  PRINTING: {
+    B_SPOT_CEKUNG: "B. Spot/Cekung",
+    KOTOR_VAT: "Kotor Vat",
+    BLOBOR_CEMBUNG: "Blobor/Cembung",
+    PRINT_PETHAL: "Print Pethal",
+    MBAYANG: "Mbayang/Tebal Tipis",
+    MBAYANG_TEBAL_TIPIS: "Mbayang/Tebal Tipis",
+    PRINT_GESER: "Print Geser",
+    WARNA_STD: "Warna # Std",
+    BARET: "Baret",
+    BOTOL_BERTEKSTUR: "Botol Bertekstur",
+    TIDAK_PRESS: "Tidak Press",
+    PECAH: "Pecah",
+    LAIN_LAIN: "Lain-lain",
+  },
+  PACKING_ASSEMBLY: {
+    B_SPOT: "B. Spot",
+    CEKUNG: "Cekung",
+    BARET: "Baret",
+    BUBLE: "Buble",
+    PRINT_PETHAL: "Print Pethal",
+    PRINT_MIRING: "Print Miring",
+    PRINT_BLOBOR: "Print Blobor",
+    PECAH: "Pecah",
+    ACRYLIC_MIX_UP: "Acrylic Mix Up",
+    LENGKET: "Lengket",
+    BOTOL_BERTEKSTUR: "Botol Bertekstur",
+    TERTEMPEL_STICKER: "Tertempel Sticker",
+    KONSTAMINASI: "Konstaminasi",
+    WARNA_TIDAK_STANDART: "Warna Tidak Standart",
+    BURAM: "Buram",
+    KOTOR_FAT: "Kotor Fat",
+    TOTAL_REJECT_2: "Other",
+    TOTAL_REJECT_3: "Other",
+    TOTAL_REJECT_4: "Other",
+    TOTAL_REJECT_5: "Other",
+    TOTAL_REJECT_6: "Other",
+  },
 };
 
 const dbConfig = (() => {
@@ -84,6 +236,25 @@ function normalizeNonNegative(value: number | null | undefined) {
   const n = Number(value ?? 0);
   if (!Number.isFinite(n)) return 0;
   return Math.max(0, n);
+}
+
+function canonicalBreakdownKey(rawKey: string) {
+  const key = String(rawKey ?? "").trim();
+  if (!key) return "";
+
+  const [prefixRaw, restRaw] = key.includes(":") ? key.split(":", 2) : ["", key];
+  const normalizePart = (input: string) =>
+    input
+      .trim()
+      .replace(/[&/]/g, " ")
+      .replace(/[-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .toUpperCase()
+      .replace(/\s/g, "_");
+
+  const prefix = normalizePart(prefixRaw ?? "");
+  const rest = normalizePart(restRaw ?? "");
+  return prefix ? `${prefix}:${rest}` : rest;
 }
 
 async function ensureUser(role: Role, username: string) {
@@ -185,11 +356,36 @@ async function ensureProses(
   });
 }
 
-function normalizeBreakdown(record: Record<string, number>) {
+function normalizeDowntimeBreakdown(
+  reportType: RigidReportType,
+  record: Record<string, number>,
+) {
   const out: Record<string, number> = {};
+  const map = RIGID_DOWNTIME_KEY_MAP[reportType] ?? {};
   for (const [key, value] of Object.entries(record ?? {})) {
+    const canonical = canonicalBreakdownKey(key);
+    const target = map[canonical] ?? map[key] ?? canonical ?? key;
     const n = normalizeNonNegative(value);
-    if (n > 0) out[key] = Number(n.toFixed(3));
+    if (n > 0) {
+      out[target] = Number(((out[target] ?? 0) + n).toFixed(3));
+    }
+  }
+  return out;
+}
+
+function normalizeRejectBreakdown(
+  reportType: RigidReportType,
+  record: Record<string, number>,
+) {
+  const out: Record<string, number> = {};
+  const map = RIGID_REJECT_KEY_MAP[reportType] ?? {};
+  for (const [key, value] of Object.entries(record ?? {})) {
+    const canonical = canonicalBreakdownKey(key);
+    const target = map[canonical] ?? map[key] ?? canonical ?? key;
+    const n = normalizeNonNegative(value);
+    if (n > 0) {
+      out[target] = Number(((out[target] ?? 0) + n).toFixed(3));
+    }
   }
   return out;
 }
@@ -250,8 +446,14 @@ async function main() {
     const pro = await ensurePro(row, ppic.id);
     const proses = await ensureProses(row, pro.id, machine.id);
 
-    const rejectBreakdown = normalizeBreakdown(row.rejectBreakdown);
-    const downtimeBreakdown = normalizeBreakdown(row.downtimeBreakdown);
+    const rejectBreakdown = normalizeRejectBreakdown(
+      row.reportType,
+      row.rejectBreakdown,
+    );
+    const downtimeBreakdown = normalizeDowntimeBreakdown(
+      row.reportType,
+      row.downtimeBreakdown,
+    );
     const breakdownDowntimeTotal = Object.values(downtimeBreakdown).reduce(
       (acc, v) => acc + Number(v),
       0,
@@ -295,6 +497,10 @@ async function main() {
         checkedById: checker.id,
         checkedAt: new Date(),
         metaData: {
+          productWeight:
+            normalizeNonNegative(row.productWeight) > 0
+              ? normalizeNonNegative(row.productWeight)
+              : undefined,
           source: "DAILY RIGID - FEBRUARI 2026 (1).xlsx",
           sourceSheet: row.sourceSheet,
           sourceRow: row.sourceRow,
@@ -328,4 +534,3 @@ main()
   .finally(async () => {
     await db.$disconnect();
   });
-

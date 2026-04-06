@@ -51,6 +51,8 @@ const PAPER_REJECT_COLUMNS = [
   "Sobek",
   "Lem",
   "Kotor",
+  "Reject Setup",
+  "Reject Process",
   "Lain-lain",
 ];
 
@@ -291,6 +293,40 @@ export default function ProductionArchive({
   const isRigidActive = activeCategory !== "PAPER";
   const isMoulding =
     activeCategory === "INJECTION" || activeCategory === "BLOW_MOULDING";
+
+  const getMouldingProductRejectOnly = React.useCallback((rpt: any) => {
+    const breakdown = rpt?.rejectBreakdown as Record<string, unknown> | null;
+    if (!breakdown || typeof breakdown !== "object") return 0;
+
+    return INJECTION_REJECT_PROD.reduce((acc, col) => {
+      const raw = (breakdown as any)?.[`REJECT:PRODUK:${col}`] ?? (breakdown as any)?.[col];
+      const n = Number(raw ?? 0);
+      if (!Number.isFinite(n) || n <= 0) return acc;
+      return acc + n;
+    }, 0);
+  }, []);
+
+  const getRejectPcsForCategory = React.useCallback(
+    (rpt: any): number | null => {
+      let rejectValue = Number(rpt?.qtyReject || 0);
+
+      // For moulding, use reject PRODUCT only (exclude bahan baku).
+      if (isMoulding) {
+        rejectValue = getMouldingProductRejectOnly(rpt);
+      }
+
+      if (activeCategory !== "PAPER") {
+        const pw = Number((rpt?.metaData as any)?.productWeight);
+        if (pw > 0) {
+          return Math.round((rejectValue * 1000) / pw);
+        }
+        if (isMoulding) return null;
+      }
+
+      return rejectValue;
+    },
+    [activeCategory, getMouldingProductRejectOnly, isMoulding],
+  );
 
   return (
     <div className="space-y-4">
@@ -1375,8 +1411,20 @@ export default function ProductionArchive({
                     {activeCategory === "PAPER" &&
                       showRejectDetails &&
                       PAPER_REJECT_COLUMNS.map((col) => {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-                        const val = (rpt.rejectBreakdown as any)?.[col];
+                        const breakdown = rpt.rejectBreakdown as any;
+                        let val = breakdown?.[col];
+                        if (col === "Reject Setup") {
+                          val =
+                            val ??
+                            breakdown?.["Reject Set Up"] ??
+                            breakdown?.["REJECT_SET_UP"] ??
+                            breakdown?.["REJECT SET UP"];
+                        } else if (col === "Reject Process") {
+                          val =
+                            val ??
+                            breakdown?.["REJECT_PROCESS"] ??
+                            breakdown?.["REJECT PROCESS"];
+                        }
                         return (
                           <TableCell
                             key={col}
@@ -1478,16 +1526,9 @@ export default function ProductionArchive({
                           </TableCell>
                           <TableCell className="text-right text-xs font-bold text-red-400">
                             {(() => {
-                              const pw = Number(
-                                (rpt.metaData as any)?.productWeight,
-                              );
-                              const rj = Number(rpt.qtyReject || 0);
-
-                              if (pw > 0) {
-                                const val = Math.round((rj * 1000) / pw);
-                                return val;
-                              }
-                              return isMoulding ? "-" : rj;
+                              const rejectPcs = getRejectPcsForCategory(rpt);
+                              if (rejectPcs === null) return "-";
+                              return rejectPcs > 0 ? rejectPcs : "-";
                             })()}
                           </TableCell>
                         </>
@@ -1512,16 +1553,7 @@ export default function ProductionArchive({
                           Number(rpt.qtyHold || 0) +
                           Number(rpt.qtyWip || 0);
 
-                        let rejectVal = Number(rpt.qtyReject || 0);
-
-                        if (activeCategory !== "PAPER") {
-                          const pw = Number(
-                            (rpt.metaData as any)?.productWeight,
-                          );
-                          if (pw > 0) {
-                            rejectVal = Math.round((rejectVal * 1000) / pw);
-                          }
-                        }
+                        const rejectVal = getRejectPcsForCategory(rpt) ?? 0;
 
                         total += rejectVal;
                         return total;
@@ -1893,17 +1925,7 @@ export default function ProductionArchive({
 
                             // 2. Performance
                             let perf = 0;
-                            let rejectPcs = Number(rpt.qtyReject || 0);
-
-                            // Convert Reject to Pcs for Rigid/Injection
-                            if (activeCategory !== "PAPER") {
-                              const pw = Number(
-                                (rpt.metaData as any)?.productWeight,
-                              );
-                              if (pw > 0) {
-                                rejectPcs = Math.round((rejectPcs * 1000) / pw);
-                              }
-                            }
+                            const rejectPcs = getRejectPcsForCategory(rpt) ?? 0;
 
                             if ((rpt as any).stdSpeed && operatingTime > 0) {
                               const targetOutput =
@@ -2109,13 +2131,7 @@ export default function ProductionArchive({
 
                             // Convert reject from grams to pcs for rigid
                             // For Printing, assuming qtyReject is already PCS if no weight provided or just use raw
-                            let rejectPcs = Number(rpt.qtyReject || 0);
-                            const pw = Number(
-                              (rpt.metaData as any)?.productWeight,
-                            );
-                            if (pw > 0) {
-                              rejectPcs = Math.round((rejectPcs * 1000) / pw);
-                            }
+                            const rejectPcs = getRejectPcsForCategory(rpt) ?? 0;
                             totalOutput += rejectPcs;
 
                             // Running Hour = Total Output / Std Output Per Hour
@@ -2241,13 +2257,7 @@ export default function ProductionArchive({
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
 
-                            let rejectPcs = Number(rpt.qtyReject || 0);
-                            const pw = Number(
-                              (rpt.metaData as any)?.productWeight,
-                            );
-                            if (pw > 0) {
-                              rejectPcs = Math.round((rejectPcs * 1000) / pw);
-                            }
+                            const rejectPcs = getRejectPcsForCategory(rpt) ?? 0;
                             totalOutput += rejectPcs;
 
                             const runningHour =
@@ -2323,13 +2333,7 @@ export default function ProductionArchive({
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
 
-                            let rejectPcs = Number(rpt.qtyReject || 0);
-                            const pw = Number(
-                              (rpt.metaData as any)?.productWeight,
-                            );
-                            if (pw > 0) {
-                              rejectPcs = Math.round((rejectPcs * 1000) / pw);
-                            }
+                            const rejectPcs = getRejectPcsForCategory(rpt) ?? 0;
                             totalOutput += rejectPcs;
 
                             const runningHour =
@@ -2416,13 +2420,7 @@ export default function ProductionArchive({
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
 
-                            let rejectPcs = Number(rpt.qtyReject || 0);
-                            const pw = Number(
-                              (rpt.metaData as any)?.productWeight,
-                            );
-                            if (pw > 0) {
-                              rejectPcs = Math.round((rejectPcs * 1000) / pw);
-                            }
+                            const rejectPcs = getRejectPcsForCategory(rpt) ?? 0;
                             totalOutput += rejectPcs;
 
                             // Running Hour logic (Fixed to 7 for Blow Moulding)
@@ -2531,17 +2529,7 @@ export default function ProductionArchive({
                               Number(rpt.qtyHold || 0) +
                               Number(rpt.qtyWip || 0);
 
-                            let rejectPcs = Number(rpt.qtyReject || 0);
-
-                            // Convert reject grams to pcs if needed (Rigid) -> Moulding logic
-                            // But activeCategory !== PAPER check handles this usually.
-                            // Here we are inside specific cell.
-                            const pw = Number(
-                              (rpt.metaData as any)?.productWeight,
-                            );
-                            if (pw > 0) {
-                              rejectPcs = Math.round((rejectPcs * 1000) / pw);
-                            }
+                            const rejectPcs = getRejectPcsForCategory(rpt) ?? 0;
 
                             // Total Output includes rejects
                             totalOutput += rejectPcs;
