@@ -70,6 +70,7 @@ export default function DashboardOverview({ department }: Props) {
   const { data: session } = useSession();
   const safeDepartment =
     typeof department === "string" ? department : undefined;
+  const isRigidDepartment = safeDepartment?.toUpperCase() === "RIGID";
 
   const { data, isLoading, error } = api.dashboard.getStats.useQuery(
     safeDepartment ? { department: safeDepartment } : {},
@@ -187,8 +188,14 @@ export default function DashboardOverview({ department }: Props) {
           trend={`${summary.totalDowntime.toLocaleString()} Menit`}
           trendColor={COLOR_DOWNTIME}
           breakdown={[
-              { label: "Planned", value: `${Math.round(summary.totalPlannedDowntime / 60)}h` },
-              { label: "Unplanned", value: `${Math.round(summary.totalUnplannedDowntime / 60)}h` }
+              {
+                label: isRigidDepartment ? "Loss Hour" : "Planned",
+                value: `${Math.round(summary.totalPlannedDowntime / 60)}h`,
+              },
+              {
+                label: isRigidDepartment ? "Downtime" : "Unplanned",
+                value: `${Math.round(summary.totalUnplannedDowntime / 60)}h`,
+              }
           ]}
         />
       </div>
@@ -266,8 +273,12 @@ export default function DashboardOverview({ department }: Props) {
       <div className="grid gap-4 md:grid-cols-2">
         {/* Downtime Breakdown (Planned) */}
         <DowntimeWeeksChart 
-            title="PLAN DOWNTIME"
-            description="Analisa mingguan Plan Downtime per kategori"
+            title={isRigidDepartment ? "LOSS HOUR" : "PLANNED DOWNTIME"}
+            description={
+              isRigidDepartment
+                ? "Analisa mingguan Loss Hour per kategori"
+                : "Analisa mingguan Planned Downtime per kategori"
+            }
             weeklyData={data.weeklyPlanned} 
             downtimeTypes={downtimeTypes.filter((d) => {
               const k = d.type.toUpperCase();
@@ -279,8 +290,12 @@ export default function DashboardOverview({ department }: Props) {
 
         {/* Downtime Breakdown (Unplanned) */}
         <DowntimeWeeksChart 
-            title="UNPLAN DOWNTIME"
-            description="Analisa mingguan Unplan Downtime per kategori"
+            title={isRigidDepartment ? "DOWNTIME" : "UNPLANNED DOWNTIME"}
+            description={
+              isRigidDepartment
+                ? "Analisa mingguan Downtime per kategori"
+                : "Analisa mingguan Unplanned Downtime per kategori"
+            }
             weeklyData={data.weeklyUnplanned} 
             downtimeTypes={downtimeTypes.filter((d) => {
               const k = d.type.toUpperCase();
@@ -325,7 +340,11 @@ export default function DashboardOverview({ department }: Props) {
       {/* 4. Planned vs Unplanned Downtime */}
       <Card>
           <CardHeader>
-              <CardTitle>Perbandingan Planned vs Unplanned Downtime</CardTitle>
+              <CardTitle>
+                {isRigidDepartment
+                  ? "Perbandingan Loss Hour vs Downtime"
+                  : "Perbandingan Planned vs Unplanned Downtime"}
+              </CardTitle>
               <CardDescription>Total durasi dalam menit dan persentase.</CardDescription>
           </CardHeader>
           <CardContent className="h-[350px]">
@@ -333,8 +352,14 @@ export default function DashboardOverview({ department }: Props) {
                   <PieChart>
                       <Pie
                           data={[
-                              { name: "Unplanned", value: summary.totalUnplannedDowntime },
-                              { name: "Planned", value: summary.totalPlannedDowntime },
+                              {
+                                name: isRigidDepartment ? "Downtime" : "Unplanned",
+                                value: summary.totalUnplannedDowntime,
+                              },
+                              {
+                                name: isRigidDepartment ? "Loss Hour" : "Planned",
+                                value: summary.totalPlannedDowntime,
+                              },
                           ]}
                           dataKey="value"
                           nameKey="name"

@@ -14,7 +14,13 @@ import {
   TableRow,
 } from "~/components/ui/table";
 
-type Status = "ALL" | "OPEN" | "IN_PROGRESS" | "COMPLETE" | "CLOSED" | "CANCELLED";
+type Status =
+  | "ALL"
+  | "OPEN"
+  | "IN_PROGRESS"
+  | "COMPLETE"
+  | "CLOSED"
+  | "CANCELLED";
 type ProType = "ALL" | "PAPER" | "RIGID" | "OTHER";
 
 function fmtNum(n: number) {
@@ -28,7 +34,8 @@ function fmtDate(d?: Date | string | null) {
 }
 
 function statusClass(status: string) {
-  if (status === "OPEN") return "bg-blue-500/15 text-blue-600 border-blue-400/30";
+  if (status === "OPEN")
+    return "bg-blue-500/15 text-blue-600 border-blue-400/30";
   if (status === "IN_PROGRESS")
     return "bg-amber-500/15 text-amber-600 border-amber-400/30";
   if (status === "COMPLETE")
@@ -54,19 +61,28 @@ export default function ProTargetGap() {
     [q, status, type],
   );
 
-  const { data, isLoading, error } = api.pros.targetGapList.useQuery(queryInput, {
-    staleTime: 20_000,
-    refetchOnWindowFocus: false,
-  });
+  const { data, isLoading, error } = api.pros.targetGapList.useQuery(
+    queryInput,
+    {
+      staleTime: 20_000,
+      refetchOnWindowFocus: false,
+    },
+  );
 
   const totals = React.useMemo(() => {
     const rows = data ?? [];
-    const totalTarget = rows.reduce((acc, r) => acc + Number(r.qtyPoPcs ?? 0), 0);
+    const totalTarget = rows.reduce(
+      (acc, r) => acc + Number(r.qtyPoPcs ?? 0),
+      0,
+    );
     const totalOutput = rows.reduce(
       (acc, r) => acc + Number((r as any).currentOutput ?? 0),
       0,
     );
-    const totalGap = rows.reduce((acc, r) => acc + Number((r as any).qtyGap ?? 0), 0);
+    const totalGap = rows.reduce(
+      (acc, r) => acc + Number((r as any).qtyGap ?? 0),
+      0,
+    );
     return { totalTarget, totalOutput, totalGap };
   }, [data]);
 
@@ -145,7 +161,9 @@ export default function ProTargetGap() {
               Memuat data PRO...
             </div>
           ) : error ? (
-            <div className="py-8 text-center text-sm text-rose-600">{error.message}</div>
+            <div className="py-8 text-center text-sm text-rose-600">
+              {error.message}
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -165,7 +183,10 @@ export default function ProTargetGap() {
                 <TableBody>
                   {(data ?? []).length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-muted-foreground h-24 text-center">
+                      <TableCell
+                        colSpan={9}
+                        className="text-muted-foreground h-24 text-center"
+                      >
                         Tidak ada data PRO
                       </TableCell>
                     </TableRow>
@@ -174,26 +195,39 @@ export default function ProTargetGap() {
                       const target = Number(r.qtyPoPcs ?? 0);
                       const output = Number((r as any).currentOutput ?? 0);
                       const gap = Number((r as any).qtyGap ?? 0);
-                      const pct = Math.max(0, Math.min(Number((r as any).progressPct ?? 0), 100));
+                      const pct = Math.max(
+                        0,
+                        Math.min(Number((r as any).progressPct ?? 0), 100),
+                      );
                       return (
                         <TableRow key={r.id}>
-                          <TableCell className="font-mono text-xs">{r.proNumber}</TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {r.proNumber}
+                          </TableCell>
                           <TableCell>
                             <div className="max-w-[280px]">
-                              <div className="truncate text-sm font-medium">{r.productName}</div>
+                              <div className="truncate text-sm font-medium">
+                                {r.productName}
+                              </div>
                               <div className="text-muted-foreground truncate text-[11px]">
                                 PN: {r.partNumber || "-"}
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-right font-medium">{fmtNum(target)}</TableCell>
-                          <TableCell className="text-right">{fmtNum(output)}</TableCell>
+                          <TableCell className="text-right font-medium">
+                            {fmtNum(target)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {fmtNum(output)}
+                          </TableCell>
                           <TableCell className="text-right font-semibold text-rose-600">
                             {fmtNum(gap)}
                           </TableCell>
                           <TableCell>
                             <div className="space-y-1">
-                              <div className="text-[11px] font-medium">{pct.toFixed(1)}%</div>
+                              <div className="text-[11px] font-medium">
+                                {pct.toFixed(1)}%
+                              </div>
                               <div className="bg-muted h-1.5 w-full rounded-full">
                                 <div
                                   className="h-1.5 rounded-full bg-emerald-500"
@@ -203,7 +237,10 @@ export default function ProTargetGap() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className={statusClass(r.status)}>
+                            <Badge
+                              variant="outline"
+                              className={statusClass(r.status)}
+                            >
                               {r.status}
                             </Badge>
                           </TableCell>
@@ -222,4 +259,3 @@ export default function ProTargetGap() {
     </div>
   );
 }
-

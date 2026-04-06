@@ -592,6 +592,7 @@ export const dashboardRouter = createTRPCRouter({
       z.object({
         dateRange: z.enum(["7D", "14D", "30D", "3M", "6M", "1Y"]).default("3M"),
         interval: z.enum(["DAY", "WEEK", "MONTH", "YEAR"]).default("WEEK"),
+        department: z.enum(["PAPER", "RIGID"]).default("RIGID"),
         reportType: z
           .enum([
             "INJECTION",
@@ -618,9 +619,19 @@ export const dashboardRouter = createTRPCRouter({
       const whereClause: any = {
         status: "APPROVED",
         reportDate: { gte: startDate, lte: endDate },
-        reportType: input.reportType
-          ? input.reportType
-          : { in: ["INJECTION", "BLOW_MOULDING", "PRINTING", "PACKING_ASSEMBLY"] },
+        reportType:
+          input.department === "PAPER"
+            ? "PAPER"
+            : input.reportType
+              ? input.reportType
+              : {
+                  in: [
+                    "INJECTION",
+                    "BLOW_MOULDING",
+                    "PRINTING",
+                    "PACKING_ASSEMBLY",
+                  ],
+                },
       };
 
       const reports = await ctx.db.productionReport.findMany({

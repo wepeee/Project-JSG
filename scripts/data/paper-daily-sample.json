@@ -1,0 +1,312 @@
+[
+  {
+    "sourceRow": 5,
+    "proNumber": "161225029",
+    "productName": "CETAK VERSAFIRE CERITOPHIA FUNTASY ART ROLL ROYAL KINGDOM",
+    "partNumber": "72505664",
+    "machineName": "VERSAFIRE",
+    "operatorName": "Elisa",
+    "reportDate": "2026-01-03",
+    "startTime": "11:00",
+    "endTime": "12:15",
+    "shift": 2,
+    "qtyPassOn": 52.0,
+    "qtyHold": 0.0,
+    "qtyWip": 0.0,
+    "qtyReject": 3.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 10,
+    "notes": "call service, trck kertas, tunggu acc",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 1,
+      "REJECT_PROCESS": 2
+    },
+    "downtimeBreakdown": {
+      "UNPLANNED:SETUP_CHANGE_OVER": 10
+    }
+  },
+  {
+    "sourceRow": 6,
+    "proNumber": "161225033",
+    "productName": "CETAK VERSAFIRE CERITOPHIA FUNTASY ART ROLL MUSIC VIBES",
+    "partNumber": "72505656",
+    "machineName": "VERSAFIRE",
+    "operatorName": "Taufiq",
+    "reportDate": "2026-01-03",
+    "startTime": "06:00",
+    "endTime": "08:00",
+    "shift": 1,
+    "qtyPassOn": 52.0,
+    "qtyHold": 0.0,
+    "qtyWip": 0.0,
+    "qtyReject": 2.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 10,
+    "notes": "pembersihan PCU, komputer tidak nyambung ke mesin, sett up, cek konten",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 2
+    },
+    "downtimeBreakdown": {
+      "PLANNED:OTHERS": 20,
+      "UNPLANNED:SETUP_CHANGE_OVER": 10
+    }
+  },
+  {
+    "sourceRow": 7,
+    "proNumber": "161225034",
+    "productName": "CETAK VERSAFIRE CERITOPHIA FUNTASY ART ROLL CITY LIFE",
+    "partNumber": "72505654",
+    "machineName": "VERSAFIRE",
+    "operatorName": "Taufiq",
+    "reportDate": "2026-01-03",
+    "startTime": "08:00",
+    "endTime": "09:30",
+    "shift": 1,
+    "qtyPassOn": 52.0,
+    "qtyHold": 0.0,
+    "qtyWip": 0.0,
+    "qtyReject": 2.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 10,
+    "notes": "set up, cek konten",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 2
+    },
+    "downtimeBreakdown": {
+      "UNPLANNED:SETUP_CHANGE_OVER": 10
+    }
+  },
+  {
+    "sourceRow": 8,
+    "proNumber": "161225035",
+    "productName": "CETAK VERSAFIRE CERITOPHIA FUNTASY ART ROLL CIRCUS FUN",
+    "partNumber": "72505652",
+    "machineName": "VERSAFIRE",
+    "operatorName": "Elisa",
+    "reportDate": "2026-01-03",
+    "startTime": "12:15",
+    "endTime": "13:30",
+    "shift": 2,
+    "qtyPassOn": 52.0,
+    "qtyHold": 0.0,
+    "qtyWip": 0.0,
+    "qtyReject": 3.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 10,
+    "notes": "tunggu acc, call service kertas macet, track kertas",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 1,
+      "REJECT_PROCESS": 2
+    },
+    "downtimeBreakdown": {
+      "UNPLANNED:SETUP_CHANGE_OVER": 10
+    }
+  },
+  {
+    "sourceRow": 9,
+    "proNumber": "161225037",
+    "productName": "CETAK VERSAFIRE CERITOPHIA FUNTASY ART ROLL MAGICAL CREATURES",
+    "partNumber": "72505648",
+    "machineName": "VERSAFIRE",
+    "operatorName": "Elisa",
+    "reportDate": "2026-01-03",
+    "startTime": "13:30",
+    "endTime": "14:45",
+    "shift": 2,
+    "qtyPassOn": 52.0,
+    "qtyHold": 0.0,
+    "qtyWip": 0.0,
+    "qtyReject": 1.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 10,
+    "notes": "tunggu acc, track kertas, cetak sample",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 1
+    },
+    "downtimeBreakdown": {
+      "UNPLANNED:SETUP_CHANGE_OVER": 10
+    }
+  },
+  {
+    "sourceRow": 10,
+    "proNumber": "161225038",
+    "productName": "CETAK VERSAFIRE CERITOPHIA FUNTASY ART ROLL PIRATES & TREASURES",
+    "partNumber": "72505646",
+    "machineName": "VERSAFIRE",
+    "operatorName": "Elisa",
+    "reportDate": "2026-01-03",
+    "startTime": "14:45",
+    "endTime": "16:00",
+    "shift": 2,
+    "qtyPassOn": 52.0,
+    "qtyHold": 0.0,
+    "qtyWip": 0.0,
+    "qtyReject": 1.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 10,
+    "notes": "tunggu acc, track kertas",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 1
+    },
+    "downtimeBreakdown": {
+      "UNPLANNED:SETUP_CHANGE_OVER": 10
+    }
+  },
+  {
+    "sourceRow": 11,
+    "proNumber": "161225042",
+    "productName": "CETAK VERSAFIRE CERITOPHIA FUNTASY ART ROLL CUTE MONSTER",
+    "partNumber": "72505638",
+    "machineName": "VERSAFIRE",
+    "operatorName": "Taufiq",
+    "reportDate": "2026-01-03",
+    "startTime": "09:30",
+    "endTime": "11:00",
+    "shift": 1,
+    "qtyPassOn": 52.0,
+    "qtyHold": 0.0,
+    "qtyWip": 0.0,
+    "qtyReject": 2.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 10,
+    "notes": "set up, cek konten, tunggu acc",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 2
+    },
+    "downtimeBreakdown": {
+      "UNPLANNED:SETUP_CHANGE_OVER": 10
+    }
+  },
+  {
+    "sourceRow": 12,
+    "proNumber": "171225057",
+    "productName": "LAMINASI GLOSSY STICKER ACNEZONE AZAGLOW SERUM",
+    "partNumber": "72510305",
+    "machineName": "SF 720 FRONT",
+    "operatorName": "Haris",
+    "reportDate": "2026-01-03",
+    "startTime": "06:00",
+    "endTime": "09:20",
+    "shift": 1,
+    "qtyPassOn": 800.0,
+    "qtyHold": 250.0,
+    "qtyWip": 0.0,
+    "qtyReject": 1.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 25,
+    "notes": "cleaning cylinder heater, cek hasil berkala, set up awal jalan, bahan hold dari cetak",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 1
+    },
+    "downtimeBreakdown": {
+      "UNPLANNED:SETUP_CHANGE_OVER": 15,
+      "UNPLANNED:ADJUSTMENT_PROCESS": 10
+    }
+  },
+  {
+    "sourceRow": 13,
+    "proNumber": "171225049",
+    "productName": "LAMINASI DOFF HARDBOX COVER LUAR LIFT BOOST WHITENING SERUM",
+    "partNumber": "72511384",
+    "machineName": "SF 720 FRONT",
+    "operatorName": "Haris",
+    "reportDate": "2026-01-03",
+    "startTime": "09:20",
+    "endTime": "11:00",
+    "shift": 1,
+    "qtyPassOn": 425.0,
+    "qtyHold": 0.0,
+    "qtyWip": 0.0,
+    "qtyReject": 1.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 20,
+    "notes": "cleaning cylinder heater, cek hasil berkala, set up awal jalan",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 1
+    },
+    "downtimeBreakdown": {
+      "UNPLANNED:SETUP_CHANGE_OVER": 10,
+      "UNPLANNED:ADJUSTMENT_PROCESS": 10
+    }
+  },
+  {
+    "sourceRow": 14,
+    "proNumber": "171225049",
+    "productName": "LAMINASI DOFF HARDBOX COVER LUAR LIFT BOOST WHITENING SERUM",
+    "partNumber": "72511384",
+    "machineName": "SF 720 FRONT",
+    "operatorName": "Noval",
+    "reportDate": "2026-01-03",
+    "startTime": "11:00",
+    "endTime": "16:00",
+    "shift": 2,
+    "qtyPassOn": 1250.0,
+    "qtyHold": 0.0,
+    "qtyWip": 0.0,
+    "qtyReject": 1.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 20,
+    "notes": "cleaning cylinder heater + area, cek hasil berkala, training",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 1
+    },
+    "downtimeBreakdown": {
+      "UNPLANNED:SETUP_CHANGE_OVER": 10,
+      "UNPLANNED:ADJUSTMENT_PROCESS": 10
+    }
+  },
+  {
+    "sourceRow": 15,
+    "proNumber": "171225049",
+    "productName": "LAMINASI DOFF HARDBOX COVER LUAR LIFT BOOST WHITENING SERUM",
+    "partNumber": "72511384",
+    "machineName": "SF 720 FRONT",
+    "operatorName": "Exzell",
+    "reportDate": "2026-01-03",
+    "startTime": "16:00",
+    "endTime": "21:00",
+    "shift": 3,
+    "qtyPassOn": 1265.0,
+    "qtyHold": 0.0,
+    "qtyWip": 0.0,
+    "qtyReject": 1.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 60,
+    "notes": "cleaning cylinder heater + area, cek hasil berkala, laminasi sample (30 menit) (glossy + doff + pelangi)",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 1
+    },
+    "downtimeBreakdown": {
+      "UNPLANNED:SETUP_CHANGE_OVER": 15,
+      "UNPLANNED:ADJUSTMENT_PROCESS": 15,
+      "UNPLANNED:LAIN_LAIN": 30
+    }
+  },
+  {
+    "sourceRow": 16,
+    "proNumber": "171225046",
+    "productName": "HOTPRINT ORANGE 181 - 10  HARDBOX COVER LUAR LIFT BOOST WHITENING SERUM",
+    "partNumber": "72510384",
+    "machineName": "TMYK 750 HOTSTAMPING",
+    "operatorName": "Hakim & Adi",
+    "reportDate": "2026-01-03",
+    "startTime": "11:00",
+    "endTime": "16:00",
+    "shift": 2,
+    "qtyPassOn": 422.0,
+    "qtyHold": 0.0,
+    "qtyWip": 0.0,
+    "qtyReject": 3.0,
+    "inputMaterialQty": 0.0,
+    "totalDowntime": 120,
+    "notes": "treatment klise, bongkar pasang dan ganti legger baru, acc QC, atur suhu pemanas",
+    "rejectBreakdown": {
+      "REJECT_SET_UP": 3
+    },
+    "downtimeBreakdown": {
+      "UNPLANNED:TUNGGU_APPROVAL": 20,
+      "UNPLANNED:SETUP_CHANGE_OVER": 60,
+      "UNPLANNED:ADJUSTMENT_PROCESS": 40
+    }
+  }
+]

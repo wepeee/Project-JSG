@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
 import { ThemeToggle } from "~/components/theme-toggle";
-import DashboardOverview from "~/app/dashboard/@superadmin/_components/modules/overview/dashboard-overview";
+import RigidOverview from "~/app/dashboard/@superadmin/_components/modules/overview/rigid-overview";
 import WipMonitor from "~/app/dashboard/@superadmin/_components/modules/inventory/wip-monitor";
 import VerificationList from "~/app/dashboard/@superadmin/_components/modules/verification/verification-list";
 import ProductionArchive from "~/app/dashboard/@superadmin/_components/modules/archive/production-archive";
@@ -108,7 +108,7 @@ export default function AdminShell({ user }: Props) {
   const showRigid = !user.department || user.department === "RIGID";
 
   const SidebarContent = () => (
-    <nav className="flex flex-1 flex-col gap-1 px-2">
+    <nav className="flex flex-col gap-1 px-2">
       <SidebarItem
         label="Dashboard"
         active={active === "dashboard"}
@@ -202,7 +202,7 @@ export default function AdminShell({ user }: Props) {
       </div>
 
       <div className="mx-auto flex w-full gap-0 lg:gap-6">
-        <aside className="bg-background sticky top-0 hidden h-screen w-64 shrink-0 border-r lg:flex lg:flex-col">
+        <aside className="bg-background sticky top-0 hidden h-screen w-64 shrink-0 overflow-hidden border-r lg:flex lg:flex-col">
           <div className="px-4 py-4">
             <div className="text-lg font-semibold">Dashboard</div>
             <div className="text-xs opacity-70">ADMIN</div>
@@ -213,7 +213,9 @@ export default function AdminShell({ user }: Props) {
             )}
           </div>
 
-          <SidebarContent />
+          <div className="min-h-0 flex-1 overflow-y-auto py-2">
+            <SidebarContent />
+          </div>
 
           <div className="border-t px-4 py-4">
             <div className="text-sm font-medium">{user.name}</div>
@@ -238,7 +240,7 @@ export default function AdminShell({ user }: Props) {
               className="absolute inset-0 bg-black/40"
               onClick={() => setOpen(false)}
             />
-            <div className="bg-background absolute top-0 left-0 h-full w-72 border-r">
+            <div className="bg-background absolute top-0 left-0 flex h-full w-72 flex-col border-r">
               <div className="flex items-center justify-between border-b px-4 py-4">
                 <div>
                   <div className="text-lg font-semibold">Dashboard</div>
@@ -253,7 +255,7 @@ export default function AdminShell({ user }: Props) {
                 </button>
               </div>
 
-              <div className="py-3">
+              <div className="min-h-0 flex-1 overflow-y-auto py-3">
                 <SidebarContent />
               </div>
 
@@ -283,7 +285,7 @@ export default function AdminShell({ user }: Props) {
           </div>
 
           {active === "dashboard" && (
-            <DashboardOverview department={user.department} />
+            <RigidOverview department={user.department} />
           )}
           {active === "oee_paper" && <OeeDashboard />}
 

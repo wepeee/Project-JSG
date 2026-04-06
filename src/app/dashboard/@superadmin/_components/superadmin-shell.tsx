@@ -11,7 +11,6 @@ import CreateUserForm from "./modules/users/create-users-form";
 import MachineManager from "./modules/machines/machine-manager";
 import VerificationList from "./modules/verification/verification-list";
 import ProductionArchive from "./modules/archive/production-archive";
-import DashboardOverview from "./modules/overview/dashboard-overview";
 import WipMonitor from "./modules/inventory/wip-monitor";
 import StdOutput from "./modules/std-output/std-output";
 import MachineAccessManager from "./modules/machines/machine-access-manager";
@@ -29,7 +28,6 @@ type Props = {
 
 type NavKey =
   | "dashboard"
-  | "dashboard_rigid"
   | "users"
   | "settings"
   | "audit"
@@ -48,7 +46,6 @@ type NavKey =
 
 const SUPERADMIN_PATH_BY_KEY: Record<NavKey, string> = {
   dashboard: "/dashboard",
-  dashboard_rigid: "/dashboard/rigid/overview",
   users: "/dashboard/users",
   settings: "/dashboard/settings",
   audit: "/dashboard/audit",
@@ -84,8 +81,7 @@ function resolveSuperadminNav(pathname: string): NavKey {
   if (pathname.startsWith("/dashboard/paper/std-output"))
     return "std_output_paper";
 
-  if (pathname.startsWith("/dashboard/rigid/overview"))
-    return "dashboard_rigid";
+  if (pathname.startsWith("/dashboard/rigid/overview")) return "dashboard";
   if (pathname.startsWith("/dashboard/rigid/machines")) return "machines_rigid";
   if (pathname.startsWith("/dashboard/rigid/wip-monitor"))
     return "inventory_rigid";
@@ -108,6 +104,12 @@ export default function SuperadminShell({ user }: Props) {
     [pathname],
   );
 
+  React.useEffect(() => {
+    if (pathname?.startsWith("/dashboard/rigid/overview")) {
+      router.replace("/dashboard");
+    }
+  }, [pathname, router]);
+
   const navigate = React.useCallback(
     (key: NavKey) => {
       router.push(SUPERADMIN_PATH_BY_KEY[key]);
@@ -119,9 +121,9 @@ export default function SuperadminShell({ user }: Props) {
   const title = React.useMemo(() => {
     switch (active) {
       case "dashboard":
-        return "Dashboard Overview";
-      case "dashboard_rigid":
-        return "Dashboard Rigid - Metrics";
+        return user.department === "RIGID"
+          ? "Dashboard Rigid - Metrics"
+          : "Dashboard Overview";
       case "users":
         return "Kelola Akun";
       case "settings":
@@ -167,7 +169,7 @@ export default function SuperadminShell({ user }: Props) {
   const showRigid = !user.department || user.department === "RIGID";
 
   const SidebarContent = () => (
-    <nav className="flex flex-1 flex-col gap-1 px-2">
+    <nav className="flex flex-col gap-1 px-2">
       <div className="text-nav-section mb-1 px-3 text-[10px] font-bold tracking-wider">
         OVERVIEW
       </div>
@@ -220,11 +222,6 @@ export default function SuperadminShell({ user }: Props) {
           <div className="text-nav-section mt-4 mb-1 px-3 text-[10px] font-bold tracking-wider">
             OPERASIONAL RIGID
           </div>
-          <SidebarItem
-            label="Dashboard"
-            active={active === "dashboard_rigid"}
-            onClick={() => navigate("dashboard_rigid")}
-          />
           <SidebarItem
             label="WIP Monitor"
             active={active === "inventory_rigid"}
@@ -307,7 +304,7 @@ export default function SuperadminShell({ user }: Props) {
       {/* Layout */}
       <div className="mx-auto flex w-full gap-0 lg:gap-6">
         {/* Sidebar (desktop) */}
-        <aside className="bg-background sticky top-0 hidden h-screen w-64 shrink-0 border-r lg:flex lg:flex-col">
+        <aside className="bg-background sticky top-0 hidden h-screen w-64 shrink-0 overflow-hidden border-r lg:flex lg:flex-col">
           <div className="px-4 py-4">
             <div className="text-lg font-semibold">Dashboard</div>
             <div className="text-xs opacity-70">SUPERADMIN</div>
@@ -318,7 +315,9 @@ export default function SuperadminShell({ user }: Props) {
             )}
           </div>
 
-          <SidebarContent />
+          <div className="min-h-0 flex-1 overflow-y-auto py-2">
+            <SidebarContent />
+          </div>
 
           <div className="border-t px-4 py-4">
             <div className="text-sm font-medium">{user.name}</div>
@@ -344,7 +343,7 @@ export default function SuperadminShell({ user }: Props) {
               className="absolute inset-0 bg-black/40"
               onClick={() => setOpen(false)}
             />
-            <div className="bg-background absolute top-0 left-0 h-full w-72 border-r">
+            <div className="bg-background absolute top-0 left-0 flex h-full w-72 flex-col border-r">
               <div className="flex items-center justify-between border-b px-4 py-4">
                 <div>
                   <div className="text-lg font-semibold">Dashboard</div>
@@ -359,7 +358,7 @@ export default function SuperadminShell({ user }: Props) {
                 </button>
               </div>
 
-              <div className="py-3">
+              <div className="min-h-0 flex-1 overflow-y-auto py-3">
                 <SidebarContent />
               </div>
 
@@ -390,9 +389,8 @@ export default function SuperadminShell({ user }: Props) {
             </div>
           </div>
 
-          {active === "dashboard" && (
-            <DashboardOverview department={user.department} />
-          )}
+          {active === "dashboard" &&
+            <RigidOverview department={user.department} />}
           {active === "users" && <CreateUserForm />}
           {active === "audit" && <AuditLog />}
           {active === "settings" && (
@@ -416,8 +414,6 @@ export default function SuperadminShell({ user }: Props) {
           )}
 
           {/* Rigid Components */}
-          {active === "dashboard_rigid" && <RigidOverview />}
-
           {active === "machines_rigid" && (
             <MachineManager machineType="RIGID" />
           )}

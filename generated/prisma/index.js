@@ -387,7 +387,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\coba\\Project-JSG\\generated\\prisma",
+      "value": "E:\\Kuliah\\KP\\belajar\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -401,7 +401,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\coba\\Project-JSG\\prisma\\schema.prisma",
+    "sourceFilePath": "E:\\Kuliah\\KP\\belajar\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -415,7 +415,6 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {

@@ -164,84 +164,86 @@ export default function PPICShell({ user }: Props) {
       </div>
 
       <div className="mx-auto flex w-full gap-0 lg:gap-6">
-        <aside className="bg-background sticky top-0 hidden h-screen w-64 shrink-0 border-r lg:flex lg:flex-col">
+        <aside className="bg-background sticky top-0 hidden h-screen w-64 shrink-0 overflow-hidden border-r lg:flex lg:flex-col">
           <div className="px-4 py-4">
             <div className="text-lg font-semibold">Dashboard</div>
             <div className="text-xs opacity-70">PPIC</div>
           </div>
 
-          <nav className="flex flex-1 flex-col gap-1 px-2">
-            <SidebarItem
-              label="Dashboard"
-              active={active === "dashboard"}
-              onClick={() => navigate("dashboard")}
-            />
+          <div className="min-h-0 flex-1 overflow-y-auto py-2">
+            <nav className="flex flex-col gap-1 px-2">
+              <SidebarItem
+                label="Dashboard"
+                active={active === "dashboard"}
+                onClick={() => navigate("dashboard")}
+              />
 
-            <SidebarItemWithSubmenu
-              label="Daftar PRO"
-              active={active === "prolist"}
-              activeKey={proTypeFilter}
-              onClick={() => navigate("prolist", proTypeFilter)}
-              submenu={[
-                {
-                  key: "PAPER",
-                  label: "Paper Box",
-                  onClick: () => navigate("prolist", "PAPER"),
-                },
-                {
-                  key: "RIGID",
-                  label: "Rigid Box",
-                  onClick: () => navigate("prolist", "RIGID"),
-                },
-                {
-                  key: "ALL",
-                  label: "Semua",
-                  onClick: () => navigate("prolist", "ALL"),
-                },
-              ]}
-            />
+              <SidebarItemWithSubmenu
+                label="Daftar PRO"
+                active={active === "prolist"}
+                activeKey={proTypeFilter}
+                onClick={() => navigate("prolist", proTypeFilter)}
+                submenu={[
+                  {
+                    key: "PAPER",
+                    label: "Paper Box",
+                    onClick: () => navigate("prolist", "PAPER"),
+                  },
+                  {
+                    key: "RIGID",
+                    label: "Rigid Box",
+                    onClick: () => navigate("prolist", "RIGID"),
+                  },
+                  {
+                    key: "ALL",
+                    label: "Semua",
+                    onClick: () => navigate("prolist", "ALL"),
+                  },
+                ]}
+              />
 
-            <SidebarItemWithSubmenu
-              label="Perencanaan PRO"
-              active={active === "planning-paper" || active === "planning-rigid"}
-              activeKey={
-                active === "planning-paper"
-                  ? "paper"
-                  : active === "planning-rigid"
-                    ? "rigid"
-                    : undefined
-              }
-              onClick={() => navigate("planning-paper")}
-              submenu={[
-                {
-                  key: "paper",
-                  label: "Paper Box",
-                  onClick: () => navigate("planning-paper"),
-                },
-                {
-                  key: "rigid",
-                  label: "Rigid Box",
-                  onClick: () => navigate("planning-rigid"),
-                },
-              ]}
-            />
+              <SidebarItemWithSubmenu
+                label="Perencanaan PRO"
+                active={active === "planning-paper" || active === "planning-rigid"}
+                activeKey={
+                  active === "planning-paper"
+                    ? "paper"
+                    : active === "planning-rigid"
+                      ? "rigid"
+                      : undefined
+                }
+                onClick={() => navigate("planning-paper")}
+                submenu={[
+                  {
+                    key: "paper",
+                    label: "Paper Box",
+                    onClick: () => navigate("planning-paper"),
+                  },
+                  {
+                    key: "rigid",
+                    label: "Rigid Box",
+                    onClick: () => navigate("planning-rigid"),
+                  },
+                ]}
+              />
 
-            <SidebarItem
-              label="Schedule"
-              active={active === "schedule"}
-              onClick={() => navigate("schedule")}
-            />
-            <SidebarItem
-              label="Proses"
-              active={active === "processes"}
-              onClick={() => navigate("processes")}
-            />
-            <SidebarItem
-              label="Materials"
-              active={active === "materials"}
-              onClick={() => navigate("materials")}
-            />
-          </nav>
+              <SidebarItem
+                label="Schedule"
+                active={active === "schedule"}
+                onClick={() => navigate("schedule")}
+              />
+              <SidebarItem
+                label="Proses"
+                active={active === "processes"}
+                onClick={() => navigate("processes")}
+              />
+              <SidebarItem
+                label="Materials"
+                active={active === "materials"}
+                onClick={() => navigate("materials")}
+              />
+            </nav>
+          </div>
 
           <div className="border-t px-4 py-4">
             <div className="text-sm font-medium">{user.name}</div>
@@ -266,7 +268,7 @@ export default function PPICShell({ user }: Props) {
               className="absolute inset-0 bg-black/40"
               onClick={() => setOpen(false)}
             />
-            <div className="bg-background absolute top-0 left-0 h-full w-72 border-r">
+            <div className="bg-background absolute top-0 left-0 flex h-full w-72 flex-col border-r">
               <div className="flex items-center justify-between border-b px-4 py-4">
                 <div>
                   <div className="text-lg font-semibold">Dashboard</div>
@@ -281,78 +283,80 @@ export default function PPICShell({ user }: Props) {
                 </button>
               </div>
 
-              <nav className="flex flex-col gap-1 px-2 py-3">
-                <SidebarItem
-                  label="Dashboard"
-                  active={active === "dashboard"}
-                  onClick={() => navigate("dashboard", "PAPER", true)}
-                />
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <nav className="flex flex-col gap-1 px-2 py-3">
+                  <SidebarItem
+                    label="Dashboard"
+                    active={active === "dashboard"}
+                    onClick={() => navigate("dashboard", "PAPER", true)}
+                  />
 
-                <SidebarItemWithSubmenu
-                  label="Daftar PRO"
-                  active={active === "prolist"}
-                  activeKey={proTypeFilter}
-                  onClick={() => navigate("prolist", proTypeFilter, true)}
-                  submenu={[
-                    {
-                      key: "PAPER",
-                      label: "Paper Box",
-                      onClick: () => navigate("prolist", "PAPER", true),
-                    },
-                    {
-                      key: "RIGID",
-                      label: "Rigid Box",
-                      onClick: () => navigate("prolist", "RIGID", true),
-                    },
-                    {
-                      key: "ALL",
-                      label: "Semua",
-                      onClick: () => navigate("prolist", "ALL", true),
-                    },
-                  ]}
-                />
+                  <SidebarItemWithSubmenu
+                    label="Daftar PRO"
+                    active={active === "prolist"}
+                    activeKey={proTypeFilter}
+                    onClick={() => navigate("prolist", proTypeFilter, true)}
+                    submenu={[
+                      {
+                        key: "PAPER",
+                        label: "Paper Box",
+                        onClick: () => navigate("prolist", "PAPER", true),
+                      },
+                      {
+                        key: "RIGID",
+                        label: "Rigid Box",
+                        onClick: () => navigate("prolist", "RIGID", true),
+                      },
+                      {
+                        key: "ALL",
+                        label: "Semua",
+                        onClick: () => navigate("prolist", "ALL", true),
+                      },
+                    ]}
+                  />
 
-                <SidebarItemWithSubmenu
-                  label="Perencanaan PRO"
-                  active={active === "planning-paper" || active === "planning-rigid"}
-                  activeKey={
-                    active === "planning-paper"
-                      ? "paper"
-                      : active === "planning-rigid"
-                        ? "rigid"
-                        : undefined
-                  }
-                  onClick={() => navigate("planning-paper", "PAPER", true)}
-                  submenu={[
-                    {
-                      key: "paper",
-                      label: "Paper Box",
-                      onClick: () => navigate("planning-paper", "PAPER", true),
-                    },
-                    {
-                      key: "rigid",
-                      label: "Rigid Box",
-                      onClick: () => navigate("planning-rigid", "RIGID", true),
-                    },
-                  ]}
-                />
+                  <SidebarItemWithSubmenu
+                    label="Perencanaan PRO"
+                    active={active === "planning-paper" || active === "planning-rigid"}
+                    activeKey={
+                      active === "planning-paper"
+                        ? "paper"
+                        : active === "planning-rigid"
+                          ? "rigid"
+                          : undefined
+                    }
+                    onClick={() => navigate("planning-paper", "PAPER", true)}
+                    submenu={[
+                      {
+                        key: "paper",
+                        label: "Paper Box",
+                        onClick: () => navigate("planning-paper", "PAPER", true),
+                      },
+                      {
+                        key: "rigid",
+                        label: "Rigid Box",
+                        onClick: () => navigate("planning-rigid", "RIGID", true),
+                      },
+                    ]}
+                  />
 
-                <SidebarItem
-                  label="Schedule"
-                  active={active === "schedule"}
-                  onClick={() => navigate("schedule", "PAPER", true)}
-                />
-                <SidebarItem
-                  label="Proses"
-                  active={active === "processes"}
-                  onClick={() => navigate("processes", "PAPER", true)}
-                />
-                <SidebarItem
-                  label="Materials"
-                  active={active === "materials"}
-                  onClick={() => navigate("materials", "PAPER", true)}
-                />
-              </nav>
+                  <SidebarItem
+                    label="Schedule"
+                    active={active === "schedule"}
+                    onClick={() => navigate("schedule", "PAPER", true)}
+                  />
+                  <SidebarItem
+                    label="Proses"
+                    active={active === "processes"}
+                    onClick={() => navigate("processes", "PAPER", true)}
+                  />
+                  <SidebarItem
+                    label="Materials"
+                    active={active === "materials"}
+                    onClick={() => navigate("materials", "PAPER", true)}
+                  />
+                </nav>
+              </div>
 
               <div className="border-t px-4 py-4">
                 <div className="text-sm font-medium">{user.name}</div>
