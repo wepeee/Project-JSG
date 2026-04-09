@@ -49,7 +49,20 @@ import { Loader2, Pencil, Trash2 } from "lucide-react";
 const SHIFT_HOURS = 7; // Rigid usually 7 hrs shift based on data (14700/2100=7)
 const PAPER_SHIFT_HOURS = 6.8;
 
-const UOM_OPTIONS = ["sheet", "pcs", "meter", "cm"] as const;
+const UOM_OPTIONS = [
+  "drum",
+  "gr",
+  "gram",
+  "kg",
+  "liter",
+  "pack",
+  "pcs",
+  "rim",
+  "roll",
+  "sheet",
+  "meter",
+  "cm",
+] as const;
 type Uom = (typeof UOM_OPTIONS)[number];
 
 type MachineType = "PAPER" | "RIGID";
@@ -440,7 +453,7 @@ export default function MachineManager({
                       <SelectContent>
                         {UOM_OPTIONS.map((opt) => (
                           <SelectItem key={opt} value={opt}>
-                            {opt}
+                            {opt.toUpperCase()}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -884,7 +897,7 @@ export default function MachineManager({
                       <SelectContent>
                         {UOM_OPTIONS.map((opt) => (
                           <SelectItem key={opt} value={opt}>
-                            {opt}
+                            {opt.toUpperCase()}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -90,8 +90,16 @@ export type Role = (typeof Role)[keyof typeof Role]
 
 
 export const Uom: {
-  sheet: 'sheet',
+  drum: 'drum',
+  gr: 'gr',
+  gram: 'gram',
+  kg: 'kg',
+  liter: 'liter',
+  pack: 'pack',
   pcs: 'pcs',
+  rim: 'rim',
+  roll: 'roll',
+  sheet: 'sheet',
   meter: 'meter',
   cm: 'cm'
 };

@@ -56,8 +56,16 @@ model UserMachineAccess {
 // Mesin
 
 enum Uom {
-  sheet
+  drum
+  gr
+  gram
+  kg
+  liter
+  pack
   pcs
+  rim
+  roll
+  sheet
   meter
   cm
 }

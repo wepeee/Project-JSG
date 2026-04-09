@@ -48,7 +48,20 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-const UOM_OPTIONS = ["sheet", "pcs", "meter", "cm"] as const;
+const UOM_OPTIONS = [
+  "drum",
+  "gr",
+  "gram",
+  "kg",
+  "liter",
+  "pack",
+  "pcs",
+  "rim",
+  "roll",
+  "sheet",
+  "meter",
+  "cm",
+] as const;
 type Uom = (typeof UOM_OPTIONS)[number];
 type MaterialKind = "RAW" | "WIP" | "FG" | "CONSUMABLE";
 
@@ -310,7 +323,7 @@ export default function MaterialManager() {
             >
               {UOM_OPTIONS.map((x) => (
                 <option key={x} value={x}>
-                  {x}
+                  {x.toUpperCase()}
                 </option>
               ))}
             </select>
@@ -550,7 +563,7 @@ export default function MaterialManager() {
                     >
                       {UOM_OPTIONS.map((x) => (
                         <option key={x} value={x}>
-                          {x}
+                          {x.toUpperCase()}
                         </option>
                       ))}
                     </select>
