@@ -82,13 +82,28 @@ function normalizeItemCode(value: string) {
   return value.trim().toUpperCase().replace(/\s+/g, "_");
 }
 
-// Simple CSV Parser
+// CSV parser with delimiter auto-detection and Excel "sep=;" support.
 function parseCSV(text: string) {
   const result: string[][] = [];
   const lines = text.split(/\r?\n/);
+  const nonEmptyLines = lines.filter((line) => line.trim().length > 0);
+  if (nonEmptyLines.length === 0) return result;
+
+  let delimiter = ",";
+  const firstLineRaw = nonEmptyLines[0]!.trim();
+  const sepMatch = firstLineRaw.match(/^sep=(.)$/i);
+
+  if (sepMatch?.[1]) {
+    delimiter = sepMatch[1];
+  } else {
+    const commaCount = (firstLineRaw.match(/,/g) ?? []).length;
+    const semicolonCount = (firstLineRaw.match(/;/g) ?? []).length;
+    delimiter = semicolonCount > commaCount ? ";" : ",";
+  }
 
   for (const line of lines) {
     if (!line.trim()) continue;
+    if (/^sep=(.)$/i.test(line.trim())) continue;
 
     const row: string[] = [];
     let curVal = "";
@@ -112,7 +127,7 @@ function parseCSV(text: string) {
       } else {
         if (char === '"') {
           insideQuote = true;
-        } else if (char === ",") {
+        } else if (char === delimiter) {
           row.push(curVal.trim());
           curVal = "";
         } else {
@@ -225,14 +240,41 @@ export default function ProPlanner({
   const handleDownloadTemplate = () => {
     let csvContent: string;
     let filename: string;
+    const delimiter = ";";
+    const sepHint = `sep=${delimiter}`;
 
     if (proType === "RIGID") {
       // RIGID columns:
       // 0:BATCH, 1:PART NUMBER, 2:MACHINE, 3:Production Order, 4:Nama Produk,
       // 5:Total Lpr (UP), 6:Qty Order, 7:Start Date, 8:End Date, 9:Material, 10:Qty Material
       csvContent = [
-        "BATCH,PART NUMBER,MACHINE,Production Order,Nama Produk,Total Lpr (UP),Qty Order,Start Date,End Date,Material,Qty Material",
-        "B001,PN-001,Mesin A,17031246,Nama Produk Contoh,4,1000,10/03/2026,20/03/2026,Material ABC,250",
+        sepHint,
+        [
+          "BATCH",
+          "PART NUMBER",
+          "MACHINE",
+          "Production Order",
+          "Nama Produk",
+          "Total Lpr (UP)",
+          "Qty Order",
+          "Start Date",
+          "End Date",
+          "Material",
+          "Qty Material",
+        ].join(delimiter),
+        [
+          "B001",
+          "PN-001",
+          "Mesin A",
+          "17031246",
+          "Nama Produk Contoh",
+          "4",
+          "1000",
+          "10/03/2026",
+          "20/03/2026",
+          "Material ABC",
+          "250",
+        ].join(delimiter),
       ].join("\r\n");
       filename = "template_pro_rigid.csv";
     } else {
@@ -240,14 +282,50 @@ export default function ProPlanner({
       // 0:Part Number (Step), 1:Machine, 2:Production Order, 3:Nama Produk,
       // 4:Total UP, 5:Qty Order, 6:Start Date, 7:End Date, 8:Material, 9:Qty Material
       csvContent = [
-        "Part Number (Step),Machine,Production Order,Nama Produk,Total UP,Qty Order,Start Date,End Date,Material,Qty Material",
-        "WIP-001,Mesin A,17031246,Nama Produk Contoh,4,1000,10/03/2026,,Material ABC,250",
-        ",Mesin B,,,2,,,, Material DEF,125",
+        sepHint,
+        [
+          "Part Number (Step)",
+          "Machine",
+          "Production Order",
+          "Nama Produk",
+          "Total UP",
+          "Qty Order",
+          "Start Date",
+          "End Date",
+          "Material",
+          "Qty Material",
+        ].join(delimiter),
+        [
+          "WIP-001",
+          "Mesin A",
+          "17031246",
+          "Nama Produk Contoh",
+          "4",
+          "1000",
+          "10/03/2026",
+          "",
+          "Material ABC",
+          "250",
+        ].join(delimiter),
+        [
+          "",
+          "Mesin B",
+          "",
+          "",
+          "2",
+          "",
+          "",
+          "",
+          "Material DEF",
+          "125",
+        ].join(delimiter),
       ].join("\r\n");
       filename = "template_pro_paper.csv";
     }
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([`\uFEFF${csvContent}`], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
