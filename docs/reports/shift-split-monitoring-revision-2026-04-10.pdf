@@ -1,0 +1,362 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 3 /Kids [ 6 0 R 7 0 R 8 0 R ] >>
+endobj
+3 0 obj
+<< /Length 2990 >>
+stream
+BT /F1 10 Tf 1 0 0 1 48 784 Tm
+(# Laporan Revisi Monitoring Shift Pecah) Tj
+T*
+() Tj
+T*
+(Tanggal: 2026-04-10  ) Tj
+T*
+(Proyek: PPIC - Monitoring Produksi Paper/Rigid  ) Tj
+T*
+(Cakupan: Perbaikan mismatch alert planning shift dan alur konsumsi upstream pada split shift paper) Tj
+T*
+() Tj
+T*
+(## 1\) Ringkasan Masalah) Tj
+T*
+() Tj
+T*
+(### 1.1 Mismatch Alert Shift di Perencanaan PRO) Tj
+T*
+(- Kasus pengguna: alert menampilkan jumlah shift sangat besar \(contoh: 102 shift\), tetapi PRO yang) Tj
+T*
+(dibuat ternyata tidak terpecah sebanyak itu.) Tj
+T*
+(- Risiko: kepercayaan planner turun karena warning UI tidak sesuai keputusan backend.) Tj
+T*
+() Tj
+T*
+(### 1.2 Risiko Konsumsi pada Paper Multi-proses Saat Shift Pecah) Tj
+T*
+(- Kasus pengguna: pada alur paper, saat satu proses terpecah jadi beberapa shift/chunk, approval) Tj
+T*
+(bisa salah mengambil konsumsi dari chunk proses yang sama, bukan dari proses upstream yang) Tj
+T*
+(seharusnya.) Tj
+T*
+(- Risiko: alur pergerakan stok menjadi tidak logis dan tampilan lineage di WIP monitor menyesatkan.) Tj
+T*
+() Tj
+T*
+(## 2\) Analisis Akar Masalah) Tj
+T*
+() Tj
+T*
+(### 2.1 Rumus Alert UI Belum Selaras Penuh dengan Logika Create) Tj
+T*
+(- Logika create di backend \(source of truth\) menggunakan:) Tj
+T*
+(  - ekspansi split hanya untuk mesin dengan UOM `sheet`) Tj
+T*
+(  - basis qty:) Tj
+T*
+(    - jika qty material pertama ada -> pakai qty material pertama) Tj
+T*
+(    - jika tidak -> pakai `qtyPoPcs`) Tj
+T*
+(  - basis UP:) Tj
+T*
+(    - jika qty material pertama ada -> `1`) Tj
+T*
+(    - jika tidak -> pakai `UP` step) Tj
+T*
+(  - kebutuhan shift: `ceil\(qty / \(up * stdOutputPerShift\)\)`) Tj
+T*
+(- Sebelumnya, warning UI bisa melenceng dari aturan ini sehingga menimbulkan persepsi mismatch.) Tj
+T*
+() Tj
+T*
+(Referensi:) Tj
+T*
+(-) Tj
+T*
+([src/server/api/routers/ppic/pros.ts]\(/e:/Kuliah/KP/belajar/src/server/api/routers/ppic/pros.ts:700\)) Tj
+T*
+(-) Tj
+T*
+([src/server/api/routers/ppic/pros.ts]\(/e:/Kuliah/KP/belajar/src/server/api/routers/ppic/pros.ts:714\)) Tj
+T*
+() Tj
+T*
+(### 2.2 Resolusi Upstream Approval Mengambil Baris Sebelumnya Terdekat) Tj
+T*
+(- Pada kondisi split, "baris sebelumnya terdekat" bisa jadi masih chunk proses logis yang sama.) Tj
+T*
+(- Tanpa split guard, `consumptionItem` berpotensi mengarah ke rantai PN dari proses yang sama.) Tj
+T*
+() Tj
+T*
+(Referensi:) Tj
+T*
+(-) Tj
+T*
+([src/server/api/routers/superadmin/verification.ts]\(/e:/Kuliah/KP/belajar/src/server/api/routers/sup) Tj
+T*
+(eradmin/verification.ts:387\)) Tj
+T*
+() Tj
+T*
+(## 3\) Revisi yang Diimplementasikan) Tj
+T*
+() Tj
+T*
+(### 3.1 Penyelarasan Rumus Alert Planning) Tj
+T*
+(- Estimasi di baris planner diubah supaya sama persis dengan aturan backend:) Tj
+T*
+(  - hanya mesin `sheet` yang dihitung untuk alert split) Tj
+T*
+(  - jika qty material pertama ada, gunakan qty tersebut dengan UP=1) Tj
+T*
+(  - jika tidak, fallback ke `qtyPo` dengan `UP` step) Tj
+T*
+(  - `shiftCount = max\(1, ceil\(qtyBasis / \(upBasis * capacity\)\)\)`) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+4 0 obj
+<< /Length 2806 >>
+stream
+BT /F1 10 Tf 1 0 0 1 48 784 Tm
+(Referensi:) Tj
+T*
+(-) Tj
+T*
+([src/app/dashboard/@ppic/_components/pro/pro-planner.tsx]\(/e:/Kuliah/KP/belajar/src/app/dashboard/@p) Tj
+T*
+(pic/_components/pro/pro-planner.tsx:1795\)) Tj
+T*
+(-) Tj
+T*
+([src/app/dashboard/@ppic/_components/pro/pro-planner.tsx]\(/e:/Kuliah/KP/belajar/src/app/dashboard/@p) Tj
+T*
+(pic/_components/pro/pro-planner.tsx:1815\)) Tj
+T*
+() Tj
+T*
+(### 3.2 Split-step Upstream Guard pada Approval Paper) Tj
+T*
+(- Ditambahkan deteksi split logis untuk alur paper:) Tj
+T*
+(  - mesin sama) Tj
+T*
+(  - part number sama \(normalisasi\)) Tj
+T*
+(  - UP sama) Tj
+T*
+(- Proses approval sekarang melakukan backtrack melewati chunk yang masih satu proses logis, lalu) Tj
+T*
+(memilih upstream step yang benar.) Tj
+T*
+(- `consumptionItem` sekarang memprioritaskan PN dari upstream step tersebut.) Tj
+T*
+() Tj
+T*
+(Referensi:) Tj
+T*
+(-) Tj
+T*
+([src/server/api/routers/superadmin/verification.ts]\(/e:/Kuliah/KP/belajar/src/server/api/routers/sup) Tj
+T*
+(eradmin/verification.ts:342\)) Tj
+T*
+(-) Tj
+T*
+([src/server/api/routers/superadmin/verification.ts]\(/e:/Kuliah/KP/belajar/src/server/api/routers/sup) Tj
+T*
+(eradmin/verification.ts:349\)) Tj
+T*
+(-) Tj
+T*
+([src/server/api/routers/superadmin/verification.ts]\(/e:/Kuliah/KP/belajar/src/server/api/routers/sup) Tj
+T*
+(eradmin/verification.ts:387\)) Tj
+T*
+() Tj
+T*
+(## 4\) Dampak ke Monitoring \(Ekspektasi\)) Tj
+T*
+() Tj
+T*
+(### 4.1 Untuk Perencanaan PPIC) Tj
+T*
+(- Angka alert sekarang seharusnya konsisten dengan keputusan split saat create.) Tj
+T*
+(- Kasus false-positive shift sangat besar karena beda rumus tidak boleh muncul lagi.) Tj
+T*
+() Tj
+T*
+(### 4.2 Untuk Monitoring Inventory Paper) Tj
+T*
+(- Untuk chunk split dari proses yang sama, konsumsi OUT tidak lagi menarik dari chunk proses yang) Tj
+T*
+(sama.) Tj
+T*
+(- Penarikan stok harus menelusuri output proses upstream yang benar.) Tj
+T*
+(- Dampaknya, chain pada WIP monitor lebih valid secara semantik untuk operasi split shift.) Tj
+T*
+() Tj
+T*
+(## 5\) Ringkasan Kalkulasi) Tj
+T*
+() Tj
+T*
+(### 5.1 Estimasi Shift Split \(UI dan Create Harus Sama\)) Tj
+T*
+(- Jika UOM mesin bukan `sheet` -> `need = 1`) Tj
+T*
+(- Jika UOM mesin `sheet`:) Tj
+T*
+(  - `qtyBasis = firstMaterialQty \(jika ada\) atau qtyPoPcs`) Tj
+T*
+(  - `upBasis = 1 \(jika firstMaterialQty ada\) atau UP`) Tj
+T*
+(  - `need = max\(1, ceil\(qtyBasis / \(upBasis * stdOutputPerShift\)\)\)`) Tj
+T*
+() Tj
+T*
+(### 5.2 Sumber Konsumsi Approval untuk Split Paper) Tj
+T*
+(- Untuk step selain step pertama:) Tj
+T*
+(  - telusuri mundur dari step saat ini) Tj
+T*
+(  - lewati baris berurutan yang dianggap satu split logis \(mesin sama + PN sama + UP sama\)) Tj
+T*
+(  - konsumsi dari baris pertama sebelumnya yang berada di luar grup split tersebut) Tj
+T*
+() Tj
+T*
+(## 6\) Status Validasi) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Length 2064 >>
+stream
+BT /F1 10 Tf 1 0 0 1 48 784 Tm
+(### 6.1 Validasi Statis) Tj
+T*
+(- `pnpm typecheck`: LOLOS) Tj
+T*
+() Tj
+T*
+(### 6.2 Validasi Integration) Tj
+T*
+(- Belum bisa diselesaikan di sesi mesin ini karena akses DB test lokal bermasalah:) Tj
+T*
+(  - setup test Prisma gagal konek ke `localhost:5432` dan ada issue permission spawn schema-engine) Tj
+T*
+(\(`EPERM`\) di environment ini.) Tj
+T*
+(- Ini issue runtime environment, bukan assertion failure dari logika bisnis revisi.) Tj
+T*
+() Tj
+T*
+(## 7\) Skenario UAT yang Direkomendasikan) Tj
+T*
+() Tj
+T*
+(1. Buat PRO paper dengan 1 proses yang wajib split menjadi 2+ shift pada mesin sheet.  ) Tj
+T*
+(Ekspektasi: angka alert shift == jumlah split yang benar-benar dibuat.) Tj
+T*
+() Tj
+T*
+(2. Buat PRO paper multi-proses dengan split pada proses tengah.  ) Tj
+T*
+(Approve report per shift/chunk secara urut.  ) Tj
+T*
+(Ekspektasi: tiap chunk mengambil konsumsi dari item proses upstream yang benar, bukan dari chunk) Tj
+T*
+(proses yang sama.) Tj
+T*
+() Tj
+T*
+(3. Verifikasi tren di WIP monitor setelah approval.  ) Tj
+T*
+(Ekspektasi: jalur source/target stok mengikuti rantai proses, tanpa artefak self-consume pada step) Tj
+T*
+(yang sama.) Tj
+T*
+() Tj
+T*
+(4. Uji proteksi stok minus.  ) Tj
+T*
+(Ekspektasi: jika stok upstream benar-benar tidak cukup, sistem tetap blok dengan error) Tj
+T*
+(FIFO/precondition.) Tj
+T*
+() Tj
+T*
+(## 8\) Risiko Residual dan Hardening Lanjutan) Tj
+T*
+() Tj
+T*
+(- Deteksi split saat ini memakai heuristik mesin + PN + UP untuk paper.) Tj
+T*
+(- Jika ke depan ada kebutuhan mesin/PN/UP sama tetapi semantik segmen berbeda, sebaiknya tambah) Tj
+T*
+(split group id eksplisit saat create agar lineage deterministik.) Tj
+T*
+() Tj
+T*
+(## 9\) Kesimpulan) Tj
+T*
+() Tj
+T*
+(- Dua titik revisi kritis sudah diimplementasikan:) Tj
+T*
+(  - penyelarasan rumus alert shift dengan logika create backend) Tj
+T*
+(  - split-step upstream guard untuk konsumsi saat approval) Tj
+T*
+(- Revisi ini langsung menjawab concern monitoring pada kasus shift pecah dan menurunkan risiko) Tj
+T*
+(inkonsistensi planning/approval.) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 9 0 R >> >> /Contents 3 0 R >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 9 0 R >> >> /Contents 4 0 R >>
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 9 0 R >> >> /Contents 5 0 R >>
+endobj
+9 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000129 00000 n 
+0000003171 00000 n 
+0000006029 00000 n 
+0000008145 00000 n 
+0000008271 00000 n 
+0000008397 00000 n 
+0000008523 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+8593
+%%EOF

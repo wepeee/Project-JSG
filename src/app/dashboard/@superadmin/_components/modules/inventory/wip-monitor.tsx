@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Input } from "~/components/ui/input";
 import {
   Table,
   TableBody,
@@ -26,7 +27,7 @@ import {
 } from "~/components/ui/table";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { Loader2, RefreshCw, FileText, Zap } from "lucide-react";
+import { Loader2, RefreshCw, FileText, Zap, Search } from "lucide-react";
 import type { WipMonitorItem } from "~/server/api/routers/ppic/inventory";
 import StockCardDialog from "./stock-card-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -81,6 +82,18 @@ function groupBy<T>(list: T[], keyGetter: (item: T) => string) {
   return map;
 }
 
+function formatItemGroupLabel(item: WipMonitorItem) {
+  const code = (item.itemId ?? "").trim();
+  const name = (item.itemName ?? item.productName ?? "").trim();
+
+  if (code && name && code.toLowerCase() !== name.toLowerCase()) {
+    return `${code} - ${name}`;
+  }
+  if (code) return code;
+  if (name) return name;
+  return "Unknown Item";
+}
+
 function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
   const [groupMode, setGroupMode] = React.useState<"PRO" | "MACHINE" | "ITEM">(
     "PRO",
@@ -96,6 +109,7 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
   const [filterProId, setFilterProId] = React.useState<string>("ALL");
   const [filterMachineId, setFilterMachineId] = React.useState<string>("ALL");
   const [filterType, setFilterType] = React.useState<string>("WIP");
+  const [searchTerm, setSearchTerm] = React.useState("");
   const [includeZero, setIncludeZero] = React.useState(false);
   const [autoRefresh, setAutoRefresh] = React.useState(false);
   const [countdown, setCountdown] = React.useState(30);
@@ -168,16 +182,41 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
   }, [autoRefresh, isRefetching]);
 
   // Client-side grouping (Visual Only)
-  const groupedData = React.useMemo(() => {
+  const filteredData = React.useMemo(() => {
     if (!data) return null;
+    const needle = searchTerm.trim().toLowerCase();
+    if (!needle) return data;
+
+    return data.filter((item) => {
+      const haystack = [
+        item.proNumber,
+        item.productName,
+        item.machineName,
+        item.itemId,
+        item.itemName,
+        item.proType,
+        item.locationName,
+        item.locationTypeName,
+        item.stepOrder != null ? `step ${item.stepOrder}` : "",
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(needle);
+    });
+  }, [data, searchTerm]);
+
+  const groupedData = React.useMemo(() => {
+    if (!filteredData) return null;
     if (groupMode === "PRO") {
-      return groupBy(data, (item) => `${item.proNumber} (${item.proType})`);
+      return groupBy(filteredData, (item) => `${item.proNumber} (${item.proType})`);
     } else if (groupMode === "MACHINE") {
-      return groupBy(data, (item) => item.machineName || "Unassigned");
+      return groupBy(filteredData, (item) => item.machineName || "Unassigned");
     } else {
-      return groupBy(data, (item) => item.itemId);
+      return groupBy(filteredData, (item) => formatItemGroupLabel(item));
     }
-  }, [data, groupMode]);
+  }, [filteredData, groupMode]);
 
   const sortedKeys = React.useMemo(() => {
     if (!groupedData) return [];
@@ -337,6 +376,16 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                   ))}
                 </SelectContent>
               </Select>
+
+              <div className="relative">
+                <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 h-3.5 w-3.5 -translate-y-1/2" />
+                <Input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Cari PRO/mesin/produk/PN..."
+                  className="h-8 w-[210px] pl-7 text-xs"
+                />
+              </div>
             </div>
 
             {viewMode === "INVENTORY" && (
@@ -432,12 +481,12 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
             <div className="flex justify-center py-8">
               <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
             </div>
-          ) : !data || data.length === 0 ? (
+          ) : !filteredData || filteredData.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center justify-center py-12 text-center">
               <FileText className="mb-4 h-12 w-12 opacity-20" />
               <p className="text-lg font-medium">Data Kosong</p>
               <p className="text-sm opacity-80">
-                Belum ada data yang sesuai filter.
+                Belum ada data yang sesuai filter{searchTerm.trim() ? " / pencarian" : ""}.
               </p>
             </div>
           ) : (
@@ -492,7 +541,7 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                     <Table>
                       <TableHeader className="bg-muted">
                         <TableRow className="border-border border-b hover:bg-transparent">
-                          <TableHead className="text-muted-foreground w-[400px] text-xs font-bold tracking-wider uppercase">
+                          <TableHead className="text-muted-foreground w-[180px] text-xs font-bold tracking-wider uppercase">
                             {groupMode === "PRO"
                               ? "Step"
                               : groupMode === "MACHINE"
@@ -500,7 +549,11 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                                 : "Step"}
                           </TableHead>
                           <TableHead className="text-muted-foreground w-[300px] text-xs font-bold tracking-wider uppercase">
-                            {groupMode === "ITEM" ? "PRO Number" : "Mesin / PRO"}
+                            {groupMode === "PRO"
+                              ? "Mesin / Produk"
+                              : groupMode === "ITEM"
+                                ? "PRO Number"
+                                : "Mesin / PRO"}
                           </TableHead>
                           <TableHead className="text-muted-foreground w-[150px] text-right text-xs font-bold tracking-wider uppercase">
                             {viewMode === "INVENTORY"
@@ -516,7 +569,7 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                             key={`${item.proId}-${item.locationId}-${item.itemId}-${idx}`}
                             className="border-border hover:bg-muted/50 border-b"
                           >
-                            <TableCell>
+                            <TableCell className="w-[180px]">
                               <div className="flex items-center gap-2">
                                 <span>
                                   {groupMode === "PRO"
@@ -548,9 +601,24 @@ function WipMonitorContent({ userDepartment }: { userDepartment?: string }) {
                               </div>
                             </TableCell>
                             <TableCell className="text-foreground font-medium">
-                              {groupMode === "ITEM"
-                                ? item.proNumber
-                                : [item.machineName, item.productName].filter(Boolean).join(" - ") || item.itemId}
+                              {(() => {
+                                const label =
+                                  groupMode === "PRO"
+                                    ? [item.machineName, item.productName]
+                                        .filter(Boolean)
+                                        .join(" - ") || item.itemId
+                                    : groupMode === "ITEM"
+                                      ? item.proNumber
+                                      : [item.machineName, item.productName]
+                                          .filter(Boolean)
+                                          .join(" - ") || item.itemId;
+
+                                return (
+                                  <div className="max-w-[420px] truncate" title={label}>
+                                    {label}
+                                  </div>
+                                );
+                              })()}
                             </TableCell>
                             <TableCell
                               className={`text-right text-base font-semibold ${viewMode === "INVENTORY" ? "text-primary" : "text-emerald-600 dark:text-emerald-400"}`}

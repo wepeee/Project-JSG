@@ -1795,13 +1795,29 @@ function SortableRow({
   const m = machines.find((x) => x.id === step.machineId);
   const up = Number(step.up) || 1;
   const capacity = m?.stdOutputPerShift || 0;
+  const machineUom = (m?.uom ?? "").toLowerCase();
+  const isSheetMachine = machineUom === "sheet";
+  const firstMaterialQtyRaw = step.materials[0]?.qtyReq;
+  const hasFirstMaterialQty =
+    firstMaterialQtyRaw !== undefined &&
+    String(firstMaterialQtyRaw).trim() !== "" &&
+    Number.isFinite(Number(firstMaterialQtyRaw));
+  const firstMaterialQty = hasFirstMaterialQty
+    ? Number(firstMaterialQtyRaw)
+    : 0;
 
   let shiftCount = 0;
   let exceed = false;
 
-  if (capacity > 0 && qtyPo > 0) {
-    const outputNeeded = Math.ceil(qtyPo / up);
-    shiftCount = Math.ceil(outputNeeded / capacity);
+  // Keep UI estimation aligned with backend create logic:
+  // - only sheet machine triggers auto split estimation
+  // - if first material qty is present, use that as qty basis with UP=1
+  if (isSheetMachine && capacity > 0) {
+    const qtyBasis = hasFirstMaterialQty ? firstMaterialQty : qtyPo;
+    const upBasis = hasFirstMaterialQty ? 1 : up;
+    if (qtyBasis > 0 && upBasis > 0) {
+      shiftCount = Math.max(1, Math.ceil(qtyBasis / (upBasis * capacity)));
+    }
     if (shiftCount > 1) exceed = true;
   }
 

@@ -324,6 +324,40 @@ export const verificationRouter = createTRPCRouter({
         const isPenultimateStep =
           hasMultipleSteps && currentStepIdx === sortedSteps.length - 2;
         const applyPaperLastTwoFlow = isPaperFlow && hasMultipleSteps;
+        const currentStep = sortedSteps[currentStepIdx] ?? proses;
+        const prevPhysicalStep =
+          currentStepIdx > 0 ? sortedSteps[currentStepIdx - 1] : null;
+
+        const normalizeStepPart = (value?: string | null) =>
+          (value ?? "").trim().toUpperCase();
+
+        // Paper split-step guard:
+        // if previous row is just another chunk of the same logical process,
+        // skip it and find the real upstream process as material source.
+        const isLikelySameLogicalPaperSplit = (
+          a: (typeof sortedSteps)[number],
+          b: (typeof sortedSteps)[number],
+        ) => {
+          if (!isPaperFlow) return false;
+          const sameMachine = (a.machineId ?? null) === (b.machineId ?? null);
+          const samePart =
+            normalizeStepPart(a.partNumber) === normalizeStepPart(b.partNumber);
+          const sameUp = (a.up ?? null) === (b.up ?? null);
+          return sameMachine && samePart && sameUp;
+        };
+
+        let upstreamIdx = currentStepIdx - 1;
+        while (
+          upstreamIdx >= 0 &&
+          isLikelySameLogicalPaperSplit(
+            currentStep,
+            sortedSteps[upstreamIdx]!,
+          )
+        ) {
+          upstreamIdx--;
+        }
+        const upstreamStep =
+          upstreamIdx >= 0 ? sortedSteps[upstreamIdx] : prevPhysicalStep;
 
         // C. Generate Transactions (IN ONLY for now)
 
@@ -352,7 +386,9 @@ export const verificationRouter = createTRPCRouter({
         // For Step 1, Input = Output (Auto-Refill context).
         const consumptionItem = isFirstStep
           ? currentItem
-          : (prevStep?.partNumber ?? "UNKNOWN_ITEM");
+          : (upstreamStep?.partNumber ??
+            prevPhysicalStep?.partNumber ??
+            "UNKNOWN_ITEM");
 
         const fgItem = pro.partNumber ?? currentItem;
 

@@ -289,6 +289,181 @@ export const prosRouter = createTRPCRouter({
       return rows;
     }),
 
+  dashboardSummary: ppicProcedure
+    .input(
+      z.object({
+        start: z.coerce.date(),
+        end: z.coerce.date(),
+        type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const where: Prisma.ProWhereInput = {
+        OR: [
+          { startDate: { gte: input.start, lte: input.end } },
+          {
+            AND: [
+              { startDate: null },
+              { createdAt: { gte: input.start, lte: input.end } },
+            ],
+          },
+        ],
+      };
+
+      if (input.type) where.type = input.type;
+
+      const grouped = await ctx.db.pro.groupBy({
+        by: ["status"],
+        where,
+        _count: { _all: true },
+        _sum: { qtyPoPcs: true },
+      });
+
+      const statusOrder: Array<ProStatus> = [
+        ProStatus.OPEN,
+        ProStatus.IN_PROGRESS,
+        ProStatus.COMPLETE,
+        ProStatus.CLOSED,
+        ProStatus.CANCELLED,
+      ];
+
+      const byStatus = statusOrder.map((status) => {
+        const found = grouped.find((g) => g.status === status);
+        return {
+          status,
+          totalPro: found?._count._all ?? 0,
+          totalQtyPo: Number(found?._sum.qtyPoPcs ?? 0),
+        };
+      });
+
+      const totalPro = byStatus.reduce((acc, item) => acc + item.totalPro, 0);
+      const totalQtyPo = byStatus.reduce(
+        (acc, item) => acc + item.totalQtyPo,
+        0,
+      );
+      const doneQtyPo = byStatus
+        .filter(
+          (item) =>
+            item.status === ProStatus.COMPLETE ||
+            item.status === ProStatus.CLOSED,
+        )
+        .reduce((acc, item) => acc + item.totalQtyPo, 0);
+      const activeQtyPo = byStatus
+        .filter(
+          (item) =>
+            item.status === ProStatus.OPEN ||
+            item.status === ProStatus.IN_PROGRESS,
+        )
+        .reduce((acc, item) => acc + item.totalQtyPo, 0);
+      const cancelledQtyPo = byStatus
+        .filter((item) => item.status === ProStatus.CANCELLED)
+        .reduce((acc, item) => acc + item.totalQtyPo, 0);
+
+      const donePct = totalQtyPo > 0 ? (doneQtyPo / totalQtyPo) * 100 : 0;
+
+      return {
+        range: {
+          start: input.start,
+          end: input.end,
+        },
+        totalPro,
+        totalQtyPo,
+        doneQtyPo,
+        activeQtyPo,
+        cancelledQtyPo,
+        donePct,
+        byStatus,
+      };
+    }),
+
+  dashboardQuantityByPro: ppicProcedure
+    .input(
+      z.object({
+        start: z.coerce.date(),
+        end: z.coerce.date(),
+        type: z.enum(["PAPER", "RIGID", "OTHER"]).optional(),
+        take: z.number().min(10).max(500).default(200),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const where: Prisma.ProWhereInput = {
+        OR: [
+          { startDate: { gte: input.start, lte: input.end } },
+          {
+            AND: [
+              { startDate: null },
+              { createdAt: { gte: input.start, lte: input.end } },
+            ],
+          },
+        ],
+      };
+
+      if (input.type) where.type = input.type;
+
+      const pros = await ctx.db.pro.findMany({
+        where,
+        take: input.take,
+        orderBy: [{ startDate: "asc" }, { id: "desc" }],
+        select: {
+          id: true,
+          proNumber: true,
+          productName: true,
+          qtyPoPcs: true,
+          status: true,
+          type: true,
+          startDate: true,
+          createdAt: true,
+          proses: {
+            orderBy: { orderNo: "asc" },
+            select: { id: true },
+          },
+        },
+      });
+
+      const lastStepIds = pros
+        .map((pro) => pro.proses[pro.proses.length - 1]?.id)
+        .filter((id): id is number => !!id);
+
+      const reportGroups =
+        lastStepIds.length > 0
+          ? await ctx.db.productionReport.groupBy({
+              by: ["prosesId"],
+              where: {
+                prosesId: { in: lastStepIds },
+                status: "APPROVED",
+              },
+              _sum: { qtyPassOn: true },
+            })
+          : [];
+
+      const outputByProsesId = new Map<number, number>();
+      for (const g of reportGroups) {
+        outputByProsesId.set(g.prosesId, Number(g._sum.qtyPassOn ?? 0));
+      }
+
+      return pros.map((pro) => {
+        const lastStepId = pro.proses[pro.proses.length - 1]?.id;
+        const targetQty = Number(pro.qtyPoPcs ?? 0);
+        const outputQty = lastStepId ? (outputByProsesId.get(lastStepId) ?? 0) : 0;
+        const gapQty = Math.max(targetQty - outputQty, 0);
+        const progressPct = targetQty > 0 ? Math.min((outputQty / targetQty) * 100, 100) : 0;
+
+        return {
+          id: pro.id,
+          proNumber: pro.proNumber,
+          productName: pro.productName,
+          status: pro.status,
+          type: pro.type,
+          startDate: pro.startDate,
+          createdAt: pro.createdAt,
+          targetQty,
+          outputQty,
+          gapQty,
+          progressPct,
+        };
+      });
+    }),
+
   getStepTemplateByPartNumber: ppicProcedure
     .input(
       z.object({
