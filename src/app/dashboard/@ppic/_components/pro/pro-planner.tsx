@@ -1372,6 +1372,9 @@ export default function ProPlanner({
                         <TableHead className="w-24 text-center">
                           UP/Cav
                         </TableHead>
+                        <TableHead className="w-28 text-right">
+                          Target
+                        </TableHead>
                         <TableHead className="min-w-[200px]">
                           Material
                         </TableHead>
@@ -1385,7 +1388,7 @@ export default function ProPlanner({
                     <TableBody>
                       {steps.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={10} className="h-48 text-center">
+                          <TableCell colSpan={11} className="h-48 text-center">
                             <div className="text-muted-foreground flex flex-col items-center justify-center gap-2">
                               <div className="bg-muted rounded-full p-4">
                                 <GripVertical className="h-6 w-6 opacity-20" />
@@ -1805,6 +1808,7 @@ function SortableRow({
   const firstMaterialQty = hasFirstMaterialQty
     ? Number(firstMaterialQtyRaw)
     : 0;
+  const targetQty = Math.max(0, hasFirstMaterialQty ? firstMaterialQty : qtyPo);
 
   let shiftCount = 0;
   let exceed = false;
@@ -1882,6 +1886,9 @@ function SortableRow({
         })()}
       </TableCell>
       <TableCell className="text-center">{step.up || "-"}</TableCell>
+      <TableCell className="text-right font-mono text-sm">
+        {targetQty > 0 ? targetQty.toLocaleString("id-ID") : "-"}
+      </TableCell>
       <TableCell>
         <div className="flex flex-col gap-1">
           {step.materials.map((mat) => (

@@ -32,6 +32,10 @@ const SHIFTS: Array<{
   { no: 3, label: "Shift 3", time: "16:00 - 21:00", startHour: 16 },
 ];
 
+function fmtScheduleQty(value: number) {
+  return value.toLocaleString("id-ID", { maximumFractionDigits: 2 });
+}
+
 function dateKey(d: Date) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -93,6 +97,19 @@ function applyShiftStart(dateOnly: Date, shift: ShiftNo) {
   return x;
 }
 
+function resolveStepTargetQty(
+  process: { plannedQtyPcs?: number | null; estimatedShifts?: number | null },
+  qtyPoPcs: number,
+) {
+  const plannedQty = Number(process.plannedQtyPcs ?? 0);
+  if (plannedQty > 0) return plannedQty;
+
+  const estimatedShifts = Number(process.estimatedShifts ?? 0);
+  if (estimatedShifts > 0) return Math.ceil(Number(qtyPoPcs ?? 0) / estimatedShifts);
+
+  return Number(qtyPoPcs ?? 0);
+}
+
 type SlotItem = {
   key: string;
   proId: number;
@@ -107,6 +124,7 @@ type SlotItem = {
   machineName: string | null;
   up: number;
   qtyPoPcs: number;
+  targetQty: number;
   startDate: Date | null;
   materials: any[];
   productionReports: any[];
@@ -122,6 +140,7 @@ function PROTooltipContent({
   machineName,
   up,
   qtyPoPcs,
+  targetQty,
   status,
   startDate,
   materials,
@@ -134,6 +153,7 @@ function PROTooltipContent({
   machineName: string | null;
   up: number;
   qtyPoPcs: number;
+  targetQty: number;
   status: string;
   startDate: Date | null;
   materials: any[];
@@ -168,6 +188,10 @@ function PROTooltipContent({
         <div className="flex justify-between">
           <span className="text-muted-foreground opacity-70">Qty PO:</span>
           <span className="font-medium">{qtyPoPcs.toLocaleString()} pcs</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground opacity-70">Target:</span>
+          <span className="font-medium">{fmtScheduleQty(targetQty)} pcs</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground opacity-70">Status:</span>
@@ -264,6 +288,7 @@ function buildShiftSlots(
           machineName: process.machine?.name ?? null,
           up: process.up ?? 1,
           qtyPoPcs: pro.qtyPoPcs,
+          targetQty: resolveStepTargetQty(process as any, pro.qtyPoPcs),
           startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
           materials: (process as any).materials ?? [],
           productionReports: (process as any).productionReports ?? [],
@@ -429,6 +454,7 @@ export default function PublicSchedule() {
         orderNo: number;
         up: number;
         qtyPoPcs: number;
+        targetQty: number;
         status: string;
         startDate: Date;
         materials: Array<{
@@ -470,6 +496,7 @@ export default function PublicSchedule() {
           orderNo: process.orderNo,
           up: process.up ?? 1,
           qtyPoPcs: pro.qtyPoPcs,
+          targetQty: resolveStepTargetQty(process as any, pro.qtyPoPcs),
           status: pro.status,
           startDate: actualDay,
           materials: (process as any).materials ?? [],
@@ -554,19 +581,17 @@ export default function PublicSchedule() {
             machineName: process.machine?.name ?? null,
             up: process.up ?? 1,
             qtyPoPcs: pro.qtyPoPcs,
+            targetQty: resolveStepTargetQty(process as any, pro.qtyPoPcs),
             startDate: applyShiftStart(actualDay, actualShift as ShiftNo),
             materials: (process as any).materials ?? [],
             productionReports: (process as any).productionReports ?? [],
           });
           itemsMap.set(detailedSlotId, arr);
 
-          const mats = (process as any).materials ?? [];
-          const sheetMat = mats.find(
-            (m: any) => m.material?.uom?.toLowerCase() === "sheet",
-          );
-          if (sheetMat) {
+          const usageDelta = resolveStepTargetQty(process as any, pro.qtyPoPcs);
+          if (usageDelta > 0) {
             const current = usageMap.get(detailedSlotId) ?? 0;
-            usageMap.set(detailedSlotId, current + Number(sheetMat.qtyReq));
+            usageMap.set(detailedSlotId, current + usageDelta);
           }
         }
       }
@@ -831,6 +856,12 @@ export default function PublicSchedule() {
                                               <div className="truncate text-[10px] font-medium opacity-90">
                                                 {it.productName}
                                               </div>
+                                              <div className="text-muted-foreground text-[9px]">
+                                                Tgt:{" "}
+                                                <span className="text-foreground font-semibold">
+                                                  {fmtScheduleQty(it.targetQty)}
+                                                </span>
+                                              </div>
                                               <div className="flex flex-wrap gap-1">
                                                 <span className="bg-muted text-muted-foreground inline-flex items-center rounded-sm border px-1 py-0.5 text-[9px] font-medium">
                                                   {it.processCode} -{" "}
@@ -917,23 +948,107 @@ export default function PublicSchedule() {
                                 <div className="text-muted-foreground mt-0.5 text-[10px]">
                                   Shift 1-3
                                 </div>
+                                <div className="text-muted-foreground mt-0.5 text-[10px]">
+                                  Kap/shift:{" "}
+                                  <span className="font-semibold">
+                                    {fmtScheduleQty(
+                                      Number(m.stdOutputPerShift ?? 0),
+                                    )}
+                                  </span>
+                                </div>
                               </div>
 
-                              {weekDays.map((d) => (
+                              {weekDays.map((d) => {
+                                const dKey = dateKey(d);
+                                const capPerShift = Number(
+                                  m.stdOutputPerShift ?? 0,
+                                );
+                                const dayCap = capPerShift > 0 ? capPerShift * 3 : 0;
+                                const dayUsed = [1, 2, 3].reduce(
+                                  (acc, shiftNo) =>
+                                    acc +
+                                    Number(
+                                      machineSlotData.usageMap.get(
+                                        `${dKey}::${m.id}::${shiftNo}`,
+                                      ) ?? 0,
+                                    ),
+                                  0,
+                                );
+                                const hasDayItems = [1, 2, 3].some(
+                                  (shiftNo) =>
+                                    (machineSlotData.itemsMap.get(
+                                      `${dKey}::${m.id}::${shiftNo}`,
+                                    )?.length ?? 0) > 0,
+                                );
+                                const dayRatio =
+                                  dayCap > 0
+                                    ? Math.max(
+                                        0,
+                                        Math.round((dayUsed / dayCap) * 100),
+                                      )
+                                    : 0;
+                                const dayRatioForBar =
+                                  dayCap > 0
+                                    ? Math.max(
+                                        0,
+                                        Math.min(100, (dayUsed / dayCap) * 100),
+                                      )
+                                    : 0;
+
+                                return (
                                 <div
-                                  key={dateKey(d)}
+                                  key={dKey}
                                   className="bg-background border-r border-b"
                                 >
+                                  <div className="bg-muted/20 border-b px-1.5 py-1">
+                                    {hasDayItems ? (
+                                      <>
+                                        <div className="text-muted-foreground mb-1 flex items-center justify-between text-[8px]">
+                                          <span>Beban Kapasitas</span>
+                                          <span className="font-medium">
+                                            {fmtScheduleQty(dayUsed)} /{" "}
+                                            {fmtScheduleQty(dayCap)}
+                                          </span>
+                                        </div>
+                                        <div className="bg-border/60 h-1.5 w-full overflow-hidden rounded-full">
+                                          <div
+                                            className={`h-full transition-all ${
+                                              dayRatio > 100
+                                                ? "bg-destructive"
+                                                : dayRatio >= 90
+                                                  ? "bg-amber-500"
+                                                  : "bg-emerald-500"
+                                            }`}
+                                            style={{
+                                              width: `${dayRatioForBar}%`,
+                                            }}
+                                          />
+                                        </div>
+                                        <div className="text-muted-foreground mt-1 flex items-center justify-between text-[8px]">
+                                          <span>{dayRatio}%</span>
+                                          <span>
+                                            {dayRatio > 100
+                                              ? "Over Capacity"
+                                              : "Terpakai dari Kapasitas"}
+                                          </span>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div className="text-muted-foreground text-[8px]">
+                                        Belum ada beban kapasitas
+                                      </div>
+                                    )}
+                                  </div>
                                   {[1, 2, 3].map((shiftNo) => {
-                                    const slotId = `${dateKey(d)}::${m.id}::${shiftNo}`;
+                                    const slotId = `${dKey}::${m.id}::${shiftNo}`;
                                     const slotItems =
                                       machineSlotData.itemsMap.get(slotId) ??
                                       [];
                                     const used =
                                       machineSlotData.usageMap.get(slotId) ??
                                       0;
-                                    const cap = m.stdOutputPerShift ?? 0;
-                                    const isOverload = cap > 0 && used > cap;
+                                    const isOverload =
+                                      capPerShift > 0 && used > capPerShift;
 
                                     return (
                                       <StaticCell
@@ -946,21 +1061,17 @@ export default function PublicSchedule() {
                                           <span className="font-mono opacity-50">
                                             S{shiftNo}
                                           </span>
-                                          {cap > 0 && (
-                                            <span
-                                              className={
-                                                isOverload
-                                                  ? "text-destructive font-bold"
-                                                  : "opacity-70"
-                                              }
-                                            >
-                                              {used > 0
-                                                ? `${used.toLocaleString()} / `
-                                                : ""}
-                                              {cap.toLocaleString()}
-                                              {isOverload && " ⚠️"}
-                                            </span>
-                                          )}
+                                          <span
+                                            className={
+                                              isOverload
+                                                ? "text-destructive font-bold"
+                                                : "opacity-70"
+                                            }
+                                          >
+                                            {used > 0
+                                              ? `Tgt ${fmtScheduleQty(used)}`
+                                              : "-"}
+                                          </span>
                                         </div>
                                         {weekSchedule.isLoading ? (
                                           <div className="text-[9px] opacity-40">
@@ -990,16 +1101,22 @@ export default function PublicSchedule() {
                                                   >
                                                     {it.productName}
                                                   </div>
+                                                  <div className="text-muted-foreground text-[9px]">
+                                                    Tgt{" "}
+                                                    <span className="text-foreground font-semibold">
+                                                      {fmtScheduleQty(it.targetQty)}
+                                                    </span>
+                                                  </div>
                                                 </StaticChip>
                                               );
                                             })}
                                           </div>
                                         )}
                                       </StaticCell>
-                                    );
-                                  })}
+                                      );
+                                    })}
                                 </div>
-                              ))}
+                              )})}
                             </React.Fragment>
                           );
                         })}
@@ -1121,6 +1238,12 @@ export default function PublicSchedule() {
                                     </div>
                                     <div className="truncate text-[10px] font-medium opacity-90">
                                       {it.productName}
+                                    </div>
+                                    <div className="text-muted-foreground text-[9px]">
+                                      Tgt:{" "}
+                                      <span className="text-foreground font-semibold">
+                                        {fmtScheduleQty(it.targetQty)}
+                                      </span>
                                     </div>
                                     <div className="flex flex-wrap gap-1">
                                       <span className="bg-muted text-muted-foreground inline-flex items-center rounded-sm border px-1 py-0.5 text-[9px] font-medium">
@@ -1296,6 +1419,12 @@ export default function PublicSchedule() {
                                         </div>
                                         <div className="text-muted-foreground truncate text-[9px]">
                                           {stepInfo.productName}
+                                        </div>
+                                        <div className="text-muted-foreground text-[8px]">
+                                          Tgt{" "}
+                                          <span className="text-foreground font-semibold">
+                                            {fmtScheduleQty(stepInfo.targetQty)}
+                                          </span>
                                         </div>
                                       </div>
                                     </div>

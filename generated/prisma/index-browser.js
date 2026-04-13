@@ -206,6 +206,7 @@ exports.Prisma.ProsesScalarFieldEnum = {
   orderNo: 'orderNo',
   up: 'up',
   estimatedShifts: 'estimatedShifts',
+  plannedQtyPcs: 'plannedQtyPcs',
   startDate: 'startDate',
   machineId: 'machineId',
   partNumber: 'partNumber',

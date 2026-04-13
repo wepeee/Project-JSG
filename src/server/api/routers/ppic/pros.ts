@@ -697,9 +697,11 @@ export const prosRouter = createTRPCRouter({
         for (const inputStep of input.proses) {
           const std = 1000;
           const firstMatQty = inputStep.materials[0]?.qtyReq;
+          const hasFirstMatQty =
+            firstMatQty !== undefined && Number.isFinite(Number(firstMatQty));
           const qty =
-            firstMatQty !== undefined ? Number(firstMatQty) : input.qtyPoPcs;
-          const up = firstMatQty !== undefined ? 1 : inputStep.up || 1;
+            hasFirstMatQty ? Number(firstMatQty) : input.qtyPoPcs;
+          const up = hasFirstMatQty ? 1 : inputStep.up || 1;
 
           let machineStd = std;
           let isSheet = false;
@@ -722,14 +724,26 @@ export const prosRouter = createTRPCRouter({
           }
 
           const totalSheets = up > 0 ? qty / up : qty;
+          const shiftSheets = Array.from({ length: need }, (_, idx) =>
+            Math.max(0, Math.min(totalSheets - idx * machineStd, machineStd)),
+          );
+          const totalPlannedSheets = shiftSheets.reduce((acc, val) => acc + val, 0);
+          const totalTargetPcs = Math.max(0, Math.round(qty));
+          const shiftTargetPcs = distributeIntegerByWeights(
+            totalTargetPcs,
+            shiftSheets.map((s) =>
+              totalPlannedSheets > 0 ? s / totalPlannedSheets : 1,
+            ),
+          );
 
           for (let i = 0; i < need; i++) {
-            const sheetsInThisShift = Math.max(
-              0,
-              Math.min(totalSheets - i * machineStd, machineStd),
-            );
+            const sheetsInThisShift = shiftSheets[i] ?? 0;
             const portion =
-              totalSheets > 0 ? sheetsInThisShift / totalSheets : 1;
+              totalPlannedSheets > 0
+                ? sheetsInThisShift / totalPlannedSheets
+                : need > 0
+                  ? 1 / need
+                  : 1;
 
             if (sheetsInThisShift > 0 && inputStep.machineId) {
               await checkCapacity(
@@ -762,6 +776,7 @@ export const prosRouter = createTRPCRouter({
                   })),
                 },
                 estimatedShifts: need,
+                plannedQtyPcs: shiftTargetPcs[i] ?? 0,
               },
             });
 
@@ -1041,6 +1056,15 @@ export const prosRouter = createTRPCRouter({
 
         for (const s of input.proses) {
           const matMaterials = s.materials ?? [];
+          const firstMatQty = matMaterials[0]?.qtyReq;
+          const hasFirstMatQty =
+            firstMatQty !== undefined && Number.isFinite(Number(firstMatQty));
+          const stepPlannedQtyPcs = Math.max(
+            0,
+            Math.round(
+              hasFirstMatQty ? Number(firstMatQty) : Number(input.qtyPoPcs),
+            ),
+          );
 
           if (s.startDate) {
             currentDay = startOfDay(new Date(s.startDate));
@@ -1092,6 +1116,7 @@ export const prosRouter = createTRPCRouter({
                 ),
                 startDate: stepDate,
                 estimatedShifts: needs,
+                plannedQtyPcs: stepPlannedQtyPcs,
               },
             });
             await recreateMaterials(s.id);
@@ -1111,6 +1136,7 @@ export const prosRouter = createTRPCRouter({
                   `${stepMachineName} ${input.productName}`.trim(),
                 ),
                 estimatedShifts: needs,
+                plannedQtyPcs: stepPlannedQtyPcs,
                 materials: {
                   create: matMaterials.map((m) => ({
                     itemMasterId: m.materialId,
@@ -1286,6 +1312,7 @@ export const prosRouter = createTRPCRouter({
               partNumber: true,
               batchNo: true,
               estimatedShifts: true,
+              plannedQtyPcs: true,
               materials: {
                 select: {
                   itemMasterId: true,
@@ -1310,6 +1337,52 @@ export const prosRouter = createTRPCRouter({
       return items.filter((p) => p.proses.length > 0);
     }),
 });
+
+function distributeIntegerByWeights(total: number, weights: number[]): number[] {
+  const count = weights.length;
+  if (count === 0) return [];
+
+  const safeTotal = Math.max(0, Math.round(total));
+  const normalized = weights.map((w) => (Number.isFinite(w) && w > 0 ? w : 0));
+  const sumWeight = normalized.reduce((acc, w) => acc + w, 0);
+
+  if (sumWeight <= 0) {
+    const base = Math.floor(safeTotal / count);
+    const out = Array.from({ length: count }, () => base);
+    for (let i = 0; i < safeTotal - base * count; i++) {
+      out[i % count]! += 1;
+    }
+    return out;
+  }
+
+  const draft = normalized.map((w, idx) => {
+    const raw = (safeTotal * w) / sumWeight;
+    const floorVal = Math.floor(raw);
+    return {
+      idx,
+      floorVal,
+      frac: raw - floorVal,
+    };
+  });
+
+  const out = Array.from({ length: count }, (_, idx) => draft[idx]!.floorVal);
+  let remaining = safeTotal - out.reduce((acc, v) => acc + v, 0);
+
+  draft.sort((a, b) => {
+    if (b.frac !== a.frac) return b.frac - a.frac;
+    return a.idx - b.idx;
+  });
+
+  let k = 0;
+  while (remaining > 0 && count > 0) {
+    const pick = draft[k % count];
+    out[pick!.idx]! += 1;
+    remaining--;
+    k++;
+  }
+
+  return out;
+}
 
 async function checkCapacity(
   tx: Prisma.TransactionClient,

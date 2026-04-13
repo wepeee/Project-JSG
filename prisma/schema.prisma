@@ -254,6 +254,7 @@ model Proses {
 
   up              Int?
   estimatedShifts Int?
+  plannedQtyPcs   Int?
 
   startDate DateTime?
 
