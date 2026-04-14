@@ -17,6 +17,7 @@
     "db:inject:dummy-pro": "tsx scripts/inject-dummy-pro.ts",
     "db:inject:paper-approved": "tsx scripts/inject-paper-approved-reports.ts",
     "db:inject:paper-daily-sample": "tsx scripts/inject-paper-daily-sample.ts",
+    "db:inject:pending-verification": "tsx scripts/inject-pending-verification-reports.ts",
     "db:inject:rigid-4pro-1step": "tsx scripts/inject-rigid-4pro-single-step.ts",
     "db:inject:rigid-daily-sample": "tsx scripts/inject-rigid-daily-sample.ts",
     "dev": "next dev --turbo",
