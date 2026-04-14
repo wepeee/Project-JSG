@@ -43,6 +43,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Upload, Plus, Download } from "lucide-react";
+import { calculateProStepShiftAndTarget } from "~/lib/pro-calculation";
 
 type StepDraftMaterial = {
   key: string;
@@ -1796,34 +1797,21 @@ function SortableRow({
   };
 
   const m = machines.find((x) => x.id === step.machineId);
-  const up = Number(step.up) || 1;
-  const capacity = m?.stdOutputPerShift || 0;
-  const machineUom = (m?.uom ?? "").toLowerCase();
-  const isSheetMachine = machineUom === "sheet";
-  const firstMaterialQtyRaw = step.materials[0]?.qtyReq;
-  const hasFirstMaterialQty =
-    firstMaterialQtyRaw !== undefined &&
-    String(firstMaterialQtyRaw).trim() !== "" &&
-    Number.isFinite(Number(firstMaterialQtyRaw));
-  const firstMaterialQty = hasFirstMaterialQty
-    ? Number(firstMaterialQtyRaw)
-    : 0;
-  const targetQty = Math.max(0, hasFirstMaterialQty ? firstMaterialQty : qtyPo);
-
-  let shiftCount = 0;
-  let exceed = false;
-
-  // Keep UI estimation aligned with backend create logic:
-  // - only sheet machine triggers auto split estimation
-  // - if first material qty is present, use that as qty basis with UP=1
-  if (isSheetMachine && capacity > 0) {
-    const qtyBasis = hasFirstMaterialQty ? firstMaterialQty : qtyPo;
-    const upBasis = hasFirstMaterialQty ? 1 : up;
-    if (qtyBasis > 0 && upBasis > 0) {
-      shiftCount = Math.max(1, Math.ceil(qtyBasis / (upBasis * capacity)));
-    }
-    if (shiftCount > 1) exceed = true;
-  }
+  const firstMaterial = step.materials[0];
+  const firstMaterialInfo = materialsList.find(
+    (x) => x.id === firstMaterial?.materialId,
+  );
+  const calc = calculateProStepShiftAndTarget({
+    machineUom: m?.uom,
+    machineStdOutputPerShift: m?.stdOutputPerShift,
+    upCav: Number(step.up),
+    qtyPoPcs: qtyPo,
+    firstMaterialQty: Number(firstMaterial?.qtyReq ?? 0),
+    firstMaterialUom: firstMaterialInfo?.uom,
+  });
+  const targetQty = calc.plannedQtyPcsTotal;
+  const shiftCount = calc.shiftCount;
+  const exceed = shiftCount > 1;
 
   const getMatName = (id: number) =>
     materialsList.find((x) => x.id === id)?.name ?? "-";

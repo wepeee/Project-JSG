@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { ChevronDown, Search } from "lucide-react";
+import { calculateProStepShiftAndTarget } from "~/lib/pro-calculation";
 
 type Status = "OPEN" | "IN_PROGRESS" | "COMPLETE" | "CLOSED" | "CANCELLED";
 
@@ -585,15 +586,20 @@ export default function ProList({
       const step = prev.find((s) => s.key === key);
       if (!step) return prev;
 
-      // Calculate number of shifts
-      const matQ = Number(step.materials[0]?.qtyReq || "0");
-      const poQ = Number(qtyPoPcs);
-      const baseQty = matQ > 0 ? matQ : poQ;
-      const baseUp = matQ > 0 ? 1 : Number(step.up) || 1;
       const machine = machines.data?.find((m) => m.id === step.machineId);
-      const std = machine?.stdOutputPerShift || 1000;
-      const actualQty = baseUp > 0 ? baseQty / baseUp : baseQty;
-      const totalShifts = Math.max(1, Math.ceil(actualQty / std));
+      const firstMaterial = step.materials[0];
+      const firstMaterialInfo = materials.data?.find(
+        (m: any) => m.id === firstMaterial?.materialId,
+      );
+      const calc = calculateProStepShiftAndTarget({
+        machineUom: machine?.uom,
+        machineStdOutputPerShift: machine?.stdOutputPerShift,
+        upCav: Number(step.up),
+        qtyPoPcs: Number(qtyPoPcs),
+        firstMaterialQty: Number(firstMaterial?.qtyReq ?? 0),
+        firstMaterialUom: firstMaterialInfo?.uom,
+      });
+      const totalShifts = calc.shiftCount;
 
       if (totalShifts <= 1) {
         alert("Proses ini sudah hanya 1 shift (tidak bisa di-split lagi).");
@@ -607,8 +613,12 @@ export default function ProList({
         : new Date();
       let currentShiftNo = step.shift;
 
-      const perShiftQty = Math.floor(baseQty / totalShifts);
-      const remainder = baseQty % totalShifts;
+      const qtyForSplit =
+        calc.source === "from_sheet_material"
+          ? calc.qtyBasisSheet
+          : calc.plannedQtyPcsTotal;
+      const perShiftQty = Math.floor(qtyForSplit / totalShifts);
+      const remainder = qtyForSplit - perShiftQty * totalShifts;
 
       for (let i = 0; i < totalShifts; i++) {
         const qty = i === 0 ? perShiftQty + remainder : perShiftQty;
@@ -1360,18 +1370,20 @@ export default function ProList({
                           }));
 
                       const firstQtyReq = materialsDisplay[0]?.qtyReq ?? "0";
-                      const matQ = Number(firstQtyReq);
-                      const poQ = Number(qtyPoPcs);
-
-                      const baseQty = matQ > 0 ? matQ : poQ;
-                      const baseUp = matQ > 0 ? 1 : Number(upVal) || 1;
-                      const std = stdOutputPerShift || 1000;
-
-                      const actualQty = baseUp > 0 ? baseQty / baseUp : baseQty;
+                      const firstQty = Number(firstQtyReq);
+                      const firstUom = materialsDisplay[0]?.uom;
+                      const calc = calculateProStepShiftAndTarget({
+                        machineUom: machineUom,
+                        machineStdOutputPerShift: stdOutputPerShift,
+                        upCav: Number(upVal),
+                        qtyPoPcs: Number(qtyPoPcs),
+                        firstMaterialQty: firstQty,
+                        firstMaterialUom: firstUom,
+                      });
+                      const std = calc.stdOutputPerShift;
+                      const actualQty = calc.qtyBasisSheet;
                       const totalShifts = isDraft
-                        ? machineUom === "sheet"
-                          ? Math.max(1, Math.ceil(actualQty / std))
-                          : 1
+                        ? calc.shiftCount
                         : (item as any).estimatedShifts || 1;
 
                       const scheduleList = [];

@@ -7,6 +7,7 @@ import {
   protectedProcedure,
 } from "../../trpc";
 import { inferItemKindFromPnCode } from "~/utils/normalize";
+import { calculateProStepShiftAndTarget } from "~/lib/pro-calculation";
 
 const pad3 = (n: number) => String(n).padStart(3, "0"); // 001..999
 const mm = (d: Date) => String(d.getMonth() + 1).padStart(2, "0");
@@ -667,6 +668,26 @@ export const prosRouter = createTRPCRouter({
               })
             : [];
         const machineById = new Map(machineRows.map((m) => [m.id, m]));
+        const firstMaterialIds = Array.from(
+          new Set(
+            input.proses
+              .map((s) => s.materials[0]?.materialId)
+              .filter(
+                (id): id is number =>
+                  typeof id === "number" && Number.isInteger(id) && id > 0,
+              ),
+          ),
+        );
+        const firstMaterialRows =
+          firstMaterialIds.length > 0
+            ? await tx.item.findMany({
+                where: { id: { in: firstMaterialIds } },
+                select: { id: true, baseUom: true },
+              })
+            : [];
+        const firstMaterialUomById = new Map(
+          firstMaterialRows.map((row) => [row.id, row.baseUom]),
+        );
 
         const created = await tx.pro.create({
           data: {
@@ -695,40 +716,44 @@ export const prosRouter = createTRPCRouter({
         let globalOrderNo = 1;
 
         for (const inputStep of input.proses) {
-          const std = 1000;
-          const firstMatQty = inputStep.materials[0]?.qtyReq;
-          const hasFirstMatQty =
-            firstMatQty !== undefined && Number.isFinite(Number(firstMatQty));
-          const qty =
-            hasFirstMatQty ? Number(firstMatQty) : input.qtyPoPcs;
-          const up = hasFirstMatQty ? 1 : inputStep.up || 1;
+          const firstMat = inputStep.materials[0];
+          const firstMatId = firstMat?.materialId;
+          const firstMatUom =
+            firstMatId !== undefined && firstMatId !== null
+              ? firstMaterialUomById.get(firstMatId)
+              : undefined;
 
-          let machineStd = std;
-          let isSheet = false;
           let machineName = "";
-          if (inputStep.machineId) {
-            const m = machineById.get(inputStep.machineId);
-            if (m?.stdOutputPerShift) machineStd = m.stdOutputPerShift;
-            if (m?.uom === "sheet") isSheet = true;
-            if (m?.name) machineName = m.name;
-          }
+          const machineMeta = inputStep.machineId
+            ? machineById.get(inputStep.machineId)
+            : undefined;
+          if (machineMeta?.name) machineName = machineMeta.name;
 
-          const need =
-            input.expand !== false && isSheet
-              ? Math.max(1, Math.ceil(qty / (up * machineStd)))
-              : 1;
+          const calc = calculateProStepShiftAndTarget({
+            machineUom: machineMeta?.uom,
+            machineStdOutputPerShift: machineMeta?.stdOutputPerShift,
+            upCav: inputStep.up ?? null,
+            qtyPoPcs: input.qtyPoPcs,
+            firstMaterialQty: firstMat?.qtyReq,
+            firstMaterialUom: firstMatUom,
+          });
+
+          const need = input.expand === false ? 1 : calc.shiftCount;
 
           if (inputStep.startDate) {
             currentDay = startOfDay(new Date(inputStep.startDate));
             currentShift = getShiftFromTime(new Date(inputStep.startDate));
           }
 
-          const totalSheets = up > 0 ? qty / up : qty;
-          const shiftSheets = Array.from({ length: need }, (_, idx) =>
-            Math.max(0, Math.min(totalSheets - idx * machineStd, machineStd)),
+          const shiftSheets =
+            need === calc.shiftCount
+              ? calc.shiftSheetLoads
+              : [calc.totalPlannedSheets];
+          const totalPlannedSheets = shiftSheets.reduce(
+            (acc, val) => acc + val,
+            0,
           );
-          const totalPlannedSheets = shiftSheets.reduce((acc, val) => acc + val, 0);
-          const totalTargetPcs = Math.max(0, Math.round(qty));
+          const totalTargetPcs = calc.plannedQtyPcsTotal;
           const shiftTargetPcs = distributeIntegerByWeights(
             totalTargetPcs,
             shiftSheets.map((s) =>
@@ -775,7 +800,7 @@ export const prosRouter = createTRPCRouter({
                     qtyReq: new Prisma.Decimal(m.qtyReq * portion),
                   })),
                 },
-                estimatedShifts: need,
+                estimatedShifts: calc.shiftCount,
                 plannedQtyPcs: shiftTargetPcs[i] ?? 0,
               },
             });
@@ -1004,10 +1029,36 @@ export const prosRouter = createTRPCRouter({
           machineIds.length > 0
             ? await tx.machine.findMany({
                 where: { id: { in: machineIds } },
-                select: { id: true, name: true },
+                select: {
+                  id: true,
+                  name: true,
+                  uom: true,
+                  stdOutputPerShift: true,
+                },
               })
             : [];
         const machineNameById = new Map(machineRows.map((m) => [m.id, m.name]));
+        const machineById = new Map(machineRows.map((m) => [m.id, m]));
+        const firstMaterialIds = Array.from(
+          new Set(
+            input.proses
+              .map((s) => s.materials?.[0]?.materialId)
+              .filter(
+                (id): id is number =>
+                  typeof id === "number" && Number.isInteger(id) && id > 0,
+              ),
+          ),
+        );
+        const firstMaterialRows =
+          firstMaterialIds.length > 0
+            ? await tx.item.findMany({
+                where: { id: { in: firstMaterialIds } },
+                select: { id: true, baseUom: true },
+              })
+            : [];
+        const firstMaterialUomById = new Map(
+          firstMaterialRows.map((row) => [row.id, row.baseUom]),
+        );
 
         const inputIds = new Set(
           input.proses.map((s) => s.id).filter((id): id is number => !!id),
@@ -1056,15 +1107,21 @@ export const prosRouter = createTRPCRouter({
 
         for (const s of input.proses) {
           const matMaterials = s.materials ?? [];
-          const firstMatQty = matMaterials[0]?.qtyReq;
-          const hasFirstMatQty =
-            firstMatQty !== undefined && Number.isFinite(Number(firstMatQty));
-          const stepPlannedQtyPcs = Math.max(
-            0,
-            Math.round(
-              hasFirstMatQty ? Number(firstMatQty) : Number(input.qtyPoPcs),
-            ),
-          );
+          const firstMat = matMaterials[0];
+          const machineMeta = s.machineId ? machineById.get(s.machineId) : undefined;
+          const firstMatUom =
+            firstMat?.materialId !== undefined && firstMat?.materialId !== null
+              ? firstMaterialUomById.get(firstMat.materialId)
+              : undefined;
+          const calc = calculateProStepShiftAndTarget({
+            machineUom: machineMeta?.uom,
+            machineStdOutputPerShift: machineMeta?.stdOutputPerShift,
+            upCav: s.up ?? null,
+            qtyPoPcs: input.qtyPoPcs,
+            firstMaterialQty: firstMat?.qtyReq,
+            firstMaterialUom: firstMatUom,
+          });
+          const stepPlannedQtyPcs = calc.plannedQtyPcsTotal;
 
           if (s.startDate) {
             currentDay = startOfDay(new Date(s.startDate));
@@ -1072,7 +1129,7 @@ export const prosRouter = createTRPCRouter({
           }
 
           const stepDate = getShiftDate(currentDay, currentShift);
-          const needs = 1;
+          const needs = calc.shiftCount;
 
           const recreateMaterials = async (prosesId: number) => {
             // MATERIAL LOCK GUARD: reject material changes if inventory txns exist

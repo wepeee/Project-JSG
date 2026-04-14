@@ -326,7 +326,7 @@ async function main() {
       name: "MK-DIANA GO",
       stdOutputPerHour: 3600,
       stdOutputPerShift: 24480,
-      uom: "meter",
+      uom: "pcs",
       remark: "tergantung panjang produk dan gap per produk",
     },
     {
@@ -361,7 +361,7 @@ async function main() {
       name: "JWEI",
       stdOutputPerHour: 6000,
       stdOutputPerShift: 40800,
-      uom: "cm",
+      uom: "sheet",
       remark: "diecut",
     },
     {
@@ -374,23 +374,24 @@ async function main() {
   ];
 
   for (const m of machines) {
-    await db.machine.upsert({
-      where: { id: machines.indexOf(m) + 1 }, // Menggunakan ID manual untuk seed ini atau ganti logic jika id auto
-      update: {
-        name: m.name,
-        stdOutputPerHour: m.stdOutputPerHour,
-        stdOutputPerShift: m.stdOutputPerShift,
-        uom: m.uom as any,
-        remark: m.remark,
-      },
-      create: {
-        name: m.name,
-        stdOutputPerHour: m.stdOutputPerHour,
-        stdOutputPerShift: m.stdOutputPerShift,
-        uom: m.uom as any,
-        remark: m.remark,
-      },
+    const payload = {
+      name: m.name,
+      stdOutputPerHour: m.stdOutputPerHour,
+      stdOutputPerShift: m.stdOutputPerShift,
+      uom: m.uom as any,
+      remark: m.remark,
+    };
+
+    // Jangan pakai ID seed index, karena ID riil di DB bisa sudah bergeser.
+    // Update semua baris dengan nama mesin yang sama; kalau belum ada, baru create.
+    const updated = await db.machine.updateMany({
+      where: { name: m.name },
+      data: payload,
     });
+
+    if (updated.count === 0) {
+      await db.machine.create({ data: payload });
+    }
   }
 
   // Machines Seed Data (existing code...)
