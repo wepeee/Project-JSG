@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Prisma, Role, ProStatus } from "../../../../../generated/prisma";
 import {
@@ -14,7 +14,7 @@ const mm = (d: Date) => String(d.getMonth() + 1).padStart(2, "0");
 const yy = (d: Date) => String(d.getFullYear()).slice(-2);
 const normalizeItemCode = (value: string) =>
   value.trim().toUpperCase().replace(/\s+/g, "_");
-const PRO_TX_TIMEOUT_MS = 30000;
+const PRO_TX_TIMEOUT_MS = 90000;
 const PRO_TX_MAX_WAIT_MS = 10000;
 
 type ItemLookupTx = Pick<Prisma.TransactionClient, "item">;
@@ -1493,3 +1493,4 @@ async function checkCapacity(
     });
   }
 }
+
