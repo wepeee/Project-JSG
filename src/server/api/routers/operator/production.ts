@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { resolveOutputCountUom } from "~/lib/output-uom";
+import { sumPackingPrimaryRejectFromBreakdown } from "~/lib/packing-reject";
 import {
   LphType,
   ReportStatus,
@@ -14,9 +16,9 @@ const productionReportInput = z.object({
   reportType: z.nativeEnum(LphType),
 
   startTime: z.string().optional(), // HH:mm
-  endTime: z.string().optional(),   // HH:mm
+  endTime: z.string().optional(), // HH:mm
   startDate: z.coerce.date().optional(), // tanggal mulai (opsional, fallback ke reportDate)
-  endDate: z.coerce.date().optional(),   // tanggal selesai (bisa beda hari untuk shift malam)
+  endDate: z.coerce.date().optional(), // tanggal selesai (bisa beda hari untuk shift malam)
 
   // Rigid / Resources
   batchNo: z.string().optional(),
@@ -54,7 +56,13 @@ export const productionRouter = createTRPCRouter({
       // Guard: machineId must be assigned on Proses
       const targetProses = await ctx.db.proses.findUnique({
         where: { id: input.prosesId },
-        select: { machineId: true, partNumber: true },
+        select: {
+          machineId: true,
+          partNumber: true,
+          machine: {
+            select: { uom: true },
+          },
+        },
       });
 
       if (!targetProses) {
@@ -76,6 +84,12 @@ export const productionRouter = createTRPCRouter({
         return newDate;
       };
 
+      const rejectBreakdown = input.rejectBreakdown || {};
+      const resolvedQtyReject =
+        input.reportType === LphType.PACKING_ASSEMBLY
+          ? sumPackingPrimaryRejectFromBreakdown(rejectBreakdown)
+          : input.qtyReject;
+
       const report = await ctx.db.productionReport.create({
         data: {
           prosesId: input.prosesId,
@@ -84,7 +98,10 @@ export const productionRouter = createTRPCRouter({
           operatorName: input.operatorName,
           reportType: input.reportType,
 
-          startTime: setTime(input.startDate ?? input.reportDate, input.startTime),
+          startTime: setTime(
+            input.startDate ?? input.reportDate,
+            input.startTime,
+          ),
           endTime: setTime(input.endDate ?? input.reportDate, input.endTime),
 
           batchNo: input.batchNo,
@@ -102,9 +119,10 @@ export const productionRouter = createTRPCRouter({
           qtyPassOn: input.qtyPassOn,
           qtyHold: input.qtyHold,
           qtyWip: input.qtyWip,
-          qtyReject: input.qtyReject,
+          qtyReject: resolvedQtyReject,
+          outputUom: resolveOutputCountUom(targetProses.machine?.uom),
 
-          rejectBreakdown: input.rejectBreakdown || {},
+          rejectBreakdown,
           downtimeBreakdown: input.downtimeBreakdown || {},
           totalDowntime: input.totalDowntime,
 
@@ -197,6 +215,21 @@ export const productionRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const targetProses = await ctx.db.proses.findUnique({
+        where: { id: input.data.prosesId },
+        select: {
+          machine: {
+            select: { uom: true },
+          },
+        },
+      });
+
+      const rejectBreakdown = input.data.rejectBreakdown || {};
+      const resolvedQtyReject =
+        input.data.reportType === LphType.PACKING_ASSEMBLY
+          ? sumPackingPrimaryRejectFromBreakdown(rejectBreakdown)
+          : input.data.qtyReject;
+
       // Helper to convert HH:mm string to Date object on reportDate
       const setTime = (date: Date, timeStr?: string) => {
         if (!timeStr) return undefined;
@@ -214,8 +247,14 @@ export const productionRouter = createTRPCRouter({
           operatorName: input.data.operatorName,
           // reportType: input.data.reportType, // Type usually doesn't change
 
-          startTime: setTime(input.data.startDate ?? input.data.reportDate, input.data.startTime),
-          endTime: setTime(input.data.endDate ?? input.data.reportDate, input.data.endTime),
+          startTime: setTime(
+            input.data.startDate ?? input.data.reportDate,
+            input.data.startTime,
+          ),
+          endTime: setTime(
+            input.data.endDate ?? input.data.reportDate,
+            input.data.endTime,
+          ),
 
           batchNo: input.data.batchNo,
           manPowerStd: input.data.mpStd,
@@ -232,9 +271,10 @@ export const productionRouter = createTRPCRouter({
           qtyPassOn: input.data.qtyPassOn,
           qtyHold: input.data.qtyHold,
           qtyWip: input.data.qtyWip,
-          qtyReject: input.data.qtyReject,
+          qtyReject: resolvedQtyReject,
+          outputUom: resolveOutputCountUom(targetProses?.machine?.uom),
 
-          rejectBreakdown: input.data.rejectBreakdown || {},
+          rejectBreakdown,
           downtimeBreakdown: input.data.downtimeBreakdown || {},
           totalDowntime: input.data.totalDowntime,
 
@@ -324,6 +364,7 @@ export const productionRouter = createTRPCRouter({
           qtyReject: true,
           qtyHold: true,
           qtyWip: true,
+          outputUom: true,
           notes: true,
           othersNote: true,
           metaData: true,

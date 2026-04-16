@@ -19,7 +19,15 @@ import { format } from "date-fns";
 import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
-import { X, CheckCircle2, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  X,
+  CheckCircle2,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { resolveReportOutputUom } from "~/lib/output-uom";
+import { PACKING_REJECT_SPLIT, getPackingRejectGroupLabel } from "~/lib/packing-reject";
 
 // Planned downtime key identifiers (mirrored from dashboard router)
 const PLANNED_DT_KEYS = [
@@ -83,57 +91,6 @@ const PRINTING_REJECT_COLUMNS = [
   "Lain-lain",
 ];
 
-const PACKING_REJECT_SPLIT = [
-  [
-    "B. Spot",
-    "Cekung",
-    "Baret",
-    "Buble",
-    "Print Pethal",
-    "Print Miring",
-    "Print Blobor",
-    "Pecah",
-    "Acrylic Mix Up",
-    "Lengket",
-    "Botol Bertekstur",
-    "Tertempel Sticker",
-    "Konstaminasi",
-    "Warna Tidak Standart",
-    "Buram",
-    "Kotor Fat",
-  ],
-  [
-    "B. Spot 3",
-    "Pecah 2",
-    "Warna # Std",
-    "Short Shoot",
-    "Menempel Pada Botol",
-    "Kotor Fat 2",
-  ],
-  [
-    "B. Spot 5",
-    "Print Pethal",
-    "Pecah 6",
-    "Warna # Std 7",
-    "Baret 8",
-    "Kotor Fat 9",
-  ],
-  ["B. Spot 10", "Warna # Std 11", "Kotor Fat 12"],
-  ["B. Spot 13", "Warna # Std 14", "Kotor Fat 15"],
-  [
-    "Stiker Halal",
-    "Stiker BB & Derma",
-    "Stiker BB & WCD",
-    "Sticker BB",
-    "STICKER WCD",
-    "Stiker Barcode",
-    "Stiker Toner",
-    "Sticker Bottom",
-    "Sticker Bottom Baru",
-    "Other",
-  ],
-];
-
 interface Report {
   id: string;
   reportDate: Date | string;
@@ -148,6 +105,7 @@ interface Report {
     partNumber?: string;
     machine?: {
       name: string;
+      uom?: string | null;
     };
   };
   batchNo?: string;
@@ -157,6 +115,7 @@ interface Report {
   qtyPassOn: number | null;
   qtyHold: number | null;
   qtyWip: number | null;
+  outputUom?: "pcs" | "sheet" | null;
   notes?: string;
   downtimeBreakdown?: any;
   rejectBreakdown?: any;
@@ -198,6 +157,10 @@ export function ReportDetailDialog({
   const isPrinting = category === "PRINTING";
   const isPacking = category === "PACKING_ASSEMBLY";
   const isPaper = category === "PAPER";
+  const outputUomLabel = resolveReportOutputUom({
+    outputUom: report.outputUom,
+    machineUom: report.proses.machine?.uom,
+  }).toUpperCase();
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -240,7 +203,9 @@ export function ReportDetailDialog({
                 </div>
               )}
               <div className="text-muted-foreground flex items-center gap-2 text-sm font-normal">
-                <span>{format(new Date(report.reportDate), "dd MMM yyyy")}</span>
+                <span>
+                  {format(new Date(report.reportDate), "dd MMM yyyy")}
+                </span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -258,7 +223,7 @@ export function ReportDetailDialog({
         {/* FIXED UPPER SECTION: Info & Stats */}
         <div className="bg-muted/5 shrink-0 space-y-6 border-b px-6 py-4">
           {/* 1. Main Info Grid */}
-          <div className="grid grid-cols-2 gap-x-8 gap-y-4 md:grid-cols-4 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4 md:grid-cols-4 lg:grid-cols-6">
             <div className="space-y-1">
               <span className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
                 Mesin & Operator
@@ -268,6 +233,15 @@ export function ReportDetailDialog({
               </div>
               <div className="text-muted-foreground text-xs">
                 {report.operatorName} (Shift {report.shift})
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+                UOM Output
+              </span>
+              <div className="text-sm font-semibold text-cyan-600">
+                {outputUomLabel}
               </div>
             </div>
 
@@ -319,7 +293,11 @@ export function ReportDetailDialog({
                               report.stdSpeed !== null
                             ? Number(report.stdSpeed) * 60
                             : null;
-                      if (!stdPerHour || !isFinite(stdPerHour) || stdPerHour <= 0)
+                      if (
+                        !stdPerHour ||
+                        !isFinite(stdPerHour) ||
+                        stdPerHour <= 0
+                      )
                         return "-";
                       return `${stdPerHour.toFixed(1)}/hour`;
                     })()}
@@ -364,7 +342,9 @@ export function ReportDetailDialog({
               ) : (
                 <div className="flex items-center gap-1.5">
                   <Clock className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
-                  <span className="text-muted-foreground text-xs italic">Belum diverifikasi</span>
+                  <span className="text-muted-foreground text-xs italic">
+                    Belum diverifikasi
+                  </span>
                 </div>
               )}
             </div>
@@ -389,7 +369,7 @@ export function ReportDetailDialog({
               </div>
               <div className="px-2 pl-4">
                 <span className="text-muted-foreground text-[10px] uppercase">
-                  Good
+                  Good ({outputUomLabel})
                 </span>
                 <div className="mt-1 font-mono text-lg font-bold text-emerald-600">
                   {Number(report.qtyPassOn || 0).toLocaleString()}
@@ -405,7 +385,7 @@ export function ReportDetailDialog({
               </div>
               <div className="px-2 pl-4">
                 <span className="text-muted-foreground text-[10px] uppercase">
-                  WIP
+                  WIP ({outputUomLabel})
                 </span>
                 <div className="mt-1 font-mono text-lg font-medium">
                   {Number(report.qtyWip || 0).toLocaleString()}
@@ -413,7 +393,7 @@ export function ReportDetailDialog({
               </div>
               <div className="px-2 pl-4">
                 <span className="text-muted-foreground text-[10px] uppercase">
-                  Hold
+                  Hold ({outputUomLabel})
                 </span>
                 <div className="mt-1 font-mono text-lg font-medium">
                   {Number(report.qtyHold || 0).toLocaleString()}
@@ -421,7 +401,7 @@ export function ReportDetailDialog({
               </div>
               <div className="px-2 pl-4">
                 <span className="text-muted-foreground text-[10px] uppercase">
-                  Pass On
+                  Pass On ({outputUomLabel})
                 </span>
                 <div className="mt-1 font-mono text-lg font-medium">
                   {Number(report.qtyPassOn || 0).toLocaleString()}
@@ -429,7 +409,7 @@ export function ReportDetailDialog({
               </div>
               <div className="col-span-3 mt-2 flex items-center justify-between rounded bg-slate-100 px-3 py-1 md:col-span-1 md:mt-0 md:flex-col md:items-start md:justify-center md:border-l-0 dark:bg-slate-800">
                 <span className="text-[10px] font-bold text-slate-500 uppercase">
-                  TOTAL OUTPUT
+                  TOTAL OUTPUT ({outputUomLabel})
                 </span>
                 <div className="font-mono text-xl font-black text-slate-700 dark:text-slate-200">
                   {(() => {
@@ -495,9 +475,17 @@ export function ReportDetailDialog({
                           if (val > 0) items.push({ label: col, value: val });
                         });
                       } else if (category === "PACKING_ASSEMBLY") {
-                        PACKING_REJECT_SPLIT.flat().forEach((col) => {
-                          const val = breakdown[col];
-                          if (val > 0) items.push({ label: col, value: val });
+                        PACKING_REJECT_SPLIT.forEach((group, groupIdx) => {
+                          const sectionLabel = getPackingRejectGroupLabel(groupIdx);
+                          group.forEach((col) => {
+                            const val = breakdown[col];
+                            if (val > 0) {
+                              items.push({
+                                label: sectionLabel + " - " + col,
+                                value: val,
+                              });
+                            }
+                          });
                         });
                       } else if (isMoulding) {
                         INJECTION_REJECT_BB.forEach((col) => {
@@ -537,13 +525,17 @@ export function ReportDetailDialog({
                         );
                       }
 
-                      const maxRejectVal = Math.max(...items.map((i) => Number(i.value)));
+                      const maxRejectVal = Math.max(
+                        ...items.map((i) => Number(i.value)),
+                      );
                       return items.map((item, idx) => (
                         <TableRow key={idx} className="hover:bg-muted/50">
                           <TableCell className="relative overflow-hidden py-2.5 text-xs font-medium">
                             <div
                               className="absolute inset-y-0 left-0 rounded-r bg-red-500/10 transition-all"
-                              style={{ width: `${(Number(item.value) / maxRejectVal) * 100}%` }}
+                              style={{
+                                width: `${(Number(item.value) / maxRejectVal) * 100}%`,
+                              }}
                             />
                             <span className="relative">{item.label}</span>
                           </TableCell>
@@ -602,7 +594,8 @@ export function ReportDetailDialog({
 
                       const maxDtVal = Math.max(...items.map((i) => i.value));
                       return items.map((item, idx) => {
-                        const isPlanned = getDowntimeType(item.label) === "planned";
+                        const isPlanned =
+                          getDowntimeType(item.label) === "planned";
                         return (
                           <TableRow key={idx} className="hover:bg-muted/50">
                             <TableCell
@@ -611,9 +604,13 @@ export function ReportDetailDialog({
                             >
                               <div
                                 className={`absolute inset-y-0 left-0 rounded-r transition-all ${
-                                  isPlanned ? "bg-blue-500/10" : "bg-amber-500/10"
+                                  isPlanned
+                                    ? "bg-blue-500/10"
+                                    : "bg-amber-500/10"
                                 }`}
-                                style={{ width: `${(item.value / maxDtVal) * 100}%` }}
+                                style={{
+                                  width: `${(item.value / maxDtVal) * 100}%`,
+                                }}
                               />
                               <span className="relative flex items-center gap-2">
                                 <span className="capitalize">
@@ -624,7 +621,7 @@ export function ReportDetailDialog({
                                     .toLowerCase()}
                                 </span>
                                 <span
-                                  className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                                  className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase ${
                                     isPlanned
                                       ? "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400"
                                       : "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"

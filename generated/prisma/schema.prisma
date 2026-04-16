@@ -299,6 +299,11 @@ enum LphType {
   INJECTION
 }
 
+enum OutputCountUom {
+  pcs
+  sheet
+}
+
 model ProductionReport {
   id String @id @default(cuid())
 
@@ -338,9 +343,10 @@ model ProductionReport {
   materialPurgeQty  Decimal? @default(0) // Rigid: Gulungan/Cucian
 
   // --- Output Results ---
-  qtyPassOn Decimal? @default(0)
-  qtyHold   Decimal? @default(0)
-  qtyWip    Decimal? @default(0)
+  qtyPassOn Decimal?        @default(0)
+  qtyHold   Decimal?        @default(0)
+  qtyWip    Decimal?        @default(0)
+  outputUom OutputCountUom?
 
   qtyReject Decimal @default(0) // Total Reject
 

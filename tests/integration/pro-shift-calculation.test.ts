@@ -4,7 +4,7 @@ import { createTestCaller } from "../helpers/caller";
 import { seedBaseContext } from "../helpers/seed";
 
 describe("PRO shift calculation consistency", () => {
-  test("create: sheet machine + sheet material splits shifts and planned target", async () => {
+  test("create: always uses qtyPo target regardless material", async () => {
     const ctx = await seedBaseContext(db);
     const caller = createTestCaller(ctx.users.PPIC.id, Role.PPIC);
 
@@ -41,16 +41,16 @@ describe("PRO shift calculation consistency", () => {
       select: { estimatedShifts: true, plannedQtyPcs: true },
     });
 
-    expect(steps).toHaveLength(4);
-    expect(steps.every((s) => s.estimatedShifts === 4)).toBe(true);
+    expect(steps).toHaveLength(6);
+    expect(steps.every((s) => s.estimatedShifts === 6)).toBe(true);
     const totalPlanned = steps.reduce(
       (acc, s) => acc + Number(s.plannedQtyPcs ?? 0),
       0,
     );
-    expect(totalPlanned).toBe(6000);
+    expect(totalPlanned).toBe(10000);
   });
 
-  test("create: pcs machine + pcs material uses pcs basis then converts via UP/CAV", async () => {
+  test("create: same target on pcs machine even with different material qty", async () => {
     const ctx = await seedBaseContext(db);
     const caller = createTestCaller(ctx.users.PPIC.id, Role.PPIC);
 
@@ -87,16 +87,16 @@ describe("PRO shift calculation consistency", () => {
       select: { estimatedShifts: true, plannedQtyPcs: true },
     });
 
-    expect(steps).toHaveLength(2);
-    expect(steps.every((s) => s.estimatedShifts === 2)).toBe(true);
+    expect(steps).toHaveLength(6);
+    expect(steps.every((s) => s.estimatedShifts === 6)).toBe(true);
     const totalPlanned = steps.reduce(
       (acc, s) => acc + Number(s.plannedQtyPcs ?? 0),
       0,
     );
-    expect(totalPlanned).toBe(2000);
+    expect(totalPlanned).toBe(10000);
   });
 
-  test("update: recalculates estimatedShifts and plannedQtyPcs with same formula", async () => {
+  test("update: recalculates estimatedShifts and plannedQtyPcs from qtyPo target only", async () => {
     const ctx = await seedBaseContext(db);
     const caller = createTestCaller(ctx.users.PPIC.id, Role.PPIC);
 
@@ -158,7 +158,7 @@ describe("PRO shift calculation consistency", () => {
       select: { estimatedShifts: true, plannedQtyPcs: true },
     });
 
-    expect(updatedStep?.estimatedShifts).toBe(4);
-    expect(Number(updatedStep?.plannedQtyPcs ?? 0)).toBe(6000);
+    expect(updatedStep?.estimatedShifts).toBe(6);
+    expect(Number(updatedStep?.plannedQtyPcs ?? 0)).toBe(10000);
   });
 });

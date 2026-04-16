@@ -40,6 +40,13 @@ import {
 } from "~/components/ui/select";
 import { useAppAlert } from "~/components/ui/app-alert";
 import { SubmitReportConfirmModal } from "./submit-report-confirm-modal";
+import { resolveReportOutputUom } from "~/lib/output-uom";
+import {
+  PACKING_PRIMARY_REJECT_KEYS,
+  PACKING_REJECT_SPLIT,
+  getPackingRejectGroupLabel,
+  sumPackingPrimaryRejectFromBreakdown,
+} from "~/lib/packing-reject";
 
 // --- CONSTANTS ---
 
@@ -137,57 +144,6 @@ const REJECT_INJECTION_PRODUCT = [
   "Kotor Fet",
   "Proses",
   "Baret",
-];
-
-const REJECT_PACKING_ASSEMBLY_SPLIT = [
-  [
-    "B. Spot",
-    "Cekung",
-    "Baret",
-    "Buble",
-    "Print Pethal",
-    "Print Miring",
-    "Print Blobor",
-    "Pecah",
-    "Acrylic Mix Up",
-    "Lengket",
-    "Botol Bertekstur",
-    "Tertempel Sticker",
-    "Konstaminasi",
-    "Warna Tidak Standart",
-    "Buram",
-    "Kotor Fat",
-  ],
-  [
-    "B. Spot 3",
-    "Pecah 2",
-    "Warna # Std",
-    "Short Shoot",
-    "Menempel Pada Botol",
-    "Kotor Fat 2",
-  ],
-  [
-    "B. Spot 5",
-    "Print Pethal",
-    "Pecah 6",
-    "Warna # Std 7",
-    "Baret 8",
-    "Kotor Fat 9",
-  ],
-  ["B. Spot 10", "Warna # Std 11", "Kotor Fat 12"],
-  ["B. Spot 13", "Warna # Std 14", "Kotor Fat 15"],
-  [
-    "Stiker Halal",
-    "Stiker BB & Derma",
-    "Stiker BB & WCD",
-    "Sticker BB",
-    "STICKER WCD",
-    "Stiker Barcode",
-    "Stiker Toner",
-    "Sticker Bottom",
-    "Stiker Bottom Baru",
-    "Other",
-  ],
 ];
 
 const DOWNTIME_LISTS: Record<
@@ -484,6 +440,13 @@ export function ProductionReportModal({
 
   // Initial State derived from task
   const [lphType, setLphType] = React.useState<LphType>("PAPER");
+  const outputCountUom = React.useMemo(() => {
+    return resolveReportOutputUom({
+      outputUom: editReport?.outputUom,
+      machineUom: task?.step?.machine?.uom,
+    });
+  }, [editReport?.outputUom, task?.step?.machine?.uom]);
+  const outputCountUomLabel = outputCountUom.toUpperCase();
   const [isLoaded, setIsLoaded] = React.useState(false);
   const skipNextSave = React.useRef(false);
 
@@ -547,6 +510,13 @@ export function ProductionReportModal({
 
   // Calculate Totals
   const totalReject = React.useMemo(() => {
+    if (lphType === "PACKING_ASSEMBLY") {
+      const primaryOnly = Object.fromEntries(
+        PACKING_PRIMARY_REJECT_KEYS.map((key) => [key, formData.rejects[key]]),
+      );
+      return sumPackingPrimaryRejectFromBreakdown(primaryOnly);
+    }
+
     const listTotal = Object.values(formData.rejects).reduce(
       (acc, val) => acc + (Number(String(val).replace(/,/g, ".")) || 0),
       0,
@@ -556,7 +526,7 @@ export function ProductionReportModal({
       (Number(String(formData.rejectSetup).replace(/,/g, ".")) || 0) +
       (Number(String(formData.rejectProcess).replace(/,/g, ".")) || 0)
     );
-  }, [formData.rejects, formData.rejectSetup, formData.rejectProcess]);
+  }, [formData.rejects, formData.rejectSetup, formData.rejectProcess, lphType]);
 
   const totalDowntimeObj = React.useMemo(() => {
     const allEntries = Object.entries(formData.downtimes);
@@ -966,7 +936,11 @@ export function ProductionReportModal({
       utils.pros.getSchedule.invalidate();
       utils.pros.list.invalidate();
       utils.pros.getById.invalidate();
-      void showAlert({ title: "Berhasil!", message: "Laporan berhasil disimpan dan menunggu verifikasi PPIC.", variant: "success" });
+      void showAlert({
+        title: "Berhasil!",
+        message: "Laporan berhasil disimpan dan menunggu verifikasi PPIC.",
+        variant: "success",
+      });
       if (draftKey) localStorage.removeItem(draftKey);
       window.dispatchEvent(new Event("draft-update"));
       onDraftChange?.();
@@ -975,7 +949,11 @@ export function ProductionReportModal({
     },
     onError: (err) => {
       console.error(err);
-      void showAlert({ title: "Gagal Menyimpan", message: err.message, variant: "error" });
+      void showAlert({
+        title: "Gagal Menyimpan",
+        message: err.message,
+        variant: "error",
+      });
       setLoading(false);
     },
   });
@@ -986,7 +964,11 @@ export function ProductionReportModal({
       utils.pros.getSchedule.invalidate();
       utils.pros.list.invalidate();
       utils.pros.getById.invalidate();
-      void showAlert({ title: "Berhasil!", message: "Laporan berhasil diperbarui.", variant: "success" });
+      void showAlert({
+        title: "Berhasil!",
+        message: "Laporan berhasil diperbarui.",
+        variant: "success",
+      });
       window.dispatchEvent(new Event("draft-update"));
       onDraftChange?.();
       setLoading(false);
@@ -994,7 +976,11 @@ export function ProductionReportModal({
     },
     onError: (err) => {
       console.error(err);
-      void showAlert({ title: "Gagal Memperbarui", message: err.message, variant: "error" });
+      void showAlert({
+        title: "Gagal Memperbarui",
+        message: err.message,
+        variant: "error",
+      });
       setLoading(false);
     },
   });
@@ -1055,24 +1041,34 @@ export function ProductionReportModal({
     if (!task?.step?.machineId) {
       await showAlert({
         title: "Mesin Belum Di-assign",
-        message: "Mesin belum di-assign oleh PPIC untuk proses ini. Hubungi PPIC.",
+        message:
+          "Mesin belum di-assign oleh PPIC untuk proses ini. Hubungi PPIC.",
         variant: "warning",
       });
       return;
     }
     if (!formData.operatorName.trim()) {
-      await showAlert({ message: "Nama Operator wajib diisi!", variant: "warning" });
+      await showAlert({
+        message: "Nama Operator wajib diisi!",
+        variant: "warning",
+      });
       return;
     }
 
     if (!formData.startTime || !formData.endTime) {
-      await showAlert({ message: "Jam Mulai dan Jam Selesai wajib diisi!", variant: "warning" });
+      await showAlert({
+        message: "Jam Mulai dan Jam Selesai wajib diisi!",
+        variant: "warning",
+      });
       return;
     }
 
     // Guard: qtyPassOn must be explicitly provided
     if (formData.qtyPassOn === "") {
-      await showAlert({ message: "Output (Qty Pass On) wajib diisi!", variant: "warning" });
+      await showAlert({
+        message: "Output (Qty Pass On) wajib diisi!",
+        variant: "warning",
+      });
       return;
     }
 
@@ -1081,7 +1077,8 @@ export function ProductionReportModal({
     if (passOnVal === 0) {
       const zeroOk = await showConfirm({
         title: "Output Pass On = 0",
-        message: "Output Pass On = 0. Apakah Anda yakin? (misal: shift full downtime)",
+        message:
+          "Output Pass On = 0. Apakah Anda yakin? (misal: shift full downtime)",
         variant: "warning",
         confirmLabel: "Ya, Lanjutkan",
       });
@@ -1815,22 +1812,28 @@ export function ProductionReportModal({
                       // PACKING ASSEMBLY - 6 Split Sections (Dropdowns)
                       <div className="col-span-2 md:col-span-4">
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                          {REJECT_PACKING_ASSEMBLY_SPLIT.map((group, idx) => (
-                            <DropdownInput
-                              key={idx}
-                              label={`Reject Bagian ${idx + 1}`}
-                              options={group}
-                              values={Object.fromEntries(
-                                Object.entries(formData.rejects).filter(([k]) =>
-                                  group.includes(k),
-                                ),
-                              )}
-                              onAdd={(k, v) => handleRejectChange(k, v)}
-                              onRemove={(k) => handleRejectChange(k, "0")}
-                              unit="Pcs"
-                              placeholder={`Pilih Reject Bagian ${idx + 1}...`}
-                            />
-                          ))}
+                          <div className="md:col-span-2 rounded-lg border border-amber-700/40 bg-amber-900/20 px-3 py-2 text-[11px] text-amber-300">
+                            Bagian 2-6 hanya informasi reject. Kalkulasi total output dan qty reject hanya dari Reject Bagian 1.
+                          </div>
+                          {PACKING_REJECT_SPLIT.map((group, idx) => {
+                            const sectionLabel = getPackingRejectGroupLabel(idx);
+                            return (
+                              <DropdownInput
+                                key={idx}
+                                label={`Reject ${sectionLabel}`}
+                                options={[...group]}
+                                values={Object.fromEntries(
+                                  Object.entries(formData.rejects).filter(([k]) =>
+                                    group.some((rejectKey) => rejectKey === k),
+                                  ),
+                                )}
+                                onAdd={(k, v) => handleRejectChange(k, v)}
+                                onRemove={(k) => handleRejectChange(k, "0")}
+                                unit="Pcs"
+                                placeholder={`Pilih Reject ${sectionLabel}...`}
+                              />
+                            );
+                          })}
                         </div>
                       </div>
                     ) : lphType === "PRINTING" ? (
@@ -1877,62 +1880,80 @@ export function ProductionReportModal({
                   </div>
 
                   {/* ── Checklist Material Penyebab Reject (Rigid Packing/Assembly only) ── */}
-                  {lphType === "PACKING_ASSEMBLY" && prosesMaterials && prosesMaterials.length > 0 && (
-                    <div className="mt-4 rounded-xl border border-red-900/40 bg-red-950/20 p-4">
-                      <div className="mb-3 flex items-center gap-2">
-                        <span className="text-[10px] font-bold tracking-widest text-red-400 uppercase">
-                          Penyebab Reject FG / Assembly - Material
-                        </span>
-                        <span className="text-[9px] text-slate-500">(centang material yang bermasalah)</span>
-                        {rejectMaterials.length > 0 && (
-                          <span className="ml-auto rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-bold text-red-400">
-                            {rejectMaterials.length} dipilih
+                  {lphType === "PACKING_ASSEMBLY" &&
+                    prosesMaterials &&
+                    prosesMaterials.length > 0 && (
+                      <div className="mt-4 rounded-xl border border-red-900/40 bg-red-950/20 p-4">
+                        <div className="mb-3 flex items-center gap-2">
+                          <span className="text-[10px] font-bold tracking-widest text-red-400 uppercase">
+                            Penyebab Reject FG / Assembly - Material
                           </span>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                        {prosesMaterials.map((mat) => {
-                          const checked = rejectMaterials.includes(mat.name);
-                          return (
-                            <button
-                              key={mat.id}
-                              type="button"
-                              onClick={() => {
-                                setRejectMaterials((prev) =>
+                          <span className="text-[9px] text-slate-500">
+                            (centang material yang bermasalah)
+                          </span>
+                          {rejectMaterials.length > 0 && (
+                            <span className="ml-auto rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-bold text-red-400">
+                              {rejectMaterials.length} dipilih
+                            </span>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                          {prosesMaterials.map((mat) => {
+                            const checked = rejectMaterials.includes(mat.name);
+                            return (
+                              <button
+                                key={mat.id}
+                                type="button"
+                                onClick={() => {
+                                  setRejectMaterials((prev) =>
+                                    checked
+                                      ? prev.filter((n) => n !== mat.name)
+                                      : [...prev, mat.name],
+                                  );
+                                }}
+                                className={`flex items-center gap-2.5 rounded-lg border px-3 py-2 text-left text-xs transition-all ${
                                   checked
-                                    ? prev.filter((n) => n !== mat.name)
-                                    : [...prev, mat.name],
-                                );
-                              }}
-                              className={`flex items-center gap-2.5 rounded-lg border px-3 py-2 text-left text-xs transition-all ${
-                                checked
-                                  ? "border-red-500/60 bg-red-900/30 text-red-200"
-                                  : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600 hover:text-slate-300"
-                              }`}
-                            >
-                              <div
-                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                                  checked
-                                    ? "border-red-500 bg-red-500 text-white"
-                                    : "border-slate-600 bg-transparent"
+                                    ? "border-red-500/60 bg-red-900/30 text-red-200"
+                                    : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600 hover:text-slate-300"
                                 }`}
                               >
-                                {checked && (
-                                  <svg viewBox="0 0 10 8" fill="none" className="h-2.5 w-2.5">
-                                    <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                  </svg>
-                                )}
-                              </div>
-                              <span className="truncate leading-tight">{mat.name}</span>
-                            </button>
-                          );
-                        })}
+                                <div
+                                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                                    checked
+                                      ? "border-red-500 bg-red-500 text-white"
+                                      : "border-slate-600 bg-transparent"
+                                  }`}
+                                >
+                                  {checked && (
+                                    <svg
+                                      viewBox="0 0 10 8"
+                                      fill="none"
+                                      className="h-2.5 w-2.5"
+                                    >
+                                      <path
+                                        d="M1 4l3 3 5-6"
+                                        stroke="currentColor"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  )}
+                                </div>
+                                <span className="truncate leading-tight">
+                                  {mat.name}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {rejectMaterials.length === 0 && (
+                          <p className="mt-2 text-center text-[10px] text-slate-600 italic">
+                            Tidak ada material yang dipilih
+                          </p>
+                        )}
                       </div>
-                      {rejectMaterials.length === 0 && (
-                        <p className="mt-2 text-center text-[10px] text-slate-600 italic">Tidak ada material yang dipilih</p>
-                      )}
-                    </div>
-                  )}
+                    )}
 
                   {/* Others Note for Rigid */}
                   {isRigid && (
@@ -1998,7 +2019,7 @@ export function ProductionReportModal({
                                 }
                               />
                             </div>
-                          ))}
+                                                    ))}
                         </div>
                       </div>
 
@@ -2036,7 +2057,7 @@ export function ProductionReportModal({
                                 }
                               />
                             </div>
-                          ))}
+                                                    ))}
                         </div>
                       </div>
                     </div>
@@ -2207,7 +2228,7 @@ export function ProductionReportModal({
                                 }
                               />
                             </div>
-                          ))}
+                                                    ))}
                         </div>
                       </div>
                     )}
@@ -2249,7 +2270,7 @@ export function ProductionReportModal({
                                   }
                                 />
                               </div>
-                            ))}
+                                                      ))}
                           </div>
                         </div>
                       )}
@@ -2292,7 +2313,7 @@ export function ProductionReportModal({
                     {/* IF PAPER: Pass On is the New Finish Good (Prominent) */}
                     <div className="col-span-2 space-y-1.5">
                       <Label className="text-xs font-bold text-emerald-500">
-                        PASS ON
+                        PASS ON ({outputCountUomLabel})
                       </Label>
                       <Input
                         type="number"
@@ -2310,7 +2331,9 @@ export function ProductionReportModal({
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-slate-400">WIP</Label>
+                      <Label className="text-xs text-slate-400">
+                        WIP ({outputCountUomLabel})
+                      </Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -2323,7 +2346,9 @@ export function ProductionReportModal({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-slate-400">HOLD</Label>
+                      <Label className="text-xs text-slate-400">
+                        HOLD ({outputCountUomLabel})
+                      </Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -2550,12 +2575,15 @@ export function ProductionReportModal({
                   }
                 }
 
-                if (await showConfirm({
-                  title: "Reset Formulir?",
-                  message: "Semua data akan direset dan draft akan dihapus. Lanjutkan?",
-                  variant: "warning",
-                  confirmLabel: "Ya, Reset",
-                })) {
+                if (
+                  await showConfirm({
+                    title: "Reset Formulir?",
+                    message:
+                      "Semua data akan direset dan draft akan dihapus. Lanjutkan?",
+                    variant: "warning",
+                    confirmLabel: "Ya, Reset",
+                  })
+                ) {
                   skipNextSave.current = true;
                   setFormData({
                     startTime: new Date().toTimeString().slice(0, 5),

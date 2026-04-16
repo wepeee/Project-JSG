@@ -243,6 +243,7 @@ exports.Prisma.ProductionReportScalarFieldEnum = {
   qtyPassOn: 'qtyPassOn',
   qtyHold: 'qtyHold',
   qtyWip: 'qtyWip',
+  outputUom: 'outputUom',
   qtyReject: 'qtyReject',
   rejectBreakdown: 'rejectBreakdown',
   downtimeBreakdown: 'downtimeBreakdown',
@@ -375,6 +376,11 @@ exports.LphType = exports.$Enums.LphType = {
   PACKING_ASSEMBLY: 'PACKING_ASSEMBLY',
   BLOW_MOULDING: 'BLOW_MOULDING',
   INJECTION: 'INJECTION'
+};
+
+exports.OutputCountUom = exports.$Enums.OutputCountUom = {
+  pcs: 'pcs',
+  sheet: 'sheet'
 };
 
 exports.ReportStatus = exports.$Enums.ReportStatus = {

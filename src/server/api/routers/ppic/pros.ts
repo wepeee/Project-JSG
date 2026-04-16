@@ -171,7 +171,9 @@ export const prosRouter = createTRPCRouter({
         const lastStepId = pro.proses[pro.proses.length - 1]?.id;
         return {
           ...pro,
-          currentOutput: lastStepId ? (outputByProsesId.get(lastStepId) ?? 0) : 0,
+          currentOutput: lastStepId
+            ? (outputByProsesId.get(lastStepId) ?? 0)
+            : 0,
         };
       });
 
@@ -266,10 +268,13 @@ export const prosRouter = createTRPCRouter({
 
       const rows = pros.map((pro) => {
         const lastStep = pro.proses[pro.proses.length - 1];
-        const output = lastStep?.id ? (outputByProsesId.get(lastStep.id) ?? 0) : 0;
+        const output = lastStep?.id
+          ? (outputByProsesId.get(lastStep.id) ?? 0)
+          : 0;
         const target = Number(pro.qtyPoPcs ?? 0);
         const gap = Math.max(target - output, 0);
-        const progressPct = target > 0 ? Math.min((output / target) * 100, 100) : 0;
+        const progressPct =
+          target > 0 ? Math.min((output / target) * 100, 100) : 0;
         return {
           ...pro,
           currentOutput: output,
@@ -445,9 +450,12 @@ export const prosRouter = createTRPCRouter({
       return pros.map((pro) => {
         const lastStepId = pro.proses[pro.proses.length - 1]?.id;
         const targetQty = Number(pro.qtyPoPcs ?? 0);
-        const outputQty = lastStepId ? (outputByProsesId.get(lastStepId) ?? 0) : 0;
+        const outputQty = lastStepId
+          ? (outputByProsesId.get(lastStepId) ?? 0)
+          : 0;
         const gapQty = Math.max(targetQty - outputQty, 0);
-        const progressPct = targetQty > 0 ? Math.min((outputQty / targetQty) * 100, 100) : 0;
+        const progressPct =
+          targetQty > 0 ? Math.min((outputQty / targetQty) * 100, 100) : 0;
 
         return {
           id: pro.id,
@@ -616,206 +624,180 @@ export const prosRouter = createTRPCRouter({
       // Generate sequence using ProSequence (maintained logic)
       const prefix = `${prefixData.code}${mm(baseDate)}${yy(baseDate)}`; // 6 digit
 
-      return ctx.db.$transaction(async (tx) => {
-        const resolveItemId = createItemIdResolver(tx, ctx.session?.user?.id);
-        let proNumber = input.proNumber?.trim();
+      return ctx.db.$transaction(
+        async (tx) => {
+          const resolveItemId = createItemIdResolver(tx, ctx.session?.user?.id);
+          let proNumber = input.proNumber?.trim();
 
-        if (!proNumber) {
-          const seq = await tx.proSequence.upsert({
-            where: { prefix },
-            update: { last: { increment: 1 } },
-            create: { prefix, last: 1 },
-            select: { last: true },
-          });
-          proNumber = `${prefix}${pad3(seq.last)}`; // 9 digit
-        } else {
-          // Check uniqueness if manual
-          const exist = await tx.pro.findUnique({ where: { proNumber } });
-          if (exist) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: `PRO Number '${proNumber}' sudah ada.`,
+          if (!proNumber) {
+            const seq = await tx.proSequence.upsert({
+              where: { prefix },
+              update: { last: { increment: 1 } },
+              create: { prefix, last: 1 },
+              select: { last: true },
             });
-          }
-        }
-
-        // AUTO-SET PRO.startDate from first step's startDate
-        const firstStepDate = input.proses[0]?.startDate ?? undefined;
-
-        const fgItemId = await resolveItemId(
-          input.partNumber,
-          "FG",
-          input.productName,
-        );
-
-        const machineIds = Array.from(
-          new Set(
-            input.proses
-              .map((s) => s.machineId)
-              .filter((id): id is number => !!id),
-          ),
-        );
-        const machineRows =
-          machineIds.length > 0
-            ? await tx.machine.findMany({
-                where: { id: { in: machineIds } },
-                select: {
-                  id: true,
-                  name: true,
-                  stdOutputPerShift: true,
-                  uom: true,
-                },
-              })
-            : [];
-        const machineById = new Map(machineRows.map((m) => [m.id, m]));
-        const firstMaterialIds = Array.from(
-          new Set(
-            input.proses
-              .map((s) => s.materials[0]?.materialId)
-              .filter(
-                (id): id is number =>
-                  typeof id === "number" && Number.isInteger(id) && id > 0,
-              ),
-          ),
-        );
-        const firstMaterialRows =
-          firstMaterialIds.length > 0
-            ? await tx.item.findMany({
-                where: { id: { in: firstMaterialIds } },
-                select: { id: true, baseUom: true },
-              })
-            : [];
-        const firstMaterialUomById = new Map(
-          firstMaterialRows.map((row) => [row.id, row.baseUom]),
-        );
-
-        const created = await tx.pro.create({
-          data: {
-            proNumber,
-            proPrefix: { connect: { id: input.proPrefixId } },
-            productName: input.productName,
-            partNumber: input.partNumber, // Legacy snapshot
-            ...(fgItemId ? { fgItem: { connect: { id: fgItemId } } } : {}),
-            qtyPoPcs: input.qtyPoPcs,
-            startDate: firstStepDate,
-            status: "OPEN",
-            type: input.type,
-            autoShiftExpansion: input.autoShiftExpansion ?? false,
-            createdBy: { connect: { id: ctx.session.user.id } },
-            updatedBy: { connect: { id: ctx.session.user.id } },
-          },
-        });
-
-        // -------------------------------------------------------------
-        // AUTOMATIC EXPANSION logic (Unchanged mostly)
-
-        let proStartDate = input.startDate ?? new Date();
-        let currentDay = startOfDay(proStartDate);
-        let currentShift = getShiftFromTime(proStartDate);
-
-        let globalOrderNo = 1;
-
-        for (const inputStep of input.proses) {
-          const firstMat = inputStep.materials[0];
-          const firstMatId = firstMat?.materialId;
-          const firstMatUom =
-            firstMatId !== undefined && firstMatId !== null
-              ? firstMaterialUomById.get(firstMatId)
-              : undefined;
-
-          let machineName = "";
-          const machineMeta = inputStep.machineId
-            ? machineById.get(inputStep.machineId)
-            : undefined;
-          if (machineMeta?.name) machineName = machineMeta.name;
-
-          const calc = calculateProStepShiftAndTarget({
-            machineUom: machineMeta?.uom,
-            machineStdOutputPerShift: machineMeta?.stdOutputPerShift,
-            upCav: inputStep.up ?? null,
-            qtyPoPcs: input.qtyPoPcs,
-            firstMaterialQty: firstMat?.qtyReq,
-            firstMaterialUom: firstMatUom,
-          });
-
-          const need = input.expand === false ? 1 : calc.shiftCount;
-
-          if (inputStep.startDate) {
-            currentDay = startOfDay(new Date(inputStep.startDate));
-            currentShift = getShiftFromTime(new Date(inputStep.startDate));
+            proNumber = `${prefix}${pad3(seq.last)}`; // 9 digit
+          } else {
+            // Check uniqueness if manual
+            const exist = await tx.pro.findUnique({ where: { proNumber } });
+            if (exist) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: `PRO Number '${proNumber}' sudah ada.`,
+              });
+            }
           }
 
-          const shiftSheets =
-            need === calc.shiftCount
-              ? calc.shiftSheetLoads
-              : [calc.totalPlannedSheets];
-          const totalPlannedSheets = shiftSheets.reduce(
-            (acc, val) => acc + val,
-            0,
+          // AUTO-SET PRO.startDate from first step's startDate
+          const firstStepDate = input.proses[0]?.startDate ?? undefined;
+
+          const fgItemId = await resolveItemId(
+            input.partNumber,
+            "FG",
+            input.productName,
           );
-          const totalTargetPcs = calc.plannedQtyPcsTotal;
-          const shiftTargetPcs = distributeIntegerByWeights(
-            totalTargetPcs,
-            shiftSheets.map((s) =>
-              totalPlannedSheets > 0 ? s / totalPlannedSheets : 1,
+
+          const machineIds = Array.from(
+            new Set(
+              input.proses
+                .map((s) => s.machineId)
+                .filter((id): id is number => !!id),
             ),
           );
+          const machineRows =
+            machineIds.length > 0
+              ? await tx.machine.findMany({
+                  where: { id: { in: machineIds } },
+                  select: {
+                    id: true,
+                    name: true,
+                    stdOutputPerShift: true,
+                    uom: true,
+                  },
+                })
+              : [];
+          const machineById = new Map(machineRows.map((m) => [m.id, m]));
 
-          for (let i = 0; i < need; i++) {
-            const sheetsInThisShift = shiftSheets[i] ?? 0;
-            const portion =
-              totalPlannedSheets > 0
-                ? sheetsInThisShift / totalPlannedSheets
-                : need > 0
-                  ? 1 / need
-                  : 1;
+          const created = await tx.pro.create({
+            data: {
+              proNumber,
+              proPrefix: { connect: { id: input.proPrefixId } },
+              productName: input.productName,
+              partNumber: input.partNumber, // Legacy snapshot
+              ...(fgItemId ? { fgItem: { connect: { id: fgItemId } } } : {}),
+              qtyPoPcs: input.qtyPoPcs,
+              startDate: firstStepDate,
+              status: "OPEN",
+              type: input.type,
+              autoShiftExpansion: input.autoShiftExpansion ?? false,
+              createdBy: { connect: { id: ctx.session.user.id } },
+              updatedBy: { connect: { id: ctx.session.user.id } },
+            },
+          });
 
-            if (sheetsInThisShift > 0 && inputStep.machineId) {
-              await checkCapacity(
-                tx,
-                inputStep.machineId,
-                getShiftDate(currentDay, currentShift),
-                sheetsInThisShift,
-                machineById,
-              );
-            }
+          // -------------------------------------------------------------
+          // AUTOMATIC EXPANSION logic (Unchanged mostly)
 
-            await tx.proses.create({
-              data: {
-                proId: created.id,
-                orderNo: globalOrderNo++,
-                up: inputStep.up,
-                machineId: inputStep.machineId ?? null,
-                startDate: getShiftDate(currentDay, currentShift),
-                partNumber: inputStep.partNumber,
-                batchNo: inputStep.batchNo,
-                outputItemId: await resolveItemId(
-                  inputStep.partNumber,
-                  "WIP",
-                  `${machineName} ${input.productName}`.trim(),
-                ),
-                materials: {
-                  create: (inputStep.materials ?? []).map((m) => ({
-                    itemMasterId: m.materialId,
-                    qtyReq: new Prisma.Decimal(m.qtyReq * portion),
-                  })),
-                },
-                estimatedShifts: calc.shiftCount,
-                plannedQtyPcs: shiftTargetPcs[i] ?? 0,
-              },
+          let proStartDate = input.startDate ?? new Date();
+          let currentDay = startOfDay(proStartDate);
+          let currentShift = getShiftFromTime(proStartDate);
+
+          let globalOrderNo = 1;
+
+          for (const inputStep of input.proses) {
+            let machineName = "";
+            const machineMeta = inputStep.machineId
+              ? machineById.get(inputStep.machineId)
+              : undefined;
+            if (machineMeta?.name) machineName = machineMeta.name;
+
+            const calc = calculateProStepShiftAndTarget({
+              machineUom: machineMeta?.uom,
+              machineStdOutputPerShift: machineMeta?.stdOutputPerShift,
+              upCav: inputStep.up ?? null,
+              qtyPoPcs: input.qtyPoPcs,
             });
 
-            if (input.expand !== false) {
-              if (currentShift < 2) currentShift++;
-              else {
-                currentShift = 0;
-                currentDay.setDate(currentDay.getDate() + 1);
+            const need = input.expand === false ? 1 : calc.shiftCount;
+
+            if (inputStep.startDate) {
+              currentDay = startOfDay(new Date(inputStep.startDate));
+              currentShift = getShiftFromTime(new Date(inputStep.startDate));
+            }
+
+            const shiftSheets =
+              need === calc.shiftCount
+                ? calc.shiftSheetLoads
+                : [calc.totalPlannedSheets];
+            const totalPlannedSheets = shiftSheets.reduce(
+              (acc, val) => acc + val,
+              0,
+            );
+            const totalTargetPcs = calc.plannedQtyPcsTotal;
+            const shiftTargetPcs = distributeIntegerByWeights(
+              totalTargetPcs,
+              shiftSheets.map((s) =>
+                totalPlannedSheets > 0 ? s / totalPlannedSheets : 1,
+              ),
+            );
+
+            for (let i = 0; i < need; i++) {
+              const sheetsInThisShift = shiftSheets[i] ?? 0;
+              const portion =
+                totalPlannedSheets > 0
+                  ? sheetsInThisShift / totalPlannedSheets
+                  : need > 0
+                    ? 1 / need
+                    : 1;
+
+              if (sheetsInThisShift > 0 && inputStep.machineId) {
+                await checkCapacity(
+                  tx,
+                  inputStep.machineId,
+                  getShiftDate(currentDay, currentShift),
+                  sheetsInThisShift,
+                  machineById,
+                );
+              }
+
+              await tx.proses.create({
+                data: {
+                  proId: created.id,
+                  orderNo: globalOrderNo++,
+                  up: inputStep.up,
+                  machineId: inputStep.machineId ?? null,
+                  startDate: getShiftDate(currentDay, currentShift),
+                  partNumber: inputStep.partNumber,
+                  batchNo: inputStep.batchNo,
+                  outputItemId: await resolveItemId(
+                    inputStep.partNumber,
+                    "WIP",
+                    `${machineName} ${input.productName}`.trim(),
+                  ),
+                  materials: {
+                    create: (inputStep.materials ?? []).map((m) => ({
+                      itemMasterId: m.materialId,
+                      qtyReq: new Prisma.Decimal(m.qtyReq * portion),
+                    })),
+                  },
+                  estimatedShifts: calc.shiftCount,
+                  plannedQtyPcs: shiftTargetPcs[i] ?? 0,
+                },
+              });
+
+              if (input.expand !== false) {
+                if (currentShift < 2) currentShift++;
+                else {
+                  currentShift = 0;
+                  currentDay.setDate(currentDay.getDate() + 1);
+                }
               }
             }
           }
-        }
-        return created;
-      }, { timeout: PRO_TX_TIMEOUT_MS, maxWait: PRO_TX_MAX_WAIT_MS });
+          return created;
+        },
+        { timeout: PRO_TX_TIMEOUT_MS, maxWait: PRO_TX_MAX_WAIT_MS },
+      );
     }),
 
   getById: ppicProcedure
@@ -923,300 +905,280 @@ export const prosRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
-      return db.$transaction(async (tx) => {
-        const resolveItemId = createItemIdResolver(tx, ctx.session.user.id);
-        // 1. Fetch old PRO
-        const oldPro = await tx.pro.findUnique({
-          where: { id: input.id },
-          select: {
-            proNumber: true,
-            proPrefixId: true, // Renamed
-            qtyPoPcs: true,
-            startDate: true,
-          },
-        });
-
-        if (!oldPro) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "PRO not found",
-          });
-        }
-
-        // Calculate new PRO Number if prefix changed
-        let newProNumber: string | undefined;
-        if (input.proPrefixId !== oldPro.proPrefixId) {
-          const newPrefix = await tx.proPrefix.findUnique({
-            where: { id: input.proPrefixId },
-            select: { code: true },
-          });
-
-          if (newPrefix && oldPro.proNumber.length >= 2) {
-            newProNumber = newPrefix.code + oldPro.proNumber.slice(2);
-
-            // Check conflict
-            const conflict = await tx.pro.findUnique({
-              where: { proNumber: newProNumber },
-            });
-            if (conflict) {
-              throw new TRPCError({
-                code: "CONFLICT",
-                message: `Nomor PRO baru '${newProNumber}' sudah digunakan oleh PRO lain. Tidak bisa mengganti proses/prefix.`,
-              });
-            }
-          }
-        }
-
-        const nextFgItemId =
-          input.partNumber !== undefined
-            ? await resolveItemId(input.partNumber, "FG")
-            : undefined;
-
-        // 2. Update header
-        await tx.pro.update({
-          where: { id: input.id },
-          data: {
-            ...(newProNumber ? { proNumber: newProNumber } : {}),
-            proPrefix: { connect: { id: input.proPrefixId } },
-            productName: input.productName,
-            ...(input.partNumber !== undefined
-              ? {
-                  partNumber: input.partNumber,
-                  fgItem: nextFgItemId
-                    ? { connect: { id: nextFgItemId } }
-                    : { disconnect: true },
-                }
-              : {}),
-            qtyPoPcs: input.qtyPoPcs,
-            startDate: input.startDate,
-            ...(input.status ? { status: input.status } : {}),
-            ...(input.type ? { type: input.type } : {}),
-            updatedBy: { connect: { id: ctx.session.user.id } },
-          },
-        });
-
-        // 3. Diff Steps (Update, Create, Delete)
-        const existingProses = await tx.proses.findMany({
-          where: { proId: input.id },
-          select: { id: true },
-        });
-
-        const existingStepIds = input.proses
-          .map((s) => s.id)
-          .filter((id): id is number => !!id);
-        const lockedRows =
-          existingStepIds.length > 0
-            ? await tx.inventoryTxn.findMany({
-                where: { prosesId: { in: existingStepIds } },
-                select: { prosesId: true },
-                distinct: ["prosesId"],
-              })
-            : [];
-        const lockedProsesIds = new Set(
-          lockedRows
-            .map((row) => row.prosesId)
-            .filter((id): id is number => id !== null),
-        );
-
-        const machineIds = Array.from(
-          new Set(
-            input.proses
-              .map((s) => s.machineId)
-              .filter((id): id is number => !!id),
-          ),
-        );
-        const machineRows =
-          machineIds.length > 0
-            ? await tx.machine.findMany({
-                where: { id: { in: machineIds } },
-                select: {
-                  id: true,
-                  name: true,
-                  uom: true,
-                  stdOutputPerShift: true,
-                },
-              })
-            : [];
-        const machineNameById = new Map(machineRows.map((m) => [m.id, m.name]));
-        const machineById = new Map(machineRows.map((m) => [m.id, m]));
-        const firstMaterialIds = Array.from(
-          new Set(
-            input.proses
-              .map((s) => s.materials?.[0]?.materialId)
-              .filter(
-                (id): id is number =>
-                  typeof id === "number" && Number.isInteger(id) && id > 0,
-              ),
-          ),
-        );
-        const firstMaterialRows =
-          firstMaterialIds.length > 0
-            ? await tx.item.findMany({
-                where: { id: { in: firstMaterialIds } },
-                select: { id: true, baseUom: true },
-              })
-            : [];
-        const firstMaterialUomById = new Map(
-          firstMaterialRows.map((row) => [row.id, row.baseUom]),
-        );
-
-        const inputIds = new Set(
-          input.proses.map((s) => s.id).filter((id): id is number => !!id),
-        );
-        const existingIds = new Set(existingProses.map((s) => s.id));
-
-        const toDelete = existingProses.filter((s) => !inputIds.has(s.id));
-        const toDeleteIds = toDelete.map((s) => s.id);
-        if (toDeleteIds.length > 0) {
-          const hasApprovedReports = await tx.productionReport.findFirst({
-            where: {
-              prosesId: { in: toDeleteIds },
-              status: "APPROVED",
+      return db.$transaction(
+        async (tx) => {
+          const resolveItemId = createItemIdResolver(tx, ctx.session.user.id);
+          // 1. Fetch old PRO
+          const oldPro = await tx.pro.findUnique({
+            where: { id: input.id },
+            select: {
+              proNumber: true,
+              proPrefixId: true, // Renamed
+              qtyPoPcs: true,
+              startDate: true,
             },
-            select: { prosesId: true },
           });
 
-          if (hasApprovedReports?.prosesId) {
+          if (!oldPro) {
             throw new TRPCError({
-              code: "PRECONDITION_FAILED",
-              message: `Step ID ${hasApprovedReports.prosesId} memiliki laporan APPROVED. Tidak bisa dihapus.`,
+              code: "NOT_FOUND",
+              message: "PRO not found",
             });
           }
-        }
 
-        for (const step of toDelete) {
-          try {
-            await tx.proses.delete({ where: { id: step.id } });
-          } catch (e: any) {
-            if (e.code === "P2003") {
-              throw new TRPCError({
-                code: "PRECONDITION_FAILED",
-                message: `Tidak dapat menghapus step (ID: ${step.id}) karena sudah memiliki histori laporan produksi.`,
+          // Calculate new PRO Number if prefix changed
+          let newProNumber: string | undefined;
+          if (input.proPrefixId !== oldPro.proPrefixId) {
+            const newPrefix = await tx.proPrefix.findUnique({
+              where: { id: input.proPrefixId },
+              select: { code: true },
+            });
+
+            if (newPrefix && oldPro.proNumber.length >= 2) {
+              newProNumber = newPrefix.code + oldPro.proNumber.slice(2);
+
+              // Check conflict
+              const conflict = await tx.pro.findUnique({
+                where: { proNumber: newProNumber },
               });
+              if (conflict) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: `Nomor PRO baru '${newProNumber}' sudah digunakan oleh PRO lain. Tidak bisa mengganti proses/prefix.`,
+                });
+              }
             }
-            throw e;
           }
-        }
 
-        // UPSERT
-        let baseDate = input.startDate ?? oldPro.startDate ?? new Date();
-        let currentDay = startOfDay(baseDate);
-        let currentShift = getShiftFromTime(baseDate);
-
-        let globalOrderNo = 1;
-
-        for (const s of input.proses) {
-          const matMaterials = s.materials ?? [];
-          const firstMat = matMaterials[0];
-          const machineMeta = s.machineId ? machineById.get(s.machineId) : undefined;
-          const firstMatUom =
-            firstMat?.materialId !== undefined && firstMat?.materialId !== null
-              ? firstMaterialUomById.get(firstMat.materialId)
+          const nextFgItemId =
+            input.partNumber !== undefined
+              ? await resolveItemId(input.partNumber, "FG")
               : undefined;
-          const calc = calculateProStepShiftAndTarget({
-            machineUom: machineMeta?.uom,
-            machineStdOutputPerShift: machineMeta?.stdOutputPerShift,
-            upCav: s.up ?? null,
-            qtyPoPcs: input.qtyPoPcs,
-            firstMaterialQty: firstMat?.qtyReq,
-            firstMaterialUom: firstMatUom,
+
+          // 2. Update header
+          await tx.pro.update({
+            where: { id: input.id },
+            data: {
+              ...(newProNumber ? { proNumber: newProNumber } : {}),
+              proPrefix: { connect: { id: input.proPrefixId } },
+              productName: input.productName,
+              ...(input.partNumber !== undefined
+                ? {
+                    partNumber: input.partNumber,
+                    fgItem: nextFgItemId
+                      ? { connect: { id: nextFgItemId } }
+                      : { disconnect: true },
+                  }
+                : {}),
+              qtyPoPcs: input.qtyPoPcs,
+              startDate: input.startDate,
+              ...(input.status ? { status: input.status } : {}),
+              ...(input.type ? { type: input.type } : {}),
+              updatedBy: { connect: { id: ctx.session.user.id } },
+            },
           });
-          const stepPlannedQtyPcs = calc.plannedQtyPcsTotal;
 
-          if (s.startDate) {
-            currentDay = startOfDay(new Date(s.startDate));
-            currentShift = getShiftFromTime(new Date(s.startDate));
-          }
+          // 3. Diff Steps (Update, Create, Delete)
+          const existingProses = await tx.proses.findMany({
+            where: { proId: input.id },
+            select: { id: true },
+          });
 
-          const stepDate = getShiftDate(currentDay, currentShift);
-          const needs = calc.shiftCount;
+          const existingStepIds = input.proses
+            .map((s) => s.id)
+            .filter((id): id is number => !!id);
+          const lockedRows =
+            existingStepIds.length > 0
+              ? await tx.inventoryTxn.findMany({
+                  where: { prosesId: { in: existingStepIds } },
+                  select: { prosesId: true },
+                  distinct: ["prosesId"],
+                })
+              : [];
+          const lockedProsesIds = new Set(
+            lockedRows
+              .map((row) => row.prosesId)
+              .filter((id): id is number => id !== null),
+          );
 
-          const recreateMaterials = async (prosesId: number) => {
-            // MATERIAL LOCK GUARD: reject material changes if inventory txns exist
-            if (lockedProsesIds.has(prosesId)) {
+          const machineIds = Array.from(
+            new Set(
+              input.proses
+                .map((s) => s.machineId)
+                .filter((id): id is number => !!id),
+            ),
+          );
+          const machineRows =
+            machineIds.length > 0
+              ? await tx.machine.findMany({
+                  where: { id: { in: machineIds } },
+                  select: {
+                    id: true,
+                    name: true,
+                    uom: true,
+                    stdOutputPerShift: true,
+                  },
+                })
+              : [];
+          const machineNameById = new Map(
+            machineRows.map((m) => [m.id, m.name]),
+          );
+          const machineById = new Map(machineRows.map((m) => [m.id, m]));
+
+          const inputIds = new Set(
+            input.proses.map((s) => s.id).filter((id): id is number => !!id),
+          );
+          const existingIds = new Set(existingProses.map((s) => s.id));
+
+          const toDelete = existingProses.filter((s) => !inputIds.has(s.id));
+          const toDeleteIds = toDelete.map((s) => s.id);
+          if (toDeleteIds.length > 0) {
+            const hasApprovedReports = await tx.productionReport.findFirst({
+              where: {
+                prosesId: { in: toDeleteIds },
+                status: "APPROVED",
+              },
+              select: { prosesId: true },
+            });
+
+            if (hasApprovedReports?.prosesId) {
               throw new TRPCError({
                 code: "PRECONDITION_FAILED",
-                message: `Tidak bisa mengubah material proses (ID: ${prosesId}) karena sudah ada transaksi inventory.`,
+                message: `Step ID ${hasApprovedReports.prosesId} memiliki laporan APPROVED. Tidak bisa dihapus.`,
               });
             }
+          }
 
-            await tx.prosesMaterial.deleteMany({ where: { prosesId } });
-            if (matMaterials.length > 0) {
-              await tx.prosesMaterial.createMany({
-                data: matMaterials.map((m) => ({
-                  prosesId,
-                  itemMasterId: m.materialId,
-                  qtyReq: new Prisma.Decimal(m.qtyReq),
-                })),
-              });
+          for (const step of toDelete) {
+            try {
+              await tx.proses.delete({ where: { id: step.id } });
+            } catch (e: any) {
+              if (e.code === "P2003") {
+                throw new TRPCError({
+                  code: "PRECONDITION_FAILED",
+                  message: `Tidak dapat menghapus step (ID: ${step.id}) karena sudah memiliki histori laporan produksi.`,
+                });
+              }
+              throw e;
             }
-          };
+          }
 
-          // Resolve machine name for item fallback
-          const stepMachineName = s.machineId
-            ? (machineNameById.get(s.machineId) ?? "")
-            : "";
+          // UPSERT
+          let baseDate = input.startDate ?? oldPro.startDate ?? new Date();
+          let currentDay = startOfDay(baseDate);
+          let currentShift = getShiftFromTime(baseDate);
 
-          if (s.id && existingIds.has(s.id)) {
-            await tx.proses.update({
-              where: { id: s.id },
-              data: {
-                orderNo: globalOrderNo++,
-                up: s.up,
-                machineId: s.machineId ?? null,
-                partNumber: s.partNumber,
-                batchNo: s.batchNo,
-                outputItemId: await resolveItemId(
-                  s.partNumber,
-                  "WIP",
-                  `${stepMachineName} ${input.productName}`.trim(),
-                ),
-                startDate: stepDate,
-                estimatedShifts: needs,
-                plannedQtyPcs: stepPlannedQtyPcs,
-              },
+          let globalOrderNo = 1;
+
+          for (const s of input.proses) {
+            const matMaterials = s.materials ?? [];
+            const machineMeta = s.machineId
+              ? machineById.get(s.machineId)
+              : undefined;
+            const calc = calculateProStepShiftAndTarget({
+              machineUom: machineMeta?.uom,
+              machineStdOutputPerShift: machineMeta?.stdOutputPerShift,
+              upCav: s.up ?? null,
+              qtyPoPcs: input.qtyPoPcs,
             });
-            await recreateMaterials(s.id);
-          } else {
-            await tx.proses.create({
-              data: {
-                proId: input.id,
-                orderNo: globalOrderNo++,
-                up: s.up,
-                machineId: s.machineId ?? null,
-                startDate: stepDate,
-                partNumber: s.partNumber,
-                batchNo: s.batchNo,
-                outputItemId: await resolveItemId(
-                  s.partNumber,
-                  "WIP",
-                  `${stepMachineName} ${input.productName}`.trim(),
-                ),
-                estimatedShifts: needs,
-                plannedQtyPcs: stepPlannedQtyPcs,
-                materials: {
-                  create: matMaterials.map((m) => ({
+            const stepPlannedQtyPcs = calc.plannedQtyPcsTotal;
+
+            if (s.startDate) {
+              currentDay = startOfDay(new Date(s.startDate));
+              currentShift = getShiftFromTime(new Date(s.startDate));
+            }
+
+            const stepDate = getShiftDate(currentDay, currentShift);
+            const needs = calc.shiftCount;
+
+            const recreateMaterials = async (prosesId: number) => {
+              // MATERIAL LOCK GUARD: reject material changes if inventory txns exist
+              if (lockedProsesIds.has(prosesId)) {
+                throw new TRPCError({
+                  code: "PRECONDITION_FAILED",
+                  message: `Tidak bisa mengubah material proses (ID: ${prosesId}) karena sudah ada transaksi inventory.`,
+                });
+              }
+
+              await tx.prosesMaterial.deleteMany({ where: { prosesId } });
+              if (matMaterials.length > 0) {
+                await tx.prosesMaterial.createMany({
+                  data: matMaterials.map((m) => ({
+                    prosesId,
                     itemMasterId: m.materialId,
                     qtyReq: new Prisma.Decimal(m.qtyReq),
                   })),
+                });
+              }
+            };
+
+            // Resolve machine name for item fallback
+            const stepMachineName = s.machineId
+              ? (machineNameById.get(s.machineId) ?? "")
+              : "";
+
+            if (s.id && existingIds.has(s.id)) {
+              await tx.proses.update({
+                where: { id: s.id },
+                data: {
+                  orderNo: globalOrderNo++,
+                  up: s.up,
+                  machineId: s.machineId ?? null,
+                  partNumber: s.partNumber,
+                  batchNo: s.batchNo,
+                  outputItemId: await resolveItemId(
+                    s.partNumber,
+                    "WIP",
+                    `${stepMachineName} ${input.productName}`.trim(),
+                  ),
+                  startDate: stepDate,
+                  estimatedShifts: needs,
+                  plannedQtyPcs: stepPlannedQtyPcs,
                 },
-              },
-            });
+              });
+              await recreateMaterials(s.id);
+            } else {
+              await tx.proses.create({
+                data: {
+                  proId: input.id,
+                  orderNo: globalOrderNo++,
+                  up: s.up,
+                  machineId: s.machineId ?? null,
+                  startDate: stepDate,
+                  partNumber: s.partNumber,
+                  batchNo: s.batchNo,
+                  outputItemId: await resolveItemId(
+                    s.partNumber,
+                    "WIP",
+                    `${stepMachineName} ${input.productName}`.trim(),
+                  ),
+                  estimatedShifts: needs,
+                  plannedQtyPcs: stepPlannedQtyPcs,
+                  materials: {
+                    create: matMaterials.map((m) => ({
+                      itemMasterId: m.materialId,
+                      qtyReq: new Prisma.Decimal(m.qtyReq),
+                    })),
+                  },
+                },
+              });
+            }
+
+            if (currentShift < 2) {
+              currentShift++;
+            } else {
+              currentShift = 0;
+              currentDay.setDate(currentDay.getDate() + 1);
+            }
           }
 
-          if (currentShift < 2) {
-            currentShift++;
-          } else {
-            currentShift = 0;
-            currentDay.setDate(currentDay.getDate() + 1);
-          }
-        }
-
-        return tx.pro.findUnique({
-          where: { id: input.id },
-          select: { id: true, proNumber: true },
-        });
-      }, { timeout: PRO_TX_TIMEOUT_MS, maxWait: PRO_TX_MAX_WAIT_MS });
+          return tx.pro.findUnique({
+            where: { id: input.id },
+            select: { id: true, proNumber: true },
+          });
+        },
+        { timeout: PRO_TX_TIMEOUT_MS, maxWait: PRO_TX_MAX_WAIT_MS },
+      );
     }),
 
   delete: ppicProcedure
@@ -1363,6 +1325,7 @@ export const prosRouter = createTRPCRouter({
                   stdOutputPerShift: true,
                   stdOutputPerHour: true,
                   cycleTimeSec: true,
+                  uom: true,
                 },
               },
               startDate: true,
@@ -1395,7 +1358,10 @@ export const prosRouter = createTRPCRouter({
     }),
 });
 
-function distributeIntegerByWeights(total: number, weights: number[]): number[] {
+function distributeIntegerByWeights(
+  total: number,
+  weights: number[],
+): number[] {
   const count = weights.length;
   if (count === 0) return [];
 

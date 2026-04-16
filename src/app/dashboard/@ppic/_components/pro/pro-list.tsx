@@ -587,17 +587,11 @@ export default function ProList({
       if (!step) return prev;
 
       const machine = machines.data?.find((m) => m.id === step.machineId);
-      const firstMaterial = step.materials[0];
-      const firstMaterialInfo = materials.data?.find(
-        (m: any) => m.id === firstMaterial?.materialId,
-      );
       const calc = calculateProStepShiftAndTarget({
         machineUom: machine?.uom,
         machineStdOutputPerShift: machine?.stdOutputPerShift,
         upCav: Number(step.up),
         qtyPoPcs: Number(qtyPoPcs),
-        firstMaterialQty: Number(firstMaterial?.qtyReq ?? 0),
-        firstMaterialUom: firstMaterialInfo?.uom,
       });
       const totalShifts = calc.shiftCount;
 
@@ -613,15 +607,7 @@ export default function ProList({
         : new Date();
       let currentShiftNo = step.shift;
 
-      const qtyForSplit =
-        calc.source === "from_sheet_material"
-          ? calc.qtyBasisSheet
-          : calc.plannedQtyPcsTotal;
-      const perShiftQty = Math.floor(qtyForSplit / totalShifts);
-      const remainder = qtyForSplit - perShiftQty * totalShifts;
-
       for (let i = 0; i < totalShifts; i++) {
-        const qty = i === 0 ? perShiftQty + remainder : perShiftQty;
         const d = new Date(currentDate);
 
         newSteps.push({
@@ -634,7 +620,6 @@ export default function ProList({
           materials: step.materials.map((m) => ({
             ...m,
             key: Math.random().toString(36).slice(2),
-            qtyReq: String(qty),
           })),
         });
 
@@ -1369,16 +1354,11 @@ export default function ProList({
                             uom: m.itemMaster?.baseUom ?? "-",
                           }));
 
-                      const firstQtyReq = materialsDisplay[0]?.qtyReq ?? "0";
-                      const firstQty = Number(firstQtyReq);
-                      const firstUom = materialsDisplay[0]?.uom;
                       const calc = calculateProStepShiftAndTarget({
                         machineUom: machineUom,
                         machineStdOutputPerShift: stdOutputPerShift,
                         upCav: Number(upVal),
                         qtyPoPcs: Number(qtyPoPcs),
-                        firstMaterialQty: firstQty,
-                        firstMaterialUom: firstUom,
                       });
                       const std = calc.stdOutputPerShift;
                       const actualQty = calc.qtyBasisSheet;

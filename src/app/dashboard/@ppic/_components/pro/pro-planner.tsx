@@ -1797,17 +1797,11 @@ function SortableRow({
   };
 
   const m = machines.find((x) => x.id === step.machineId);
-  const firstMaterial = step.materials[0];
-  const firstMaterialInfo = materialsList.find(
-    (x) => x.id === firstMaterial?.materialId,
-  );
   const calc = calculateProStepShiftAndTarget({
     machineUom: m?.uom,
     machineStdOutputPerShift: m?.stdOutputPerShift,
     upCav: Number(step.up),
     qtyPoPcs: qtyPo,
-    firstMaterialQty: Number(firstMaterial?.qtyReq ?? 0),
-    firstMaterialUom: firstMaterialInfo?.uom,
   });
   const targetQty = calc.plannedQtyPcsTotal;
   const shiftCount = calc.shiftCount;

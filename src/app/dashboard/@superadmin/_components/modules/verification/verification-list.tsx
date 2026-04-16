@@ -23,6 +23,8 @@ import {
 } from "~/components/ui/dialog";
 import { Textarea } from "~/components/ui/textarea";
 import { useAppAlert } from "~/components/ui/app-alert";
+import { resolveReportOutputUom } from "~/lib/output-uom";
+import { PACKING_REJECT_SPLIT, getPackingRejectGroupLabel } from "~/lib/packing-reject";
 
 type ReportStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -87,6 +89,12 @@ export default function VerificationList({
 
   const isRigidActive = activeCategory !== "PAPER";
 
+  const getOutputUomLabel = (rpt: any) =>
+    resolveReportOutputUom({
+      outputUom: rpt?.outputUom,
+      machineUom: rpt?.proses?.machine?.uom,
+    }).toUpperCase();
+
   const approveMutation = api.verification.approveReport.useMutation({
     onSuccess: () => {
       utils.verification.getReports.invalidate();
@@ -113,7 +121,8 @@ export default function VerificationList({
   const handleApprove = async (id: string) => {
     const ok = await showConfirm({
       title: "Setujui Laporan?",
-      message: "Laporan akan disetujui dan inventory akan diperbarui. Tindakan ini tidak dapat dibatalkan.",
+      message:
+        "Laporan akan disetujui dan inventory akan diperbarui. Tindakan ini tidak dapat dibatalkan.",
       variant: "success",
       confirmLabel: "Ya, Setujui",
     });
@@ -355,7 +364,7 @@ export default function VerificationList({
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          className="h-8 flex-1 gap-1 text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/20 sm:flex-none"
+                                          className="h-8 flex-1 gap-1 text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 sm:flex-none dark:text-emerald-400 dark:hover:bg-emerald-950/20"
                                           onClick={() => handleApprove(rpt.id)}
                                           disabled={approveMutation.isPending}
                                         >
@@ -421,9 +430,7 @@ export default function VerificationList({
                                           "id-ID",
                                         )}
                                         <span className="text-muted-foreground ml-1 text-xs font-normal">
-                                          {rpt.reportType === "PAPER"
-                                            ? "(Pcs)"
-                                            : ""}
+                                          ({getOutputUomLabel(rpt)})
                                         </span>
                                       </div>
                                     </div>
@@ -432,7 +439,8 @@ export default function VerificationList({
                                       Number(rpt.qtyWip) > 0) && (
                                       <div className="col-span-1">
                                         <div className="font-semibold text-blue-600 dark:text-blue-400">
-                                          WIP (Current)
+                                          WIP (Current) (
+                                          {getOutputUomLabel(rpt)})
                                         </div>
                                         <div className="text-lg font-bold text-blue-700 dark:text-blue-500">
                                           {Number(rpt.qtyWip).toLocaleString(
@@ -621,10 +629,12 @@ export default function VerificationList({
                                           Output Lain
                                         </div>
                                         <div>
-                                          WIP: {rpt.qtyWip?.toString() ?? "-"}
+                                          WIP ({getOutputUomLabel(rpt)}):{" "}
+                                          {rpt.qtyWip?.toString() ?? "-"}
                                         </div>
                                         <div>
-                                          Hold: {rpt.qtyHold?.toString() ?? "-"}
+                                          Hold ({getOutputUomLabel(rpt)}):{" "}
+                                          {rpt.qtyHold?.toString() ?? "-"}
                                         </div>
                                       </div>
 
@@ -636,6 +646,11 @@ export default function VerificationList({
                                             <div className="text-destructive font-bold">
                                               Rincian Reject
                                             </div>
+                                            {rpt.reportType === "PACKING_ASSEMBLY" && (
+                                              <div className="text-[11px] text-amber-400">
+                                                Bagian 6 adalah kategori Stiker.
+                                              </div>
+                                            )}
                                             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                                               {Object.entries(
                                                 rpt.rejectBreakdown as Record<
@@ -647,7 +662,14 @@ export default function VerificationList({
                                                   key={k}
                                                   className="flex justify-between"
                                                 >
-                                                  <span>{k}</span>
+                                                  <span>
+                                                    {rpt.reportType === "PACKING_ASSEMBLY" &&
+                                                    PACKING_REJECT_SPLIT[5].some(
+                                                      (label) => label === k,
+                                                    )
+                                                      ? `${getPackingRejectGroupLabel(5)} - ${k}`
+                                                      : k}
+                                                  </span>
                                                   <span className="font-mono font-bold">
                                                     {v}
                                                   </span>

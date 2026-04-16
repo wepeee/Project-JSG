@@ -35,6 +35,8 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
+import { resolveReportOutputUom } from "~/lib/output-uom";
+import { PACKING_REJECT_SPLIT, getPackingRejectGroupLabel } from "~/lib/packing-reject";
 
 const PAPER_REJECT_COLUMNS = [
   "Bintik",
@@ -154,57 +156,6 @@ const PRINTING_UNPLANNED_DT = [
   "OTHER",
 ];
 
-const PACKING_REJECT_SPLIT = [
-  [
-    "B. Spot",
-    "Cekung",
-    "Baret",
-    "Buble",
-    "Print Pethal",
-    "Print Miring",
-    "Print Blobor",
-    "Pecah",
-    "Acrylic Mix Up",
-    "Lengket",
-    "Botol Bertekstur",
-    "Tertempel Sticker",
-    "Konstaminasi",
-    "Warna Tidak Standart",
-    "Buram",
-    "Kotor Fat",
-  ],
-  [
-    "B. Spot 3",
-    "Pecah 2",
-    "Warna # Std",
-    "Short Shoot",
-    "Menempel Pada Botol",
-    "Kotor Fat 2",
-  ],
-  [
-    "B. Spot 5",
-    "Print Pethal",
-    "Pecah 6",
-    "Warna # Std 7",
-    "Baret 8",
-    "Kotor Fat 9",
-  ],
-  ["B. Spot 10", "Warna # Std 11", "Kotor Fat 12"],
-  ["B. Spot 13", "Warna # Std 14", "Kotor Fat 15"],
-  [
-    "Stiker Halal",
-    "Stiker BB & Derma",
-    "Stiker BB & WCD",
-    "Sticker BB",
-    "STICKER WCD",
-    "Stiker Barcode",
-    "Stiker Toner",
-    "Sticker Bottom",
-    "Stiker Bottom Baru",
-    "Other",
-  ],
-];
-
 const PACKING_PLANNED_DT = ["CLEAN", "NO ORDER", "ISTIRAHAT", "TRIAL"];
 
 const PACKING_UNPLANNED_DT = [
@@ -264,7 +215,8 @@ export default function ProductionArchive({
   const [voidReason, setVoidReason] = React.useState("");
 
   const [selectedReport, setSelectedReport] = React.useState<any>(null);
-  const [selectedReportIndex, setSelectedReportIndex] = React.useState<number>(0);
+  const [selectedReportIndex, setSelectedReportIndex] =
+    React.useState<number>(0);
 
   const voidMutation = api.verification.voidReport.useMutation({
     onSuccess: () => {
@@ -299,12 +251,20 @@ export default function ProductionArchive({
     if (!breakdown || typeof breakdown !== "object") return 0;
 
     return INJECTION_REJECT_PROD.reduce((acc, col) => {
-      const raw = (breakdown as any)?.[`REJECT:PRODUK:${col}`] ?? (breakdown as any)?.[col];
+      const raw =
+        (breakdown as any)?.[`REJECT:PRODUK:${col}`] ??
+        (breakdown as any)?.[col];
       const n = Number(raw ?? 0);
       if (!Number.isFinite(n) || n <= 0) return acc;
       return acc + n;
     }, 0);
   }, []);
+
+  const getOutputUomLabel = (rpt: any) =>
+    resolveReportOutputUom({
+      outputUom: rpt?.outputUom,
+      machineUom: rpt?.proses?.machine?.uom,
+    }).toUpperCase();
 
   const getRejectPcsForCategory = React.useCallback(
     (rpt: any): number | null => {
@@ -373,7 +333,10 @@ export default function ProductionArchive({
             />
             {(dateFrom || dateTo) && (
               <button
-                onClick={() => { setDateFrom(""); setDateTo(""); }}
+                onClick={() => {
+                  setDateFrom("");
+                  setDateTo("");
+                }}
                 className="text-muted-foreground hover:text-foreground ml-0.5 rounded p-1 transition-colors"
                 title="Reset filter tanggal"
               >
@@ -704,6 +667,19 @@ export default function ProductionArchive({
                         ? 2
                         : 1
                     }
+                    className="text-muted-foreground text-center font-medium"
+                  >
+                    UOM Output
+                  </TableHead>
+                  <TableHead
+                    rowSpan={
+                      activeCategory === "PAPER" ||
+                      activeCategory === "PRINTING" ||
+                      activeCategory === "PACKING_ASSEMBLY" ||
+                      isMoulding
+                        ? 2
+                        : 1
+                    }
                     className="text-muted-foreground text-right font-medium"
                   >
                     <div className="flex items-center justify-end gap-1">
@@ -757,7 +733,7 @@ export default function ProductionArchive({
                         colSpan={group.length}
                         className="bg-slate-800 text-center text-xs font-bold text-slate-300 uppercase"
                       >
-                        BAGIAN {idx + 1}
+                        {getPackingRejectGroupLabel(idx).toUpperCase()}
                       </TableHead>
                     ))}
                   {isMoulding && showRejectDetails && (
@@ -1402,6 +1378,9 @@ export default function ProductionArchive({
                     </TableCell>
                     <TableCell className="text-right text-xs text-slate-600 dark:text-slate-400">
                       {Number(rpt.qtyWip) > 0 ? Number(rpt.qtyWip) : "-"}
+                    </TableCell>
+                    <TableCell className="text-center text-[10px] font-semibold text-cyan-500">
+                      {getOutputUomLabel(rpt)}
                     </TableCell>
                     <TableCell className="text-right text-xs font-bold text-red-600">
                       {Number(rpt.qtyReject) > 0
@@ -2647,3 +2626,4 @@ export default function ProductionArchive({
     </div>
   );
 }
+

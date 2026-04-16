@@ -1,70 +1,38 @@
 import { calculateProStepShiftAndTarget } from "~/lib/pro-calculation";
 
 describe("U4 pro calculation helper", () => {
-  test("sheet machine + sheet material uses sheet material as basis", () => {
+  test("always uses qty PO as target basis", () => {
     const result = calculateProStepShiftAndTarget({
       machineUom: "sheet",
       machineStdOutputPerShift: 900,
       upCav: 2,
       qtyPoPcs: 10000,
-      firstMaterialQty: 3000,
-      firstMaterialUom: "sheet",
     });
 
-    expect(result.source).toBe("from_sheet_material");
-    expect(result.qtyBasisSheet).toBe(3000);
-    expect(result.qtyBasisPcs).toBe(6000);
-    expect(result.shiftCount).toBe(4);
-    expect(result.plannedQtyPcsTotal).toBe(6000);
-  });
-
-  test("pcs machine + pcs material uses pcs material as basis", () => {
-    const result = calculateProStepShiftAndTarget({
-      machineUom: "pcs",
-      machineStdOutputPerShift: 900,
-      upCav: 2,
-      qtyPoPcs: 10000,
-      firstMaterialQty: 2000,
-      firstMaterialUom: "pcs",
-    });
-
-    expect(result.source).toBe("from_pcs_material");
-    expect(result.qtyBasisPcs).toBe(2000);
-    expect(result.qtyBasisSheet).toBe(1000);
-    expect(result.shiftCount).toBe(2);
-    expect(result.plannedQtyPcsTotal).toBe(2000);
-  });
-
-  test("no material falls back to qty PO", () => {
-    const result = calculateProStepShiftAndTarget({
-      machineUom: "sheet",
-      machineStdOutputPerShift: 900,
-      upCav: 2,
-      qtyPoPcs: 10000,
-      firstMaterialQty: undefined,
-      firstMaterialUom: undefined,
-    });
-
-    expect(result.source).toBe("fallback_qty_po");
+    expect(result.source).toBe("from_pro_target");
     expect(result.qtyBasisPcs).toBe(10000);
     expect(result.qtyBasisSheet).toBe(5000);
     expect(result.shiftCount).toBe(6);
     expect(result.plannedQtyPcsTotal).toBe(10000);
   });
 
-  test("material uom mismatch falls back to qty PO", () => {
-    const result = calculateProStepShiftAndTarget({
+  test("machine uom/material context does not change qty basis", () => {
+    const sheetResult = calculateProStepShiftAndTarget({
       machineUom: "sheet",
       machineStdOutputPerShift: 900,
       upCav: 2,
       qtyPoPcs: 10000,
-      firstMaterialQty: 2000,
-      firstMaterialUom: "pcs",
+    });
+    const pcsResult = calculateProStepShiftAndTarget({
+      machineUom: "pcs",
+      machineStdOutputPerShift: 900,
+      upCav: 2,
+      qtyPoPcs: 10000,
     });
 
-    expect(result.source).toBe("fallback_qty_po");
-    expect(result.qtyBasisPcs).toBe(10000);
-    expect(result.qtyBasisSheet).toBe(5000);
+    expect(sheetResult.qtyBasisPcs).toBe(10000);
+    expect(pcsResult.qtyBasisPcs).toBe(10000);
+    expect(sheetResult.shiftCount).toBe(pcsResult.shiftCount);
   });
 
   test("up/cav empty or zero is treated as 1", () => {
@@ -73,16 +41,12 @@ describe("U4 pro calculation helper", () => {
       machineStdOutputPerShift: 900,
       upCav: 0,
       qtyPoPcs: 10000,
-      firstMaterialQty: undefined,
-      firstMaterialUom: undefined,
     });
     const resultEmpty = calculateProStepShiftAndTarget({
       machineUom: "sheet",
       machineStdOutputPerShift: 900,
       upCav: undefined,
       qtyPoPcs: 10000,
-      firstMaterialQty: undefined,
-      firstMaterialUom: undefined,
     });
 
     expect(resultZero.upCav).toBe(1);
@@ -91,19 +55,30 @@ describe("U4 pro calculation helper", () => {
     expect(resultEmpty.qtyBasisSheet).toBe(10000);
   });
 
-  test("non sheet/pcs machine falls back to qty PO conversion", () => {
+  test("invalid std output falls back to 1 shift", () => {
     const result = calculateProStepShiftAndTarget({
-      machineUom: "meter",
-      machineStdOutputPerShift: 900,
+      machineUom: "sheet",
+      machineStdOutputPerShift: 0,
       upCav: 2,
       qtyPoPcs: 10000,
-      firstMaterialQty: 3000,
-      firstMaterialUom: "meter",
     });
 
-    expect(result.source).toBe("fallback_qty_po");
-    expect(result.qtyBasisPcs).toBe(10000);
-    expect(result.qtyBasisSheet).toBe(5000);
-    expect(result.shiftCount).toBe(6);
+    expect(result.shiftCount).toBe(1);
+    expect(result.shiftSheetLoads).toHaveLength(1);
+    expect(result.shiftSheetLoads[0]).toBe(5000);
+  });
+
+  test("non-positive qty PO yields zero target with minimum 1 shift", () => {
+    const result = calculateProStepShiftAndTarget({
+      machineUom: "sheet",
+      machineStdOutputPerShift: 900,
+      upCav: 2,
+      qtyPoPcs: 0,
+    });
+
+    expect(result.plannedQtyPcsTotal).toBe(0);
+    expect(result.qtyBasisPcs).toBe(0);
+    expect(result.shiftCount).toBe(1);
   });
 });
+
