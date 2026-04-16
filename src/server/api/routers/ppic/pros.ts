@@ -14,7 +14,7 @@ const mm = (d: Date) => String(d.getMonth() + 1).padStart(2, "0");
 const yy = (d: Date) => String(d.getFullYear()).slice(-2);
 const normalizeItemCode = (value: string) =>
   value.trim().toUpperCase().replace(/\s+/g, "_");
-const PRO_TX_TIMEOUT_MS = 90000;
+const PRO_TX_TIMEOUT_MS = 180000;
 const PRO_TX_MAX_WAIT_MS = 10000;
 
 type ItemLookupTx = Pick<Prisma.TransactionClient, "item">;
@@ -624,6 +624,76 @@ export const prosRouter = createTRPCRouter({
       // Generate sequence using ProSequence (maintained logic)
       const prefix = `${prefixData.code}${mm(baseDate)}${yy(baseDate)}`; // 6 digit
 
+      const machineIds = Array.from(
+        new Set(
+          input.proses
+            .map((s) => s.machineId)
+            .filter((id): id is number => !!id),
+        ),
+      );
+      const machineRows =
+        machineIds.length > 0
+          ? await ctx.db.machine.findMany({
+              where: { id: { in: machineIds } },
+              select: {
+                id: true,
+                name: true,
+                stdOutputPerShift: true,
+                uom: true,
+              },
+            })
+          : [];
+      const machineById = new Map(machineRows.map((m) => [m.id, m]));
+      const capacityLoadCache = new Map<string, number>();
+
+      // Pre-check machine capacity outside transaction to avoid long-lived tx timeouts.
+      let precheckDay = startOfDay(input.startDate ?? new Date());
+      let precheckShift = getShiftFromTime(input.startDate ?? new Date());
+      for (const inputStep of input.proses) {
+        const machineMeta = inputStep.machineId
+          ? machineById.get(inputStep.machineId)
+          : undefined;
+        const calc = calculateProStepShiftAndTarget({
+          machineUom: machineMeta?.uom,
+          machineStdOutputPerShift: machineMeta?.stdOutputPerShift,
+          upCav: inputStep.up ?? null,
+          qtyPoPcs: input.qtyPoPcs,
+        });
+        const need = input.expand === false ? 1 : calc.shiftCount;
+
+        if (inputStep.startDate) {
+          precheckDay = startOfDay(new Date(inputStep.startDate));
+          precheckShift = getShiftFromTime(new Date(inputStep.startDate));
+        }
+
+        const shiftSheets =
+          need === calc.shiftCount
+            ? calc.shiftSheetLoads
+            : [calc.totalPlannedSheets];
+
+        for (let i = 0; i < need; i++) {
+          const sheetsInThisShift = shiftSheets[i] ?? 0;
+          if (sheetsInThisShift > 0 && inputStep.machineId) {
+            await checkCapacity(
+              ctx.db,
+              inputStep.machineId,
+              getShiftDate(precheckDay, precheckShift),
+              sheetsInThisShift,
+              machineById,
+              capacityLoadCache,
+            );
+          }
+
+          if (input.expand !== false) {
+            if (precheckShift < 2) precheckShift++;
+            else {
+              precheckShift = 0;
+              precheckDay.setDate(precheckDay.getDate() + 1);
+            }
+          }
+        }
+      }
+
       return ctx.db.$transaction(
         async (tx) => {
           const resolveItemId = createItemIdResolver(tx, ctx.session?.user?.id);
@@ -656,27 +726,6 @@ export const prosRouter = createTRPCRouter({
             "FG",
             input.productName,
           );
-
-          const machineIds = Array.from(
-            new Set(
-              input.proses
-                .map((s) => s.machineId)
-                .filter((id): id is number => !!id),
-            ),
-          );
-          const machineRows =
-            machineIds.length > 0
-              ? await tx.machine.findMany({
-                  where: { id: { in: machineIds } },
-                  select: {
-                    id: true,
-                    name: true,
-                    stdOutputPerShift: true,
-                    uom: true,
-                  },
-                })
-              : [];
-          const machineById = new Map(machineRows.map((m) => [m.id, m]));
 
           const created = await tx.pro.create({
             data: {
@@ -749,16 +798,6 @@ export const prosRouter = createTRPCRouter({
                   : need > 0
                     ? 1 / need
                     : 1;
-
-              if (sheetsInThisShift > 0 && inputStep.machineId) {
-                await checkCapacity(
-                  tx,
-                  inputStep.machineId,
-                  getShiftDate(currentDay, currentShift),
-                  sheetsInThisShift,
-                  machineById,
-                );
-              }
 
               await tx.proses.create({
                 data: {
@@ -1408,7 +1447,7 @@ function distributeIntegerByWeights(
 }
 
 async function checkCapacity(
-  tx: Prisma.TransactionClient,
+  db: Pick<Prisma.TransactionClient, "machine" | "prosesMaterial">,
   machineId: number | null,
   slotDate: Date,
   newLoadSheets: number,
@@ -1421,12 +1460,13 @@ async function checkCapacity(
       stdOutputPerShift: number;
     }
   >,
+  capacityLoadCache?: Map<string, number>,
 ) {
-  if (!machineId) return;
+  if (!machineId || newLoadSheets <= 0) return;
 
   let machine = machineMetaCache?.get(machineId);
   if (!machine) {
-    const dbMachine = await tx.machine.findUnique({
+    const dbMachine = await db.machine.findUnique({
       where: { id: machineId },
       select: { id: true, name: true, uom: true, stdOutputPerShift: true },
     });
@@ -1457,25 +1497,29 @@ async function checkCapacity(
   }
 
   const max = machine.stdOutputPerShift;
+  const cacheKey = `${machineId}:${shiftStart.getTime()}:${shiftEnd.getTime()}`;
 
-  const currentLoadAgg = await tx.prosesMaterial.aggregate({
-    where: {
-      proses: {
-        machineId,
-        startDate: { gte: shiftStart, lt: shiftEnd },
-        pro: { status: { notIn: [ProStatus.CLOSED, ProStatus.CANCELLED] } },
-      },
-      itemMaster: {
-        baseUom: {
-          equals: "sheet",
-          mode: "insensitive",
+  let currentLoad = capacityLoadCache?.get(cacheKey);
+  if (currentLoad === undefined) {
+    const currentLoadAgg = await db.prosesMaterial.aggregate({
+      where: {
+        proses: {
+          machineId,
+          startDate: { gte: shiftStart, lt: shiftEnd },
+          pro: { status: { notIn: [ProStatus.CLOSED, ProStatus.CANCELLED] } },
+        },
+        itemMaster: {
+          baseUom: {
+            equals: "sheet",
+            mode: "insensitive",
+          },
         },
       },
-    },
-    _sum: { qtyReq: true },
-  });
+      _sum: { qtyReq: true },
+    });
 
-  const currentLoad = Number(currentLoadAgg._sum.qtyReq ?? 0);
+    currentLoad = Number(currentLoadAgg._sum.qtyReq ?? 0);
+  }
 
   if (currentLoad + newLoadSheets > max) {
     const shiftName =
@@ -1492,5 +1536,8 @@ async function checkCapacity(
       message: `Mesin ${machine.name} overload di ${dStr} ${shiftName}. Kapasitas: ${max}, Terisi: ${currentLoad}, Request: ${Math.ceil(newLoadSheets)}.`,
     });
   }
+
+  capacityLoadCache?.set(cacheKey, currentLoad + newLoadSheets);
 }
+
 
