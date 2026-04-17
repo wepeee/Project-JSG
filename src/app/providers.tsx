@@ -18,7 +18,7 @@ export function Providers({
     <SessionProvider session={session}>
       <ThemeProvider
         attribute="class"
-        defaultTheme="system"
+        defaultTheme="dark"
         enableSystem
         disableTransitionOnChange
       >
