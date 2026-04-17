@@ -265,7 +265,7 @@ export function ScheduleList() {
                           <Package className="h-3 w-3" /> Target
                         </span>
                         <span className="truncate text-sm font-black">
-                          {pro.qtyPoPcs.toLocaleString("id-ID")} pcs
+                          {resolveStepTargetQty(step, pro.qtyPoPcs).toLocaleString("id-ID")} pcs
                         </span>
                       </div>
                     </div>
@@ -348,4 +348,17 @@ function getShift(d: Date) {
   if (h >= 16) return 3;
   if (h >= 11) return 2;
   return 1;
+}
+
+function resolveStepTargetQty(
+  process: { plannedQtyPcs?: number | null; estimatedShifts?: number | null },
+  qtyPoPcs: number,
+) {
+  const plannedQty = Number(process.plannedQtyPcs ?? 0);
+  if (plannedQty > 0) return plannedQty;
+
+  const estimatedShifts = Number(process.estimatedShifts ?? 0);
+  if (estimatedShifts > 0) return Math.ceil(Number(qtyPoPcs ?? 0) / estimatedShifts);
+
+  return Number(qtyPoPcs ?? 0);
 }

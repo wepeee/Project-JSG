@@ -72,7 +72,7 @@ export default function ProTargetGap() {
   const totals = React.useMemo(() => {
     const rows = data ?? [];
     const totalTarget = rows.reduce(
-      (acc, r) => acc + Number(r.qtyPoPcs ?? 0),
+      (acc, r) => acc + Number((r as any).effectiveTarget ?? r.qtyPoPcs ?? 0),
       0,
     );
     const totalOutput = rows.reduce(
@@ -192,7 +192,7 @@ export default function ProTargetGap() {
                     </TableRow>
                   ) : (
                     (data ?? []).map((r) => {
-                      const target = Number(r.qtyPoPcs ?? 0);
+                      const target = Number((r as any).effectiveTarget ?? r.qtyPoPcs ?? 0);
                       const output = Number((r as any).currentOutput ?? 0);
                       const gap = Number((r as any).qtyGap ?? 0);
                       const pct = Math.max(

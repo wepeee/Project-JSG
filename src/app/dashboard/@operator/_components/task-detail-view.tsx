@@ -12,6 +12,19 @@ interface TaskDetailViewProps {
   onBack: () => void;
 }
 
+function resolveStepTargetQty(
+  process: { plannedQtyPcs?: number | null; estimatedShifts?: number | null },
+  qtyPoPcs: number,
+) {
+  const plannedQty = Number(process.plannedQtyPcs ?? 0);
+  if (plannedQty > 0) return plannedQty;
+
+  const estimatedShifts = Number(process.estimatedShifts ?? 0);
+  if (estimatedShifts > 0) return Math.ceil(Number(qtyPoPcs ?? 0) / estimatedShifts);
+
+  return Number(qtyPoPcs ?? 0);
+}
+
 export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [hasDraft, setHasDraft] = React.useState(false);
@@ -89,7 +102,7 @@ export function TaskDetailView({ task, onBack }: TaskDetailViewProps) {
                 Target
               </div>
               <div className="text-lg font-black">
-                {task.pro.qtyPoPcs.toLocaleString("id-ID")}
+                {resolveStepTargetQty(task.step, task.pro.qtyPoPcs).toLocaleString("id-ID")}
               </div>
             </div>
             <div className="bg-primary/10 rounded-2xl p-3">

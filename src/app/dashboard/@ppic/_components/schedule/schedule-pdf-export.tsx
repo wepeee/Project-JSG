@@ -60,6 +60,19 @@ function materialsString(mats: ScheduleItem["proses"][number]["materials"]) {
     .join("; ");
 }
 
+function resolveStepTargetQty(
+  process: { plannedQtyPcs?: number | null; estimatedShifts?: number | null },
+  qtyPoPcs: number,
+) {
+  const plannedQty = Number(process.plannedQtyPcs ?? 0);
+  if (plannedQty > 0) return plannedQty;
+
+  const estimatedShifts = Number(process.estimatedShifts ?? 0);
+  if (estimatedShifts > 0) return Math.ceil(Number(qtyPoPcs ?? 0) / estimatedShifts);
+
+  return Number(qtyPoPcs ?? 0);
+}
+
 // Compute total output from approved/pending reports
 function totalOutput(reports: { status: string; qtyPassOn: any }[]) {
   return reports.reduce((acc, r) => acc + Number(r.qtyPassOn ?? 0), 0);
@@ -124,7 +137,7 @@ function buildMachineGroups(items: ScheduleItem[], rangeStart: Date, rangeEnd: D
         ? "sheet"
         : "pcs";
 
-      const target = pro.qtyPoPcs / Math.max(process.up ?? 1, 1);
+      const target = resolveStepTargetQty(process as any, pro.qtyPoPcs);
       const outputTotal = totalOutput(process.productionReports);
 
       group.rows.push({

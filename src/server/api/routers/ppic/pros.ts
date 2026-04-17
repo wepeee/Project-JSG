@@ -241,21 +241,54 @@ export const prosRouter = createTRPCRouter({
           proPrefix: { select: { code: true, name: true } },
           proses: {
             orderBy: { orderNo: "asc" },
-            select: { id: true, orderNo: true, startDate: true },
+            select: {
+              id: true,
+              orderNo: true,
+              startDate: true,
+              plannedQtyPcs: true,
+              splitGroupId: true,
+            },
           },
         },
       });
 
-      const lastStepIds = pros
-        .map((pro) => pro.proses[pro.proses.length - 1]?.id)
-        .filter((id): id is number => !!id);
+      // For each PRO, resolve the last split group and compute effective target
+      const allLastSplitProsesIds: number[] = [];
+      const effectiveTargetByProId = new Map<number, number>();
+      const lastSplitIdsByProId = new Map<number, number[]>();
 
+      for (const pro of pros) {
+        if (pro.proses.length === 0) continue;
+        const lastProses = pro.proses[pro.proses.length - 1]!;
+        const lastSplitGroupId = (lastProses as any).splitGroupId as string | null;
+
+        // Collect all proses in the same split group as the last proses row
+        const lastSplitGroup = lastSplitGroupId
+          ? pro.proses.filter((p) => (p as any).splitGroupId === lastSplitGroupId)
+          : [lastProses];
+
+        const ids = lastSplitGroup.map((p) => p.id);
+        allLastSplitProsesIds.push(...ids);
+        lastSplitIdsByProId.set(pro.id, ids);
+
+        // Effective target = sum of plannedQtyPcs in last split group (fallback: qtyPoPcs)
+        const sumPlanned = lastSplitGroup.reduce(
+          (acc, p) => acc + Number((p as any).plannedQtyPcs ?? 0),
+          0,
+        );
+        effectiveTargetByProId.set(
+          pro.id,
+          sumPlanned > 0 ? sumPlanned : Number(pro.qtyPoPcs ?? 0),
+        );
+      }
+
+      // Fetch approved reports for ALL proses in the last split groups
       const reportGroups =
-        lastStepIds.length > 0
+        allLastSplitProsesIds.length > 0
           ? await ctx.db.productionReport.groupBy({
               by: ["prosesId"],
               where: {
-                prosesId: { in: lastStepIds },
+                prosesId: { in: allLastSplitProsesIds },
                 status: "APPROVED",
               },
               _sum: { qtyPassOn: true },
@@ -269,16 +302,20 @@ export const prosRouter = createTRPCRouter({
 
       const rows = pros.map((pro) => {
         const lastStep = pro.proses[pro.proses.length - 1];
-        const output = lastStep?.id
-          ? (outputByProsesId.get(lastStep.id) ?? 0)
-          : 0;
-        const target = Number(pro.qtyPoPcs ?? 0);
+        // Sum output from ALL proses in the last split group
+        const lastSplitIds = lastSplitIdsByProId.get(pro.id) ?? [];
+        const output = lastSplitIds.reduce(
+          (acc, id) => acc + (outputByProsesId.get(id) ?? 0),
+          0,
+        );
+        const target = effectiveTargetByProId.get(pro.id) ?? Number(pro.qtyPoPcs ?? 0);
         const gap = Math.max(target - output, 0);
         const progressPct =
           target > 0 ? Math.min((output / target) * 100, 100) : 0;
         return {
           ...pro,
           currentOutput: output,
+          effectiveTarget: target, // Target per proses (summed from plannedQtyPcs)
           qtyGap: gap,
           progressPct,
           stepCount: pro.proses.length,

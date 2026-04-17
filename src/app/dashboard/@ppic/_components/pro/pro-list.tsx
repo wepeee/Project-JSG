@@ -1530,11 +1530,15 @@ export default function ProList({
                             uom: m.itemMaster?.baseUom ?? "-",
                           }));
 
+                      const originalTarget = isDraft
+                        ? ((item as StepDraft).plannedQtyPcs ?? Number(qtyPoPcs))
+                        : ((item as any).plannedQtyPcs ?? Number(qtyPoPcs));
+
                       const calc = calculateProStepShiftAndTarget({
                         machineUom: machineUom,
                         machineStdOutputPerShift: stdOutputPerShift,
                         upCav: Number(upVal),
-                        qtyPoPcs: Number(qtyPoPcs),
+                        qtyPoPcs: originalTarget,
                       });
                       const std = calc.stdOutputPerShift;
                       const actualQty = calc.qtyBasisSheet;
@@ -1798,7 +1802,7 @@ export default function ProList({
                                 <TableCell className="text-foreground px-4 py-3 text-right align-top text-xs font-bold">
                                   <div className="mt-0.5">
                                     {totalAchieved.toLocaleString("id-ID")} /{" "}
-                                    {p.qtyPoPcs.toLocaleString("id-ID")}
+                                    {originalTarget.toLocaleString("id-ID")}
                                   </div>
                                 </TableCell>
 
