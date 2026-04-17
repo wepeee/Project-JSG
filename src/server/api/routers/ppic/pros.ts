@@ -1,5 +1,6 @@
 ﻿import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { randomUUID } from "crypto";
 import { Prisma, Role, ProStatus } from "../../../../../generated/prisma";
 import {
   createTRPCRouter,
@@ -584,6 +585,7 @@ export const prosRouter = createTRPCRouter({
               startDate: z.coerce.date().optional(),
               partNumber: z.string().optional(),
               batchNo: z.string().optional(),
+              splitGroupId: z.string().optional(),
             }),
           )
           .min(1),
@@ -673,7 +675,7 @@ export const prosRouter = createTRPCRouter({
 
         for (let i = 0; i < need; i++) {
           const sheetsInThisShift = shiftSheets[i] ?? 0;
-          if (sheetsInThisShift > 0 && inputStep.machineId) {
+          if (input.expand !== false && sheetsInThisShift > 0 && inputStep.machineId) {
             await checkCapacity(
               ctx.db,
               inputStep.machineId,
@@ -789,6 +791,7 @@ export const prosRouter = createTRPCRouter({
                 totalPlannedSheets > 0 ? s / totalPlannedSheets : 1,
               ),
             );
+            const stepSplitGroupId = inputStep.splitGroupId?.trim() || randomUUID();
 
             for (let i = 0; i < need; i++) {
               const sheetsInThisShift = shiftSheets[i] ?? 0;
@@ -821,6 +824,7 @@ export const prosRouter = createTRPCRouter({
                   },
                   estimatedShifts: calc.shiftCount,
                   plannedQtyPcs: shiftTargetPcs[i] ?? 0,
+                  splitGroupId: stepSplitGroupId,
                 },
               });
 
@@ -869,6 +873,8 @@ export const prosRouter = createTRPCRouter({
               partNumber: true,
               batchNo: true,
               estimatedShifts: true,
+              plannedQtyPcs: true,
+              splitGroupId: true,
               machine: {
                 select: {
                   id: true,
@@ -937,6 +943,7 @@ export const prosRouter = createTRPCRouter({
               startDate: z.coerce.date().optional(),
               partNumber: z.string().optional(),
               batchNo: z.string().optional(),
+              splitGroupId: z.string().optional(),
             }),
           )
           .min(1),
@@ -1108,19 +1115,91 @@ export const prosRouter = createTRPCRouter({
           let currentShift = getShiftFromTime(baseDate);
 
           let globalOrderNo = 1;
+          const sortedInputSteps = input.proses
+            .slice()
+            .sort((a, b) => a.orderNo - b.orderNo);
 
-          for (const s of input.proses) {
-            const matMaterials = s.materials ?? [];
-            const machineMeta = s.machineId
-              ? machineById.get(s.machineId)
+          const groupedSteps = new Map<string, typeof sortedInputSteps>();
+          const stepKeyList: Array<{ step: (typeof sortedInputSteps)[number]; key: string }> = [];
+
+          let fallbackGroupCounter = 0;
+          let fallbackGroupKey = "";
+          let prevFallbackSignature = "";
+
+          for (const [idx, s] of sortedInputSteps.entries()) {
+            const explicitGroup = s.splitGroupId?.trim();
+            let groupKey = explicitGroup && explicitGroup.length > 0 ? explicitGroup : "";
+
+            if (!groupKey) {
+              const signature = `${s.machineId ?? "null"}|${s.up ?? 0}|${s.partNumber ?? ""}|${s.batchNo ?? ""}`;
+              if (signature !== prevFallbackSignature) {
+                fallbackGroupCounter += 1;
+                fallbackGroupKey = `split-${input.id}-${fallbackGroupCounter}`;
+                prevFallbackSignature = signature;
+              }
+              groupKey = fallbackGroupKey;
+            } else {
+              // Reset fallback cursor whenever explicit group appears.
+              fallbackGroupKey = "";
+              prevFallbackSignature = "";
+            }
+
+            const stepKey = s.id ? `id:${s.id}` : `idx:${idx}`;
+            stepKeyList.push({ step: s, key: stepKey });
+
+            const arr = groupedSteps.get(groupKey) ?? [];
+            arr.push(s);
+            groupedSteps.set(groupKey, arr);
+          }
+
+          const splitMetaByStepKey = new Map<
+            string,
+            {
+              plannedQtyPcs: number;
+              estimatedShifts: number;
+              splitGroupId: string;
+            }
+          >();
+
+          for (const [groupKey, groupSteps] of groupedSteps.entries()) {
+            const firstStep = groupSteps[0];
+            if (!firstStep) continue;
+
+            const machineMeta = firstStep.machineId
+              ? machineById.get(firstStep.machineId)
               : undefined;
             const calc = calculateProStepShiftAndTarget({
               machineUom: machineMeta?.uom,
               machineStdOutputPerShift: machineMeta?.stdOutputPerShift,
-              upCav: s.up ?? null,
+              upCav: firstStep.up ?? null,
               qtyPoPcs: input.qtyPoPcs,
             });
-            const stepPlannedQtyPcs = calc.plannedQtyPcsTotal;
+
+            const rowCount = Math.max(1, groupSteps.length);
+            const estimatedShifts = rowCount;
+            const shiftSheets = buildShiftSheetLoadsForRowCount(calc, rowCount);
+            const totalShiftSheets = shiftSheets.reduce((acc, val) => acc + val, 0);
+            const stepTargets = distributeIntegerByWeights(
+              calc.plannedQtyPcsTotal,
+              shiftSheets.map((sheets) =>
+                totalShiftSheets > 0 ? sheets / totalShiftSheets : 1,
+              ),
+            );
+
+            for (const [idx, step] of groupSteps.entries()) {
+              const key = step.id
+                ? `id:${step.id}`
+                : `idx:${stepKeyList.findIndex((x) => x.step === step)}`;
+              splitMetaByStepKey.set(key, {
+                plannedQtyPcs: stepTargets[idx] ?? 0,
+                estimatedShifts,
+                splitGroupId: groupKey,
+              });
+            }
+          }
+
+          for (const { step: s, key: stepKey } of stepKeyList) {
+            const matMaterials = s.materials ?? [];
 
             if (s.startDate) {
               currentDay = startOfDay(new Date(s.startDate));
@@ -1128,7 +1207,12 @@ export const prosRouter = createTRPCRouter({
             }
 
             const stepDate = getShiftDate(currentDay, currentShift);
-            const needs = calc.shiftCount;
+
+            const splitMeta = splitMetaByStepKey.get(stepKey);
+            const stepPlannedQtyPcs = splitMeta?.plannedQtyPcs ?? Number(input.qtyPoPcs);
+            const stepEstimatedShifts = splitMeta?.estimatedShifts ?? 1;
+            const stepSplitGroupId =
+              splitMeta?.splitGroupId ?? s.splitGroupId?.trim() ?? randomUUID();
 
             const recreateMaterials = async (prosesId: number) => {
               // MATERIAL LOCK GUARD: reject material changes if inventory txns exist
@@ -1171,8 +1255,9 @@ export const prosRouter = createTRPCRouter({
                     `${stepMachineName} ${input.productName}`.trim(),
                   ),
                   startDate: stepDate,
-                  estimatedShifts: needs,
+                  estimatedShifts: stepEstimatedShifts,
                   plannedQtyPcs: stepPlannedQtyPcs,
+                  splitGroupId: stepSplitGroupId,
                 },
               });
               await recreateMaterials(s.id);
@@ -1191,8 +1276,9 @@ export const prosRouter = createTRPCRouter({
                     "WIP",
                     `${stepMachineName} ${input.productName}`.trim(),
                   ),
-                  estimatedShifts: needs,
+                  estimatedShifts: stepEstimatedShifts,
                   plannedQtyPcs: stepPlannedQtyPcs,
+                  splitGroupId: stepSplitGroupId,
                   materials: {
                     create: matMaterials.map((m) => ({
                       itemMasterId: m.materialId,
@@ -1396,6 +1482,47 @@ export const prosRouter = createTRPCRouter({
       return items.filter((p) => p.proses.length > 0);
     }),
 });
+
+function buildShiftSheetLoadsForRowCount(
+  calc: ReturnType<typeof calculateProStepShiftAndTarget>,
+  rowCount: number,
+): number[] {
+  const safeRowCount = Math.max(1, Math.floor(Number(rowCount ?? 1)));
+  const totalSheets = Number(calc.totalPlannedSheets ?? 0);
+  const std = Number(calc.stdOutputPerShift ?? 0);
+
+  if (safeRowCount === 1) return [Math.max(0, totalSheets)];
+
+  if (
+    calc.shiftSheetLoads.length === safeRowCount &&
+    safeRowCount === Math.max(1, calc.shiftCount)
+  ) {
+    return calc.shiftSheetLoads;
+  }
+
+  if (totalSheets <= 0) {
+    return Array.from({ length: safeRowCount }, () => 0);
+  }
+
+  if (std > 0) {
+    const loads: number[] = [];
+    let remaining = totalSheets;
+
+    for (let i = 0; i < safeRowCount; i++) {
+      const remainingSlots = safeRowCount - i;
+      const load =
+        remainingSlots === 1
+          ? Math.max(0, remaining)
+          : Math.max(0, Math.min(remaining, std));
+      loads.push(load);
+      remaining = Math.max(0, remaining - load);
+    }
+
+    return loads;
+  }
+
+  return Array.from({ length: safeRowCount }, () => totalSheets / safeRowCount);
+}
 
 function distributeIntegerByWeights(
   total: number,

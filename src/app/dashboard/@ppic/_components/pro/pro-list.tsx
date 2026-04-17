@@ -101,12 +101,183 @@ function combineDateShift(dateStr: string | null | undefined, shift: number) {
   return d;
 }
 
+function buildShiftSheetLoadsForRowCount(opts: {
+  totalSheets: number;
+  stdOutputPerShift: number;
+  rowCount: number;
+  defaultLoads?: number[];
+  defaultShiftCount?: number;
+}) {
+  const safeRowCount = Math.max(1, Math.floor(Number(opts.rowCount ?? 1)));
+  const totalSheets = Math.max(0, Number(opts.totalSheets ?? 0));
+  const std = Number(opts.stdOutputPerShift ?? 0);
+
+  if (safeRowCount === 1) return [totalSheets];
+
+  if (
+    opts.defaultLoads &&
+    opts.defaultShiftCount &&
+    opts.defaultLoads.length === safeRowCount &&
+    safeRowCount === Math.max(1, opts.defaultShiftCount)
+  ) {
+    return opts.defaultLoads;
+  }
+
+  if (totalSheets <= 0) {
+    return Array.from({ length: safeRowCount }, () => 0);
+  }
+
+  if (std > 0) {
+    const loads: number[] = [];
+    let remaining = totalSheets;
+
+    for (let i = 0; i < safeRowCount; i++) {
+      const remainingSlots = safeRowCount - i;
+      const load =
+        remainingSlots === 1
+          ? Math.max(0, remaining)
+          : Math.max(0, Math.min(remaining, std));
+      loads.push(load);
+      remaining = Math.max(0, remaining - load);
+    }
+
+    return loads;
+  }
+
+  return Array.from({ length: safeRowCount }, () => totalSheets / safeRowCount);
+}
+
+function distributeIntegerByWeights(total: number, weights: number[]) {
+  const count = weights.length;
+  if (count === 0) return [];
+
+  const safeTotal = Math.max(0, Math.round(total));
+  const normalized = weights.map((w) => (Number.isFinite(w) && w > 0 ? w : 0));
+  const sumWeight = normalized.reduce((acc, w) => acc + w, 0);
+
+  if (sumWeight <= 0) {
+    const base = Math.floor(safeTotal / count);
+    const out = Array.from({ length: count }, () => base);
+    for (let i = 0; i < safeTotal - base * count; i++) {
+      out[i % count]! += 1;
+    }
+    return out;
+  }
+
+  const draft = normalized.map((w, idx) => {
+    const raw = (safeTotal * w) / sumWeight;
+    const floorVal = Math.floor(raw);
+    return {
+      idx,
+      floorVal,
+      frac: raw - floorVal,
+    };
+  });
+
+  const out = Array.from({ length: count }, (_, idx) => draft[idx]!.floorVal);
+  let remaining = safeTotal - out.reduce((acc, v) => acc + v, 0);
+
+  draft.sort((a, b) => {
+    if (b.frac !== a.frac) return b.frac - a.frac;
+    return a.idx - b.idx;
+  });
+
+  let k = 0;
+  while (remaining > 0 && count > 0) {
+    const pick = draft[k % count];
+    out[pick!.idx]! += 1;
+    remaining--;
+    k++;
+  }
+
+  return out;
+}
+
 function normalizeItemCode(value: string) {
   return value.trim().toUpperCase().replace(/\s+/g, "_");
 }
 
 function newMaterialDraftKey() {
   return Math.random().toString(36).slice(2);
+}
+
+function newSplitGroupDraftId() {
+  return `split-draft-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+type SplitTargetRowInput = {
+  rowKey: string;
+  splitGroupId?: string | null;
+  fallbackSignature: string;
+  machineUom?: string | null;
+  stdOutputPerShift?: number | null;
+  upCav?: number | null;
+  qtyPoPcs: number;
+};
+
+function buildSplitTargetByRowKey(rows: SplitTargetRowInput[]) {
+  const groupedRows = new Map<string, SplitTargetRowInput[]>();
+  let fallbackCounter = 0;
+  let fallbackGroupKey = "";
+  let prevFallbackSignature = "";
+
+  for (const row of rows) {
+    const explicitGroup = row.splitGroupId?.trim();
+    let groupKey = explicitGroup && explicitGroup.length > 0 ? explicitGroup : "";
+
+    if (!groupKey) {
+      const signature = row.fallbackSignature;
+      if (signature !== prevFallbackSignature) {
+        fallbackCounter += 1;
+        fallbackGroupKey = `legacy-split-${fallbackCounter}`;
+        prevFallbackSignature = signature;
+      }
+      groupKey = fallbackGroupKey;
+    } else {
+      fallbackGroupKey = "";
+      prevFallbackSignature = "";
+    }
+
+    const bucket = groupedRows.get(groupKey) ?? [];
+    bucket.push(row);
+    groupedRows.set(groupKey, bucket);
+  }
+
+  const targetByRowKey = new Map<string, number>();
+
+  for (const groupRows of groupedRows.values()) {
+    const firstRow = groupRows[0];
+    if (!firstRow) continue;
+
+    const calc = calculateProStepShiftAndTarget({
+      machineUom: firstRow.machineUom,
+      machineStdOutputPerShift: firstRow.stdOutputPerShift,
+      upCav: firstRow.upCav,
+      qtyPoPcs: firstRow.qtyPoPcs,
+    });
+
+    const rowCount = Math.max(1, groupRows.length);
+    const shiftLoads = buildShiftSheetLoadsForRowCount({
+      totalSheets: calc.totalPlannedSheets,
+      stdOutputPerShift: calc.stdOutputPerShift,
+      rowCount,
+      defaultLoads: calc.shiftSheetLoads,
+      defaultShiftCount: calc.shiftCount,
+    });
+    const totalShiftSheets = shiftLoads.reduce((acc, val) => acc + val, 0);
+    const rowTargets = distributeIntegerByWeights(
+      calc.plannedQtyPcsTotal,
+      shiftLoads.map((sheets) =>
+        totalShiftSheets > 0 ? sheets / totalShiftSheets : 1,
+      ),
+    );
+
+    for (const [idx, row] of groupRows.entries()) {
+      targetByRowKey.set(row.rowKey, rowTargets[idx] ?? 0);
+    }
+  }
+
+  return targetByRowKey;
 }
 
 function fmtSchedule(
@@ -251,6 +422,8 @@ type StepDraft = {
   shift: number; // 1, 2, or 3
   partNumber?: string;
   batchNo?: string;
+  splitGroupId?: string | null;
+  plannedQtyPcs?: number | null;
 };
 
 export default function ProList({
@@ -840,6 +1013,8 @@ export default function ProList({
         shift: dt ? shiftFromDate(dt) : 1,
         partNumber: (s as any).partNumber ?? "",
         batchNo: (s as any).batchNo ?? "",
+        splitGroupId: (s as any).splitGroupId ?? null,
+        plannedQtyPcs: (s as any).plannedQtyPcs ?? null,
       };
     });
   }, [detail.data]);
@@ -932,6 +1107,7 @@ export default function ProList({
           startDate: combineDateShift(s.startDate, s.shift),
           partNumber: s.partNumber,
           batchNo: batchNo, // Use header batch no for all steps
+          splitGroupId: s.splitGroupId ?? undefined,
         })),
 
       // expand: expandDraft, // Removed as per backend change
