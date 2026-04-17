@@ -10930,6 +10930,7 @@ export namespace Prisma {
     up: number | null
     estimatedShifts: number | null
     plannedQtyPcs: number | null
+    splitGroupId: string | null
     startDate: Date | null
     machineId: number | null
     partNumber: string | null
@@ -10944,6 +10945,7 @@ export namespace Prisma {
     up: number | null
     estimatedShifts: number | null
     plannedQtyPcs: number | null
+    splitGroupId: string | null
     startDate: Date | null
     machineId: number | null
     partNumber: string | null
@@ -10958,6 +10960,7 @@ export namespace Prisma {
     up: number
     estimatedShifts: number
     plannedQtyPcs: number
+    splitGroupId: number
     startDate: number
     machineId: number
     partNumber: number
@@ -10996,6 +10999,7 @@ export namespace Prisma {
     up?: true
     estimatedShifts?: true
     plannedQtyPcs?: true
+    splitGroupId?: true
     startDate?: true
     machineId?: true
     partNumber?: true
@@ -11010,6 +11014,7 @@ export namespace Prisma {
     up?: true
     estimatedShifts?: true
     plannedQtyPcs?: true
+    splitGroupId?: true
     startDate?: true
     machineId?: true
     partNumber?: true
@@ -11024,6 +11029,7 @@ export namespace Prisma {
     up?: true
     estimatedShifts?: true
     plannedQtyPcs?: true
+    splitGroupId?: true
     startDate?: true
     machineId?: true
     partNumber?: true
@@ -11125,6 +11131,7 @@ export namespace Prisma {
     up: number | null
     estimatedShifts: number | null
     plannedQtyPcs: number | null
+    splitGroupId: string | null
     startDate: Date | null
     machineId: number | null
     partNumber: string | null
@@ -11158,6 +11165,7 @@ export namespace Prisma {
     up?: boolean
     estimatedShifts?: boolean
     plannedQtyPcs?: boolean
+    splitGroupId?: boolean
     startDate?: boolean
     machineId?: boolean
     partNumber?: boolean
@@ -11179,6 +11187,7 @@ export namespace Prisma {
     up?: boolean
     estimatedShifts?: boolean
     plannedQtyPcs?: boolean
+    splitGroupId?: boolean
     startDate?: boolean
     machineId?: boolean
     partNumber?: boolean
@@ -11196,6 +11205,7 @@ export namespace Prisma {
     up?: boolean
     estimatedShifts?: boolean
     plannedQtyPcs?: boolean
+    splitGroupId?: boolean
     startDate?: boolean
     machineId?: boolean
     partNumber?: boolean
@@ -11213,6 +11223,7 @@ export namespace Prisma {
     up?: boolean
     estimatedShifts?: boolean
     plannedQtyPcs?: boolean
+    splitGroupId?: boolean
     startDate?: boolean
     machineId?: boolean
     partNumber?: boolean
@@ -11220,7 +11231,7 @@ export namespace Prisma {
     outputItemId?: boolean
   }
 
-  export type ProsesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "up" | "estimatedShifts" | "plannedQtyPcs" | "startDate" | "machineId" | "partNumber" | "batchNo" | "outputItemId", ExtArgs["result"]["proses"]>
+  export type ProsesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "proId" | "orderNo" | "up" | "estimatedShifts" | "plannedQtyPcs" | "splitGroupId" | "startDate" | "machineId" | "partNumber" | "batchNo" | "outputItemId", ExtArgs["result"]["proses"]>
   export type ProsesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pro?: boolean | ProDefaultArgs<ExtArgs>
     machine?: boolean | Proses$machineArgs<ExtArgs>
@@ -11258,6 +11269,7 @@ export namespace Prisma {
       up: number | null
       estimatedShifts: number | null
       plannedQtyPcs: number | null
+      splitGroupId: string | null
       startDate: Date | null
       machineId: number | null
       partNumber: string | null
@@ -11698,6 +11710,7 @@ export namespace Prisma {
     readonly up: FieldRef<"Proses", 'Int'>
     readonly estimatedShifts: FieldRef<"Proses", 'Int'>
     readonly plannedQtyPcs: FieldRef<"Proses", 'Int'>
+    readonly splitGroupId: FieldRef<"Proses", 'String'>
     readonly startDate: FieldRef<"Proses", 'DateTime'>
     readonly machineId: FieldRef<"Proses", 'Int'>
     readonly partNumber: FieldRef<"Proses", 'String'>
@@ -17621,6 +17634,7 @@ export namespace Prisma {
     up: 'up',
     estimatedShifts: 'estimatedShifts',
     plannedQtyPcs: 'plannedQtyPcs',
+    splitGroupId: 'splitGroupId',
     startDate: 'startDate',
     machineId: 'machineId',
     partNumber: 'partNumber',
@@ -18604,6 +18618,7 @@ export namespace Prisma {
     up?: IntNullableFilter<"Proses"> | number | null
     estimatedShifts?: IntNullableFilter<"Proses"> | number | null
     plannedQtyPcs?: IntNullableFilter<"Proses"> | number | null
+    splitGroupId?: StringNullableFilter<"Proses"> | string | null
     startDate?: DateTimeNullableFilter<"Proses"> | Date | string | null
     machineId?: IntNullableFilter<"Proses"> | number | null
     partNumber?: StringNullableFilter<"Proses"> | string | null
@@ -18624,6 +18639,7 @@ export namespace Prisma {
     up?: SortOrderInput | SortOrder
     estimatedShifts?: SortOrderInput | SortOrder
     plannedQtyPcs?: SortOrderInput | SortOrder
+    splitGroupId?: SortOrderInput | SortOrder
     startDate?: SortOrderInput | SortOrder
     machineId?: SortOrderInput | SortOrder
     partNumber?: SortOrderInput | SortOrder
@@ -18648,6 +18664,7 @@ export namespace Prisma {
     up?: IntNullableFilter<"Proses"> | number | null
     estimatedShifts?: IntNullableFilter<"Proses"> | number | null
     plannedQtyPcs?: IntNullableFilter<"Proses"> | number | null
+    splitGroupId?: StringNullableFilter<"Proses"> | string | null
     startDate?: DateTimeNullableFilter<"Proses"> | Date | string | null
     machineId?: IntNullableFilter<"Proses"> | number | null
     partNumber?: StringNullableFilter<"Proses"> | string | null
@@ -18668,6 +18685,7 @@ export namespace Prisma {
     up?: SortOrderInput | SortOrder
     estimatedShifts?: SortOrderInput | SortOrder
     plannedQtyPcs?: SortOrderInput | SortOrder
+    splitGroupId?: SortOrderInput | SortOrder
     startDate?: SortOrderInput | SortOrder
     machineId?: SortOrderInput | SortOrder
     partNumber?: SortOrderInput | SortOrder
@@ -18690,6 +18708,7 @@ export namespace Prisma {
     up?: IntNullableWithAggregatesFilter<"Proses"> | number | null
     estimatedShifts?: IntNullableWithAggregatesFilter<"Proses"> | number | null
     plannedQtyPcs?: IntNullableWithAggregatesFilter<"Proses"> | number | null
+    splitGroupId?: StringNullableWithAggregatesFilter<"Proses"> | string | null
     startDate?: DateTimeNullableWithAggregatesFilter<"Proses"> | Date | string | null
     machineId?: IntNullableWithAggregatesFilter<"Proses"> | number | null
     partNumber?: StringNullableWithAggregatesFilter<"Proses"> | string | null
@@ -19777,6 +19796,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
@@ -19795,6 +19815,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
@@ -19810,6 +19831,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19828,6 +19850,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19845,6 +19868,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
@@ -19857,6 +19881,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19869,6 +19894,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21179,6 +21205,7 @@ export namespace Prisma {
     up?: SortOrder
     estimatedShifts?: SortOrder
     plannedQtyPcs?: SortOrder
+    splitGroupId?: SortOrder
     startDate?: SortOrder
     machineId?: SortOrder
     partNumber?: SortOrder
@@ -21204,6 +21231,7 @@ export namespace Prisma {
     up?: SortOrder
     estimatedShifts?: SortOrder
     plannedQtyPcs?: SortOrder
+    splitGroupId?: SortOrder
     startDate?: SortOrder
     machineId?: SortOrder
     partNumber?: SortOrder
@@ -21218,6 +21246,7 @@ export namespace Prisma {
     up?: SortOrder
     estimatedShifts?: SortOrder
     plannedQtyPcs?: SortOrder
+    splitGroupId?: SortOrder
     startDate?: SortOrder
     machineId?: SortOrder
     partNumber?: SortOrder
@@ -24301,6 +24330,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
@@ -24318,6 +24348,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
@@ -24424,6 +24455,7 @@ export namespace Prisma {
     up?: IntNullableFilter<"Proses"> | number | null
     estimatedShifts?: IntNullableFilter<"Proses"> | number | null
     plannedQtyPcs?: IntNullableFilter<"Proses"> | number | null
+    splitGroupId?: StringNullableFilter<"Proses"> | string | null
     startDate?: DateTimeNullableFilter<"Proses"> | Date | string | null
     machineId?: IntNullableFilter<"Proses"> | number | null
     partNumber?: StringNullableFilter<"Proses"> | string | null
@@ -24626,6 +24658,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
@@ -24643,6 +24676,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
@@ -25100,6 +25134,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
@@ -25116,6 +25151,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
@@ -25838,6 +25874,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
@@ -25855,6 +25892,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
@@ -25921,6 +25959,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25938,6 +25977,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25994,6 +26034,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
@@ -26011,6 +26052,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
@@ -26151,6 +26193,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26168,6 +26211,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26532,6 +26576,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
@@ -26549,6 +26594,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
@@ -26790,6 +26836,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26807,6 +26854,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27500,6 +27548,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     partNumber?: string | null
     batchNo?: string | null
@@ -27517,6 +27566,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27534,6 +27584,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27550,6 +27601,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27612,6 +27664,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
@@ -27728,6 +27781,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27745,6 +27799,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27761,6 +27816,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27938,6 +27994,7 @@ export namespace Prisma {
     up?: number | null
     estimatedShifts?: number | null
     plannedQtyPcs?: number | null
+    splitGroupId?: string | null
     startDate?: Date | string | null
     machineId?: number | null
     partNumber?: string | null
@@ -27965,6 +28022,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
     batchNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27981,6 +28039,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27997,6 +28056,7 @@ export namespace Prisma {
     up?: NullableIntFieldUpdateOperationsInput | number | null
     estimatedShifts?: NullableIntFieldUpdateOperationsInput | number | null
     plannedQtyPcs?: NullableIntFieldUpdateOperationsInput | number | null
+    splitGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     machineId?: NullableIntFieldUpdateOperationsInput | number | null
     partNumber?: NullableStringFieldUpdateOperationsInput | string | null

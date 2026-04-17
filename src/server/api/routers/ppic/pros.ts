@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { randomUUID } from "crypto";
 import { Prisma, Role, ProStatus } from "../../../../../generated/prisma";
@@ -573,6 +573,7 @@ export const prosRouter = createTRPCRouter({
           .array(
             z.object({
               up: z.number().int().min(0).optional(),
+              plannedQtyPcs: z.number().int().positive().optional(), // Target per proses (overrides qtyPoPcs for shift calc)
               machineId: z.number().int().positive().nullable().optional(),
               materials: z
                 .array(
@@ -659,7 +660,7 @@ export const prosRouter = createTRPCRouter({
           machineUom: machineMeta?.uom,
           machineStdOutputPerShift: machineMeta?.stdOutputPerShift,
           upCav: inputStep.up ?? null,
-          qtyPoPcs: input.qtyPoPcs,
+          qtyPoPcs: inputStep.plannedQtyPcs ?? input.qtyPoPcs, // per-step target takes priority
         });
         const need = input.expand === false ? 1 : calc.shiftCount;
 
@@ -766,7 +767,7 @@ export const prosRouter = createTRPCRouter({
               machineUom: machineMeta?.uom,
               machineStdOutputPerShift: machineMeta?.stdOutputPerShift,
               upCav: inputStep.up ?? null,
-              qtyPoPcs: input.qtyPoPcs,
+              qtyPoPcs: inputStep.plannedQtyPcs ?? input.qtyPoPcs, // per-step target takes priority
             });
 
             const need = input.expand === false ? 1 : calc.shiftCount;

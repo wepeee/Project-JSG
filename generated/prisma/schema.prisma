@@ -253,6 +253,7 @@ model Proses {
   up              Int?
   estimatedShifts Int?
   plannedQtyPcs   Int?
+  splitGroupId    String?
 
   startDate DateTime?
 
@@ -274,6 +275,7 @@ model Proses {
 
   @@unique([proId, orderNo])
   @@index([proId])
+  @@index([splitGroupId])
 }
 
 model ProsesMaterial {

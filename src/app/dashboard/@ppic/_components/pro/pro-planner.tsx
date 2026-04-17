@@ -54,6 +54,7 @@ type StepDraftMaterial = {
 type StepDraft = {
   key: string;
   up: string;
+  plannedQtyPcs: string; // Target per Proses (optional; overrides qtyPoPcs for this step)
   machineId: number | null;
   materials: StepDraftMaterial[];
   startDate: string;
@@ -71,6 +72,7 @@ function newStep(): StepDraft {
   return {
     key: uid(),
     up: "",
+    plannedQtyPcs: "",
     machineId: null,
     materials: [{ key: uid(), materialId: null, qtyReq: "" }],
     startDate: "",
@@ -603,9 +605,15 @@ export default function ProPlanner({
             });
           }
 
+          // Parse Qty Order per row as target for this step
+          const stepTargetStr = qtyOrderStr
+            ? qtyOrderStr.replace(/\./g, "").replace(/,/g, "")
+            : "";
+
           newSteps.push({
             key: uid(),
             up: totalLpr || "1",
+            plannedQtyPcs: stepTargetStr || "",
             machineId: mach ? mach.id : null,
             startDate: formattedDate,
             partNumber: partNum || "",
@@ -750,9 +758,15 @@ export default function ProPlanner({
             });
           }
 
+          // Parse Qty Order per row as target for this step (col 5)
+          const stepQtyStr = qtyOrderStr
+            ? qtyOrderStr.replace(/\./g, "").replace(/,/g, "")
+            : "";
+
           newSteps.push({
             key: uid(),
             up: totalUpStr || "1", // Use row specific up or default 1
+            plannedQtyPcs: stepQtyStr || "",
             machineId: mach ? mach.id : null,
             startDate: formattedDate,
             partNumber: partNum || "",
@@ -897,6 +911,7 @@ export default function ProPlanner({
 
       prosesPayload = steps.map((s) => ({
         up: Number(s.up),
+        plannedQtyPcs: s.plannedQtyPcs ? Number(s.plannedQtyPcs) : undefined,
         machineId: s.machineId ?? null,
         startDate: s.startDate ? new Date(s.startDate) : undefined,
         partNumber: s.partNumber?.trim() || undefined,
@@ -1481,7 +1496,7 @@ export default function ProPlanner({
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     const newUp = e.target.value;
                     const upNum = Number(newUp);
-                    const poNum = Number(qtyPoPcs);
+                    const poNum = Number(draft.plannedQtyPcs || qtyPoPcs);
 
                     setDraft((d: StepDraft) => {
                       // Recalc materials if material is sheet
@@ -1509,6 +1524,23 @@ export default function ProPlanner({
               </div>
 
               <div className="space-y-2">
+                <div className="text-sm font-medium">
+                  Target per Proses (Pcs)
+                </div>
+                <Input
+                  type="number"
+                  value={draft.plannedQtyPcs}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setDraft((d: StepDraft) => ({
+                      ...d,
+                      plannedQtyPcs: e.target.value,
+                    }))
+                  }
+                  placeholder={`default: ${Number(qtyPoPcs).toLocaleString("id-ID") || "—"} pcs`}
+                />
+              </div>
+
+              <div className="space-y-2 sm:col-span-2">
                 <div className="text-sm font-medium">
                   Output Part Number (Step)
                 </div>
@@ -1797,11 +1829,13 @@ function SortableRow({
   };
 
   const m = machines.find((x) => x.id === step.machineId);
+  // Use per-step target if provided, else fall back to PRO qty
+  const effectiveQtyPo = Number(step.plannedQtyPcs) || qtyPo;
   const calc = calculateProStepShiftAndTarget({
     machineUom: m?.uom,
     machineStdOutputPerShift: m?.stdOutputPerShift,
     upCav: Number(step.up),
-    qtyPoPcs: qtyPo,
+    qtyPoPcs: effectiveQtyPo,
   });
   const targetQty = calc.plannedQtyPcsTotal;
   const shiftCount = calc.shiftCount;
