@@ -1,204 +1,258 @@
-# Production Monitoring App (T3 + Prisma)
+# Project JSG - Production Monitoring System
 
-Web app monitoring produksi dengan multi-role dashboard:
+Aplikasi web monitoring produksi multi-role untuk operasional pabrik (paper & rigid), dengan fokus pada:
+- perencanaan PRO,
+- eksekusi laporan harian operator (LPH),
+- verifikasi superadmin,
+- inventory flow RAW/WIP/FG,
+- dashboard analitik lintas role.
+
+Dokumen ini ditulis sebagai **onboarding context** untuk developer baru dan AI agent baru.
+
+## 1) Identitas Project
+
+- Nama operasional: **Project JSG**
+- Domain use case: **Manufacturing Production Monitoring**
+- Frontend/backend style: **Monorepo Next.js App Router + tRPC**
+- Database utama: **PostgreSQL**
+- ORM: **Prisma**
+- Auth: **NextAuth Credentials**
+
+Role utama di sistem:
 - `SUPERADMIN`
 - `ADMIN`
 - `PPIC`
 - `OPERATOR`
 - `MASTER`
 
-Fokus utama:
-- manajemen PRO dan proses produksi (paper + rigid),
-- laporan harian operator,
-- inventory flow (RAW/WIP/FG),
-- dashboard analitik per role.
-
-## Tech Stack
+## 2) Tech Stack
 
 - Next.js 15 (App Router)
 - TypeScript
-- tRPC + React Query
-- NextAuth
+- tRPC + TanStack Query
+- NextAuth (credentials)
 - Prisma + PostgreSQL
 - Tailwind CSS + shadcn/ui
+- Jest (integration + unit)
 
-## Struktur Dashboard
+## 3) Struktur Aplikasi
 
-Routing dashboard memakai role slot pada `src/app/dashboard`:
-- `@superadmin`
-- `@admin`
-- `@ppic`
-- `@operator`
-- `@master`
+Entry dashboard di `/dashboard` dengan role-slot:
+- `src/app/dashboard/@superadmin`
+- `src/app/dashboard/@admin`
+- `src/app/dashboard/@ppic`
+- `src/app/dashboard/@operator`
+- `src/app/dashboard/@master`
 
-Entry utama tetap di `/dashboard`, lalu konten ditentukan dari role user login.
+Root layout:
+- metadata/title di `src/app/layout.tsx`
+- providers (session/theme/progress) di `src/app/providers.tsx`
 
-## Prasyarat
+Catatan UI global saat ini:
+- default theme: `dark`
+- favicon aktif: `/jsg.ico`
 
+## 4) Domain Data Inti (Prisma)
+
+Lihat `prisma/schema.prisma`.
+
+Entity utama:
+- `User`, `UserMachineAccess`
+- `Machine` (dengan UOM dan kapasitas shift)
+- `Item` (unified RAW/WIP/FG/CONSUMABLE)
+- `Pro`, `Proses`, `ProsesMaterial`
+- `ProductionReport`
+- `InventoryLocation`, `InventoryTxn`
+
+Poin penting model saat ini:
+- `Proses.plannedQtyPcs` untuk target per row/proses
+- `Proses.splitGroupId` untuk grouping proses hasil split
+- `ProductionReport.outputUom` (`pcs`/`sheet`) sebagai snapshot UOM output laporan
+- Inventory posting ditrace ke PRO/Proses/Report via FK
+
+## 5) Aturan Bisnis Penting (Current Behavior)
+
+### 5.1 Perhitungan target/shift PRO
+- Source utama perhitungan adalah **target PRO (`qtyPoPcs`)**.
+- `UP/CAV` dipakai untuk konversi kebutuhan lembar (`sheet`) saat estimasi shift.
+- Jika proses terpecah menjadi multi-shift, target didistribusikan ke row berdasarkan load shift (integer distribution), totalnya tetap sama dengan target PRO.
+
+### 5.2 Output UOM laporan operator
+- Output UOM laporan disimpan sebagai snapshot `ProductionReport.outputUom`.
+- Fokus UOM output saat ini: `pcs` dan `sheet`.
+- Dipakai agar verifikasi/arsip tidak ambigu unit output.
+
+### 5.3 Inventory
+- Sistem menyimpan transaksi IN/OUT/ADJUST di `InventoryTxn`.
+- Traceability mengikat transaksi ke `Pro`, `Proses`, dan/atau `ProductionReport`.
+
+## 6) Setup Lokal
+
+Prasyarat:
 - Node.js 20+
-- `pnpm` (project memakai `pnpm@10`)
-- PostgreSQL (lokal, Docker, Supabase, atau managed service lain)
+- pnpm 10+
+- PostgreSQL
 
-## Setup Lokal
-
-1. Install dependency:
+Langkah:
 
 ```bash
 pnpm install
-```
-
-2. Buat env:
-
-```bash
 cp .env.example .env
 ```
 
-3. Isi minimal variabel berikut di `.env`:
+Isi variabel minimal di `.env`:
 - `AUTH_SECRET`
 - `DATABASE_URL`
 - `DIRECT_URL`
 
-4. Jalankan migrasi dev:
+Lalu:
 
 ```bash
+pnpm db:generate
 pnpm db:migrate:dev --name init
-```
-
-5. (Opsional) seed data:
-
-```bash
-pnpm db:seed
-```
-
-6. Jalankan app:
-
-```bash
+pnpm db:seed   # opsional
 pnpm dev
 ```
 
-## Script Penting
+## 7) Script Penting
 
-- `pnpm dev` - jalankan dev server
+Aplikasi:
+- `pnpm dev` - dev server
 - `pnpm build` - build production
-- `pnpm start` - start app production
-- `pnpm typecheck` - cek TypeScript
-- `pnpm lint` - lint project
-- `pnpm db:migrate:dev` - buat + apply migration di dev
-- `pnpm db:migrate` - apply migration di staging/prod (`prisma migrate deploy`)
-- `pnpm db:seed` - seed data
-- `pnpm db:studio` - buka Prisma Studio
-- `pnpm db:inject:dummy-pro` - inject data PRO dummy end-to-end
+- `pnpm start` - start production server
+- `pnpm preview` - build + start
 
-## Database & Migration Policy
+Quality:
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test`
+- `pnpm test:unit`
+- `pnpm test:integration`
 
-Jangan langsung pakai workflow destruktif di production.
+Database:
+- `pnpm db:generate`
+- `pnpm db:migrate:dev`
+- `pnpm db:migrate` (deploy migration)
+- `pnpm db:seed`
+- `pnpm db:studio`
+- `pnpm db:push` (dev only, bukan prod-like)
+- `pnpm db:reset` (dev only)
 
-Praktik aman:
-- dev: `pnpm db:migrate:dev`
-- staging/prod: `pnpm db:migrate`
-- selalu backup sebelum migrate production
-- gunakan strategi expand/backfill/contract untuk perubahan schema besar
+Inject sample data:
+- `pnpm db:inject:dummy-pro`
+- `pnpm db:inject:paper-approved`
+- `pnpm db:inject:paper-daily-sample`
+- `pnpm db:inject:pending-verification`
+- `pnpm db:inject:rigid-4pro-1step`
+- `pnpm db:inject:rigid-daily-sample`
 
-Panduan detail ada di:
-- [Database Persistence & Safe Migration](docs/database-persistence-safe-migration.md)
+## 8) Deployment (Server SSH)
 
-## Catatan Supabase
+Flow ringkas deploy rutin:
 
-Jika memakai Supabase pooler:
-- `DATABASE_URL` gunakan koneksi runtime pooler (`pgbouncer=true&connection_limit=1`)
-- `DIRECT_URL` gunakan koneksi direct untuk migrasi/DDL (`sslmode=require`)
+```bash
+git fetch origin
+git pull origin main
+pnpm install --frozen-lockfile
+pnpm db:generate
+pnpm db:migrate
+pnpm build
+pm2 restart all --update-env
+pm2 save
+```
 
-Contoh ada di:
-- `.env.example`
-- [Supabase + Vercel Trial Runbook](docs/supabase-vercel-trial.md)
+Verifikasi cepat:
 
-## CI/CD Dev -> Trial
+```bash
+pm2 status
+pm2 logs --lines 100
+```
 
-Workflow GitHub Actions untuk alur aman DB ada di:
+## 9) DB Strategy: Dev / Trial / Prod-like
+
+Prinsip aman:
+- Dev: `prisma migrate dev`
+- Trial/Prod-like: `prisma migrate deploy`
+- Hindari `db push` dan `db reset` di environment prod-like
+- Selalu backup sebelum migration penting
+
+Jika database existing non-empty dan kena `P3005`, lakukan baseline sekali (`prisma migrate resolve --applied ...`) lalu lanjut `migrate deploy`.
+
+## 10) CI/CD
+
+Workflow:
 - `.github/workflows/deploy-trial.yml`
 
-Workflow ini melakukan:
-1. Quality gate (`typecheck`)
-2. Migration ke DB trial (`pnpm db:migrate` = `prisma migrate deploy`)
-3. Verifikasi schema `DEV` vs `TRIAL` otomatis (`prisma migrate diff --exit-code`)
-4. Opsional trigger Vercel Deploy Hook
+Cakupan utama:
+- quality gate,
+- migrate trial database,
+- verifikasi sinkron schema,
+- optional trigger Vercel deploy hook.
 
-### Setup Sekali (One-time)
+Dokumen detail:
+- `docs/dev-trial-vercel-cicd.md`
 
-Siapkan GitHub Secrets di repository:
-- `DEV_DIRECT_URL`
-- `TRIAL_DATABASE_URL`
-- `TRIAL_DIRECT_URL`
-- `VERCEL_DEPLOY_HOOK_URL` (opsional)
+## 11) Troubleshooting Cepat
 
-### Tutorial Harian Dev (Perubahan Schema)
+### Logout redirect ke localhost
+- Pastikan `NEXTAUTH_URL` di server adalah domain production (bukan localhost).
+- Restart dengan `pm2 restart all --update-env`.
 
-1. Kerja di branch `develop`/feature.
-2. Ubah `prisma/schema.prisma`.
-3. Generate migration di lokal:
+### `git pull` ditolak karena perubahan lokal generated Prisma
+- Bersihkan perubahan generated lalu pull ulang:
 
 ```bash
-pnpm db:migrate:dev --name <nama_migrasi>
+git restore generated/prisma
+git clean -fd generated/prisma
+git pull origin main
 ```
 
-4. Commit `schema.prisma` + `prisma/migrations/...`.
-5. Buat PR dan merge ke `main`.
-6. Setelah merge, workflow `Deploy Trial` otomatis jalan.
-7. Cek hasil di tab `Actions` GitHub.
-8. Pastikan step `Verify DEV vs TRIAL Schema Sync` hijau (schema sinkron).
+### Transaction timeout Prisma
+- Kurangi pekerjaan di dalam interactive transaction.
+- Lakukan precheck di luar transaction bila memungkinkan.
 
-### Kalau Mau Deploy App Setelah Migration
+## 12) Testing & Regression Safety
 
-- Jika pakai Vercel Git Integration: deploy otomatis setelah push/merge ke `main`.
-- Jika pakai deploy hook: isi `VERCEL_DEPLOY_HOOK_URL`, workflow akan trigger deploy setelah migration sukses.
+Integration tests utama tersedia di:
+- `tests/integration/fk-integrity.test.ts`
+- `tests/integration/inventory-posting-invariants.test.ts`
+- `tests/integration/item-governance.test.ts`
+- `tests/integration/p1-blindspots.test.ts`
+- `tests/integration/paper-regression.test.ts`
+- `tests/integration/pro-shift-calculation.test.ts`
+- `tests/integration/report-output-uom.test.ts`
+- `tests/integration/rigid-flow.test.ts`
 
-### Kalau Workflow Gagal
-
-1. Cek step yang gagal di GitHub Actions.
-2. Perbaiki di branch baru.
-3. Merge ulang ke `main` (workflow rerun otomatis), atau jalankan manual via `workflow_dispatch`.
-
-Jika gagal dengan `P3005` (database trial sudah berisi schema lama):
-1. Jalankan workflow `Deploy Trial` via `workflow_dispatch`.
-2. Set `baseline_existing_db=true` (sekali saja).
-3. Setelah baseline berhasil, push berikutnya cukup normal (tanpa baseline).
-
-Jika gagal di step `Verify DEV vs TRIAL Schema Sync`:
-1. Artinya schema di `DEV` dan `TRIAL` beda.
-2. Cek detail SQL diff di log action.
-3. Samakan alur migration (umumnya merge migration yang belum masuk `main` atau perbaiki perubahan manual di salah satu DB).
-
-### Kapan Perlu Manual Migration?
-
-Manual disarankan jika:
-- migration besar/destruktif,
-- perlu maintenance window,
-- perlu backup + verifikasi operator terlebih dulu.
-
-Perintah manual (ke DB trial/prod-like):
+Jalankan:
 
 ```bash
-pnpm db:migrate
+pnpm test:integration
 ```
 
-### Larangan Penting
+## 13) Dokumentasi Internal
 
-- Jangan pakai `pnpm db:push` (`prisma db push`) ke trial/prod-like.
-- Jangan pakai `pnpm db:reset` di trial/prod-like.
+- `docs/user-stories-by-role.md`
+- `docs/global-style-management.md`
+- `docs/database-persistence-safe-migration.md`
+- `docs/supabase-vercel-trial.md`
+- `docs/dev-trial-vercel-cicd.md`
+- `docs/reports/shift-split-monitoring-revision-2026-04-10.md`
 
-Runbook detail:
-- [Dev -> Trial -> Vercel CI/CD](docs/dev-trial-vercel-cicd.md)
+## 14) Security Notes
 
-## Dokumentasi Internal
+- Jangan commit `.env` dan secret.
+- Rotate credential yang pernah terekspos.
+- Gunakan user DB dengan privilege minimum.
+- Pastikan backup restore drill berjalan berkala.
 
-- [Global Style Management](docs/global-style-management.md)
-- [User Stories by Role](docs/user-stories-by-role.md)
-- [Database Persistence & Safe Migration](docs/database-persistence-safe-migration.md)
-- [Supabase + Vercel Trial](docs/supabase-vercel-trial.md)
-- [Dev -> Trial -> Vercel CI/CD](docs/dev-trial-vercel-cicd.md)
+## 15) AI Handoff Notes (Important)
 
-## Catatan Keamanan
+Saat AI baru masuk project ini, prioritas pemahaman:
+1. Domain manufaktur PRO -> Proses -> LPH -> Verifikasi -> Inventory posting.
+2. Perhitungan shift/target berbasis `qtyPoPcs` dan distribusi `plannedQtyPcs`.
+3. Snapshot unit output laporan (`outputUom`) agar metrik tidak salah interpretasi.
+4. Migration policy aman (no destructive ops di prod-like).
+5. Role-based dashboard dan batasan akses mesin/operator.
 
-- Jangan commit `.env` atau secret apa pun.
-- Jika credential pernah ter-expose, segera rotate password/token.
-- Untuk production, batasi privilege DB user dan aktifkan backup berkala.
+---
+Last updated: 2026-04-20 (Asia/Jakarta)
