@@ -24,6 +24,7 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Download, Loader2, Search } from "lucide-react";
 import ReportsListDialog from "./reports-list-dialog";
+import { downloadExcel } from "~/lib/excel";
 
 export default function WipMatrix({
   userDepartment,
@@ -87,32 +88,25 @@ export default function WipMatrix({
       "% Fulfillment",
     ];
 
-    const csvRows = data.rows.map((row) => {
+    const bodyRows = data.rows.map((row) => {
       const machineVals = data.columns.map((col) => row.matrix[col.id] || 0);
       return [
         row.proNumber,
-        `"${row.productName.replace(/"/g, '""')}"`,
+        row.productName,
         row.qtyPoPcs,
         row.type,
         row.status,
         ...machineVals,
         row.fgReceived,
-        row.fulfillment.toFixed(2) + "%",
-      ].join(",");
+        `${row.fulfillment.toFixed(2)}%`,
+      ];
     });
 
-    const csvContent = [headers.join(","), ...csvRows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute(
-      "download",
-      `wip_matrix_${viewMode.toLowerCase()}_${format(new Date(), "yyyyMMdd")}.csv`,
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadExcel({
+      sheetName: "WIP Matrix",
+      fileName: `wip_matrix_${viewMode.toLowerCase()}_${format(new Date(), "yyyyMMdd")}.xlsx`,
+      rows: [headers, ...bodyRows],
+    });
   };
 
   const handleCellClick = (
@@ -170,8 +164,8 @@ export default function WipMatrix({
             disabled={!data}
           >
             <Download className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Export CSV</span>
-            <span className="sm:hidden">CSV</span>
+            <span className="hidden sm:inline">Export Excel</span>
+            <span className="sm:hidden">Excel</span>
           </Button>
         </div>
 

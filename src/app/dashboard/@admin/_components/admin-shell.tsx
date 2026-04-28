@@ -77,12 +77,16 @@ export default function AdminShell({ user }: Props) {
     [router],
   );
 
+  const oeeProType = user.department === "RIGID" ? "RIGID" : "PAPER";
+
   const title = React.useMemo(() => {
     switch (active) {
       case "dashboard":
         return "Dashboard Overview";
       case "oee_paper":
-        return "OEE Analytics - Paper";
+        return oeeProType === "RIGID"
+          ? "OEE Analytics - Rigid"
+          : "OEE Analytics - Paper";
       case "monitor_paper":
         return "Monitor Paper";
       case "monitor_rigid":
@@ -102,7 +106,7 @@ export default function AdminShell({ user }: Props) {
       default:
         return "Dashboard";
     }
-  }, [active]);
+  }, [active, oeeProType]);
 
   const showPaper = !user.department || user.department === "PAPER";
   const showRigid = !user.department || user.department === "RIGID";
@@ -287,7 +291,9 @@ export default function AdminShell({ user }: Props) {
           {active === "dashboard" && (
             <RigidOverview department={user.department} />
           )}
-          {active === "oee_paper" && <OeeDashboard />}
+          {active === "oee_paper" && (
+            <OeeDashboard defaultProType={oeeProType} />
+          )}
 
           {active === "monitor_paper" && <WipMonitor userDepartment="PAPER" />}
           {active === "monitor_rigid" && <WipMonitor userDepartment="RIGID" />}

@@ -44,6 +44,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Upload, Plus, Download } from "lucide-react";
 import { calculateProStepShiftAndTarget } from "~/lib/pro-calculation";
+import { downloadExcel, readExcelRows } from "~/lib/excel";
 
 type StepDraftMaterial = {
   key: string;
@@ -241,100 +242,70 @@ export default function ProPlanner({
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleDownloadTemplate = () => {
-    let csvContent: string;
-    let filename: string;
-    const delimiter = ";";
-    const sepHint = `sep=${delimiter}`;
+    const rows =
+      proType === "RIGID"
+        ? [
+            [
+              "BATCH",
+              "PART NUMBER",
+              "MACHINE",
+              "Production Order",
+              "Nama Produk",
+              "Total Lpr (UP)",
+              "Qty Order",
+              "Start Date",
+              "End Date",
+              "Material",
+              "Qty Material",
+            ],
+            [
+              "B001",
+              "PN-001",
+              "Mesin A",
+              "17031246",
+              "Nama Produk Contoh",
+              "4",
+              "1000",
+              "10/03/2026",
+              "20/03/2026",
+              "Material ABC",
+              "250",
+            ],
+          ]
+        : [
+            [
+              "Part Number (Step)",
+              "Machine",
+              "Production Order",
+              "Nama Produk",
+              "Total UP",
+              "Qty Order",
+              "Start Date",
+              "End Date",
+              "Material",
+              "Qty Material",
+            ],
+            [
+              "WIP-001",
+              "Mesin A",
+              "17031246",
+              "Nama Produk Contoh",
+              "4",
+              "1000",
+              "10/03/2026",
+              "",
+              "Material ABC",
+              "250",
+            ],
+            ["", "Mesin B", "", "", "2", "", "", "", "Material DEF", "125"],
+          ];
 
-    if (proType === "RIGID") {
-      // RIGID columns:
-      // 0:BATCH, 1:PART NUMBER, 2:MACHINE, 3:Production Order, 4:Nama Produk,
-      // 5:Total Lpr (UP), 6:Qty Order, 7:Start Date, 8:End Date, 9:Material, 10:Qty Material
-      csvContent = [
-        sepHint,
-        [
-          "BATCH",
-          "PART NUMBER",
-          "MACHINE",
-          "Production Order",
-          "Nama Produk",
-          "Total Lpr (UP)",
-          "Qty Order",
-          "Start Date",
-          "End Date",
-          "Material",
-          "Qty Material",
-        ].join(delimiter),
-        [
-          "B001",
-          "PN-001",
-          "Mesin A",
-          "17031246",
-          "Nama Produk Contoh",
-          "4",
-          "1000",
-          "10/03/2026",
-          "20/03/2026",
-          "Material ABC",
-          "250",
-        ].join(delimiter),
-      ].join("\r\n");
-      filename = "template_pro_rigid.csv";
-    } else {
-      // PAPER columns:
-      // 0:Part Number (Step), 1:Machine, 2:Production Order, 3:Nama Produk,
-      // 4:Total UP, 5:Qty Order, 6:Start Date, 7:End Date, 8:Material, 9:Qty Material
-      csvContent = [
-        sepHint,
-        [
-          "Part Number (Step)",
-          "Machine",
-          "Production Order",
-          "Nama Produk",
-          "Total UP",
-          "Qty Order",
-          "Start Date",
-          "End Date",
-          "Material",
-          "Qty Material",
-        ].join(delimiter),
-        [
-          "WIP-001",
-          "Mesin A",
-          "17031246",
-          "Nama Produk Contoh",
-          "4",
-          "1000",
-          "10/03/2026",
-          "",
-          "Material ABC",
-          "250",
-        ].join(delimiter),
-        [
-          "",
-          "Mesin B",
-          "",
-          "",
-          "2",
-          "",
-          "",
-          "",
-          "Material DEF",
-          "125",
-        ].join(delimiter),
-      ].join("\r\n");
-      filename = "template_pro_paper.csv";
-    }
-
-    const blob = new Blob([`\uFEFF${csvContent}`], {
-      type: "text/csv;charset=utf-8;",
+    downloadExcel({
+      sheetName: "Template PRO",
+      fileName:
+        proType === "RIGID" ? "template_pro_rigid.xlsx" : "template_pro_paper.xlsx",
+      rows,
     });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
   };
 
   const getProcess = (id: number | null) =>
@@ -440,11 +411,14 @@ export default function ProPlanner({
     setOk(null);
 
     try {
-      const text = await file.text();
-      const rows = parseCSV(text);
+      const lowerName = file.name.toLowerCase();
+      const rows =
+        lowerName.endsWith(".xlsx") || lowerName.endsWith(".xls")
+          ? await readExcelRows(file)
+          : parseCSV(await file.text());
 
       if (rows.length < 2) {
-        throw new Error("Format CSV tidak valid (terlalu pendek)");
+        throw new Error("Format template tidak valid (terlalu pendek)");
       }
 
       const machineList = machines.data ?? [];
@@ -791,7 +765,7 @@ export default function ProPlanner({
             ? first.materials
             : [{ key: uid(), materialId: null, qtyReq: "" }],
         );
-        setOk(`Berhasil import data dari CSV.`);
+        setOk(`Berhasil import data template.`);
       } else {
         setSteps((prev) => [...prev, ...newSteps]);
         setOk(`Berhasil import ${newSteps.length} proses.`);
@@ -961,7 +935,7 @@ export default function ProPlanner({
           <CardContent className="space-y-6 pt-6">
             <input
               type="file"
-              accept=".csv"
+              accept=".xlsx,.xls,.csv"
               ref={fileInputRef}
               className="hidden"
               onChange={handleImport}
@@ -1087,7 +1061,7 @@ export default function ProPlanner({
                   className="h-9 gap-2 text-muted-foreground hover:text-foreground"
                 >
                   <Download className="h-4 w-4" />
-                  Template CSV
+                  Template Excel
                 </Button>
                 <Button
                   type="button"
@@ -1098,7 +1072,7 @@ export default function ProPlanner({
                   className="h-9 gap-2 border-dashed"
                 >
                   <Upload className="text-muted-foreground h-4 w-4" />
-                  Import CSV
+                  Import File
                 </Button>
               </div>
             </CardHeader>
@@ -1331,7 +1305,7 @@ export default function ProPlanner({
                   className="h-9 gap-2 text-muted-foreground hover:text-foreground"
                 >
                   <Download className="h-4 w-4" />
-                  Template CSV
+                  Template Excel
                 </Button>
                 <Button
                   type="button"
@@ -1342,7 +1316,7 @@ export default function ProPlanner({
                   className="h-9 gap-2 border-dashed"
                 >
                   <Upload className="text-muted-foreground h-4 w-4" />
-                  Import CSV
+                  Import File
                 </Button>
                 <Button
                   type="button"
@@ -1413,7 +1387,7 @@ export default function ProPlanner({
                                 Belum ada proses ditambahkan
                               </p>
                               <p className="mx-auto max-w-xs text-xs opacity-70">
-                                Gunakan tombol "Import CSV" atau "Tambah Proses"
+                                Gunakan tombol "Import File" atau "Tambah Proses"
                                 di atas untuk mengisi alur produksi.
                               </p>
                             </div>
